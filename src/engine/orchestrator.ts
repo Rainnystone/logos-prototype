@@ -380,14 +380,19 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           };
         }
       } else {
+        const nextBeatIndex = completedBeatCount + 1;
+        const nextVolume = buildVolumeSequence(phasePlan.gradientType)[nextBeatIndex - 1]!;
+
         nextSceneState = {
           ...nextSceneState,
-          currentBeatIndexInPhase: completedBeatCount + 1,
+          currentBeatIndexInPhase: nextBeatIndex,
         };
-        nextRoundState = {
-          ...roundState,
-          historyWindow: getHistoryWindow(acceptedHistory).map(cloneHistoryEntry),
-        };
+        nextRoundState = buildRoundState(
+          phasePlan,
+          nextVolume,
+          routerSelection,
+          getHistoryWindow(acceptedHistory),
+        );
       }
 
       currentState = freezeState({
