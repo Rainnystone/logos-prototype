@@ -34,7 +34,9 @@ export async function listStoryPackageCatalog(): Promise<readonly StoryPackageCa
   const packageRoot = path.resolve(process.cwd(), 'src/story-packages');
   const directoryEntries = await readdir(packageRoot, { withFileTypes: true });
   const packageNames = directoryEntries
-    .filter((entry) => entry.isDirectory())
+    .filter(
+      (entry) => entry.isDirectory() && !entry.name.startsWith('__') && !entry.name.startsWith('.'),
+    )
     .map((entry) => entry.name)
     .sort((left, right) => left.localeCompare(right));
 
