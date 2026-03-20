@@ -33,8 +33,8 @@ const MODE_DEFAULTS = {
     maxOutputTokens: 512,
   },
   settlement: {
-    temperature: 0.2,
-    maxOutputTokens: 768,
+    temperature: 0.1,
+    maxOutputTokens: 8192,
   },
   collapse: {
     temperature: 0.5,

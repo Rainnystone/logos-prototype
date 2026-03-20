@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { validatePhaseConsequenceResponse } from '@/engine/schema-validator';
 import {
@@ -6,6 +6,41 @@ import {
   settlePhaseConsequences,
 } from '@/engine/modules/phase-consequence-settlement';
 import { createRecordingAdapter } from '@/engine/__tests__/fixtures/audit-loop-fixtures';
+import type { LLMAdapter } from '@/engine/types/adapter-interface';
+
+function createRetryingSettlementAdapter(
+  sequence: readonly ({ phaseConsequences: string[]; settlementTrace: string } | Error)[],
+): { adapter: LLMAdapter; settlement: ReturnType<typeof vi.fn> } {
+  let index = 0;
+  const settlement = vi.fn(async () => {
+    const next = sequence[Math.min(index, sequence.length - 1)];
+    index += 1;
+
+    if (!next) {
+      throw new Error('settlement retry sequence must contain at least one entry');
+    }
+
+    if (next instanceof Error) {
+      throw next;
+    }
+
+    return next;
+  });
+
+  return {
+    adapter: {
+      async collapse() {
+        return {
+          alpha: 'alpha',
+          beta: 'beta',
+          inferenceTrace: 'collapse-trace',
+        };
+      },
+      settlement,
+    },
+    settlement,
+  };
+}
 
 describe('Phase Consequence Settlement', () => {
   it('builds a request with scene context and chronological user/assistant transcript only', () => {
@@ -102,5 +137,40 @@ describe('Phase Consequence Settlement', () => {
     ]);
 
     await expect(settlePhaseConsequences(request, adapter)).rejects.toThrow(/settlementTrace/i);
+  });
+
+  it('retries transient settlement failures before succeeding', async () => {
+    const { adapter, settlement } = createRetryingSettlementAdapter([
+      new Error('Provider response did not contain valid structured JSON'),
+      {
+        phaseConsequences: ['fact-1', 'fact-2'],
+        settlementTrace: 'settlement-trace',
+      },
+    ]);
+    const request = buildPhaseConsequenceRequest('main-axis', 'end-line', 'phase-goal', [
+      { role: 'user', content: 'player-choice-1' },
+      { role: 'assistant', content: 'accepted-beat-1' },
+    ]);
+
+    const response = await settlePhaseConsequences(request, adapter);
+
+    expect(response.phaseConsequences).toEqual(['fact-1', 'fact-2']);
+    expect(settlement).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws a settlement-specific error after exhausting retries', async () => {
+    const { adapter, settlement } = createRetryingSettlementAdapter([
+      new Error('truncated-json'),
+      new Error('truncated-json'),
+      new Error('truncated-json'),
+    ]);
+    const request = buildPhaseConsequenceRequest('main-axis', 'end-line', 'phase-goal', [
+      { role: 'user', content: 'player-choice-1' },
+    ]);
+
+    await expect(settlePhaseConsequences(request, adapter)).rejects.toThrow(
+      /Phase consequence settlement failed after 3 attempts/i,
+    );
+    expect(settlement).toHaveBeenCalledTimes(3);
   });
 });

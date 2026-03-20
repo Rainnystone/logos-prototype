@@ -428,6 +428,33 @@ function extractCollapseField(content: string, fieldName: 'alpha' | 'beta' | 'in
   return decodeJsonStringLiteral(match[1]).trim() || null;
 }
 
+function extractSettlementPhaseConsequences(content: string): readonly string[] {
+  const phaseConsequencesMatch = content.match(/"phaseConsequences"\s*:\s*\[([\s\S]*)/s);
+
+  if (!phaseConsequencesMatch?.[1]) {
+    return [];
+  }
+
+  const rawArrayContent = phaseConsequencesMatch[1];
+  const arrayContent = rawArrayContent.includes(']')
+    ? rawArrayContent.slice(0, rawArrayContent.indexOf(']'))
+    : rawArrayContent;
+
+  return Array.from(arrayContent.matchAll(/"((?:\\.|[^"\\])*)"/g))
+    .map((match) => decodeJsonStringLiteral(match[1] ?? '').trim())
+    .filter((item) => item.length > 0);
+}
+
+function extractSettlementTrace(content: string): string | null {
+  const traceMatch = content.match(/"settlementTrace"\s*:\s*"((?:\\.|[^"\\])*)/s);
+
+  if (!traceMatch?.[1]) {
+    return null;
+  }
+
+  return decodeJsonStringLiteral(traceMatch[1]).trim() || null;
+}
+
 export function parseGenerateResult(content: string, usage?: UsageInfo): GenerateResult {
   try {
     const result = parseBySchema(GenerateResultSchema, content, 'generateResult', usage);
@@ -535,21 +562,43 @@ export function parseRouteResult(content: string, usage?: UsageInfo): RouteResul
 }
 
 export function parseSettlementResult(content: string, usage?: UsageInfo) {
-  const candidates = parseStructuredContentCandidates(content);
-  let lastError: Error | null = null;
+  try {
+    const candidates = parseStructuredContentCandidates(content);
+    let lastError: Error | null = null;
 
-  for (const candidate of candidates) {
-    try {
-      return deepFreeze(
-        validatePhaseConsequenceResponse(mergeUsage(candidate as Record<string, unknown>, usage)),
-      );
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+    for (const candidate of candidates) {
+      try {
+        return deepFreeze(
+          validatePhaseConsequenceResponse(mergeUsage(candidate as Record<string, unknown>, usage)),
+        );
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+      }
     }
-  }
 
-  if (lastError) {
-    throw lastError;
+    if (lastError) {
+      throw lastError;
+    }
+  } catch (parseError) {
+    const phaseConsequences = extractSettlementPhaseConsequences(content);
+    const settlementTrace = extractSettlementTrace(content);
+
+    if (phaseConsequences.length > 0) {
+      return deepFreeze(
+        validatePhaseConsequenceResponse(
+          mergeUsage(
+            {
+              phaseConsequences,
+              settlementTrace:
+                settlementTrace ?? 'Recovered from a truncated provider settlement response.',
+            },
+            usage,
+          ),
+        ),
+      );
+    }
+
+    throw parseError;
   }
 
   throw new Error('Provider response failed validation for phaseConsequenceResponse');

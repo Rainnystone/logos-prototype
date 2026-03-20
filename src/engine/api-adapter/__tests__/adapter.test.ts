@@ -250,6 +250,42 @@ describe('api adapter', () => {
     expect(validatePhaseConsequenceResponse(result)).toEqual(result);
   });
 
+  it('settlement recovers phase consequences from truncated provider JSON when consequences are present', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content:
+                      '{"phaseConsequences":["fact-1","fact-2"],"settlementTrace":"Recovered from the phase',
+                  },
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.settlement?.(sampleSettlementRequest);
+
+    expect(result?.phaseConsequences).toEqual(['fact-1', 'fact-2']);
+    expect(result?.settlementTrace).toContain('Recovered from the phase');
+  });
+
   it('collapse returns a validated CollapseResponse on the standard re-inference path', async () => {
     vi.stubGlobal(
       'fetch',
@@ -406,7 +442,7 @@ describe('api adapter', () => {
       return JSON.parse(String(init.body)).temperature;
     });
 
-    expect(temperatures).toEqual([0.2, 1, 0.3, 0.2, 0.5]);
+    expect(temperatures).toEqual([0.2, 1, 0.3, 0.1, 0.5]);
   });
 
   it('uses the correct default maxOutputTokens for route, generate, audit, settlement, and collapse', async () => {
@@ -469,6 +505,6 @@ describe('api adapter', () => {
       return JSON.parse(String(init.body)).max_tokens;
     });
 
-    expect(maxOutputTokens).toEqual([4096, 36864, 512, 768, 36864]);
+    expect(maxOutputTokens).toEqual([4096, 36864, 512, 8192, 36864]);
   });
 });

@@ -76,6 +76,15 @@ describe('response parsers', () => {
     expect(result.inferenceTrace).toContain('Recovered from the phase');
   });
 
+  it('recovers settlement results from malformed truncated JSON when phase consequences are present', () => {
+    const result = parseSettlementResult(
+      '{"phaseConsequences":["fact-1","fact-2"],"settlementTrace":"Recovered from the phase',
+    );
+
+    expect(result.phaseConsequences).toEqual(['fact-1', 'fact-2']);
+    expect(result.settlementTrace).toContain('Recovered from the phase');
+  });
+
   it('falls back to a safe false array when no boolean signal can be recovered', () => {
     const result = parseAuditResult('{"answers":[', 3);
 

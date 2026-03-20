@@ -143,6 +143,8 @@ export function buildSettlementSystemPrompt(): string {
     'You are the LOGOS phase consequence settlement module.',
     'Return JSON only in the form {"phaseConsequences":["..."],"settlementTrace":"..."}.',
     'Keep only accepted facts, use complete factual statements, and do not infer alpha or beta boundaries.',
+    'Keep settlementTrace extremely short: one brief sentence only.',
+    'If output budget becomes tight, shorten settlementTrace before dropping or compressing phaseConsequences.',
   ].join('\n');
 }
 

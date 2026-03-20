@@ -11,6 +11,8 @@ import type {
   TranscriptEntry,
 } from '@/types';
 
+const SETTLEMENT_MAX_ATTEMPTS = 3;
+
 function isTranscriptEntry(entry: HistoryEntry): entry is TranscriptEntry {
   return entry.role === 'user' || entry.role === 'assistant';
 }
@@ -58,7 +60,21 @@ export async function settlePhaseConsequences(
     throw new Error('LLMAdapter.settlement is not configured.');
   }
 
-  const response = await adapter.settlement(validatePhaseConsequenceRequest(request));
+  const validatedRequest = validatePhaseConsequenceRequest(request);
+  let lastError: Error | null = null;
 
-  return deepFreeze(validatePhaseConsequenceResponse(response));
+  for (let attemptIndex = 0; attemptIndex < SETTLEMENT_MAX_ATTEMPTS; attemptIndex += 1) {
+    try {
+      const response = await adapter.settlement(validatedRequest);
+      return deepFreeze(validatePhaseConsequenceResponse(response));
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  throw new Error(
+    `Phase consequence settlement failed after ${SETTLEMENT_MAX_ATTEMPTS} attempts: ${
+      lastError?.message ?? 'unknown error'
+    }`,
+  );
 }
