@@ -12,14 +12,21 @@ LOGOS 是一个 AI 驱动的叙事编排引擎 (narrative orchestration engine)�
 - **Schema Validation**: Zod
 - **Story Package Format**: YAML
 
-## 仓库关系
+## 关联仓库
 
-| 仓库 | 职责 |
-|------|------|
-| `LOGOS` (本仓库) | 引擎实现代码 |
-| `LOGOS-Design/LOGOS-SPEC` | 设计规格文档，是所有实现的权威依据 |
+| 仓库 | 地址 | 职责 |
+|------|------|------|
+| **LOGOS** (本仓库) | https://github.com/lishtys/LOGOS | 引擎实现代码 |
+| **LOGOS-Design** | https://github.com/Rainnystone/LOGOS-Design | 设计规格文档（权威依据） |
 
-规格与实现如有矛盾，以 LOGOS-SPEC 为准（除非有 ADR 明确覆盖）。
+> 规格与实现如有矛盾，以 `LOGOS-Design/LOGOS-SPEC` 为准（除非有 ADR 明确覆盖）。
+> 切换工作电脑时，需将两个仓库 clone 到同级目录下：
+> ```
+> GitHub/
+> ├── LOGOS/              ← 本仓库
+> └── LOGOS-Design/       ← 设计仓库
+>     └── LOGOS-SPEC/     ← 规格目录
+> ```
 
 ## 快速开始
 
