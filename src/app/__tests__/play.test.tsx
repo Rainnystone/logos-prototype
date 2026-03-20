@@ -28,6 +28,11 @@ function createCollapseResponse(request: CollapseInput): CollapseResponse {
     alpha: `Alpha boundary from ${suffix}`,
     beta: `Beta boundary from ${suffix}`,
     inferenceTrace: 'collapse-trace',
+    usage: {
+      promptTokens: 64,
+      completionTokens: 24,
+      totalTokens: 88,
+    },
   };
 }
 
@@ -56,6 +61,11 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
           `Option ${generateCount}-3`,
           `Option ${generateCount}-4`,
         ],
+        usage: {
+          promptTokens: 180,
+          completionTokens: 52,
+          totalTokens: 232,
+        },
       } satisfies GenerateResult;
     },
     async audit() {
@@ -63,20 +73,46 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
       await wait(delayMs);
 
       if (config.auditMode === 'fail-always') {
-        return { answers: [false, true] } satisfies AuditResult;
+        return {
+          answers: [false, true],
+          usage: {
+            promptTokens: 96,
+            completionTokens: 16,
+            totalTokens: 112,
+          },
+        } satisfies AuditResult;
       }
 
       if (config.auditMode === 'fail-once' && auditCount === 1) {
-        return { answers: [false, true] } satisfies AuditResult;
+        return {
+          answers: [false, true],
+          usage: {
+            promptTokens: 96,
+            completionTokens: 16,
+            totalTokens: 112,
+          },
+        } satisfies AuditResult;
       }
 
-      return { answers: [true, true] } satisfies AuditResult;
+      return {
+        answers: [true, true],
+        usage: {
+          promptTokens: 96,
+          completionTokens: 16,
+          totalTokens: 112,
+        },
+      } satisfies AuditResult;
     },
     async settlement() {
       await wait(delayMs);
       return {
         phaseConsequences: ['The signal source has been cornered.'],
         settlementTrace: 'settlement-trace',
+        usage: {
+          promptTokens: 140,
+          completionTokens: 48,
+          totalTokens: 188,
+        },
       };
     },
   };
@@ -197,5 +233,37 @@ describe('PlayWorkbench', () => {
     expect(
       screen.getByText('Beat 2 ready. Choose an option or write the next action.'),
     ).toBeInTheDocument();
+  });
+
+  it('toggles the fixture reference drawer and shows runtime diagnostics', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+      />,
+    );
+
+    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
+
+    expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show Fixture Reference' }));
+    expect(screen.getByText('Fixture Reference')).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.locationPatch)).toBeInTheDocument();
+    expect(screen.getByText('88 tokens')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Inspect the relay cabinet.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(await screen.findByText('232 tokens')).toBeInTheDocument();
+    expect(await screen.findByText('112 tokens')).toBeInTheDocument();
+    expect(screen.getByText('Latest observed call: Audit')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Hide Fixture Reference' }));
+    expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();
   });
 });

@@ -7,14 +7,18 @@ import { AuthorControlPanel } from '@/app/components/AuthorControlPanel';
 import { BeatDisplay } from '@/app/components/BeatDisplay';
 import { BeatHistory, type BeatHistoryEntry } from '@/app/components/BeatHistory';
 import { ConfigPanel } from '@/app/components/ConfigPanel';
+import { FixtureReferencePanel } from '@/app/components/FixtureReferencePanel';
 import { PlayerInput } from '@/app/components/PlayerInput';
+import { PromptStatusPanel } from '@/app/components/PromptStatusPanel';
 import { StateInspector } from '@/app/components/StateInspector';
 import {
+  createEmptyWorkbenchDiagnostics,
   createTrackedWorkbenchAdapter,
   createWorkbenchAdapter,
   getActivePhasePlan,
   getGradientSequence,
   getReadyMessage,
+  type WorkbenchDiagnostics,
   type WorkbenchStatus,
 } from '@/app/play/runtime';
 import { createOrchestrator, type Orchestrator } from '@/engine/orchestrator';
@@ -47,6 +51,10 @@ export function PlayWorkbench({
   const [beatHistory, setBeatHistory] = useState<readonly BeatHistoryEntry[]>([]);
   const [rewriteFeedback, setRewriteFeedback] = useState<string | null>(null);
   const [forceAccepted, setForceAccepted] = useState(false);
+  const [fixtureReferenceOpen, setFixtureReferenceOpen] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<WorkbenchDiagnostics>(
+    createEmptyWorkbenchDiagnostics(),
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,6 +85,7 @@ export function PlayWorkbench({
       setForceAccepted(false);
       setError(null);
       setBeatHistory([]);
+      setDiagnostics(createEmptyWorkbenchDiagnostics());
 
       try {
         const baseAdapter = (adapterFactory ?? createWorkbenchAdapter)(adapterConfig, storyPackage);
@@ -92,6 +101,17 @@ export function PlayWorkbench({
             onRewriteFeedback(feedback) {
               if (!cancelled) {
                 setRewriteFeedback(feedback);
+              }
+            },
+            onUsage(operation, usage) {
+              if (!cancelled) {
+                setDiagnostics((currentDiagnostics) => ({
+                  latestOperation: operation,
+                  usage: {
+                    ...currentDiagnostics.usage,
+                    [operation]: usage,
+                  },
+                }));
               }
             },
           },
@@ -196,12 +216,23 @@ export function PlayWorkbench({
           <h1>{storyPackage.sceneSpec.sceneName}</h1>
           <p>{storyPackage.sceneSpec.mainAxis}</p>
         </div>
-        <div className="context-strip__meta">
-          <span>{storyPackageName}</span>
-          <span>{storyPackage.sceneSpec.endLine}</span>
-          <span>{runtimeSource}</span>
+        <div className="context-strip__side">
+          <div className="context-strip__meta">
+            <span>{storyPackageName}</span>
+            <span>{storyPackage.sceneSpec.endLine}</span>
+            <span>{runtimeSource}</span>
+          </div>
+          <div className="context-strip__actions">
+            <button type="button" onClick={() => setFixtureReferenceOpen((current) => !current)}>
+              {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
+            </button>
+          </div>
         </div>
       </section>
+
+      {fixtureReferenceOpen ? (
+        <FixtureReferencePanel storyPackage={storyPackage} storyPackageName={storyPackageName} />
+      ) : null}
 
       <section className="play-grid">
         <div className="play-column play-column--controls">
@@ -210,6 +241,7 @@ export function PlayWorkbench({
             currentPhaseIndex={currentState?.sceneState.currentPhaseIndex ?? 1}
           />
           <ConfigPanel initialConfig={adapterConfig} onSave={setAdapterConfig} />
+          <PromptStatusPanel state={currentState} diagnostics={diagnostics} />
         </div>
 
         <div className="play-column play-column--main">

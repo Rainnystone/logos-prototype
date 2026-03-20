@@ -48,6 +48,11 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
           alpha: `Demo alpha boundary anchored to: ${seed}`,
           beta: `Demo beta boundary anchored to: ${seed}`,
           inferenceTrace: 'Derived locally from the active scene context.',
+          usage: {
+            promptTokens: 72,
+            completionTokens: 24,
+            totalTokens: 96,
+          },
         }),
       );
     },
@@ -65,12 +70,22 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
           promptObject.directorNote.verbLexicon,
           promptObject.directorNote.router,
         ),
+        usage: {
+          promptTokens: 168,
+          completionTokens: 54,
+          totalTokens: 222,
+        },
       } satisfies GenerateResult);
     },
 
     async audit(packet) {
       return deepFreeze({
         answers: packet.auditQuestions.map(() => true),
+        usage: {
+          promptTokens: 84,
+          completionTokens: 18,
+          totalTokens: 102,
+        },
       });
     },
 
@@ -88,6 +103,11 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
               ? recentConsequences
               : ['Demo consequence 1: the current phase has been accepted.'],
           settlementTrace: 'Derived locally from the accepted transcript.',
+          usage: {
+            promptTokens: 114,
+            completionTokens: 32,
+            totalTokens: 146,
+          },
         }),
       );
     },
