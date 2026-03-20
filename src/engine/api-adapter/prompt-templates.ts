@@ -1,4 +1,4 @@
-import type { CollapseInput } from '@/engine/types/adapter-interface';
+import type { CollapseInput, RouteRequest } from '@/engine/types/adapter-interface';
 import type { AuditPacket, HistoryEntry, PhaseConsequenceRequest, PromptObject } from '@/types';
 
 function formatHistory(entries: readonly HistoryEntry[]): string {
@@ -17,6 +17,15 @@ function formatConsequences(consequences: readonly string[] | undefined): string
   return consequences.map((item, index) => `${index + 1}. ${item}`).join('\n');
 }
 
+function formatRouters(request: RouteRequest): string {
+  return request.availableRouters
+    .map(
+      (router, index) =>
+        `${index + 1}. ${router.routerName}\n   Semantic core: ${router.routerSemanticCore}\n   Verb lexicon: ${router.verbLexicon.join(', ')}`,
+    )
+    .join('\n');
+}
+
 export function buildGenerateSystemPrompt(prompt: PromptObject): string {
   return [
     '[World Base]',
@@ -30,7 +39,13 @@ export function buildGenerateSystemPrompt(prompt: PromptObject): string {
     `Current phase goal: ${prompt.narrative.phaseGoal}`,
     `Light-cone boundaries: Alpha=${prompt.narrative.alpha} | Beta=${prompt.narrative.beta}`,
     '',
-    'Return a JSON object with keys "beatText" and "options" (exactly 4 strings).',
+    'Return JSON only with keys "beatText" and "options".',
+    'The "beatText" field must be a complete adventure turn, not a short summary.',
+    'Target a beatText length of roughly 1500-2500 Chinese characters, with natural paragraph breaks.',
+    'Do not write beatText as one oversized paragraph; use multiple readable paragraphs with visible pacing.',
+    'The "options" array must contain exactly 4 distinct action strings.',
+    'Never omit, rename, or nest the options array.',
+    'If output budget becomes tight, compress toward the lower end of the beatText range before dropping any option.',
   ].join('\n');
 }
 
@@ -55,11 +70,45 @@ export function buildGenerateFinalUserMessage(prompt: PromptObject): string {
   return [
     directorBlock,
     '---',
+    '[Audit Corrections - Immediate Repair Targets]',
+    prompt.generationControl.rewriteFeedback ?? 'No audit correction targets were supplied.',
+    '---',
     '[Rewrite Control]',
     `Retry count: ${prompt.generationControl.retryCount}`,
-    `Rewrite feedback: ${prompt.generationControl.rewriteFeedback ?? 'none'}`,
     `Previous beat draft: ${prompt.generationControl.previousDraft?.beatText ?? 'none'}`,
     `Previous options:\n${previousOptions ?? 'none'}`,
+  ].join('\n');
+}
+
+export function buildRouteSystemPrompt(): string {
+  return [
+    'You are the LOGOS narrative router.',
+    'Return JSON only in the form {"routerName":"...","inferenceTrace":"..."}.',
+    'Choose exactly one router from the provided availableRouters list.',
+    'Decide from the current round context: recent beat history, the latest local pressure, the current volume, and the phase goal.',
+    'The router must constrain the next beat action space; do not summarize the story or invent a new router name.',
+    'Keep inferenceTrace extremely short: one concise sentence only.',
+    'Prefer terse control reasoning over explanation.',
+  ].join('\n');
+}
+
+export function buildRouteUserPrompt(request: RouteRequest): string {
+  return [
+    '[Current Round State]',
+    `Phase goal: ${request.context.phaseGoal}`,
+    `Current volume: ${request.context.currentVolume}`,
+    `Alpha boundary: ${request.context.alpha}`,
+    `Beta boundary: ${request.context.beta}`,
+    `Scene progress: ${request.context.sceneProgress ?? 'not provided'}`,
+    `Phase routing prior: ${request.context.routerHint ?? 'not provided'}`,
+    '',
+    '[History Window]',
+    formatHistory(request.historyWindow),
+    '',
+    '[Available Routers]',
+    formatRouters(request),
+    '',
+    'Select the single best router for the next beat.',
   ].join('\n');
 }
 
@@ -120,6 +169,14 @@ export function buildCollapseSystemPrompt(): string {
     'You are the LOGOS light-cone collapse module.',
     'Return JSON only in the form {"alpha":"...","beta":"...","inferenceTrace":"..."}.',
     'Alpha and beta must remain concrete reachable boundaries aligned to the scene end line.',
+    'Definition lock:',
+    '- Alpha: the most aggressive player-action boundary that still keeps end-line convergence possible.',
+    '- Beta: the most passive player-action boundary that still keeps end-line convergence possible.',
+    'Do not restate the main axis or end line verbatim as boundaries.',
+    'Do not output event summaries; output actionable boundary constraints.',
+    'Do not compress alpha or beta so far that control precision is lost.',
+    'Alpha and beta may use multiple clauses when needed to preserve narrative control precision.',
+    'Keep inferenceTrace extremely short: one brief sentence only.',
   ].join('\n');
 }
 
@@ -144,6 +201,6 @@ export function buildCollapseUserPrompt(request: CollapseInput): string {
     '[Phase Consequences]',
     formatConsequences(request.phaseConsequences),
     '',
-    'Re-infer the next reachable alpha and beta boundaries.',
+    'Re-infer the next reachable alpha and beta boundaries using the definition lock.',
   ].join('\n');
 }

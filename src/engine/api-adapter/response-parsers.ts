@@ -6,7 +6,7 @@ import {
   validateCollapseResponse,
   validatePhaseConsequenceResponse,
 } from '@/engine/schema-validator';
-import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
+import type { AuditResult, GenerateResult, RouteResult } from '@/engine/types/adapter-interface';
 import type { UsageInfo } from '@/types';
 import { UsageInfoSchema } from '@/types';
 
@@ -25,6 +25,14 @@ const AuditResultSchema = z
   })
   .strict();
 
+const RouteResultSchema = z
+  .object({
+    routerName: z.string(),
+    inferenceTrace: z.string(),
+    usage: UsageInfoSchema.optional(),
+  })
+  .strict();
+
 function stripCodeFence(value: string): string {
   return value
     .trim()
@@ -33,28 +41,132 @@ function stripCodeFence(value: string): string {
     .trim();
 }
 
-function parseStructuredContent(content: string): unknown {
-  const normalized = stripCodeFence(content);
+function parseJsonCandidates(candidates: readonly string[]): readonly unknown[] {
+  const parsed: unknown[] = [];
 
-  try {
-    return JSON.parse(normalized);
-  } catch {
-    const objectStart = normalized.indexOf('{');
-    const objectEnd = normalized.lastIndexOf('}');
+  for (const candidate of candidates) {
+    const normalized = stripCodeFence(candidate);
 
-    if (objectStart >= 0 && objectEnd > objectStart) {
-      return JSON.parse(normalized.slice(objectStart, objectEnd + 1));
+    if (normalized.length === 0) {
+      continue;
     }
 
-    const arrayStart = normalized.indexOf('[');
-    const arrayEnd = normalized.lastIndexOf(']');
-
-    if (arrayStart >= 0 && arrayEnd > arrayStart) {
-      return JSON.parse(normalized.slice(arrayStart, arrayEnd + 1));
+    try {
+      parsed.push(JSON.parse(normalized));
+    } catch {
+      continue;
     }
   }
 
-  throw new Error('Provider response did not contain valid structured JSON');
+  return parsed;
+}
+
+function collectBalancedSlices(
+  content: string,
+  openToken: '{' | '[',
+  closeToken: '}' | ']',
+): readonly string[] {
+  const slices: string[] = [];
+  let startIndex = -1;
+  let depth = 0;
+  let inString = false;
+  let escaping = false;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const character = content[index];
+
+    if (escaping) {
+      escaping = false;
+      continue;
+    }
+
+    if (character === '\\' && inString) {
+      escaping = true;
+      continue;
+    }
+
+    if (character === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) {
+      continue;
+    }
+
+    if (character === openToken) {
+      if (depth === 0) {
+        startIndex = index;
+      }
+
+      depth += 1;
+      continue;
+    }
+
+    if (character === closeToken && depth > 0) {
+      depth -= 1;
+
+      if (depth === 0 && startIndex >= 0) {
+        slices.push(content.slice(startIndex, index + 1));
+        startIndex = -1;
+      }
+    }
+  }
+
+  return slices;
+}
+
+function parseStructuredContentCandidates(content: string): readonly unknown[] {
+  const normalized = stripCodeFence(content);
+  const directCandidates = parseJsonCandidates([normalized]);
+
+  if (directCandidates.length > 0) {
+    return directCandidates;
+  }
+
+  const fencedCandidates = parseJsonCandidates(
+    Array.from(normalized.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)).map(
+      (match) => match[1] ?? '',
+    ),
+  );
+  const objectCandidates = parseJsonCandidates(collectBalancedSlices(normalized, '{', '}'));
+  const arrayCandidates = parseJsonCandidates(collectBalancedSlices(normalized, '[', ']'));
+  const allCandidates = [...fencedCandidates, ...objectCandidates, ...arrayCandidates];
+
+  if (allCandidates.length > 0) {
+    return allCandidates;
+  }
+
+  const excerpt = content.trim().slice(0, 180);
+  throw new Error(`Provider response did not contain valid structured JSON: ${excerpt}`);
+}
+
+function parseBySchema<TSchema extends z.ZodTypeAny>(
+  schema: TSchema,
+  content: string,
+  schemaName: string,
+  usage: UsageInfo | undefined,
+): z.infer<TSchema> {
+  const candidates = parseStructuredContentCandidates(content);
+  let lastError: Error | null = null;
+
+  for (const candidate of candidates) {
+    try {
+      return parseWithSchema(
+        schema,
+        mergeUsage(candidate as Record<string, unknown>, usage),
+        schemaName,
+      );
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  throw new Error(`Provider response failed validation for ${schemaName}`);
 }
 
 function mergeUsage<TResponse extends Record<string, unknown>>(
@@ -71,14 +183,286 @@ function mergeUsage<TResponse extends Record<string, unknown>>(
   };
 }
 
-export function parseGenerateResult(content: string, usage?: UsageInfo): GenerateResult {
-  const result = parseWithSchema(
-    GenerateResultSchema,
-    mergeUsage(parseStructuredContent(content) as Record<string, unknown>, usage),
-    'generateResult',
+function extractBooleanTokenAnswers(content: string): readonly boolean[] {
+  const answersIndex = content.search(/["']?answers["']?\s*:/i);
+  const focusWindow =
+    answersIndex >= 0 ? content.slice(answersIndex, answersIndex + 600) : content.slice(0, 600);
+  const matches = focusWindow.match(
+    /\btrue\b|\bfalse\b|\byes\b|\bno\b|\bpass(?:ed)?\b|\bfail(?:ed)?\b|\b1\b|\b0\b/gi,
   );
 
-  return deepFreeze(result);
+  if (!matches) {
+    return [];
+  }
+
+  return matches
+    .map((token) => {
+      const normalized = token.toLowerCase();
+
+      if (
+        normalized === 'true' ||
+        normalized === 'yes' ||
+        normalized === 'pass' ||
+        normalized === 'passed' ||
+        normalized === '1'
+      ) {
+        return true;
+      }
+
+      if (
+        normalized === 'false' ||
+        normalized === 'no' ||
+        normalized === 'fail' ||
+        normalized === 'failed' ||
+        normalized === '0'
+      ) {
+        return false;
+      }
+
+      return undefined;
+    })
+    .filter((token): token is boolean => token !== undefined);
+}
+
+const BOOLEAN_WRAPPER_KEYS = [
+  'answer',
+  'pass',
+  'passed',
+  'value',
+  'result',
+  'valid',
+  'isValid',
+  'isPass',
+  'ok',
+] as const;
+
+function coerceBooleanValue(value: unknown, depth = 0): boolean | undefined {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    if (value === 1) {
+      return true;
+    }
+
+    if (value === 0) {
+      return false;
+    }
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+
+    if (
+      normalized === 'true' ||
+      normalized === 'yes' ||
+      normalized === 'pass' ||
+      normalized === 'passed' ||
+      normalized === '1'
+    ) {
+      return true;
+    }
+
+    if (
+      normalized === 'false' ||
+      normalized === 'no' ||
+      normalized === 'fail' ||
+      normalized === 'failed' ||
+      normalized === '0'
+    ) {
+      return false;
+    }
+
+    return undefined;
+  }
+
+  if (!value || typeof value !== 'object' || depth >= 3) {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const token = coerceBooleanValue(item, depth + 1);
+
+      if (token !== undefined) {
+        return token;
+      }
+    }
+
+    return undefined;
+  }
+
+  for (const key of BOOLEAN_WRAPPER_KEYS) {
+    if (key in value) {
+      const token = coerceBooleanValue((value as Record<string, unknown>)[key], depth + 1);
+
+      if (token !== undefined) {
+        return token;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function coerceBooleanSequence(value: unknown): readonly boolean[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => coerceBooleanValue(item))
+    .filter((item): item is boolean => item !== undefined);
+}
+
+function extractBooleanAnswersFromStructuredCandidates(content: string): readonly boolean[] {
+  let candidates: readonly unknown[];
+
+  try {
+    candidates = parseStructuredContentCandidates(content);
+  } catch {
+    return [];
+  }
+
+  for (const candidate of candidates) {
+    const direct = coerceBooleanSequence(candidate);
+
+    if (direct.length > 0) {
+      return direct;
+    }
+
+    if (candidate && typeof candidate === 'object' && 'answers' in candidate) {
+      const answers = coerceBooleanSequence((candidate as Record<string, unknown>).answers);
+
+      if (answers.length > 0) {
+        return answers;
+      }
+    }
+  }
+
+  return [];
+}
+
+function normalizeAuditAnswers(
+  extractedAnswers: readonly boolean[],
+  expectedAnswers: number,
+): readonly boolean[] {
+  const normalizedAnswers = [...extractedAnswers].slice(0, expectedAnswers);
+
+  while (normalizedAnswers.length < expectedAnswers) {
+    normalizedAnswers.push(false);
+  }
+
+  return normalizedAnswers;
+}
+
+function decodeJsonStringLiteral(value: string): string {
+  try {
+    return JSON.parse(`"${value}"`) as string;
+  } catch {
+    return value;
+  }
+}
+
+function extractGenerateBeatText(content: string): string | null {
+  const beatTextMatch = content.match(/"beatText"\s*:\s*"((?:\\.|[^"\\])*)/s);
+
+  if (!beatTextMatch?.[1]) {
+    return null;
+  }
+
+  return decodeJsonStringLiteral(beatTextMatch[1]).trim() || null;
+}
+
+function extractGenerateOptions(content: string): readonly string[] {
+  const optionsArrayMatch = content.match(/"options"\s*:\s*\[([\s\S]{0,2400})/i);
+
+  if (optionsArrayMatch?.[1]) {
+    const arrayOptions = Array.from(optionsArrayMatch[1].matchAll(/"((?:\\.|[^"\\])*)"/g))
+      .map((match) => decodeJsonStringLiteral(match[1] ?? '').trim())
+      .filter((option) => option.length > 0);
+
+    if (arrayOptions.length > 0) {
+      return arrayOptions;
+    }
+  }
+
+  const enumeratedOptions = Array.from(
+    content.matchAll(/(?:^|\n)\s*(?:[A-D]|[1-4])[\.\):：-]\s*(.+)/g),
+  )
+    .map((match) => (match[1] ?? '').trim())
+    .filter((option) => option.length > 0);
+
+  return enumeratedOptions;
+}
+
+function extractRouteRouterName(content: string): string | null {
+  const routerNameMatch = content.match(/"routerName"\s*:\s*"((?:\\.|[^"\\])*)"/s);
+
+  if (!routerNameMatch?.[1]) {
+    return null;
+  }
+
+  return decodeJsonStringLiteral(routerNameMatch[1]).trim() || null;
+}
+
+function extractRouteInferenceTrace(content: string): string | null {
+  const inferenceTraceMatch = content.match(/"inferenceTrace"\s*:\s*"((?:\\.|[^"\\])*)/s);
+
+  if (!inferenceTraceMatch?.[1]) {
+    return null;
+  }
+
+  return decodeJsonStringLiteral(inferenceTraceMatch[1]).trim() || null;
+}
+
+function extractCollapseField(content: string, fieldName: 'alpha' | 'beta' | 'inferenceTrace') {
+  const matcher = new RegExp(`"${fieldName}"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)`, 's');
+  const match = content.match(matcher);
+
+  if (!match?.[1]) {
+    return null;
+  }
+
+  return decodeJsonStringLiteral(match[1]).trim() || null;
+}
+
+export function parseGenerateResult(content: string, usage?: UsageInfo): GenerateResult {
+  try {
+    const result = parseBySchema(GenerateResultSchema, content, 'generateResult', usage);
+
+    return deepFreeze(result);
+  } catch (parseError) {
+    const beatText = extractGenerateBeatText(content);
+    const extractedOptions = extractGenerateOptions(content);
+
+    if (beatText && extractedOptions.length >= 4) {
+      return deepFreeze(
+        parseWithSchema(
+          GenerateResultSchema,
+          mergeUsage(
+            {
+              beatText,
+              options: extractedOptions.slice(0, 4),
+            },
+            usage,
+          ),
+          'generateResult',
+        ),
+      );
+    }
+
+    if (beatText) {
+      throw new Error(
+        `Provider returned an incomplete generate payload: beatText was present but only ${
+          extractedOptions.length
+        } of 4 options could be recovered. This usually means the response was truncated before the option set completed.`,
+      );
+    }
+
+    throw parseError;
+  }
 }
 
 export function parseAuditResult(
@@ -86,31 +470,132 @@ export function parseAuditResult(
   expectedAnswers: number,
   usage?: UsageInfo,
 ): AuditResult {
-  const result = parseWithSchema(
-    AuditResultSchema,
-    mergeUsage(parseStructuredContent(content) as Record<string, unknown>, usage),
-    'auditResult',
-  );
+  let result: AuditResult;
+
+  try {
+    result = parseBySchema(AuditResultSchema, content, 'auditResult', usage);
+  } catch (parseError) {
+    if (expectedAnswers < 1) {
+      throw parseError;
+    }
+
+    const extractedAnswers = extractBooleanAnswersFromStructuredCandidates(content);
+    const fallbackAnswers =
+      extractedAnswers.length > 0 ? extractedAnswers : extractBooleanTokenAnswers(content);
+    const normalizedAnswers = normalizeAuditAnswers(fallbackAnswers, expectedAnswers);
+
+    result = parseWithSchema(
+      AuditResultSchema,
+      mergeUsage(
+        {
+          answers: normalizedAnswers,
+        },
+        usage,
+      ),
+      'auditResult',
+    );
+  }
 
   if (result.answers.length !== expectedAnswers) {
-    throw new Error('auditResult answers length must match auditQuestions length');
+    return deepFreeze({
+      ...result,
+      answers: normalizeAuditAnswers(result.answers, expectedAnswers),
+    });
   }
 
   return deepFreeze(result);
 }
 
+export function parseRouteResult(content: string, usage?: UsageInfo): RouteResult {
+  try {
+    return deepFreeze(parseBySchema(RouteResultSchema, content, 'routeResult', usage));
+  } catch (parseError) {
+    const routerName = extractRouteRouterName(content);
+    const inferenceTrace = extractRouteInferenceTrace(content);
+
+    if (routerName) {
+      return deepFreeze(
+        parseWithSchema(
+          RouteResultSchema,
+          mergeUsage(
+            {
+              routerName,
+              inferenceTrace:
+                inferenceTrace ?? 'Recovered from a truncated provider route response.',
+            },
+            usage,
+          ),
+          'routeResult',
+        ),
+      );
+    }
+
+    throw parseError;
+  }
+}
+
 export function parseSettlementResult(content: string, usage?: UsageInfo) {
-  return deepFreeze(
-    validatePhaseConsequenceResponse(
-      mergeUsage(parseStructuredContent(content) as Record<string, unknown>, usage),
-    ),
-  );
+  const candidates = parseStructuredContentCandidates(content);
+  let lastError: Error | null = null;
+
+  for (const candidate of candidates) {
+    try {
+      return deepFreeze(
+        validatePhaseConsequenceResponse(mergeUsage(candidate as Record<string, unknown>, usage)),
+      );
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  throw new Error('Provider response failed validation for phaseConsequenceResponse');
 }
 
 export function parseCollapseResult(content: string, usage?: UsageInfo) {
-  return deepFreeze(
-    validateCollapseResponse(
-      mergeUsage(parseStructuredContent(content) as Record<string, unknown>, usage),
-    ),
-  );
+  try {
+    const candidates = parseStructuredContentCandidates(content);
+    let lastError: Error | null = null;
+
+    for (const candidate of candidates) {
+      try {
+        return deepFreeze(
+          validateCollapseResponse(mergeUsage(candidate as Record<string, unknown>, usage)),
+        );
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
+  } catch (parseError) {
+    const alpha = extractCollapseField(content, 'alpha');
+    const beta = extractCollapseField(content, 'beta');
+    const inferenceTrace = extractCollapseField(content, 'inferenceTrace');
+
+    if (alpha && beta) {
+      return deepFreeze(
+        validateCollapseResponse(
+          mergeUsage(
+            {
+              alpha,
+              beta,
+              inferenceTrace:
+                inferenceTrace ?? 'Recovered from a truncated provider collapse response.',
+            },
+            usage,
+          ),
+        ),
+      );
+    }
+
+    throw parseError;
+  }
+
+  throw new Error('Provider response failed validation for collapseResponse');
 }

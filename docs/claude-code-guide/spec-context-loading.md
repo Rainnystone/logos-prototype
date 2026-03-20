@@ -14,12 +14,12 @@ LOGOS-SPEC 包含 **70+ 文件、12,000+ 行、估算 40,000+ tokens**。Claude 
 
 无论执行什么任务，每次 Claude Code session 开始后都必须加载以下 4 个文件：
 
-| 顺序 | 文件 | 内容 | Token 估算 |
-|------|------|------|-----------|
-| 1 | `00_META/agent-guide.md` | Agent 路由规则、阅读禁区、阻塞协议 | ~1,500 |
-| 2 | `00_META/system-map.md` | 仓库分层地图、权威源规则 | ~1,000 |
-| 3 | `02_DOMAIN/glossary.md` | 核心术语锁定（Scene/Phase/Beat 等） | ~1,100 |
-| 4 | `05_CONTRACTS/module-dependency-map.md` | 模块依赖图、依赖纪律 | ~900 |
+| 顺序 | 文件                                    | 内容                                | Token 估算 |
+| ---- | --------------------------------------- | ----------------------------------- | ---------- |
+| 1    | `00_META/agent-guide.md`                | Agent 路由规则、阅读禁区、阻塞协议  | ~1,500     |
+| 2    | `00_META/system-map.md`                 | 仓库分层地图、权威源规则            | ~1,000     |
+| 3    | `02_DOMAIN/glossary.md`                 | 核心术语锁定（Scene/Phase/Beat 等） | ~1,100     |
+| 4    | `05_CONTRACTS/module-dependency-map.md` | 模块依赖图、依赖纪律                | ~900       |
 
 **Phase 0 是不可跳过的。** 即使你"记得"上次 session 读过这些文件，新 session 仍然必须重新加载，因为 Claude Code 不跨 session 保持记忆。
 
@@ -94,26 +94,26 @@ LOGOS-SPEC 中的每个模块文档和契约文件都带有 YAML frontmatter，�
 
 ```yaml
 ---
-module: prompt-assembler          # 模块标识符
-title: 提示词组装器                 # 中文名
-type: module                      # 类型：module / contract / meta
-priority: core                    # core（必读）/ support（按需）/ placeholder（可跳过）
-depends_on:                       # 上游依赖（模块标识符或领域概念）
+module: prompt-assembler # 模块标识符
+title: 提示词组装器 # 中文名
+type: module # 类型：module / contract / meta
+priority: core # core（必读）/ support（按需）/ placeholder（可跳过）
+depends_on: # 上游依赖（模块标识符或领域概念）
   - memory-placeholder
   - light-cone-collapse
   - phase-gradient
   - narrative-router
   - director-note-layer
-consumed_by:                      # 下游消费者
+consumed_by: # 下游消费者
   - api-adapter-lite
-contracts:                        # 关联 schema 路径（相对于 LOGOS-SPEC 根）
+contracts: # 关联 schema 路径（相对于 LOGOS-SPEC 根）
   - 05_CONTRACTS/prompt-object-schema.yaml
-tokens_estimate: 1600             # 全文 token 粗估
-reading_context:                  # 建议先读的前置文件
+tokens_estimate: 1600 # 全文 token 粗估
+reading_context: # 建议先读的前置文件
   - 02_DOMAIN/glossary.md
   - 03_ORCHESTRATION/runtime-loop.md
-status: v1-complete               # 当前状态
-last_updated: 2026-03-20          # 最后更新日期
+status: v1-complete # 当前状态
+last_updated: 2026-03-20 # 最后更新日期
 ---
 ```
 
@@ -154,28 +154,28 @@ last_updated: 2026-03-20          # 最后更新日期
 
 当 spec 文本即将超过 40,000 tokens 时，按以下顺序丢弃：
 
-| 优先丢弃 | 文件类型 | 理由 |
-|----------|---------|------|
-| 1（最先丢弃） | `implementation-guide.md` | 非规范性附录，参考用 |
-| 2 | `06_FIXTURES/` 中的 fixture | 可在需要时按需单独加载 |
-| 3 | 非当前任务的模块 spec | 不直接依赖则不需要 |
-| **永远不丢弃** | `glossary.md` | 术语漂移会导致全局实现偏差 |
-| **永远不丢弃** | `module-dependency-map.md` | 依赖违规会导致架构腐化 |
+| 优先丢弃       | 文件类型                    | 理由                       |
+| -------------- | --------------------------- | -------------------------- |
+| 1（最先丢弃）  | `implementation-guide.md`   | 非规范性附录，参考用       |
+| 2              | `06_FIXTURES/` 中的 fixture | 可在需要时按需单独加载     |
+| 3              | 非当前任务的模块 spec       | 不直接依赖则不需要         |
+| **永远不丢弃** | `glossary.md`               | 术语漂移会导致全局实现偏差 |
+| **永远不丢弃** | `module-dependency-map.md`  | 依赖违规会导致架构腐化     |
 
 ## 阅读禁区
 
 以下目录与实现规格无关，**agent 绝对不读**：
 
-| 目录 | 原因 |
-|------|------|
-| `Agent Client/` | 历史会话日志，仅供人类回溯设计讨论 |
-| `LOGOS Prototype/` | 母文档与早期设计，除非人类明确要求比对 |
-| `SillyTavern调研/` | 研究归档 |
-| `Psycho-Pass*/` | 研究归档 |
-| `Reference/` | 研究归档 |
-| `LOGOS-SPEC 仓库重构与 AI Coding 实施方案/` | 历史方案文档 |
+| 目录                                        | 原因                                   |
+| ------------------------------------------- | -------------------------------------- |
+| `Agent Client/`                             | 历史会话日志，仅供人类回溯设计讨论     |
+| `LOGOS Prototype/`                          | 母文档与早期设计，除非人类明确要求比对 |
+| `SillyTavern调研/`                          | 研究归档                               |
+| `Psycho-Pass*/`                             | 研究归档                               |
+| `Reference/`                                | 研究归档                               |
+| `LOGOS-SPEC 仓库重构与 AI Coding 实施方案/` | 历史方案文档                           |
 
-这些目录位于 `LOGOS-Design/` 下但在 `LOGOS-SPEC/` 之外。agent 的活动范围应始终限制在 `LOGOS-SPEC/` 内部。
+这些目录来自上游设计仓库，但不属于 vendored `vendor/LOGOS-SPEC/` 的可读范围。agent 的活动范围应始终限制在 `LOGOS-SPEC/` 内部。
 
 ## PROMPT.md 中的 spec_context_load 声明
 

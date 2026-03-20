@@ -11,7 +11,7 @@ export interface AuditResolverResult {
 function buildRewriteFeedback(failures: readonly ParsedAuditAnswer[]): string {
   const lines = failures.map(
     (failure) =>
-      `- ${failure.question} | Expected: ${String(failure.expected)} | Actual: ${String(failure.answer)}`,
+      `- ${failure.question} | Correct answer: ${failure.expected ? 'YES' : 'NO'} | Your last draft implied: ${failure.answer ? 'YES' : 'NO'}`,
   );
 
   return [

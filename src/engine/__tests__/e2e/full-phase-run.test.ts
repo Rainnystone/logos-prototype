@@ -70,6 +70,7 @@ describe('E2E full phase run', () => {
     expect(beatFour.state.sceneState.beta).toBe('phase-2-beta');
 
     expect(harness.getCallCounts()).toEqual({
+      route: 9,
       generate: 4,
       audit: 4,
       settlement: 1,

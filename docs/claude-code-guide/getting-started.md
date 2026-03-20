@@ -2,12 +2,12 @@
 
 ## 前置要求
 
-| 工具 | 版本 | 用途 |
-|------|------|------|
-| Node.js | 20+ | Next.js runtime |
-| pnpm | 9+ | 包管理（monorepo 友好） |
-| Git | 2.40+ | 版本控制、worktree 支持 |
-| Claude Code CLI | latest | AI agent 执行环境 |
+| 工具            | 版本   | 用途                    |
+| --------------- | ------ | ----------------------- |
+| Node.js         | 20+    | Next.js runtime         |
+| pnpm            | 9+     | 包管理（monorepo 友好） |
+| Git             | 2.40+  | 版本控制、worktree 支持 |
+| Claude Code CLI | latest | AI agent 执行环境       |
 
 验证安装：
 
@@ -22,42 +22,37 @@ claude --version # 应正常输出版本号
 
 ```
 C:\Users\Administrator\Documents\GitHub\
-├── LOGOS/               ← 实现仓库（你写代码的地方）
-│   ├── CLAUDE.md        ← Claude Code 启动时自动读取
-│   ├── src/             ← Next.js + TypeScript 实现
-│   ├── execution-plans/ ← 各 phase 执行计划
-│   ├── story-packages/  ← 叙事内容包
-│   └── tests/           ← 测试
-│
-└── LOGOS-Design/        ← 设计仓库（只读参考）
-    └── LOGOS-SPEC/      ← 规格权威源
-        ├── 00_META/     ← agent-guide, system-map
-        ├── 02_DOMAIN/   ← glossary, entities
-        ├── 04_MODULES/  ← 模块规格
-        ├── 05_CONTRACTS/← schema, dependency-map
-        └── ...          ← 共 10 层，70+ 文件
+└── LOGOS/               ← 实现仓库（你写代码的地方）
+    ├── CLAUDE.md        ← Claude Code 启动时自动读取
+    ├── src/             ← Next.js + TypeScript 实现
+    ├── execution-plans/ ← 各 phase 执行计划
+    ├── story-packages/  ← 叙事内容包
+    ├── tests/           ← 测试
+    └── vendor/
+        └── LOGOS-SPEC/  ← vendored 规格权威源（只读镜像）
+            ├── 00_META/     ← agent-guide, system-map
+            ├── 02_DOMAIN/   ← glossary, entities
+            ├── 04_MODULES/  ← 模块规格
+            ├── 05_CONTRACTS/← schema, dependency-map
+            └── ...          ← 共 10 层，70+ 文件
 ```
 
 **关键关系**：
 
-- `LOGOS/` 中的每个模块实现都对应 `LOGOS-SPEC/04_MODULES/` 中的一份规格文档
-- `LOGOS/src/types/` 中的 TypeScript 类型定义对应 `LOGOS-SPEC/05_CONTRACTS/*.yaml` 中的 schema
+- `LOGOS/` 中的每个模块实现都对应 `vendor/LOGOS-SPEC/04_MODULES/` 中的一份规格文档
+- `LOGOS/src/types/` 中的 TypeScript 类型定义对应 `vendor/LOGOS-SPEC/05_CONTRACTS/*.yaml` 中的 schema
 - `LOGOS/CLAUDE.md` 中维护了完整的 代码文件 -> Spec 文档 映射表
-- LOGOS-SPEC 对 LOGOS 是**只读**关系 — 永远不从实现仓库修改 spec 文件
+- vendored `LOGOS-SPEC` 对 LOGOS 是**只读**关系 — 永远不从实现仓库修改 spec 文件
 
 ## 环境搭建
 
-### 1. Clone 两个仓库
+### 1. Clone 实现仓库
 
 ```bash
 cd C:\Users\Administrator\Documents\GitHub
 
-# 如果尚未 clone
 git clone <LOGOS-repo-url> LOGOS
-git clone <LOGOS-Design-repo-url> LOGOS-Design
 ```
-
-确保两个仓库在同一个父目录下，这样 `CLAUDE.md` 中的相对路径 `../LOGOS-Design/LOGOS-SPEC/` 才能正确解析。
 
 ### 2. 安装依赖
 
@@ -75,8 +70,8 @@ pnpm install
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 
-# LOGOS-SPEC 路径（可选，默认使用相对路径）
-LOGOS_SPEC_PATH=C:\Users\Administrator\Documents\GitHub\LOGOS-Design\LOGOS-SPEC
+# LOGOS-SPEC 路径（可选，默认使用 vendored spec）
+LOGOS_SPEC_PATH=.\vendor\LOGOS-SPEC
 
 # 开发模式
 NODE_ENV=development
@@ -88,10 +83,10 @@ NODE_ENV=development
 
 ```bash
 # 从 LOGOS 仓库根目录验证 spec 路径可达
-ls ../LOGOS-Design/LOGOS-SPEC/00_META/agent-guide.md
+ls vendor/LOGOS-SPEC/00_META/agent-guide.md
 ```
 
-如果路径不通，检查两个仓库是否在同一父目录下。
+如果路径不通，检查 vendored spec 是否已随仓库正确拉取。
 
 ## 首次运行
 
@@ -122,6 +117,7 @@ claude
 ```
 
 Claude Code 启动后会**自动读取** `CLAUDE.md`，其中包含：
+
 - 项目概述与架构说明
 - 6 条强制规则（spec 权威、禁止硬编码、不可变数据等）
 - 完整的 代码 -> Spec 映射表
@@ -170,6 +166,7 @@ claude
 ```
 
 Ralph 会：
+
 1. 读取 PROMPT.md 中的 frontmatter 确认 spec 加载清单
 2. 按 Phase 0 + task-specific 顺序加载 spec context
 3. 按 fix_plan.md 中的编号步骤逐一执行
@@ -211,14 +208,14 @@ claude
 
 ### 可并行的 Phase 组（基于 module-dependency-map）
 
-| Round | 可并行 Phase | 原因 |
-|-------|-------------|------|
-| 1 | `00_foundation`, `01_memory-gradient`, `02_collapse-router` | 无上游模块依赖 |
-| 2 | `03_director-options`, `04_prompt-assembler` | 依赖 Round 1 输出 |
-| 3 | `05_api-adapter` | 依赖 Prompt Assembler |
-| 4 | `06_audit-loop` | 依赖 API Adapter |
-| 5 | `07_e2e-validation` | 依赖所有模块 |
-| 6 | `08_workbench-ui` | 依赖引擎闭环 |
+| Round | 可并行 Phase                                                | 原因                  |
+| ----- | ----------------------------------------------------------- | --------------------- |
+| 1     | `00_foundation`, `01_memory-gradient`, `02_collapse-router` | 无上游模块依赖        |
+| 2     | `03_director-options`, `04_prompt-assembler`                | 依赖 Round 1 输出     |
+| 3     | `05_api-adapter`                                            | 依赖 Prompt Assembler |
+| 4     | `06_audit-loop`                                             | 依赖 API Adapter      |
+| 5     | `07_e2e-validation`                                         | 依赖所有模块          |
+| 6     | `08_workbench-ui`                                           | 依赖引擎闭环          |
 
 > **注意**：Round 内部的多个 phase 可以并行；不同 Round 之间必须等上一 Round 完成并合并。
 
@@ -235,13 +232,13 @@ git worktree list
 
 ## 常见首次问题
 
-| 问题 | 解决方案 |
-|------|---------|
-| `pnpm install` 失败 | 确认 Node.js >= 20，尝试 `pnpm install --force` |
-| LOGOS-SPEC 路径不通 | 确保 LOGOS 和 LOGOS-Design 在同一父目录 |
-| Claude Code 未读取 CLAUDE.md | 确认在 LOGOS 根目录启动 `claude` |
-| `.env.local` 中的 key 无效 | 检查 API key 是否过期，provider 配额是否充足 |
-| 测试跑不起来 | 先运行 `pnpm install`，确认 test framework 已安装 |
+| 问题                         | 解决方案                                          |
+| ---------------------------- | ------------------------------------------------- |
+| `pnpm install` 失败          | 确认 Node.js >= 20，尝试 `pnpm install --force`   |
+| LOGOS-SPEC 路径不通          | 确保 LOGOS 和 LOGOS-Design 在同一父目录           |
+| Claude Code 未读取 CLAUDE.md | 确认在 LOGOS 根目录启动 `claude`                  |
+| `.env.local` 中的 key 无效   | 检查 API key 是否过期，provider 配额是否充足      |
+| 测试跑不起来                 | 先运行 `pnpm install`，确认 test framework 已安装 |
 
 ## 下一步
 

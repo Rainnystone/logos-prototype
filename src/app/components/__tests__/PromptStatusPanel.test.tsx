@@ -15,6 +15,11 @@ function createDiagnosticsFixture(): WorkbenchDiagnostics {
         completionTokens: 18,
         totalTokens: 108,
       },
+      route: {
+        promptTokens: 60,
+        completionTokens: 12,
+        totalTokens: 72,
+      },
       generate: {
         promptTokens: 240,
         completionTokens: 76,
@@ -42,6 +47,7 @@ describe('PromptStatusPanel', () => {
     expect(screen.getByText('4 layers')).toBeInTheDocument();
     expect(screen.getByText('2 entries')).toBeInTheDocument();
     expect(screen.getByText('Latest observed call: Audit')).toBeInTheDocument();
+    expect(screen.getByText('72 tokens')).toBeInTheDocument();
     expect(screen.getByText('316 tokens')).toBeInTheDocument();
     expect(screen.getByText('144 tokens')).toBeInTheDocument();
     expect(screen.getByText('Not reported')).toBeInTheDocument();

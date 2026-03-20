@@ -4,12 +4,23 @@ import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-ad
 import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
 
 describe('E2E mock adapter', () => {
-  it('supports all four modes with deterministic call tracking', async () => {
+  it('supports all five modes with deterministic call tracking', async () => {
     const storyPackage = await loadSampleSceneStoryPackage();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
     });
 
+    const routeResult = await harness.adapter.route?.({
+      context: {
+        phaseGoal: storyPackage.phasePlans[0]!.phaseGoal,
+        currentVolume: 'Low',
+        alpha: 'alpha',
+        beta: 'beta',
+        routerHint: storyPackage.phasePlans[0]!.routerHint ?? '日常/闲暇',
+      },
+      historyWindow: [],
+      availableRouters: storyPackage.routerProfiles,
+    });
     const generateResult = await harness.adapter.generate?.({
       worldBase: storyPackage.worldBase,
       history: [],
@@ -66,13 +77,15 @@ describe('E2E mock adapter', () => {
       phaseConsequences: ['fact-1'],
     });
 
+    expect(routeResult?.routerName.length).toBeGreaterThan(0);
     expect(generateResult?.beatText.length).toBeGreaterThan(0);
     expect(generateResult?.options).toHaveLength(4);
     expect(auditResult?.answers).toHaveLength(2);
     expect(settlementResult?.phaseConsequences.length).toBeGreaterThan(0);
     expect(collapseResult.alpha.length).toBeGreaterThan(0);
-    expect(harness.callLog).toEqual(['generate', 'audit', 'settlement', 'collapse']);
+    expect(harness.callLog).toEqual(['route', 'generate', 'audit', 'settlement', 'collapse']);
     expect(harness.getCallCounts()).toEqual({
+      route: 1,
       generate: 1,
       audit: 1,
       settlement: 1,

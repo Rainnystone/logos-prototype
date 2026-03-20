@@ -3,17 +3,20 @@
 ## Pre-flight
 
 ### 1. Branch Setup
+
 - [ ] Verify Phase 00 PR is merged to `main`
 - [ ] `git pull origin main`
 - [ ] `git checkout -b phase/01-memory-gradient`
 
 ### 2. Dependency Verification
+
 - [ ] Verify `src/types/index.ts` exports `HistoryEntry`, `Volume`, `GradientType`, `PhasePlan`
 - [ ] Verify `src/types/state-snapshot.ts` defines `HistoryEntry` with `role` and `content`
 - [ ] Verify `src/types/phase-plan.ts` defines `GradientType` with all 7 enum values
 - [ ] Run `npm test` -- all Phase 00 tests pass
 
 ### 3. Spec Context Load
+
 - [ ] Load Phase 0 context (~4,500 tokens)
 - [ ] Load phase-specific context (~12,500 tokens): memory-placeholder.md, phase-gradient.md, control-primitives.md, state-model.md, scene-phase-beat-lifecycle.md, state-snapshot-schema.yaml, phase-plan-schema.yaml
 - [ ] Confirm total ~17,000 tokens <= 40,000 budget
@@ -25,6 +28,7 @@
 ### Task 1: Memory Placeholder
 
 #### 1.1 RED -- Write Tests
+
 - Create `src/engine/modules/__tests__/memory-placeholder.test.ts`
 - Test: `getHistoryWindow` with 10-item history returns last 5 items
 - Test: `getHistoryWindow` with 3-item history returns all 3 items
@@ -38,21 +42,24 @@
 - Expected: all tests FAIL
 
 #### 1.2 GREEN -- Implement
+
 - Create `src/engine/modules/memory-placeholder.ts`
 - Spec reference: `LOGOS-SPEC/04_MODULES/memory-placeholder.md`
 - Implementation:
+
   ```typescript
   const DEFAULT_WINDOW_SIZE = 5;
 
   export function getHistoryWindow(
     acceptedHistory: readonly HistoryEntry[],
-    windowSize: number = DEFAULT_WINDOW_SIZE
+    windowSize: number = DEFAULT_WINDOW_SIZE,
   ): readonly HistoryEntry[] {
     // Return the last `windowSize` entries from acceptedHistory
     // If history has fewer entries, return all of them
     // Never mutate -- return a new array
   }
   ```
+
 - Key constraints:
   - Only accepted history enters (no failed drafts) -- enforced by type, documented in JSDoc
   - Window size is configurable but defaults to 5
@@ -60,6 +67,7 @@
   - Output is what downstream consumers call `precedingBeats`
 
 #### 1.3 IMPROVE -- Refactor
+
 - Add JSDoc with spec reference: `@see LOGOS-SPEC/04_MODULES/memory-placeholder.md`
 - Extract `DEFAULT_WINDOW_SIZE` as a named constant
 - Verify no mutation: use `Object.freeze` in tests to prove input is not modified
@@ -70,6 +78,7 @@
 ### Task 2: Phase Gradient
 
 #### 2.1 RED -- Write Tests
+
 - Create `src/engine/modules/__tests__/phase-gradient.test.ts`
 - **Volume Sequence tests (one per gradient type)**:
   - Test: `buildVolumeSequence("Rising")` returns `["Low", "Med", "Med", "High"]`
@@ -95,20 +104,22 @@
 - Expected: all tests FAIL
 
 #### 2.2 GREEN -- Implement
+
 - Create `src/engine/modules/phase-gradient.ts`
 - Spec reference: `LOGOS-SPEC/04_MODULES/phase-gradient.md` + `LOGOS-SPEC/02_DOMAIN/control-primitives.md` (gradient mapping table)
 - Implementation:
+
   ```typescript
   import { GradientType, Volume } from '@/types';
 
   const GRADIENT_MAP: Readonly<Record<GradientType, readonly Volume[]>> = {
-    "Rising":      ["Low", "Med", "Med", "High"],
-    "Falling":     ["High", "Med", "Med", "Low"],
-    "Static High": ["High", "High", "High", "High"],
-    "U-Shape":     ["High", "Low", "Low", "High"],
-    "Arch":        ["Low", "High", "High", "Low"],
-    "Pulse":       ["High", "Low", "High", "Low"],
-    "Steady":      ["Med", "Med", "Med", "Med"],
+    Rising: ['Low', 'Med', 'Med', 'High'],
+    Falling: ['High', 'Med', 'Med', 'Low'],
+    'Static High': ['High', 'High', 'High', 'High'],
+    'U-Shape': ['High', 'Low', 'Low', 'High'],
+    Arch: ['Low', 'High', 'High', 'Low'],
+    Pulse: ['High', 'Low', 'High', 'Low'],
+    Steady: ['Med', 'Med', 'Med', 'Med'],
   } as const;
 
   export function buildVolumeSequence(gradientType: GradientType): readonly Volume[] {
@@ -130,6 +141,7 @@
     return sequence[beatIndex]!;
   }
   ```
+
 - Key constraints:
   - Gradient map is `readonly` and defined as a module-level constant
   - Beat index is 0-based (0 = first beat, 3 = last beat in 4-beat Phase)
@@ -137,6 +149,7 @@
   - Pure functions only
 
 #### 2.3 IMPROVE -- Refactor
+
 - Add JSDoc with spec references for each function
 - Consider adding a `BEAT_COUNT = 4` constant shared with types
 - Verify the gradient map exactly matches `control-primitives.md` table
@@ -147,16 +160,19 @@
 ## Post-flight
 
 ### 1. Quality Gate
+
 - [ ] `npm test` -- all tests pass (including Phase 00 tests)
 - [ ] `npm run test:coverage` -- >= 80% coverage on `memory-placeholder.ts` and `phase-gradient.ts`
 - [ ] `npm run lint` -- zero errors
 - [ ] `npm run format:check` -- zero issues
 
 ### 2. Commit and PR
+
 - [ ] Stage: `src/engine/modules/memory-placeholder.ts`, `src/engine/modules/phase-gradient.ts`, test files
 - [ ] `git commit -m "feat: add MemoryPlaceholder (5-beat window) and PhaseGradient (7 gradient types)"`
 - [ ] `git push -u origin phase/01-memory-gradient`
 - [ ] Create PR against `main` with title: "Phase 01: Memory Placeholder + Phase Gradient"
 
 ### 3. STOP
+
 Do not proceed to Phase 03 until both Phase 01 and Phase 02 PRs are merged.

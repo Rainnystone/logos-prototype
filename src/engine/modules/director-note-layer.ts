@@ -21,12 +21,33 @@ const VOLUME_OPTION_FORMATTING: Readonly<Record<Volume, string>> = {
   High: 'micro-sensory action wording with compressed physical time and heightened immediacy',
 };
 
+function buildCanonGrounding(): string {
+  return [
+    'Treat the supplied WorldBase as the local canon authority for this round.',
+    'You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone.',
+    'Do not contradict WorldBase, and do not write any character out of character.',
+  ].join(' ');
+}
+
+function resolveDirectorConstraints(directorConstraints: string | undefined): string {
+  const normalizedConstraints = directorConstraints?.trim() ?? '';
+
+  if (normalizedConstraints.length === 0) {
+    return 'No additional local hard rules were supplied for this round.';
+  }
+
+  return `Audit-grounded answer targets: ${normalizedConstraints}`;
+}
+
 function buildBeatConstraints(roundState: RoundState, sceneState: SceneState): string {
   return [
     `Volume discipline (${roundState.currentVolume}): ${VOLUME_BEAT_CONSTRAINTS[roundState.currentVolume]}`,
     `This Beat should advance the current Phase goal: ${roundState.phaseGoal}.`,
     `Generated prose must stay within Alpha boundary (${sceneState.alpha}) and Beta boundary (${sceneState.beta}).`,
     `Router alignment remains ${roundState.currentRouter}; keep the prose compatible with the active verb lexicon.`,
+    'Reading experience rule: never output the beat as one giant wall of text. Use multiple well-paced paragraphs, preserve natural paragraph breaks, and keep the visual rhythm easy to read on screen.',
+    buildCanonGrounding(),
+    resolveDirectorConstraints(roundState.directorConstraints),
   ].join(' ');
 }
 
@@ -56,8 +77,9 @@ export function buildOptionConstraints(
 
   return [
     `Step 1 - Route Locking: Generate exactly 4 options. Select 4 from these ${verbCount} verb directions: [${verbList}]. Each option must be orthogonal to the others and map to a distinct action direction.`,
-    `Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ${resolvedCharacterProfile}. Verify the action remains psychologically plausible and compliant with Alpha (${sceneState.alpha}) / Beta (${sceneState.beta}) boundaries.`,
+    `Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ${resolvedCharacterProfile}. ${buildCanonGrounding()} Verify the action remains psychologically plausible and compliant with Alpha (${sceneState.alpha}) / Beta (${sceneState.beta}) boundaries.`,
     `Step 3 - Volume Formatting: Format each option at ${roundState.currentVolume} grain using ${VOLUME_OPTION_FORMATTING[roundState.currentVolume]}.`,
+    resolveDirectorConstraints(roundState.directorConstraints),
   ].join(' ');
 }
 

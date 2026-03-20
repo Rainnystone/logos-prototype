@@ -1,0 +1,106 @@
+# --- Agent Metadata ---
+# contract: phase-consequence-packet-schema
+# type: contract
+# consumed_by: [phase-consequence-settlement, api-adapter-lite, orchestrator-control-hub]
+# tokens_estimate: 1800
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.phase_consequence_packet
+title: LOGOS PhaseConsequencePacket Contract Bundle
+version: 1
+description: >
+  Phase 结束时用于阶段后果结算的输入包与输出结构。Orchestrator 组装当前
+  Phase 已接受的转录与上下文，经 API Adapter Lite 的 settlement 模式调用 LLM，
+  产出可直接进入 collapse 链路的 `phaseConsequences[]`。
+type: object
+properties:
+  request:
+    $ref: "#/$defs/request"
+  response:
+    $ref: "#/$defs/response"
+$defs:
+  request:
+    type: object
+    required:
+      - context
+      - phaseTranscript
+    properties:
+      context:
+        type: object
+        required:
+          - mainAxis
+          - endLine
+          - phaseGoal
+        properties:
+          mainAxis:
+            type: string
+            description: 当前 Scene 的叙事主轴。
+          endLine:
+            type: string
+            description: 当前 Scene 的终点线。
+          phaseGoal:
+            type: string
+            description: 刚结束的 Phase 局部目标。
+          sceneProgress:
+            type: string
+            description: 当前 Scene 的摘要性推进说明，可选。
+          currentPhaseIndex:
+            type: integer
+            minimum: 1
+            description: 刚结束的 Phase 索引，可选。
+      phaseTranscript:
+        type: array
+        minItems: 1
+        description: >
+          当前 Phase 已接受的 user / assistant 转录，按时间顺序排列。这里只允许
+          已正式进入历史的内容，不得混入失败草稿或未被接受的中间版本。
+        items:
+          type: object
+          required:
+            - role
+            - content
+          properties:
+            role:
+              type: string
+              enum:
+                - user
+                - assistant
+            content:
+              type: string
+  response:
+    type: object
+    required:
+      - phaseConsequences
+      - settlementTrace
+    properties:
+      phaseConsequences:
+        type: array
+        minItems: 1
+        maxItems: 6
+        items:
+          type: string
+        description: >
+          阶段结算得到的真实后果条目。每条都应为一句完整的事实陈述，不得包含
+          推测、建议、计划或反事实表达。
+      settlementTrace:
+        type: string
+        description: >
+          对 `phaseConsequences[]` 的结算说明，记录哪些阶段事实被提升为后果条目，
+          供 Orchestrator 和后续调试使用。
+      usage:
+        type: object
+        properties:
+          promptTokens:
+            type: integer
+          completionTokens:
+            type: integer
+          totalTokens:
+            type: integer
+
+notes:
+  - 本文件以 contract bundle 形式同时承载 request / response 两个子 schema；校验请求体时使用 `$defs.request`，校验响应体时使用 `$defs.response`。
+  - settlement 模式的目标是“把当前 Phase 已发生事实收束成 `phaseConsequences[]`”，不负责直接推演新的 `Alpha/Beta`。
+  - settlement 模式的 temperature 应收束到 `0.2`，因为该步骤应偏向稳定抽取而非创造性扩写。
+  - maxOutputTokens 建议 `768`，因为输出只包含少量后果条目与一段结算说明。
+  - "`phaseConsequences[]` 是后续 `CollapsePacket.phaseConsequences` 的规范性来源。"

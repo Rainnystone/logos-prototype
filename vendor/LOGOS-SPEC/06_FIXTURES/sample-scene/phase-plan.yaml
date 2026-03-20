@@ -1,0 +1,51 @@
+sceneId: sample-yanshang-live-room
+sceneName: 炎上直播间
+source: story-source/phase-outline.md
+phasePlans:
+  - phaseId: phase-01-prologue
+    phaseIndex: 1
+    phaseGoal: 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。
+    gradientType: Rising
+    beatCount: 4
+    routerHint: 日常/闲暇 -> 惊悚/恐怖
+    notes: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力。
+
+  - phaseId: phase-02-hunt
+    phaseIndex: 2
+    phaseGoal: 凪在走廊与校园死角中追踪异常信号，避开人群，发现灰谷烈布置的电子陷阱或被操控的痕迹。
+    gradientType: Steady
+    beatCount: 4
+    routerHint: 悬疑/探案
+    notes: 禁止发生正面高强度战斗；追踪手段必须保持物理性，而非感知类超自然侦测。
+
+  - phaseId: phase-03-first-contact
+    phaseIndex: 3
+    phaseGoal: 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。
+    gradientType: Rising
+    beatCount: 4
+    routerHint: 惊悚/恐怖 -> 动作/战斗
+    notes: 必须先建立灰谷烈的表演型人格与高热封锁，再进入极限闪避；本阶段不得直接秒杀反派。
+
+  - phaseId: phase-04-streamer-domain
+    phaseIndex: 4
+    phaseGoal: 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。
+    gradientType: Pulse
+    beatCount: 4
+    routerHint: 博弈/谈判
+    notes: 这里的博弈不等于坐下来辩论；凪的语言必须简短致命，主导动作应是砸毁路由器、摄像头和主控设备。
+
+  - phaseId: phase-05-climax
+    phaseIndex: 5
+    phaseGoal: 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。
+    gradientType: Static High
+    beatCount: 4
+    routerHint: 动作/战斗
+    notes: 必须先完成断网或观众清零，再进入近身击溃；战斗应呈现单方面碾压感，不允许不吉波普介入。
+
+  - phaseId: phase-06-resolution
+    phaseIndex: 6
+    phaseGoal: 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。
+    gradientType: Falling
+    beatCount: 4
+    routerHint: 日常/闲暇
+    notes: 终局必须完成三项收束：灰谷烈已败、学校表面和平、藤花毫不知情，并保留惊险过后回到乏味日常的余韵。

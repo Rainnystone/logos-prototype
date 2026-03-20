@@ -35,6 +35,7 @@ describe('provider interface', () => {
         baseUrl: 'https://example.test',
         model: 'test-model',
       },
+      routeConfig: { temperature: 0.5, maxOutputTokens: 768 },
       generateConfig: { temperature: 0.8, maxOutputTokens: 2048 },
       auditConfig: { temperature: 0.3, maxOutputTokens: 512 },
       settlementConfig: { temperature: 0.2, maxOutputTokens: 768 },
@@ -42,6 +43,7 @@ describe('provider interface', () => {
     };
 
     expect(config.provider).toBe('openai-compatible');
+    expect(config.routeConfig?.temperature).toBe(0.5);
     expect(config.generateConfig?.temperature).toBe(0.8);
     expect(config.auditConfig?.maxOutputTokens).toBe(512);
     expect(config.settlementConfig?.temperature).toBe(0.2);

@@ -7,6 +7,8 @@ export const storyPackageFixture: StoryPackage = {
     sceneName: 'Signal Room',
     mainAxis: 'Track a hostile signal through a sealed campus wing.',
     endLine: 'The source is isolated and the public space returns to calm.',
+    openingHook:
+      'A faulty relay in the corridor emits a sharp overheat alarm, and the operator slips away to trace the hostile source before the crowd notices.',
     samplePurpose: 'Validate the workbench control loop.',
     source: 'fixtures/signal-room',
   },

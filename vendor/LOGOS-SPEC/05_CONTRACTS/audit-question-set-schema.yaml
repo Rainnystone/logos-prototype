@@ -1,0 +1,100 @@
+# --- Agent Metadata ---
+# contract: audit-question-set-schema
+# type: contract
+# consumed_by: [auditor, orchestrator-control-hub]
+# tokens_estimate: 1800
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.audit_question_set
+title: LOGOS AuditQuestionSet
+version: 1
+description: >
+  作者或设计侧提供的审计问题集完整结构。该结构定义了全局问题、控制问题、
+  阶段特定问题以及问题选择策略，供 Orchestrator 在每轮审计前按策略挑选
+  当前轮实际使用的问题子集。
+type: object
+required:
+  - sceneId
+  - globalQuestions
+  - controlQuestions
+  - selectionPolicy
+properties:
+  sceneId:
+    type: string
+    description: 关联的 Scene 标识符。
+  source:
+    type: string
+    description: 问题集的来源文档路径，仅作溯源标记。
+  globalQuestions:
+    type: array
+    minItems: 1
+    description: 全局硬规则问题，适用于所有 Phase 的每一轮。
+    items:
+      $ref: "#/$defs/auditQuestion"
+  controlQuestions:
+    type: array
+    minItems: 0
+    description: 控制系统相关问题，用于检查声量、区分度、光锥边界与 OOC。
+    items:
+      $ref: "#/$defs/auditQuestion"
+  phaseSpecificQuestions:
+    type: object
+    description: >
+      按 phaseId 索引的阶段特定问题。只在对应 Phase 运行时追加到当前轮问题集。
+    additionalProperties:
+      type: array
+      minItems: 1
+      items:
+        $ref: "#/$defs/auditQuestion"
+  selectionPolicy:
+    type: object
+    required:
+      - default
+    properties:
+      default:
+        type: array
+        minItems: 1
+        items:
+          type: string
+        description: 默认每轮使用的问题 ID 列表。
+      phaseOverrides:
+        type: object
+        description: 按 phaseId 索引的覆盖策略，支持 append 操作。
+        additionalProperties:
+          type: object
+          properties:
+            append:
+              type: array
+              minItems: 1
+              items:
+                type: string
+              description: 在 default 基础上追加的问题 ID。
+$defs:
+  auditQuestion:
+    type: object
+    required:
+      - id
+      - question
+      - expected
+      - blocking
+    properties:
+      id:
+        type: string
+        description: 问题的稳定标识符，如 AQ-G-001。
+      question:
+        type: string
+        description: 审计问题正文，必须短、明确、单义，可被回答为是或否。
+      expected:
+        type: boolean
+        description: 期望的正确答案。
+      blocking:
+        type: boolean
+        description: 如果实际答案与 expected 不符，是否构成阻塞失败项。
+      rationale:
+        type: string
+        description: 该问题存在的设计理由，供人类审阅参考。
+notes:
+  - 本 schema 定义的是作者侧提供的完整问题集结构，不是每轮实际传入审计员的问题列表。
+  - 每轮实际使用的问题由 Orchestrator 根据 selectionPolicy 从本集合中挑选，再以字符串数组形式写入 AuditPacket.auditQuestions。
+  - Audit Resolver 在裁决时需要回查本集合中对应问题的 expected 与 blocking 字段。

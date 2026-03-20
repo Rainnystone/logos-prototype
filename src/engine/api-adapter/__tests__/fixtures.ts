@@ -1,5 +1,5 @@
 import type { AuditPacket, CollapseRequest, PhaseConsequenceRequest, PromptObject } from '@/types';
-import type { InitialCollapseRequest } from '@/engine/types/adapter-interface';
+import type { InitialCollapseRequest, RouteRequest } from '@/engine/types/adapter-interface';
 import type { ProviderRequest } from '@/engine/api-adapter/providers/provider-interface';
 
 export const samplePromptObject: PromptObject = {
@@ -51,6 +51,30 @@ export const sampleAuditPacket: AuditPacket = {
     options: ['option-1', 'option-2', 'option-3', 'option-4'],
   },
   auditQuestions: ['question-1', 'question-2', 'question-3'],
+};
+
+export const sampleRouteRequest: RouteRequest = {
+  context: {
+    phaseGoal: 'phase-goal',
+    currentVolume: 'High',
+    alpha: 'alpha-boundary',
+    beta: 'beta-boundary',
+    sceneProgress: 'scene-progress',
+    routerHint: 'suspense-investigation',
+  },
+  historyWindow: [...samplePromptObject.history],
+  availableRouters: [
+    {
+      routerName: 'slice-of-life',
+      routerSemanticCore: 'daily calm',
+      verbLexicon: ['idle', 'chat', 'observe'],
+    },
+    {
+      routerName: 'suspense-investigation',
+      routerSemanticCore: 'inspect, infer, and pressure-test',
+      verbLexicon: ['probe', 'feint', 'observe', 'withdraw'],
+    },
+  ],
 };
 
 export const sampleSettlementRequest: PhaseConsequenceRequest = {

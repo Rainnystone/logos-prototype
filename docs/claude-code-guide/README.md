@@ -4,20 +4,20 @@
 
 ## 阅读顺序
 
-| 顺序 | 文件 | 内容 |
-|------|------|------|
-| 1 | **README.md**（本文件） | 入口、核心原则、全局约束 |
-| 2 | [getting-started.md](./getting-started.md) | 环境搭建、仓库关系、首次启动 |
-| 3 | [spec-context-loading.md](./spec-context-loading.md) | 如何高效加载 LOGOS-SPEC 上下文 |
-| 4 | [ralph-workflow.md](./ralph-workflow.md) | Ralph Loop 完整执行流程 |
-| 5 | [plan-writing-guide.md](./plan-writing-guide.md) | 如何编写 execution plan |
-| 6 | [troubleshooting.md](./troubleshooting.md) | 常见问题与排查指南 |
+| 顺序 | 文件                                                 | 内容                           |
+| ---- | ---------------------------------------------------- | ------------------------------ |
+| 1    | **README.md**（本文件）                              | 入口、核心原则、全局约束       |
+| 2    | [getting-started.md](./getting-started.md)           | 环境搭建、仓库关系、首次启动   |
+| 3    | [spec-context-loading.md](./spec-context-loading.md) | 如何高效加载 LOGOS-SPEC 上下文 |
+| 4    | [ralph-workflow.md](./ralph-workflow.md)             | Ralph Loop 完整执行流程        |
+| 5    | [plan-writing-guide.md](./plan-writing-guide.md)     | 如何编写 execution plan        |
+| 6    | [troubleshooting.md](./troubleshooting.md)           | 常见问题与排查指南             |
 
 ## 核心原则
 
 ### 1. LOGOS-SPEC 是唯一设计权威
 
-所有实现必须可追溯到 `../LOGOS-Design/LOGOS-SPEC/` 中的规格文档。当代码与 spec 冲突时，**spec 胜出**，除非有 ADR 明确覆盖。agent 不得从实现仓库反向修改 LOGOS-SPEC 文件。
+所有实现必须可追溯到 `vendor/LOGOS-SPEC/` 中的规格文档。当代码与 spec 冲突时，**spec 胜出**，除非有 ADR 明确覆盖。agent 不得从实现仓库反向修改 vendored `LOGOS-SPEC` 文件。
 
 ### 2. 禁止硬编码叙事内容
 
@@ -54,9 +54,9 @@ Ralph agent 按照 `execution-plans/` 中的 PROMPT.md + fix_plan.md 严格执�
 
 ### 7. LLM 与代码的职责边界
 
-| 职责 | 归属 |
-|------|------|
-| 语义生成、摘要、推理、改写 | LLM |
+| 职责                           | 归属 |
+| ------------------------------ | ---- |
+| 语义生成、摘要、推理、改写     | LLM  |
 | 编排、状态管理、校验、重试控制 | 代码 |
 
 如果代码不得不"理解文本语义"才能继续，说明缺少一个 LLM 步骤，不要用 heuristic 代替。
@@ -90,8 +90,8 @@ LOGOS/                          ← 实现仓库
 └── docs/
     └── claude-code-guide/      ← 本操作手册
 
-LOGOS-Design/                   ← 设计仓库（只读参考）
-└── LOGOS-SPEC/                 ← 规格权威源（70+ 文件，10 层架构）
+vendor/
+└── LOGOS-SPEC/                 ← vendored 规格权威源（只读镜像）
     ├── 00_META/                ← 导航层（agent-guide, system-map）
     ├── 01_PRODUCT/             ← 产品层
     ├── 02_DOMAIN/              ← 领域层（glossary, entities, state-model）
@@ -106,21 +106,21 @@ LOGOS-Design/                   ← 设计仓库（只读参考）
 
 ## 模块 -> Spec 映射表
 
-| 代码文件 | Spec 文档 |
-|-----------|-----------|
-| `src/engine/orchestrator.ts` | `04_MODULES/orchestrator-control-hub.md` |
-| `src/engine/modules/memory-placeholder.ts` | `04_MODULES/memory-placeholder.md` |
-| `src/engine/modules/phase-gradient.ts` | `04_MODULES/phase-gradient.md` |
-| `src/engine/modules/light-cone-collapse.ts` | `04_MODULES/light-cone-collapse.md` |
-| `src/engine/modules/narrative-router.ts` | `04_MODULES/narrative-router.md` |
-| `src/engine/modules/director-note-layer.ts` | `04_MODULES/director-note-layer.md` |
-| `src/engine/modules/option-generator.ts` | `04_MODULES/option-generator.md` |
-| `src/engine/modules/prompt-assembler.ts` | `04_MODULES/prompt-assembler.md` |
-| `src/engine/modules/auditor.ts` | `04_MODULES/auditor.md` |
-| `src/engine/modules/audit-resolver.ts` | `04_MODULES/audit-resolver.md` |
+| 代码文件                                             | Spec 文档                                    |
+| ---------------------------------------------------- | -------------------------------------------- |
+| `src/engine/orchestrator.ts`                         | `04_MODULES/orchestrator-control-hub.md`     |
+| `src/engine/modules/memory-placeholder.ts`           | `04_MODULES/memory-placeholder.md`           |
+| `src/engine/modules/phase-gradient.ts`               | `04_MODULES/phase-gradient.md`               |
+| `src/engine/modules/light-cone-collapse.ts`          | `04_MODULES/light-cone-collapse.md`          |
+| `src/engine/modules/narrative-router.ts`             | `04_MODULES/narrative-router.md`             |
+| `src/engine/modules/director-note-layer.ts`          | `04_MODULES/director-note-layer.md`          |
+| `src/engine/modules/option-generator.ts`             | `04_MODULES/option-generator.md`             |
+| `src/engine/modules/prompt-assembler.ts`             | `04_MODULES/prompt-assembler.md`             |
+| `src/engine/modules/auditor.ts`                      | `04_MODULES/auditor.md`                      |
+| `src/engine/modules/audit-resolver.ts`               | `04_MODULES/audit-resolver.md`               |
 | `src/engine/modules/phase-consequence-settlement.ts` | `04_MODULES/phase-consequence-settlement.md` |
-| `src/engine/api-adapter/` | `04_MODULES/api-adapter-lite/` |
-| `src/types/*.ts` | `05_CONTRACTS/*.yaml` |
+| `src/engine/api-adapter/`                            | `04_MODULES/api-adapter-lite/`               |
+| `src/types/*.ts`                                     | `05_CONTRACTS/*.yaml`                        |
 
 ## Git 规范
 

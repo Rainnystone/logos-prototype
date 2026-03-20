@@ -1,25 +1,25 @@
 ---
-phase: "07"
-title: "End-to-End Validation"
-branch: "phase/07-e2e-validation"
-depends_on: ["06"]
+phase: '07'
+title: 'End-to-End Validation'
+branch: 'phase/07-e2e-validation'
+depends_on: ['06']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/control-flow-and-decision-points.md"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/scene-overview.md"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/phase-plan.yaml"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/router-lexicon.yaml"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/audit-questions.yaml"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/state-snapshots.yaml"
-    - "LOGOS-SPEC/04_MODULES/orchestrator-control-hub.md"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
+    - 'LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/control-flow-and-decision-points.md'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/scene-overview.md'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/phase-plan.yaml'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/router-lexicon.yaml'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/audit-questions.yaml'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/state-snapshots.yaml'
+    - 'LOGOS-SPEC/04_MODULES/orchestrator-control-hub.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 17000
@@ -34,22 +34,22 @@ Run the complete LOGOS engine through the sample-scene story package, executing 
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture |
-| `02_DOMAIN/glossary.md` | ~1,100 | Terminology |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Integration verification |
-| `03_ORCHESTRATION/runtime-loop.md` | ~2,500 | Full loop spec |
-| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md` | ~1,500 | Lifecycle events |
-| `03_ORCHESTRATION/control-flow-and-decision-points.md` | ~1,500 | Decision points |
-| `06_FIXTURES/sample-scene/scene-overview.md` | ~800 | Scene definition |
-| `06_FIXTURES/sample-scene/phase-plan.yaml` | ~500 | 6 PhasePlan objects |
-| `06_FIXTURES/sample-scene/router-lexicon.yaml` | ~400 | Router profiles |
-| `06_FIXTURES/sample-scene/audit-questions.yaml` | ~600 | Audit question set |
-| `06_FIXTURES/sample-scene/state-snapshots.yaml` | ~400 | Expected state shapes |
-| `04_MODULES/orchestrator-control-hub.md` | ~1,400 | Orchestrator spec |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | StateSnapshot validation |
+| File                                                   | Tokens | Purpose                  |
+| ------------------------------------------------------ | ------ | ------------------------ |
+| `00_META/agent-guide.md`                               | ~2,800 | Blocker protocol         |
+| `00_META/system-map.md`                                | ~1,000 | Architecture             |
+| `02_DOMAIN/glossary.md`                                | ~1,100 | Terminology              |
+| `05_CONTRACTS/module-dependency-map.md`                | ~900   | Integration verification |
+| `03_ORCHESTRATION/runtime-loop.md`                     | ~2,500 | Full loop spec           |
+| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md`       | ~1,500 | Lifecycle events         |
+| `03_ORCHESTRATION/control-flow-and-decision-points.md` | ~1,500 | Decision points          |
+| `06_FIXTURES/sample-scene/scene-overview.md`           | ~800   | Scene definition         |
+| `06_FIXTURES/sample-scene/phase-plan.yaml`             | ~500   | 6 PhasePlan objects      |
+| `06_FIXTURES/sample-scene/router-lexicon.yaml`         | ~400   | Router profiles          |
+| `06_FIXTURES/sample-scene/audit-questions.yaml`        | ~600   | Audit question set       |
+| `06_FIXTURES/sample-scene/state-snapshots.yaml`        | ~400   | Expected state shapes    |
+| `04_MODULES/orchestrator-control-hub.md`               | ~1,400 | Orchestrator spec        |
+| `05_CONTRACTS/state-snapshot-schema.yaml`              | ~3,000 | StateSnapshot validation |
 
 ## Deliverables
 

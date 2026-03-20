@@ -1,0 +1,76 @@
+sceneId: sample-yanshang-live-room
+source: story-source/phase-outline.md
+description: >
+  当前 sample-scene 实际会用到的叙事路由子集。这里只提取和“炎上直播间”
+  直接相关的路由，而不是复制整个系统的全量路由库；其选择以当前
+  `phase-outline.md` 中的 Phase Router Hint 为准。
+routers:
+  - routerName: 日常/闲暇
+    semanticCore: 放松、日常琐事、轻度社交、生活性动作
+    verbLexicon:
+      - 闲散
+      - 琐事
+      - 漫谈
+      - 消遣
+      - 介入
+      - 独处
+    sampleUse:
+      - 开场教室里的午后日常与藤花的表层安全感
+      - 终局与表层日常重新接合时的走廊或医务室交汇
+
+  - routerName: 惊悚/恐怖
+    semanticCore: 无力感、隐藏、极度恐惧、威胁感上升
+    verbLexicon:
+      - 静息
+      - 隐匿
+      - 窥探
+      - 应激
+      - 绝境
+      - 强识
+    sampleUse:
+      - 手机过载爆裂后的瞬时恐慌
+      - 视听室内热浪、火焰和屏幕噪声形成的封锁感
+
+  - routerName: 悬疑/探案
+    semanticCore: 信息搜集、痕迹追踪、推理、逻辑剖析
+    verbLexicon:
+      - 勘查
+      - 质证
+      - 诱导
+      - 演绎
+      - 潜伏
+      - 干预
+    sampleUse:
+      - 校园内顺着异常发热节点逆向追踪信号源
+      - 分析监控探头、公告牌和线路过载留下的物理痕迹
+
+  - routerName: 动作/战斗
+    semanticCore: 暴力、生存、对抗、战术机动
+    verbLexicon:
+      - 强攻
+      - 牵制
+      - 防御
+      - 机动
+      - 脱离
+      - 器物
+    sampleUse:
+      - 视听室内的极限闪避与设备爆裂交锋
+      - 观众清零后的近身压制与终局物理击倒
+
+  - routerName: 博弈/谈判
+    semanticCore: 心理战、表演性压迫、话语操控、利益与认知博弈
+    verbLexicon:
+      - 施压
+      - 利诱
+      - 虚张
+      - 示弱
+      - 拆解
+      - 搁置
+    sampleUse:
+      - 灰谷烈在直播巢穴中的心理挑衅与节目效果经营
+      - 通过破坏设备和切断关注度来拆穿“观众存在”这一幻觉支柱
+
+notes:
+  - phase-plan 中的 routerHint 是优先提示，不是对每个 Beat 的硬锁定。
+  - 同一 Phase 内允许根据当前局势在提示路由附近切换，但不得超出本样例所列路由集合。
+  - "`phase-03-first-contact` 允许在 `惊悚/恐怖` 与 `动作/战斗` 之间摆动；`phase-04-streamer-domain` 的动作性冲突仍应服从 `博弈/谈判` 的主导语义。"

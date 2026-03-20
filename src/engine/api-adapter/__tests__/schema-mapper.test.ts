@@ -5,6 +5,7 @@ import {
   mapForAudit,
   mapForCollapse,
   mapForGenerate,
+  mapForRoute,
   mapForSettlement,
 } from '@/engine/api-adapter/schema-mapper';
 import {
@@ -12,11 +13,44 @@ import {
   sampleCollapseRequest,
   sampleInitialCollapseRequest,
   samplePromptObject,
+  sampleRouteRequest,
   sampleRewritePromptObject,
   sampleSettlementRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
 
 describe('schema mapper', () => {
+  describe('route', () => {
+    it('maps RouteRequest into a router-selection prompt with context, history, and router catalog', () => {
+      const request = mapForRoute(sampleRouteRequest, 'openai-compatible');
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(request.system).toContain('narrative router');
+      expect(userMessage).toContain(sampleRouteRequest.context.phaseGoal);
+      expect(userMessage).toContain(sampleRouteRequest.context.currentVolume);
+      expect(userMessage).toContain(sampleRouteRequest.historyWindow[0]?.content ?? '');
+      expect(userMessage).toContain(sampleRouteRequest.availableRouters[1]?.routerName ?? '');
+      expect(userMessage).toContain(
+        sampleRouteRequest.availableRouters[1]?.verbLexicon.join(', ') ?? '',
+      );
+    });
+
+    it('uses the route default temperature and token limit', () => {
+      const request = mapForRoute(sampleRouteRequest, 'anthropic');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.route.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.route.maxOutputTokens);
+    });
+
+    it('attaches a structured response schema for route outputs', () => {
+      const request = mapForRoute(sampleRouteRequest, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_route_result',
+      });
+    });
+  });
+
   describe('generate', () => {
     it('maps PromptObject into a ProviderRequest with world base and narrative in system', () => {
       const request = mapForGenerate(samplePromptObject, 'openai-compatible');
@@ -56,6 +90,7 @@ describe('schema mapper', () => {
       const request = mapForGenerate(sampleRewritePromptObject, 'anthropic');
       const finalMessage = request.messages.at(-1)?.content ?? '';
 
+      expect(finalMessage).toContain('Audit Corrections - Immediate Repair Targets');
       expect(finalMessage).toContain(
         String(sampleRewritePromptObject.generationControl?.retryCount),
       );
@@ -76,6 +111,15 @@ describe('schema mapper', () => {
       expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.generate.temperature);
       expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.generate.maxOutputTokens);
     });
+
+    it('attaches a structured response schema for the generate result', () => {
+      const request = mapForGenerate(samplePromptObject, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_generate_result',
+      });
+    });
   });
 
   describe('audit', () => {
@@ -95,6 +139,15 @@ describe('schema mapper', () => {
 
       expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.audit.temperature);
       expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.audit.maxOutputTokens);
+    });
+
+    it('attaches a structured response schema for audit answers', () => {
+      const request = mapForAudit(sampleAuditPacket, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_audit_result',
+      });
     });
 
     it('handles an empty precedingBeats array without dropping the audit payload', () => {
@@ -135,6 +188,15 @@ describe('schema mapper', () => {
       expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.settlement.temperature);
       expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.settlement.maxOutputTokens);
     });
+
+    it('attaches a structured response schema for settlement outputs', () => {
+      const request = mapForSettlement(sampleSettlementRequest, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_phase_consequence_result',
+      });
+    });
   });
 
   describe('collapse', () => {
@@ -165,6 +227,15 @@ describe('schema mapper', () => {
 
       expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.collapse.temperature);
       expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.collapse.maxOutputTokens);
+    });
+
+    it('attaches a structured response schema for collapse outputs', () => {
+      const request = mapForCollapse(sampleCollapseRequest, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_collapse_result',
+      });
     });
   });
 });

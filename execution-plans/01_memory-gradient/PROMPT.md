@@ -1,22 +1,22 @@
 ---
-phase: "01"
-title: "Memory Placeholder + Phase Gradient"
-branch: "phase/01-memory-gradient"
-depends_on: ["00"]
+phase: '01'
+title: 'Memory Placeholder + Phase Gradient'
+branch: 'phase/01-memory-gradient'
+depends_on: ['00']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/04_MODULES/memory-placeholder.md"
-    - "LOGOS-SPEC/04_MODULES/phase-gradient.md"
-    - "LOGOS-SPEC/02_DOMAIN/control-primitives.md"
-    - "LOGOS-SPEC/02_DOMAIN/state-model.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml"
+    - 'LOGOS-SPEC/04_MODULES/memory-placeholder.md'
+    - 'LOGOS-SPEC/04_MODULES/phase-gradient.md'
+    - 'LOGOS-SPEC/02_DOMAIN/control-primitives.md'
+    - 'LOGOS-SPEC/02_DOMAIN/state-model.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 12500
@@ -31,19 +31,19 @@ Implement the two modules with no upstream module dependencies: Memory Placehold
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Session workflow, blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture overview |
-| `02_DOMAIN/glossary.md` | ~1,100 | Terms: Beat, Phase, Volume, Gradient, History Window |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Memory/Gradient dependency constraints |
-| `04_MODULES/memory-placeholder.md` | ~1,100 | Memory module spec: 5-beat window, accepted history only |
-| `04_MODULES/phase-gradient.md` | ~1,500 | Gradient spec: 7 types, 4-beat sequences |
-| `02_DOMAIN/control-primitives.md` | ~2,000 | Volume (Low/Med/High), gradient mappings table |
-| `02_DOMAIN/state-model.md` | ~1,400 | historyWindow, currentVolume, state update rules |
-| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md` | ~1,500 | Phase lifecycle: enter, advance, end |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | HistoryEntry structure, roundState.historyWindow |
-| `05_CONTRACTS/phase-plan-schema.yaml` | ~1,100 | PhasePlan.gradientType enum, beatCount const 4 |
+| File                                             | Tokens | Purpose                                                  |
+| ------------------------------------------------ | ------ | -------------------------------------------------------- |
+| `00_META/agent-guide.md`                         | ~2,800 | Session workflow, blocker protocol                       |
+| `00_META/system-map.md`                          | ~1,000 | Architecture overview                                    |
+| `02_DOMAIN/glossary.md`                          | ~1,100 | Terms: Beat, Phase, Volume, Gradient, History Window     |
+| `05_CONTRACTS/module-dependency-map.md`          | ~900   | Memory/Gradient dependency constraints                   |
+| `04_MODULES/memory-placeholder.md`               | ~1,100 | Memory module spec: 5-beat window, accepted history only |
+| `04_MODULES/phase-gradient.md`                   | ~1,500 | Gradient spec: 7 types, 4-beat sequences                 |
+| `02_DOMAIN/control-primitives.md`                | ~2,000 | Volume (Low/Med/High), gradient mappings table           |
+| `02_DOMAIN/state-model.md`                       | ~1,400 | historyWindow, currentVolume, state update rules         |
+| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md` | ~1,500 | Phase lifecycle: enter, advance, end                     |
+| `05_CONTRACTS/state-snapshot-schema.yaml`        | ~3,000 | HistoryEntry structure, roundState.historyWindow         |
+| `05_CONTRACTS/phase-plan-schema.yaml`            | ~1,100 | PhasePlan.gradientType enum, beatCount const 4           |
 
 ## Deliverables
 

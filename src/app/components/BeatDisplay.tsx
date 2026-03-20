@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { WorkbenchStatus } from '@/app/play/runtime';
 
 interface BeatDisplayProps {
@@ -6,6 +8,8 @@ interface BeatDisplayProps {
   readonly rewriteFeedback: string | null;
   readonly forceAccepted: boolean;
   readonly error: string | null;
+  readonly summary?: string | null;
+  readonly children?: ReactNode;
 }
 
 function getStatusLabel(status: WorkbenchStatus): string {
@@ -35,6 +39,8 @@ export function BeatDisplay({
   rewriteFeedback,
   forceAccepted,
   error,
+  summary,
+  children,
 }: BeatDisplayProps) {
   return (
     <section className="panel beat-display">
@@ -43,22 +49,29 @@ export function BeatDisplay({
           <p className="panel-eyebrow">GameView</p>
           <h2>Current Beat</h2>
         </div>
-        <span className={`status-badge status-badge--${status}`}>{getStatusLabel(status)}</span>
+        <div className="beat-display__summary">
+          {summary ? <p className="panel-note">{summary}</p> : null}
+          <span className={`status-badge status-badge--${status}`}>{getStatusLabel(status)}</span>
+        </div>
       </div>
 
       {forceAccepted ? <p className="warning-banner">Force accepted after retry limit</p> : null}
       {rewriteFeedback ? <pre className="rewrite-feedback">{rewriteFeedback}</pre> : null}
       {error ? <p className="error-banner">{error}</p> : null}
 
-      {beatText ? (
-        <article className="beat-prose">
-          <p>{beatText}</p>
-        </article>
-      ) : (
-        <div className="beat-placeholder">
-          <p>Beat output will appear here after the next run.</p>
-        </div>
-      )}
+      <div className="beat-display__body">
+        {beatText ? (
+          <article className="beat-prose">
+            <p>{beatText}</p>
+          </article>
+        ) : (
+          <div className="beat-placeholder">
+            <p>Beat output will appear here after the next run.</p>
+          </div>
+        )}
+
+        {children}
+      </div>
     </section>
   );
 }

@@ -4,7 +4,7 @@
 
 This document is the top-level orchestration plan for implementing the LOGOS narrative engine. It defines the phase dependency graph, git flow, milestone gates, and execution rules. Ralph (autonomous Claude Code agent) uses this as the entry point for every implementation session.
 
-All spec references are relative to `LOGOS-SPEC/` in the design repo (`../LOGOS-Design/LOGOS-SPEC/`).
+All spec references are relative to the vendored spec root `vendor/LOGOS-SPEC/`.
 
 ---
 
@@ -96,17 +96,21 @@ main
 
 ```markdown
 ## Summary
+
 - [1-3 bullet points describing what this phase delivers]
 
 ## Spec Alignment
+
 - [List of LOGOS-SPEC files verified against]
 
 ## Test Coverage
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass (where applicable)
 - [ ] Coverage >= 80%
 
 ## Checklist
+
 - [ ] Types match YAML contract schemas exactly
 - [ ] No hardcoded narrative content
 - [ ] Immutable data patterns used
@@ -118,6 +122,7 @@ main
 ## Milestone Definitions
 
 ### M0: Foundation Complete
+
 - **Gate**: Phase 00 PR merged
 - **Criteria**:
   - Next.js App Router project scaffolded with TypeScript strict
@@ -127,6 +132,7 @@ main
   - ESLint + Prettier configured and passing
 
 ### M1: Control Modules Online
+
 - **Gate**: Phase 01 + Phase 02 PRs merged
 - **Criteria**:
   - `MemoryPlaceholder` returns 5-beat sliding window
@@ -136,6 +142,7 @@ main
   - All modules have unit tests with >= 80% coverage
 
 ### M2: Generation Pipeline Ready
+
 - **Gate**: Phase 03 + Phase 04 PRs merged
 - **Criteria**:
   - `DirectorNoteLayer` produces `beatConstraints` + `optionConstraints`
@@ -145,6 +152,7 @@ main
   - `generationControl` attached correctly on rewrite path
 
 ### M3: External Calls Operational
+
 - **Gate**: Phase 05 PR merged
 - **Criteria**:
   - API Adapter supports `generate`, `audit`, `settlement`, `collapse` modes
@@ -153,6 +161,7 @@ main
   - Provider abstraction allows easy addition of new providers
 
 ### M4: Engine Loop Closed
+
 - **Gate**: Phase 06 PR merged
 - **Criteria**:
   - `Auditor` returns boolean answers matching `AuditQuestionSet`
@@ -163,6 +172,7 @@ main
   - Phase-end processing chain: settlement -> collapse -> next Phase
 
 ### M5: Validated
+
 - **Gate**: Phase 07 PR merged
 - **Criteria**:
   - Sample scene (6 Phases, 4 Beats each) runs through complete loop
@@ -172,6 +182,7 @@ main
   - No spec drift detected against LOGOS-SPEC contracts
 
 ### Release: Workbench Shipped
+
 - **Gate**: Phase 08 PR merged
 - **Criteria**:
   - Story package selector functional
@@ -202,6 +213,7 @@ P08                                               ██████████
 ```
 
 Estimated durations:
+
 - Phase 00: ~1.5 weeks (scaffold + types + story loader)
 - Phase 01: ~1 week (memory + gradient, simple modules)
 - Phase 02: ~1.5 weeks (collapse + router, LLM stub needed)

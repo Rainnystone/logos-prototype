@@ -1,0 +1,101 @@
+# --- Agent Metadata ---
+# contract: collapse-packet-schema
+# type: contract
+# consumed_by: [light-cone-collapse, api-adapter-lite, orchestrator-control-hub]
+# tokens_estimate: 1500
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.collapse_packet
+title: LOGOS CollapsePacket Contract Bundle
+version: 1
+description: >
+  Light Cone Collapse 语义推演的输入包与输出结构。Phase 结束时，Orchestrator
+  读取由阶段后果结算步骤稳定产出的 `phaseConsequences[]`，并通过 API Adapter Lite
+  的 collapse 模式调用 LLM，基于真实后果重新面向终点线推演下一阶段的 Alpha/Beta
+  边界。
+type: object
+properties:
+  request:
+    $ref: "#/$defs/request"
+  response:
+    $ref: "#/$defs/response"
+$defs:
+  request:
+    type: object
+    required:
+      - context
+      - phaseConsequences
+    properties:
+      context:
+        type: object
+        required:
+          - mainAxis
+          - endLine
+          - currentAlpha
+          - currentBeta
+        properties:
+          mainAxis:
+            type: string
+            description: Scene 叙事主轴。
+          endLine:
+            type: string
+            description: Scene 终点线。
+          currentAlpha:
+            type: string
+            description: 当前阶段的激进极边界描述。
+          currentBeta:
+            type: string
+            description: 当前阶段的消极极边界描述。
+          sceneProgress:
+            type: string
+            description: 当前 Scene 的摘要性推进说明，可选。
+          completedPhaseGoal:
+            type: string
+            description: 刚结束的 Phase 的局部目标，供推演时参照。
+      phaseConsequences:
+        type: array
+        minItems: 1
+        items:
+          type: string
+        description: >
+          上一 Phase 状态结算得到的真实后果条目。每条应为一句完整的事实陈述。
+  response:
+    description: >
+      规范性返回契约：CollapseResult。LLM 基于阶段后果与终点线推演得到的
+      下一阶段边界与推演说明。
+    type: object
+    required:
+      - alpha
+      - beta
+      - inferenceTrace
+    properties:
+      alpha:
+        type: string
+        description: 下一阶段的激进极边界描述。
+      beta:
+        type: string
+        description: 下一阶段的消极极边界描述。
+      inferenceTrace:
+        type: string
+        description: >
+          从阶段后果到新边界的推演说明。该字段记录 LLM 如何基于
+          phaseConsequences 和 endLine 重新推导可达偏离空间，
+          供 Orchestrator 和 Director Note Layer 在下一阶段参考。
+      usage:
+        type: object
+        properties:
+          promptTokens:
+            type: integer
+          completionTokens:
+            type: integer
+          totalTokens:
+            type: integer
+
+notes:
+  - 本文件以 contract bundle 形式同时承载 request / response 两个子 schema；校验请求体时使用 `$defs.request`，校验响应体时使用 `$defs.response`。
+  - 本 schema 对齐 API 适配器的 collapse 调用模式。
+  - "`phaseConsequences[]` 的规范性来源是 `PhaseConsequenceResult.phaseConsequences`，详见 `phase-consequence-packet-schema.yaml`。"
+  - collapse 模式的 temperature 应收束到 0.5，因为边界推演需要确定性推理与适度发散的平衡。
+  - maxOutputTokens 建议 1024，因为输出只包含两段边界描述和一段推演说明。
+  - inferenceTrace 不是可选装饰，而是下游模块理解新边界来源的必要上下文。

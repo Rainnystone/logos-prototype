@@ -1,0 +1,58 @@
+# --- Agent Metadata ---
+# contract: phase-plan-schema
+# type: contract
+# consumed_by: [phase-gradient, orchestrator-control-hub]
+# tokens_estimate: 1100
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.phase_plan
+title: LOGOS PhasePlan
+version: 1
+description: >
+  当前 Sample 版本的 PhasePlan 结构。该结构描述单个 Phase 的局部目标与节奏配置，
+  并默认采用固定 4 Beat 长度。
+type: object
+required:
+  - phaseId
+  - phaseIndex
+  - phaseGoal
+  - gradientType
+  - beatCount
+properties:
+  phaseId:
+    type: string
+    description: Phase 的稳定标识符。
+  phaseIndex:
+    type: integer
+    minimum: 1
+    description: 在当前 Scene 内的顺序编号。
+  phaseGoal:
+    type: string
+    description: 当前 Phase 的局部叙事目标。
+  gradientType:
+    type: string
+    enum:
+      - Rising
+      - Falling
+      - Static High
+      - U-Shape
+      - Arch
+      - Pulse
+      - Steady
+    description: 当前 Phase 的梯度类型。
+  beatCount:
+    type: integer
+    const: 4
+    description: 当前 Sample 固定为 4 Beat。
+  routerHint:
+    type: string
+    description: >
+      对当前 Phase 的优先路由提示。它是提示而不是硬绑定，Orchestrator 仍可基于状态判断最终路由。
+  notes:
+    type: string
+    description: 作者或设计侧附加说明，可选。
+notes:
+  - 当前 Sample 版本只支持固定 4 Beat 的 Phase。
+  - gradientType 的语义解释以 02_DOMAIN/control-primitives.md 为准。
+  - 本 schema 描述的是单个 PhasePlan；一个 Scene 通常包含多个此对象。

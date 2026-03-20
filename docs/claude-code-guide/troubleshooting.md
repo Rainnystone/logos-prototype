@@ -71,7 +71,7 @@ TypeScript 类型定义（`src/types/`）与 LOGOS-SPEC 中的 contract schema�
 
    ```bash
    # 查看 schema 定义
-   cat ../LOGOS-Design/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml
+   cat vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml
 
    # 查看当前 TypeScript 定义
    cat src/types/prompt-object.ts
@@ -117,12 +117,12 @@ TypeScript 类型定义（`src/types/`）与 LOGOS-SPEC 中的 contract schema�
 
 ### 具体规则
 
-| 冲突类型 | 以谁为准 | 需要修改谁 |
-|----------|---------|-----------|
-| 术语名称不同 | `glossary.md` | 改低优先级文档中的术语 |
-| 字段名/结构不同 | `05_CONTRACTS/` schema | 改模块 prose |
-| 生命周期顺序不同 | `03_ORCHESTRATION/` | 改模块描述 |
-| ADR 与 schema 冲突 | 判断 schema 是否未同步 ADR | 同步其中一方 |
+| 冲突类型           | 以谁为准                   | 需要修改谁             |
+| ------------------ | -------------------------- | ---------------------- |
+| 术语名称不同       | `glossary.md`              | 改低优先级文档中的术语 |
+| 字段名/结构不同    | `05_CONTRACTS/` schema     | 改模块 prose           |
+| 生命周期顺序不同   | `03_ORCHESTRATION/`        | 改模块描述             |
+| ADR 与 schema 冲突 | 判断 schema 是否未同步 ADR | 同步其中一方           |
 
 ### 处理方式
 
@@ -160,8 +160,10 @@ STOP。
 1. fix_plan 中的每个 Task 写明**验收标准**（可验证的条件列表）
 2. 每个 Task 结束后让 Ralph 对照验收标准自查
 3. 在 plan 中明确写出 **"不要做什么"**：
+
    ```markdown
    ## 不在本 phase 范围内
+
    - 不要实现真实的 API 调用（Phase 05 的事）
    - 不要修改 story-packages/ 中的内容
    - 不要添加 spec 中未定义的字段
@@ -192,18 +194,18 @@ STOP。
 
    ```bash
    # 查看 spec 中定义的格式
-   cat ../LOGOS-Design/LOGOS-SPEC/06_FIXTURES/sample-scene/phase-plan.yaml
+   cat vendor/LOGOS-SPEC/06_FIXTURES/sample-scene/phase-plan.yaml
    ```
 
-5. **检查路径配置**：确认 `LOGOS_SPEC_PATH` 环境变量正确（如果 loader 依赖它）
+5. **检查路径配置**：确认 `LOGOS_SPEC_PATH` 指向 `vendor/LOGOS-SPEC`（如果你的本地工具读取它）
 
 ### 常见错误
 
-| 错误 | 原因 | 修复 |
-|------|------|------|
-| YAML 解析失败 | 文件中有非法缩进 | 检查 YAML 语法 |
-| 字段缺失 | story package 结构与 schema 不匹配 | 对比 `05_CONTRACTS/` schema |
-| 编码问题 | 中文内容的 UTF-8 BOM 头 | 确保文件为 UTF-8 无 BOM |
+| 错误          | 原因                               | 修复                        |
+| ------------- | ---------------------------------- | --------------------------- |
+| YAML 解析失败 | 文件中有非法缩进                   | 检查 YAML 语法              |
+| 字段缺失      | story package 结构与 schema 不匹配 | 对比 `05_CONTRACTS/` schema |
+| 编码问题      | 中文内容的 UTF-8 BOM 头            | 确保文件为 UTF-8 无 BOM     |
 
 ## 6. 后期 Phase 的 Build 错误
 
@@ -281,13 +283,13 @@ STOP。
 
 以下情况 Ralph **不能自行解决**，必须升级给人类：
 
-| 类别 | 示例 |
-|------|------|
-| 作者控制模型变更 | "修复这个 bug 需要改变 Phase 的含义" |
-| 核心领域边界变更 | "这个需求要求 Beat 可以跨 Phase" |
-| 公共 API 语义变更 | "API 返回格式需要与 spec 不同" |
+| 类别                 | 示例                                   |
+| -------------------- | -------------------------------------- |
+| 作者控制模型变更     | "修复这个 bug 需要改变 Phase 的含义"   |
+| 核心领域边界变更     | "这个需求要求 Beat 可以跨 Phase"       |
+| 公共 API 语义变更    | "API 返回格式需要与 spec 不同"         |
 | 不可调和的 spec 冲突 | "glossary 和 ADR 对这个概念的定义矛盾" |
-| 缺少必要的设计决策 | "Spec 没有定义这种边界情况该怎么处理" |
+| 缺少必要的设计决策   | "Spec 没有定义这种边界情况该怎么处理"  |
 
 ### 升级报告格式
 
@@ -338,13 +340,13 @@ Ralph 当前状态: PAUSED at Task [N]
 
 ## 快速诊断表
 
-| 现象 | 首先检查 | 参考章节 |
-|------|---------|---------|
-| Ralph 回复变短/变慢 | Context 是否溢出 | #1 Context Overflow |
-| `tsc` 编译失败 | types 与 schema 是否对齐 | #2 Type Mismatch |
-| 两份 spec 说法不同 | 裁决优先级顺序 | #3 Spec Conflict |
-| Ralph 做了 plan 以外的事 | 是否遗忘了 plan 约束 | #4 Ralph Drift |
-| 运行时数据为空 | story-package 路径和格式 | #5 Story Package |
-| 后期 phase 编译不过 | 合并冲突和接口签名 | #6 Build Errors |
-| 测试通过但行为错误 | 测试预期值是否符合 spec | #7 Spec Misunderstanding |
-| 遇到无法自行解决的问题 | 是否触发 STOP 条件 | #8 Blocker Escalation |
+| 现象                     | 首先检查                 | 参考章节                 |
+| ------------------------ | ------------------------ | ------------------------ |
+| Ralph 回复变短/变慢      | Context 是否溢出         | #1 Context Overflow      |
+| `tsc` 编译失败           | types 与 schema 是否对齐 | #2 Type Mismatch         |
+| 两份 spec 说法不同       | 裁决优先级顺序           | #3 Spec Conflict         |
+| Ralph 做了 plan 以外的事 | 是否遗忘了 plan 约束     | #4 Ralph Drift           |
+| 运行时数据为空           | story-package 路径和格式 | #5 Story Package         |
+| 后期 phase 编译不过      | 合并冲突和接口签名       | #6 Build Errors          |
+| 测试通过但行为错误       | 测试预期值是否符合 spec  | #7 Spec Misunderstanding |
+| 遇到无法自行解决的问题   | 是否触发 STOP 条件       | #8 Blocker Escalation    |

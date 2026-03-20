@@ -1,24 +1,24 @@
 ---
-phase: "02"
-title: "Light Cone Collapse + Narrative Router"
-branch: "phase/02-collapse-router"
-depends_on: ["00"]
+phase: '02'
+title: 'Light Cone Collapse + Narrative Router'
+branch: 'phase/02-collapse-router'
+depends_on: ['00']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/04_MODULES/light-cone-collapse.md"
-    - "LOGOS-SPEC/04_MODULES/narrative-router.md"
-    - "LOGOS-SPEC/02_DOMAIN/control-primitives.md"
-    - "LOGOS-SPEC/02_DOMAIN/state-model.md"
-    - "LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
-    - "LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md"
-    - "LOGOS-SPEC/06_FIXTURES/sample-scene/router-lexicon.yaml"
+    - 'LOGOS-SPEC/04_MODULES/light-cone-collapse.md'
+    - 'LOGOS-SPEC/04_MODULES/narrative-router.md'
+    - 'LOGOS-SPEC/02_DOMAIN/control-primitives.md'
+    - 'LOGOS-SPEC/02_DOMAIN/state-model.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/scene-phase-beat-lifecycle.md'
+    - 'LOGOS-SPEC/06_FIXTURES/sample-scene/router-lexicon.yaml'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 16000
@@ -33,21 +33,21 @@ Implement the two domain-dependent control modules: Light Cone Collapse (Alpha/B
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol, conflict resolution |
-| `00_META/system-map.md` | ~1,000 | Architecture overview |
-| `02_DOMAIN/glossary.md` | ~1,100 | Terms: Light Cone, Alpha, Beta, Causal Elasticity, Router, Verb Lexicon |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Collapse + Router dependency constraints |
-| `04_MODULES/light-cone-collapse.md` | ~1,500 | Two work points: Scene init + Phase-end re-inference |
-| `04_MODULES/narrative-router.md` | ~3,000 | 6 base routers with verb lexicons |
-| `02_DOMAIN/control-primitives.md` | ~2,000 | Main Axis, End Line, Alpha, Beta, Router |
-| `02_DOMAIN/state-model.md` | ~1,400 | alpha/beta in sceneState, routerName in roundState |
-| `05_CONTRACTS/collapse-packet-schema.yaml` | ~1,500 | CollapsePacket request/response |
-| `05_CONTRACTS/phase-consequence-packet-schema.yaml` | ~1,800 | PhaseConsequencePacket (settlement output feeds collapse) |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | StateSnapshot with phaseConsequences |
-| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md` | ~1,500 | Phase-end processing: settlement -> collapse |
-| `06_FIXTURES/sample-scene/router-lexicon.yaml` | ~400 | Sample router profiles for testing |
+| File                                                | Tokens | Purpose                                                                 |
+| --------------------------------------------------- | ------ | ----------------------------------------------------------------------- |
+| `00_META/agent-guide.md`                            | ~2,800 | Blocker protocol, conflict resolution                                   |
+| `00_META/system-map.md`                             | ~1,000 | Architecture overview                                                   |
+| `02_DOMAIN/glossary.md`                             | ~1,100 | Terms: Light Cone, Alpha, Beta, Causal Elasticity, Router, Verb Lexicon |
+| `05_CONTRACTS/module-dependency-map.md`             | ~900   | Collapse + Router dependency constraints                                |
+| `04_MODULES/light-cone-collapse.md`                 | ~1,500 | Two work points: Scene init + Phase-end re-inference                    |
+| `04_MODULES/narrative-router.md`                    | ~3,000 | 6 base routers with verb lexicons                                       |
+| `02_DOMAIN/control-primitives.md`                   | ~2,000 | Main Axis, End Line, Alpha, Beta, Router                                |
+| `02_DOMAIN/state-model.md`                          | ~1,400 | alpha/beta in sceneState, routerName in roundState                      |
+| `05_CONTRACTS/collapse-packet-schema.yaml`          | ~1,500 | CollapsePacket request/response                                         |
+| `05_CONTRACTS/phase-consequence-packet-schema.yaml` | ~1,800 | PhaseConsequencePacket (settlement output feeds collapse)               |
+| `05_CONTRACTS/state-snapshot-schema.yaml`           | ~3,000 | StateSnapshot with phaseConsequences                                    |
+| `03_ORCHESTRATION/scene-phase-beat-lifecycle.md`    | ~1,500 | Phase-end processing: settlement -> collapse                            |
+| `06_FIXTURES/sample-scene/router-lexicon.yaml`      | ~400   | Sample router profiles for testing                                      |
 
 ## Deliverables
 

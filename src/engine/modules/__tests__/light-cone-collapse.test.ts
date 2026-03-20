@@ -23,6 +23,35 @@ function createRecordingAdapter(response: CollapseResponse) {
   };
 }
 
+function createRetryingAdapter(sequence: readonly (CollapseResponse | Error)[]): {
+  adapter: LLMAdapter;
+  collapse: ReturnType<typeof vi.fn>;
+} {
+  let index = 0;
+  const collapse = vi.fn(async () => {
+    const next = sequence[Math.min(index, sequence.length - 1)];
+    index += 1;
+
+    if (!next) {
+      throw new Error('collapse retry sequence must contain at least one entry');
+    }
+
+    if (next instanceof Error) {
+      throw next;
+    }
+
+    return next;
+  });
+  const adapter: LLMAdapter = {
+    collapse,
+  };
+
+  return {
+    adapter,
+    collapse,
+  };
+}
+
 describe('Light Cone Collapse', () => {
   it('infers initial boundaries from a valid SceneSpec', async () => {
     const { adapter } = createRecordingAdapter({
@@ -164,5 +193,34 @@ describe('Light Cone Collapse', () => {
     });
 
     expect(Object.isFrozen(response)).toBe(true);
+  });
+
+  it('retries transient collapse failures before succeeding', async () => {
+    const { adapter, collapse } = createRetryingAdapter([
+      new Error('Provider response did not contain valid structured JSON'),
+      {
+        alpha: 'alpha',
+        beta: 'beta',
+        inferenceTrace: 'trace',
+      },
+    ]);
+
+    const response = await createLightConeCollapse(adapter).inferInitialBoundaries(sceneSpec);
+
+    expect(response.alpha).toBe('alpha');
+    expect(collapse).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws a collapse-specific error after exhausting retries', async () => {
+    const { adapter, collapse } = createRetryingAdapter([
+      new Error('truncated-json'),
+      new Error('truncated-json'),
+      new Error('truncated-json'),
+    ]);
+
+    await expect(
+      createLightConeCollapse(adapter).inferInitialBoundaries(sceneSpec),
+    ).rejects.toThrow(/Light Cone Collapse failed after 3 attempts/i);
+    expect(collapse).toHaveBeenCalledTimes(3);
   });
 });

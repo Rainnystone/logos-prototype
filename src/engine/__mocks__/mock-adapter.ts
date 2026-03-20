@@ -24,5 +24,18 @@ export function createMockAdapter(): LLMAdapter {
 
       return deepFreeze(response);
     },
+
+    async route(request) {
+      const [firstRouter] = request.availableRouters;
+
+      if (!firstRouter) {
+        throw new Error('Mock adapter route requires at least one available router.');
+      }
+
+      return deepFreeze({
+        routerName: firstRouter.routerName,
+        inferenceTrace: '[Mock] Selected the first available router.',
+      });
+    },
   };
 }

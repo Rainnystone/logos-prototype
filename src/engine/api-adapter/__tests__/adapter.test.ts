@@ -6,6 +6,7 @@ import {
   sampleCollapseRequest,
   sampleInitialCollapseRequest,
   samplePromptObject,
+  sampleRouteRequest,
   sampleSettlementRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
 import {
@@ -45,10 +46,81 @@ describe('api adapter', () => {
 
     expect(adapter).toMatchObject({
       collapse: expect.any(Function),
+      route: expect.any(Function),
       generate: expect.any(Function),
       audit: expect.any(Function),
       settlement: expect.any(Function),
     });
+  });
+
+  it('route returns a frozen RouteResult', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        createOpenAIResponse({
+          routerName: 'suspense-investigation',
+          inferenceTrace: 'trace',
+        }),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.route?.(sampleRouteRequest);
+
+    expect(result).toEqual({
+      routerName: 'suspense-investigation',
+      inferenceTrace: 'trace',
+      usage: {
+        promptTokens: 11,
+        completionTokens: 7,
+        totalTokens: 18,
+      },
+    });
+    expect(Object.isFrozen(result)).toBe(true);
+  });
+
+  it('route recovers the routerName from truncated provider JSON when possible', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content:
+                      '{"routerName":"suspense-investigation","inferenceTrace":"The phase goal of tracking the',
+                  },
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.route?.(sampleRouteRequest);
+
+    expect(result?.routerName).toBe('suspense-investigation');
+    expect(result?.inferenceTrace).toContain('The phase goal');
   });
 
   it('generate validates PromptObject input and returns a frozen GenerateResult', async () => {
@@ -100,7 +172,9 @@ describe('api adapter', () => {
       },
     });
 
-    await expect(adapter.generate?.(samplePromptObject)).rejects.toThrow(/generateResult/i);
+    await expect(adapter.generate?.(samplePromptObject)).rejects.toThrow(
+      /incomplete generate payload/i,
+    );
   });
 
   it('audit returns boolean answers whose length matches the question count', async () => {
@@ -131,7 +205,7 @@ describe('api adapter', () => {
     expect(result?.answers).toHaveLength(sampleAuditPacket.auditQuestions.length);
   });
 
-  it('audit throws on non-boolean answers or mismatched answer counts', async () => {
+  it('audit normalizes malformed or mismatched answer arrays into the expected length', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => createOpenAIResponse({ answers: [true, 'nope'] })),
@@ -146,7 +220,9 @@ describe('api adapter', () => {
       },
     });
 
-    await expect(adapter.audit?.(sampleAuditPacket)).rejects.toThrow(/auditResult/i);
+    const result = await adapter.audit?.(sampleAuditPacket);
+
+    expect(result?.answers).toEqual([true, false, false]);
   });
 
   it('settlement returns a validated PhaseConsequenceResponse', async () => {
@@ -233,19 +309,63 @@ describe('api adapter', () => {
     });
   });
 
-  it('uses the correct default temperatures for generate, audit, settlement, and collapse', async () => {
+  it('collapse recovers alpha and beta from truncated provider JSON when both boundaries are present', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content:
+                      '{"alpha":"aggressive-boundary","beta":"passive-boundary","inferenceTrace":"Recovered from the phase',
+                  },
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.collapse(sampleInitialCollapseRequest);
+
+    expect(result.alpha).toBe('aggressive-boundary');
+    expect(result.beta).toBe('passive-boundary');
+    expect(result.inferenceTrace).toContain('Recovered from the phase');
+  });
+
+  it('uses the correct default temperatures for route, generate, audit, settlement, and collapse', async () => {
     const fetchMock = vi.fn(async () => {
       const callIndex = fetchMock.mock.calls.length;
 
       if (callIndex === 1) {
-        return createOpenAIResponse({ beatText: 'generated-beat', options: ['1', '2', '3', '4'] });
+        return createOpenAIResponse({
+          routerName: 'suspense-investigation',
+          inferenceTrace: 'trace',
+        });
       }
 
       if (callIndex === 2) {
-        return createOpenAIResponse({ answers: [true, false, true] });
+        return createOpenAIResponse({ beatText: 'generated-beat', options: ['1', '2', '3', '4'] });
       }
 
       if (callIndex === 3) {
+        return createOpenAIResponse({ answers: [true, false, true] });
+      }
+
+      if (callIndex === 4) {
         return createOpenAIResponse({
           phaseConsequences: ['fact-1'],
           settlementTrace: 'trace',
@@ -270,6 +390,7 @@ describe('api adapter', () => {
       },
     });
 
+    await adapter.route?.(sampleRouteRequest);
     await adapter.generate?.(samplePromptObject);
     await adapter.audit?.(sampleAuditPacket);
     await adapter.settlement?.(sampleSettlementRequest);
@@ -285,6 +406,69 @@ describe('api adapter', () => {
       return JSON.parse(String(init.body)).temperature;
     });
 
-    expect(temperatures).toEqual([0.8, 0.3, 0.2, 0.5]);
+    expect(temperatures).toEqual([0.2, 1, 0.3, 0.2, 0.5]);
+  });
+
+  it('uses the correct default maxOutputTokens for route, generate, audit, settlement, and collapse', async () => {
+    const fetchMock = vi.fn(async () => {
+      const callIndex = fetchMock.mock.calls.length;
+
+      if (callIndex === 1) {
+        return createOpenAIResponse({
+          routerName: 'suspense-investigation',
+          inferenceTrace: 'trace',
+        });
+      }
+
+      if (callIndex === 2) {
+        return createOpenAIResponse({ beatText: 'generated-beat', options: ['1', '2', '3', '4'] });
+      }
+
+      if (callIndex === 3) {
+        return createOpenAIResponse({ answers: [true, false, true] });
+      }
+
+      if (callIndex === 4) {
+        return createOpenAIResponse({
+          phaseConsequences: ['fact-1'],
+          settlementTrace: 'trace',
+        });
+      }
+
+      return createOpenAIResponse({
+        alpha: 'next-alpha',
+        beta: 'next-beta',
+        inferenceTrace: 'trace',
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await adapter.route?.(sampleRouteRequest);
+    await adapter.generate?.(samplePromptObject);
+    await adapter.audit?.(sampleAuditPacket);
+    await adapter.settlement?.(sampleSettlementRequest);
+    await adapter.collapse(sampleCollapseRequest);
+
+    const maxOutputTokens = fetchMock.mock.calls.map((call) => {
+      const init = (call as unknown[])[1] as RequestInit | undefined;
+
+      if (!init) {
+        throw new Error('expected fetch init');
+      }
+
+      return JSON.parse(String(init.body)).max_tokens;
+    });
+
+    expect(maxOutputTokens).toEqual([4096, 36864, 512, 768, 36864]);
   });
 });

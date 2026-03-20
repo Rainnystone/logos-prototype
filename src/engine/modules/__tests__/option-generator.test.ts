@@ -67,6 +67,7 @@ describe('Option Generator constraint builder', () => {
 
     expect(constraints).toMatch(/Anti-OOC/i);
     expect(constraints).toMatch(/Chain-of-Thought|CoT/i);
+    expect(constraints).toMatch(/local canon authority|franchise|worldview/i);
   });
 
   it('covers the 4-verb lexicon case by mentioning each verb', () => {

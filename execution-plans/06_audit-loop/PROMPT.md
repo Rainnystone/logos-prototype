@@ -1,27 +1,27 @@
 ---
-phase: "06"
-title: "Audit Loop + Orchestrator Control Hub"
-branch: "phase/06-audit-loop"
-depends_on: ["05"]
+phase: '06'
+title: 'Audit Loop + Orchestrator Control Hub'
+branch: 'phase/06-audit-loop'
+depends_on: ['05']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/04_MODULES/auditor.md"
-    - "LOGOS-SPEC/04_MODULES/audit-resolver.md"
-    - "LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md"
-    - "LOGOS-SPEC/04_MODULES/orchestrator-control-hub.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/control-flow-and-decision-points.md"
-    - "LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/orchestrator-input-output.md"
+    - 'LOGOS-SPEC/04_MODULES/auditor.md'
+    - 'LOGOS-SPEC/04_MODULES/audit-resolver.md'
+    - 'LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md'
+    - 'LOGOS-SPEC/04_MODULES/orchestrator-control-hub.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/control-flow-and-decision-points.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/orchestrator-input-output.md'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 21000
@@ -36,24 +36,24 @@ Implement the four modules that close the entire engine loop: Auditor (boolean a
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture |
-| `02_DOMAIN/glossary.md` | ~1,100 | Auditor, Resolver, Settlement, Orchestrator terms |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Orchestrator depends on all modules |
-| `04_MODULES/auditor.md` | ~1,300 | Boolean audit, no final ruling |
-| `04_MODULES/audit-resolver.md` | ~1,200 | 5 resolution rules, RewriteFeedback generation |
-| `04_MODULES/phase-consequence-settlement.md` | ~1,700 | Fact extraction, LLM settlement call |
-| `04_MODULES/orchestrator-control-hub.md` | ~1,400 | 7-step collaboration sequence |
-| `03_ORCHESTRATION/runtime-loop.md` | ~2,500 | Full loop: init -> generate -> audit -> rewrite -> phase-end |
-| `03_ORCHESTRATION/control-flow-and-decision-points.md` | ~1,500 | 9 decision points, code vs LLM ownership |
-| `05_CONTRACTS/audit-packet-schema.yaml` | ~1,300 | AuditPacket structure |
-| `05_CONTRACTS/audit-question-set-schema.yaml` | ~1,800 | AuditQuestionSet, selectionPolicy |
-| `05_CONTRACTS/phase-consequence-packet-schema.yaml` | ~1,800 | PhaseConsequencePacket req/res |
-| `05_CONTRACTS/collapse-packet-schema.yaml` | ~1,500 | CollapsePacket req/res |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | Full StateSnapshot |
-| `05_CONTRACTS/orchestrator-input-output.md` | ~1,000 | Module I/O summary |
+| File                                                   | Tokens | Purpose                                                      |
+| ------------------------------------------------------ | ------ | ------------------------------------------------------------ |
+| `00_META/agent-guide.md`                               | ~2,800 | Blocker protocol                                             |
+| `00_META/system-map.md`                                | ~1,000 | Architecture                                                 |
+| `02_DOMAIN/glossary.md`                                | ~1,100 | Auditor, Resolver, Settlement, Orchestrator terms            |
+| `05_CONTRACTS/module-dependency-map.md`                | ~900   | Orchestrator depends on all modules                          |
+| `04_MODULES/auditor.md`                                | ~1,300 | Boolean audit, no final ruling                               |
+| `04_MODULES/audit-resolver.md`                         | ~1,200 | 5 resolution rules, RewriteFeedback generation               |
+| `04_MODULES/phase-consequence-settlement.md`           | ~1,700 | Fact extraction, LLM settlement call                         |
+| `04_MODULES/orchestrator-control-hub.md`               | ~1,400 | 7-step collaboration sequence                                |
+| `03_ORCHESTRATION/runtime-loop.md`                     | ~2,500 | Full loop: init -> generate -> audit -> rewrite -> phase-end |
+| `03_ORCHESTRATION/control-flow-and-decision-points.md` | ~1,500 | 9 decision points, code vs LLM ownership                     |
+| `05_CONTRACTS/audit-packet-schema.yaml`                | ~1,300 | AuditPacket structure                                        |
+| `05_CONTRACTS/audit-question-set-schema.yaml`          | ~1,800 | AuditQuestionSet, selectionPolicy                            |
+| `05_CONTRACTS/phase-consequence-packet-schema.yaml`    | ~1,800 | PhaseConsequencePacket req/res                               |
+| `05_CONTRACTS/collapse-packet-schema.yaml`             | ~1,500 | CollapsePacket req/res                                       |
+| `05_CONTRACTS/state-snapshot-schema.yaml`              | ~3,000 | Full StateSnapshot                                           |
+| `05_CONTRACTS/orchestrator-input-output.md`            | ~1,000 | Module I/O summary                                           |
 
 ## Deliverables
 

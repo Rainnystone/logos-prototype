@@ -1,0 +1,72 @@
+# --- Agent Metadata ---
+# contract: audit-packet-schema
+# type: contract
+# consumed_by: [auditor, api-adapter-lite]
+# tokens_estimate: 1300
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.audit_packet
+title: LOGOS AuditPacket
+version: 1
+description: >
+  Auditor 的统一输入包结构。该结构由生成结果、可访问历史窗口和本轮问题清单组成，
+  用于生成后的是/否判定。
+type: object
+required:
+  - context
+  - generatedContent
+  - auditQuestions
+properties:
+  context:
+    type: object
+    required:
+      - precedingBeats
+    properties:
+      precedingBeats:
+        type: array
+        minItems: 0
+        description: 当前轮允许访问的前序 Beat 窗口。
+        items:
+          type: object
+          required:
+            - role
+            - content
+          properties:
+            role:
+              type: string
+              enum:
+                - system
+                - user
+                - assistant
+            content:
+              type: string
+  generatedContent:
+    type: object
+    required:
+      - beatText
+      - options
+    properties:
+      beatText:
+        type: string
+        description: 当前轮生成的 Beat 正文。
+      options:
+        type: array
+        minItems: 4
+        maxItems: 4
+        description: 当前轮生成的 4 个选项文本。
+        items:
+          type: string
+  auditQuestions:
+    type: array
+    minItems: 1
+    description: >
+      当前轮被选中的关键是否问题。问题必须短、明确、单义，并可被回答为是或否。
+    items:
+      type: string
+notes:
+  - 本 schema 对齐当前 API 适配器文档中的 audit 请求结构。
+  - 当前版本默认审计正文与 4 个选项的组合，而不是只审正文。
+  - 审计包不承担最终裁决；最终放行与否由代码侧 Resolver 决定。
+  - 每轮 auditQuestions 的来源是 audit-question-set-schema.yaml 中定义的完整问题集，经 Orchestrator 按 selectionPolicy 挑选后以字符串数组形式写入本包。
+  - Audit Resolver 在裁决时需要回查完整问题集中对应问题的 expected 与 blocking 属性。

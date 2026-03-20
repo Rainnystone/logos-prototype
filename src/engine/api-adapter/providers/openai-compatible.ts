@@ -3,6 +3,7 @@ import type {
   Provider,
   ProviderConfig,
   ProviderRequest,
+  ProviderResponseFormat,
   ProviderResponse,
 } from '@/engine/api-adapter/providers/provider-interface';
 
@@ -33,6 +34,54 @@ interface OpenAIApiResponse {
 
 function trimTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
+}
+
+function resolveChatCompletionsUrl(baseUrl: string): string {
+  const normalizedBaseUrl = trimTrailingSlash(baseUrl);
+
+  if (/\/chat\/completions$/i.test(normalizedBaseUrl)) {
+    return normalizedBaseUrl;
+  }
+
+  if (/\/chat\/completion$/i.test(normalizedBaseUrl)) {
+    return normalizedBaseUrl.replace(/\/chat\/completion$/i, '/chat/completions');
+  }
+
+  return `${normalizedBaseUrl}/chat/completions`;
+}
+
+function isGeminiOpenAICompatibleBaseUrl(baseUrl: string): boolean {
+  return /generativelanguage\.googleapis\.com/i.test(baseUrl);
+}
+
+function supportsJsonSchemaResponseFormat(baseUrl: string): boolean {
+  return isGeminiOpenAICompatibleBaseUrl(baseUrl) || /api\.openai\.com/i.test(baseUrl);
+}
+
+function resolveResponseFormat(
+  baseUrl: string,
+  requestResponseFormat: ProviderResponseFormat | undefined,
+): Record<string, unknown> {
+  if (!requestResponseFormat) {
+    return { type: 'json_object' };
+  }
+
+  if (requestResponseFormat.type === 'json_object') {
+    return { type: 'json_object' };
+  }
+
+  if (!supportsJsonSchemaResponseFormat(baseUrl)) {
+    return { type: 'json_object' };
+  }
+
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: requestResponseFormat.name,
+      schema: requestResponseFormat.schema,
+      strict: requestResponseFormat.strict ?? true,
+    },
+  };
 }
 
 function extractMessageContent(content: string | readonly OpenAIContentPart[] | undefined): string {
@@ -84,7 +133,16 @@ export function createOpenAICompatibleProvider(
 ): Provider {
   return {
     async call(request: ProviderRequest): Promise<ProviderResponse> {
-      const url = `${trimTrailingSlash(config.baseUrl)}/chat/completions`;
+      const url = resolveChatCompletionsUrl(config.baseUrl);
+      const requestBody: Record<string, unknown> = {
+        model: request.model ?? config.model,
+        messages: request.system
+          ? [{ role: 'system', content: request.system }, ...request.messages]
+          : request.messages,
+        temperature: request.temperature,
+        max_tokens: request.maxOutputTokens,
+        response_format: resolveResponseFormat(config.baseUrl, request.responseFormat),
+      };
 
       let response: Response;
       try {
@@ -94,15 +152,7 @@ export function createOpenAICompatibleProvider(
             'Content-Type': 'application/json',
             Authorization: `Bearer ${config.apiKey}`,
           },
-          body: JSON.stringify({
-            model: request.model ?? config.model,
-            messages: request.system
-              ? [{ role: 'system', content: request.system }, ...request.messages]
-              : request.messages,
-            temperature: request.temperature,
-            max_tokens: request.maxOutputTokens,
-            response_format: { type: 'json_object' },
-          }),
+          body: JSON.stringify(requestBody),
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown network error';

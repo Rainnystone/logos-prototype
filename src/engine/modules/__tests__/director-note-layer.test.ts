@@ -9,6 +9,8 @@ const baseRoundState: RoundState = {
   currentRouter: '悬疑/探案',
   verbLexicon: ['勘查', '演绎', '潜伏', '干预'],
   historyWindow: [],
+  directorConstraints:
+    '[AQ-G-001] For "宫下藤花是否察觉到了异常，或者表现出对生命安全的恐慌？", the correct answer must be NO. [AQ-C-001] For "本轮 Beat 正文是否符合当前声量要求？", the correct answer must be YES.',
 };
 
 const baseSceneState: SceneState = {
@@ -64,15 +66,19 @@ describe('Director Note Layer', () => {
     expect(directorNote.beatConstraints).toMatch(/real-time|standard pacing|causal chain/i);
   });
 
-  it('references Alpha, Beta, and phaseGoal in beat constraints', () => {
+  it('references Alpha, Beta, phaseGoal, canon grounding, and audit answer targets in beat constraints', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
 
     expect(directorNote.beatConstraints).toContain(baseSceneState.alpha);
     expect(directorNote.beatConstraints).toContain(baseSceneState.beta);
     expect(directorNote.beatConstraints).toContain(baseRoundState.phaseGoal);
+    expect(directorNote.beatConstraints).toMatch(/wall of text|paragraph/i);
+    expect(directorNote.beatConstraints).toMatch(/local canon authority|franchise|worldview/i);
+    expect(directorNote.beatConstraints).toContain('宫下藤花是否察觉到了异常');
+    expect(directorNote.beatConstraints).toMatch(/correct answer must be NO/i);
   });
 
-  it('references verb lexicon, anti-OOC, boundaries, and volume in option constraints', () => {
+  it('references verb lexicon, anti-OOC, boundaries, volume, and audit answer targets in option constraints', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
 
     for (const verb of baseRoundState.verbLexicon) {
@@ -83,6 +89,8 @@ describe('Director Note Layer', () => {
     expect(directorNote.optionConstraints).toContain(baseSceneState.alpha);
     expect(directorNote.optionConstraints).toContain(baseSceneState.beta);
     expect(directorNote.optionConstraints).toContain(baseRoundState.currentVolume);
+    expect(directorNote.optionConstraints).toContain('本轮 Beat 正文是否符合当前声量要求');
+    expect(directorNote.optionConstraints).toMatch(/correct answer must be YES/i);
   });
 
   it('works with minimal required RoundState fields', () => {

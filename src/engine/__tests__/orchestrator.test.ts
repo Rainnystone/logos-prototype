@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import { createOrchestrator } from '@/engine/orchestrator';
 import * as phaseGradientModule from '@/engine/modules/phase-gradient';
-import * as narrativeRouterModule from '@/engine/modules/narrative-router';
 import * as directorNoteModule from '@/engine/modules/director-note-layer';
 import * as promptAssemblerModule from '@/engine/modules/prompt-assembler';
 import {
@@ -40,14 +39,13 @@ describe('Orchestrator', () => {
   });
 
   it('runs a beat generation cycle in the expected module order and accepts on audit pass', async () => {
-    const { adapter, generateCalls, auditCalls } = createRecordingAdapter();
+    const { adapter, generateCalls, auditCalls, routeCalls } = createRecordingAdapter();
     const orchestrator = createOrchestrator({
       adapter,
       storyPackage: storyPackageFixture,
     });
     const callOrder: string[] = [];
     const originalBuildVolumeSequence = phaseGradientModule.buildVolumeSequence;
-    const originalSelectRouter = narrativeRouterModule.selectRouter;
     const originalBuildDirectorNote = directorNoteModule.buildDirectorNote;
     const originalAssemblePromptObject = promptAssemblerModule.assemblePromptObject;
 
@@ -56,10 +54,6 @@ describe('Orchestrator', () => {
     vi.spyOn(phaseGradientModule, 'buildVolumeSequence').mockImplementation((...args) => {
       callOrder.push('gradient');
       return originalBuildVolumeSequence(...args);
-    });
-    vi.spyOn(narrativeRouterModule, 'selectRouter').mockImplementation((...args) => {
-      callOrder.push('router');
-      return originalSelectRouter(...args);
     });
     vi.spyOn(directorNoteModule, 'buildDirectorNote').mockImplementation((...args) => {
       callOrder.push('director');
@@ -72,7 +66,8 @@ describe('Orchestrator', () => {
 
     const { beatResult, state } = await orchestrator.runBeat('player-choice-1');
 
-    expect(callOrder.slice(0, 4)).toEqual(['gradient', 'router', 'director', 'assemble']);
+    expect(routeCalls).toHaveLength(3);
+    expect(callOrder.slice(0, 3)).toEqual(['gradient', 'director', 'assemble']);
     expect(generateCalls).toHaveLength(1);
     expect(auditCalls).toHaveLength(1);
     expect(beatResult.auditPassed).toBe(true);
@@ -114,6 +109,7 @@ describe('Orchestrator', () => {
 
     expect(generateCalls).toHaveLength(2);
     expect(rewriteSpy).toHaveBeenCalledTimes(1);
+    expect(generateCalls[1]?.generationControl?.rewriteFeedback).toContain('Correct answer: YES');
     expect(beatResult.retryCount).toBe(1);
     expect(beatResult.auditPassed).toBe(true);
     expect(state.generationState.currentBeatText).toBe('rewritten-beat');

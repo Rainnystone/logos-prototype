@@ -5,21 +5,28 @@ import {
   buildCollapseUserPrompt,
   buildGenerateFinalUserMessage,
   buildGenerateSystemPrompt,
+  buildRouteSystemPrompt,
+  buildRouteUserPrompt,
   buildSettlementSystemPrompt,
   buildSettlementUserPrompt,
 } from '@/engine/api-adapter/prompt-templates';
 import type {
   ModeConfig,
   ProviderRequest,
+  ProviderResponseFormat,
   ProviderType,
 } from '@/engine/api-adapter/providers/provider-interface';
-import type { CollapseInput } from '@/engine/types/adapter-interface';
+import type { CollapseInput, RouteRequest } from '@/engine/types/adapter-interface';
 import type { AuditPacket, PhaseConsequenceRequest, PromptObject } from '@/types';
 
 const MODE_DEFAULTS = {
+  route: {
+    temperature: 0.2,
+    maxOutputTokens: 4096,
+  },
   generate: {
-    temperature: 0.8,
-    maxOutputTokens: 2048,
+    temperature: 1,
+    maxOutputTokens: 36864,
   },
   audit: {
     temperature: 0.3,
@@ -31,11 +38,119 @@ const MODE_DEFAULTS = {
   },
   collapse: {
     temperature: 0.5,
-    maxOutputTokens: 1024,
+    maxOutputTokens: 36864,
   },
 } as const;
 
 export const DEFAULT_MODE_CONFIGS = MODE_DEFAULTS;
+
+const ROUTE_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_route_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['routerName', 'inferenceTrace'],
+    properties: {
+      routerName: {
+        type: 'string',
+      },
+      inferenceTrace: {
+        type: 'string',
+      },
+    },
+  },
+};
+
+const GENERATE_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_generate_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['beatText', 'options'],
+    properties: {
+      beatText: {
+        type: 'string',
+      },
+      options: {
+        type: 'array',
+        minItems: 4,
+        maxItems: 4,
+        items: {
+          type: 'string',
+        },
+      },
+    },
+  },
+};
+
+const AUDIT_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_audit_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['answers'],
+    properties: {
+      answers: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'boolean',
+        },
+      },
+    },
+  },
+};
+
+const SETTLEMENT_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_phase_consequence_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['phaseConsequences', 'settlementTrace'],
+    properties: {
+      phaseConsequences: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'string',
+        },
+      },
+      settlementTrace: {
+        type: 'string',
+      },
+    },
+  },
+};
+
+const COLLAPSE_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_collapse_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['alpha', 'beta', 'inferenceTrace'],
+    properties: {
+      alpha: {
+        type: 'string',
+      },
+      beta: {
+        type: 'string',
+      },
+      inferenceTrace: {
+        type: 'string',
+      },
+    },
+  },
+};
 
 function resolveModeConfig(
   mode: keyof typeof MODE_DEFAULTS,
@@ -64,7 +179,26 @@ export function mapForGenerate(
         content: buildGenerateFinalUserMessage(prompt),
       },
     ],
+    responseFormat: GENERATE_RESPONSE_FORMAT,
     ...resolveModeConfig('generate', override),
+  };
+}
+
+export function mapForRoute(
+  request: RouteRequest,
+  _provider: ProviderType,
+  override?: ModeConfig,
+): ProviderRequest {
+  return {
+    system: buildRouteSystemPrompt(),
+    messages: [
+      {
+        role: 'user',
+        content: buildRouteUserPrompt(request),
+      },
+    ],
+    responseFormat: ROUTE_RESPONSE_FORMAT,
+    ...resolveModeConfig('route', override),
   };
 }
 
@@ -81,6 +215,7 @@ export function mapForAudit(
         content: buildAuditUserPrompt(packet),
       },
     ],
+    responseFormat: AUDIT_RESPONSE_FORMAT,
     ...resolveModeConfig('audit', override),
   };
 }
@@ -98,6 +233,7 @@ export function mapForSettlement(
         content: buildSettlementUserPrompt(packet),
       },
     ],
+    responseFormat: SETTLEMENT_RESPONSE_FORMAT,
     ...resolveModeConfig('settlement', override),
   };
 }
@@ -115,6 +251,7 @@ export function mapForCollapse(
         content: buildCollapseUserPrompt(packet),
       },
     ],
+    responseFormat: COLLAPSE_RESPONSE_FORMAT,
     ...resolveModeConfig('collapse', override),
   };
 }

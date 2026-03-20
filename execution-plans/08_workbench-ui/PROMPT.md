@@ -1,21 +1,21 @@
 ---
-phase: "08"
-title: "Workbench UI"
-branch: "phase/08-workbench-ui"
-depends_on: ["07"]
+phase: '08'
+title: 'Workbench UI'
+branch: 'phase/08-workbench-ui'
+depends_on: ['07']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/08_UX/information-architecture.md"
-    - "LOGOS-SPEC/08_UX/key-user-flows.md"
-    - "LOGOS-SPEC/08_UX/screen-inventory.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml"
+    - 'LOGOS-SPEC/08_UX/information-architecture.md'
+    - 'LOGOS-SPEC/08_UX/key-user-flows.md'
+    - 'LOGOS-SPEC/08_UX/screen-inventory.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 14000
@@ -30,18 +30,18 @@ Build the author workbench UI using Next.js App Router. This is the visual inter
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture |
-| `02_DOMAIN/glossary.md` | ~1,100 | UI-relevant terms |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | UI has no module dependencies (consumes Orchestrator) |
-| `08_UX/information-architecture.md` | ~3,000 | Page structure, navigation model |
-| `08_UX/key-user-flows.md` | ~3,000 | User journey: load -> play -> inspect |
-| `08_UX/screen-inventory.md` | ~3,000 | Screen list, component breakdown |
-| `03_ORCHESTRATION/runtime-loop.md` | ~2,500 | What the UI must visualize |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | State fields displayed in inspector |
-| `05_CONTRACTS/prompt-object-schema.yaml` | ~2,500 | PromptObject fields for debug view |
+| File                                      | Tokens | Purpose                                               |
+| ----------------------------------------- | ------ | ----------------------------------------------------- |
+| `00_META/agent-guide.md`                  | ~2,800 | Blocker protocol                                      |
+| `00_META/system-map.md`                   | ~1,000 | Architecture                                          |
+| `02_DOMAIN/glossary.md`                   | ~1,100 | UI-relevant terms                                     |
+| `05_CONTRACTS/module-dependency-map.md`   | ~900   | UI has no module dependencies (consumes Orchestrator) |
+| `08_UX/information-architecture.md`       | ~3,000 | Page structure, navigation model                      |
+| `08_UX/key-user-flows.md`                 | ~3,000 | User journey: load -> play -> inspect                 |
+| `08_UX/screen-inventory.md`               | ~3,000 | Screen list, component breakdown                      |
+| `03_ORCHESTRATION/runtime-loop.md`        | ~2,500 | What the UI must visualize                            |
+| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | State fields displayed in inspector                   |
+| `05_CONTRACTS/prompt-object-schema.yaml`  | ~2,500 | PromptObject fields for debug view                    |
 
 ## Deliverables
 

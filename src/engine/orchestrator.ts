@@ -4,8 +4,8 @@ import { resolveAudit } from '@/engine/modules/audit-resolver';
 import { buildDirectorNote } from '@/engine/modules/director-note-layer';
 import { createLightConeCollapse } from '@/engine/modules/light-cone-collapse';
 import { getHistoryWindow } from '@/engine/modules/memory-placeholder';
-import { executeAudit } from '@/engine/modules/auditor';
-import { selectRouter } from '@/engine/modules/narrative-router';
+import { executeAudit, selectAuditQuestions } from '@/engine/modules/auditor';
+import { createNarrativeRouter, type RouterSelection } from '@/engine/modules/narrative-router';
 import {
   buildPhaseConsequenceRequest,
   settlePhaseConsequences,
@@ -19,11 +19,13 @@ import {
 import type {
   StateSnapshot,
   StoryPackage,
+  AuditQuestion,
   HistoryEntry,
   PhasePlan,
   PromptObject,
   DirectorNote,
   RoundState,
+  SceneState,
 } from '@/types';
 import type { GenerateResult, LLMAdapter } from '@/engine/types/adapter-interface';
 
@@ -84,6 +86,19 @@ function freezeState(state: StateSnapshot): StateSnapshot {
   return deepFreeze(validateStateSnapshot(state));
 }
 
+function buildAuditAnswerTargets(selectedQuestions: readonly AuditQuestion[]): string {
+  if (selectedQuestions.length === 0) {
+    return '';
+  }
+
+  return selectedQuestions
+    .map((question) => {
+      const expectedAnswer = question.expected ? 'YES' : 'NO';
+      return `[${question.id}] For "${question.question}", the correct answer must be ${expectedAnswer}.`;
+    })
+    .join(' ');
+}
+
 function buildPromptAssemblerInput(
   storyPackage: StoryPackage,
   phasePlan: PhasePlan,
@@ -103,11 +118,39 @@ function buildPromptAssemblerInput(
   };
 }
 
+function buildRouteRequest(
+  storyPackage: StoryPackage,
+  phasePlan: PhasePlan,
+  sceneState: SceneState,
+  historyWindow: readonly HistoryEntry[],
+  currentVolume: StateSnapshot['roundState']['currentVolume'],
+) {
+  const context = {
+    phaseGoal: phasePlan.phaseGoal,
+    currentVolume,
+    alpha: sceneState.alpha,
+    beta: sceneState.beta,
+    ...(sceneState.sceneProgress ? { sceneProgress: sceneState.sceneProgress } : {}),
+    ...(phasePlan.routerHint ? { routerHint: phasePlan.routerHint } : {}),
+  };
+
+  return {
+    context,
+    historyWindow: historyWindow.map(cloneHistoryEntry),
+    availableRouters: storyPackage.routerProfiles.map((profile) => ({
+      routerName: profile.routerName,
+      routerSemanticCore: profile.routerSemanticCore,
+      verbLexicon: [...profile.verbLexicon],
+    })),
+  };
+}
+
 function buildRoundState(
   phasePlan: PhasePlan,
   currentVolume: StateSnapshot['roundState']['currentVolume'],
-  routerSelection: ReturnType<typeof selectRouter>,
+  routerSelection: RouterSelection,
   historyWindow: readonly HistoryEntry[],
+  directorConstraints?: string,
 ): RoundState {
   return {
     phaseGoal: phasePlan.phaseGoal,
@@ -115,11 +158,13 @@ function buildRoundState(
     currentRouter: routerSelection.routerName,
     verbLexicon: [...routerSelection.verbLexicon],
     historyWindow: historyWindow.map(cloneHistoryEntry),
+    directorConstraints,
   };
 }
 
 export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   const lightConeCollapse = createLightConeCollapse(config.adapter);
+  const narrativeRouter = createNarrativeRouter(config.adapter);
   let currentState: StateSnapshot | null = null;
   let sceneComplete = false;
   let acceptedHistory: HistoryEntry[] = [];
@@ -216,8 +261,20 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         phaseConsequences: [] as string[],
       };
       const initialVolume = buildVolumeSequence(firstPhase.gradientType)[0]!;
-      const initialRouter = selectRouter(config.storyPackage.routerProfiles, firstPhase.routerHint);
-      const initialRoundState = buildRoundState(firstPhase, initialVolume, initialRouter, []);
+      const initialRouter = await narrativeRouter.selectRouter(
+        buildRouteRequest(config.storyPackage, firstPhase, initialSceneState, [], initialVolume),
+      );
+      const { selectedQuestions: initialAuditQuestions } = selectAuditQuestions(
+        config.storyPackage.auditQuestionSet,
+        firstPhase.phaseId,
+      );
+      const initialRoundState = buildRoundState(
+        firstPhase,
+        initialVolume,
+        initialRouter,
+        [],
+        buildAuditAnswerTargets(initialAuditQuestions),
+      );
       const initialDirectorNote = buildDirectorNote(
         initialRoundState,
         initialSceneState,
@@ -269,11 +326,26 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       const currentVolume = buildVolumeSequence(phasePlan.gradientType)[
         stateBeforeBeat.sceneState.currentBeatIndexInPhase - 1
       ]!;
-      const routerSelection = selectRouter(
-        config.storyPackage.routerProfiles,
-        phasePlan.routerHint,
+      const routerSelection = await narrativeRouter.selectRouter(
+        buildRouteRequest(
+          config.storyPackage,
+          phasePlan,
+          stateBeforeBeat.sceneState,
+          historyWindow,
+          currentVolume,
+        ),
       );
-      const roundState = buildRoundState(phasePlan, currentVolume, routerSelection, historyWindow);
+      const { selectedQuestions } = selectAuditQuestions(
+        config.storyPackage.auditQuestionSet,
+        phasePlan.phaseId,
+      );
+      const roundState = buildRoundState(
+        phasePlan,
+        currentVolume,
+        routerSelection,
+        historyWindow,
+        buildAuditAnswerTargets(selectedQuestions),
+      );
       const directorNote = buildDirectorNote(
         roundState,
         stateBeforeBeat.sceneState,
@@ -356,9 +428,14 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
 
           const nextHistoryWindow = getHistoryWindow(acceptedHistory);
           const nextVolume = buildVolumeSequence(nextPhasePlan.gradientType)[0]!;
-          const nextRouter = selectRouter(
-            config.storyPackage.routerProfiles,
-            nextPhasePlan.routerHint,
+          const nextRouter = await narrativeRouter.selectRouter(
+            buildRouteRequest(
+              config.storyPackage,
+              nextPhasePlan,
+              nextSceneState,
+              nextHistoryWindow,
+              nextVolume,
+            ),
           );
 
           nextRoundState = buildRoundState(
@@ -366,6 +443,10 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
             nextVolume,
             nextRouter,
             nextHistoryWindow,
+            buildAuditAnswerTargets(
+              selectAuditQuestions(config.storyPackage.auditQuestionSet, nextPhasePlan.phaseId)
+                .selectedQuestions,
+            ),
           );
           currentPhaseTranscript = [];
         } else {
@@ -382,16 +463,27 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       } else {
         const nextBeatIndex = completedBeatCount + 1;
         const nextVolume = buildVolumeSequence(phasePlan.gradientType)[nextBeatIndex - 1]!;
+        const nextHistoryWindow = getHistoryWindow(acceptedHistory);
 
         nextSceneState = {
           ...nextSceneState,
           currentBeatIndexInPhase: nextBeatIndex,
         };
+        const nextRouter = await narrativeRouter.selectRouter(
+          buildRouteRequest(
+            config.storyPackage,
+            phasePlan,
+            nextSceneState,
+            nextHistoryWindow,
+            nextVolume,
+          ),
+        );
         nextRoundState = buildRoundState(
           phasePlan,
           nextVolume,
-          routerSelection,
-          getHistoryWindow(acceptedHistory),
+          nextRouter,
+          nextHistoryWindow,
+          buildAuditAnswerTargets(selectedQuestions),
         );
       }
 

@@ -13,9 +13,7 @@ import {
 } from '@/types/story-package';
 
 const projectFixtureRoot = path.resolve(process.cwd(), 'src/story-packages/sample-scene');
-const designFixtureRoot = path.resolve(
-  '/Users/tachikoma/Library/CloudStorage/OneDrive-个人/Obsidian/L.O.G.O.S/LOGOS-Design/LOGOS-SPEC/06_FIXTURES/sample-scene',
-);
+const designFixtureRoot = path.resolve(process.cwd(), 'vendor/LOGOS-SPEC/06_FIXTURES/sample-scene');
 
 function readYamlFile<T>(filePath: string): T {
   return YAML.parse(readFileSync(filePath, 'utf8')) as T;
@@ -30,6 +28,20 @@ function extractOverviewValue(fieldName: string): string {
   }
 
   return match[1];
+}
+
+function extractAuditRulesFromMarkdown(): Array<{ question: string; expected: boolean }> {
+  const auditRules = readFileSync(
+    path.resolve(designFixtureRoot, 'story-source/audit-rules.md'),
+    'utf8',
+  );
+
+  return Array.from(auditRules.matchAll(/^\s*-\s+(.+?[？?])\(必须为：([是否])\)\s*$/gm)).map(
+    (match) => ({
+      question: match[1]!.trim(),
+      expected: match[2] === '是',
+    }),
+  );
 }
 
 describe('sample-scene story package', () => {
@@ -76,18 +88,43 @@ describe('sample-scene story package', () => {
     );
   });
 
-  it('converts audit question fixtures without losing selection policy data', () => {
+  it('derives audit questions from audit-rules.md and removes redundant legacy checks', () => {
     const auditQuestionSet = AuditQuestionSetSchema.parse(
       readYamlFile(path.resolve(projectFixtureRoot, 'audit-questions.yaml')),
     );
-    const designAuditQuestionSet = readYamlFile<Record<string, unknown>>(
-      path.resolve(designFixtureRoot, 'audit-questions.yaml'),
+    const projectQuestions = [
+      ...auditQuestionSet.globalQuestions,
+      ...auditQuestionSet.controlQuestions,
+      ...Object.values(auditQuestionSet.phaseSpecificQuestions ?? {}).flat(),
+    ];
+    const questionIndex = new Map(
+      projectQuestions.map((question) => [`${question.question}::${question.expected}`, question]),
     );
-    const contractFields = Object.fromEntries(
-      Object.entries(designAuditQuestionSet).filter(([key]) => key !== 'description'),
-    );
+    const expectedAuditRules = extractAuditRulesFromMarkdown();
 
-    expect(auditQuestionSet).toEqual(AuditQuestionSetSchema.parse(contractFields));
+    expect(auditQuestionSet.source).toBe('story-source/audit-rules.md');
+
+    for (const rule of expectedAuditRules) {
+      expect(questionIndex.has(`${rule.question}::${rule.expected}`)).toBe(true);
+    }
+
+    expect(projectQuestions.some((question) => question.question.includes('光锥边界'))).toBe(false);
+    expect(projectQuestions.some((question) => question.question.includes('角色明显 OOC'))).toBe(
+      false,
+    );
+    expect(auditQuestionSet.selectionPolicy.default).not.toContain('AQ-C-003');
+    expect(
+      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-01-prologue']?.append,
+    ).toContain('AQ-P1-001');
+    expect(
+      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-signal-chase']?.append,
+    ).toContain('AQ-P2-001');
+    expect(
+      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-03-first-contact']?.append,
+    ).toContain('AQ-P3-000');
+    expect(
+      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-04-streamer-domain']?.append,
+    ).toContain('AQ-P4-000');
   });
 
   it('stores world-base content in machine-parseable YAML', () => {

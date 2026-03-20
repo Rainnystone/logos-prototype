@@ -14,18 +14,19 @@ LOGOS 是一个 AI 驱动的叙事编排引擎 (narrative orchestration engine)�
 
 ## 关联仓库
 
-| 仓库 | 地址 | 职责 |
-|------|------|------|
-| **LOGOS** (本仓库) | https://github.com/lishtys/LOGOS | 引擎实现代码 |
-| **LOGOS-Design** | https://github.com/Rainnystone/LOGOS-Design | 设计规格文档（权威依据） |
+| 仓库               | 地址                                        | 职责                     |
+| ------------------ | ------------------------------------------- | ------------------------ |
+| **LOGOS** (本仓库) | https://github.com/lishtys/LOGOS            | 引擎实现代码             |
+| **LOGOS-Design**   | https://github.com/Rainnystone/LOGOS-Design | 设计规格文档（权威依据） |
 
-> 规格与实现如有矛盾，以 `LOGOS-Design/LOGOS-SPEC` 为准（除非有 ADR 明确覆盖）。
-> 切换工作电脑时，需将两个仓库 clone 到同级目录下：
+> 规格与实现如有矛盾，以仓库内 vendored spec `vendor/LOGOS-SPEC` 为准（除非有 ADR 明确覆盖）。
+> 本仓库已内置一份只读 spec 镜像，供本地运行、测试和协作使用：
+>
 > ```
-> GitHub/
-> ├── LOGOS/              ← 本仓库
-> └── LOGOS-Design/       ← 设计仓库
->     └── LOGOS-SPEC/     ← 规格目录
+> LOGOS/
+> ├── vendor/
+> │   └── LOGOS-SPEC/     ← 只读 spec 镜像
+> └── src/                ← 实现代码
 > ```
 
 ## 快速开始
@@ -60,6 +61,8 @@ LOGOS/
 │   │   └── api-adapter/  # LLM API 适配层
 │   ├── types/            # TypeScript 类型定义
 │   └── loader/           # Story package 加载器
+├── vendor/
+│   └── LOGOS-SPEC/       # Vendored 设计规格（只读镜像）
 ├── story-packages/       # 叙事内容包（YAML）
 ├── tests/                # 测试文件
 ├── execution-plans/      # 分阶段执行计划

@@ -1,21 +1,21 @@
 ---
-phase: "03"
-title: "Director Note Layer + Option Generator"
-branch: "phase/03-director-options"
-depends_on: ["01", "02"]
+phase: '03'
+title: 'Director Note Layer + Option Generator'
+branch: 'phase/03-director-options'
+depends_on: ['01', '02']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/04_MODULES/director-note-layer.md"
-    - "LOGOS-SPEC/04_MODULES/option-generator.md"
-    - "LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md"
-    - "LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml"
-    - "LOGOS-SPEC/02_DOMAIN/control-primitives.md"
+    - 'LOGOS-SPEC/04_MODULES/director-note-layer.md'
+    - 'LOGOS-SPEC/04_MODULES/option-generator.md'
+    - 'LOGOS-SPEC/03_ORCHESTRATION/runtime-loop.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml'
+    - 'LOGOS-SPEC/02_DOMAIN/control-primitives.md'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 12000
@@ -30,18 +30,18 @@ Implement the two modules that bridge control signals into generation constraint
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture |
-| `02_DOMAIN/glossary.md` | ~1,100 | Director Note, Option Set, Beat Volume terms |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Director/Option dependency graph |
-| `04_MODULES/director-note-layer.md` | ~1,600 | 5 sub-parts, input/output spec |
-| `04_MODULES/option-generator.md` | ~1,600 | 3-step pipeline: Router -> Anti-OOC CoT -> Volume |
-| `03_ORCHESTRATION/runtime-loop.md` | ~2,500 | Where Director Note fits in the loop |
-| `05_CONTRACTS/prompt-object-schema.yaml` | ~2,500 | directorNote object structure |
-| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | RoundState fields consumed by Director |
-| `02_DOMAIN/control-primitives.md` | ~2,000 | Volume effects, Router semantics |
+| File                                      | Tokens | Purpose                                           |
+| ----------------------------------------- | ------ | ------------------------------------------------- |
+| `00_META/agent-guide.md`                  | ~2,800 | Blocker protocol                                  |
+| `00_META/system-map.md`                   | ~1,000 | Architecture                                      |
+| `02_DOMAIN/glossary.md`                   | ~1,100 | Director Note, Option Set, Beat Volume terms      |
+| `05_CONTRACTS/module-dependency-map.md`   | ~900   | Director/Option dependency graph                  |
+| `04_MODULES/director-note-layer.md`       | ~1,600 | 5 sub-parts, input/output spec                    |
+| `04_MODULES/option-generator.md`          | ~1,600 | 3-step pipeline: Router -> Anti-OOC CoT -> Volume |
+| `03_ORCHESTRATION/runtime-loop.md`        | ~2,500 | Where Director Note fits in the loop              |
+| `05_CONTRACTS/prompt-object-schema.yaml`  | ~2,500 | directorNote object structure                     |
+| `05_CONTRACTS/state-snapshot-schema.yaml` | ~3,000 | RoundState fields consumed by Director            |
+| `02_DOMAIN/control-primitives.md`         | ~2,000 | Volume effects, Router semantics                  |
 
 ## Deliverables
 

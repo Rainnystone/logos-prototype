@@ -1,23 +1,23 @@
 ---
-phase: "05"
-title: "API Adapter Lite"
-branch: "phase/05-api-adapter"
-depends_on: ["04"]
+phase: '05'
+title: 'API Adapter Lite'
+branch: 'phase/05-api-adapter'
+depends_on: ['04']
 spec_context_load:
   phase_0:
-    - "LOGOS-SPEC/00_META/agent-guide.md"
-    - "LOGOS-SPEC/00_META/system-map.md"
-    - "LOGOS-SPEC/02_DOMAIN/glossary.md"
-    - "LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md"
+    - 'LOGOS-SPEC/00_META/agent-guide.md'
+    - 'LOGOS-SPEC/00_META/system-map.md'
+    - 'LOGOS-SPEC/02_DOMAIN/glossary.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md'
   phase_specific:
-    - "LOGOS-SPEC/04_MODULES/api-adapter-lite/overview.md"
-    - "LOGOS-SPEC/04_MODULES/api-adapter-lite/interface-contracts.md"
-    - "LOGOS-SPEC/04_MODULES/api-adapter-lite/schema-mapper.md"
-    - "LOGOS-SPEC/04_MODULES/api-adapter-lite/runtime.md"
-    - "LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml"
-    - "LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml"
+    - 'LOGOS-SPEC/04_MODULES/api-adapter-lite/overview.md'
+    - 'LOGOS-SPEC/04_MODULES/api-adapter-lite/interface-contracts.md'
+    - 'LOGOS-SPEC/04_MODULES/api-adapter-lite/schema-mapper.md'
+    - 'LOGOS-SPEC/04_MODULES/api-adapter-lite/runtime.md'
+    - 'LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml'
+    - 'LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml'
 estimated_tokens:
   phase_0: 4500
   phase_specific: 22000
@@ -32,20 +32,20 @@ Implement the API Adapter Lite -- the provider abstraction layer that handles al
 
 ## Spec Context
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `00_META/agent-guide.md` | ~2,800 | Blocker protocol |
-| `00_META/system-map.md` | ~1,000 | Architecture |
-| `02_DOMAIN/glossary.md` | ~1,100 | API Adapter definition |
-| `05_CONTRACTS/module-dependency-map.md` | ~900 | Adapter dependency rules |
-| `04_MODULES/api-adapter-lite/overview.md` | ~3,500 | Architecture, 4 modes, file structure |
+| File                                                 | Tokens | Purpose                                                     |
+| ---------------------------------------------------- | ------ | ----------------------------------------------------------- |
+| `00_META/agent-guide.md`                             | ~2,800 | Blocker protocol                                            |
+| `00_META/system-map.md`                              | ~1,000 | Architecture                                                |
+| `02_DOMAIN/glossary.md`                              | ~1,100 | API Adapter definition                                      |
+| `05_CONTRACTS/module-dependency-map.md`              | ~900   | Adapter dependency rules                                    |
+| `04_MODULES/api-adapter-lite/overview.md`            | ~3,500 | Architecture, 4 modes, file structure                       |
 | `04_MODULES/api-adapter-lite/interface-contracts.md` | ~4,000 | generate/audit/settlement/collapse request/response formats |
-| `04_MODULES/api-adapter-lite/schema-mapper.md` | ~3,000 | OpenAI + Gemini format mapping |
-| `04_MODULES/api-adapter-lite/runtime.md` | ~3,500 | TokenInspector, provider config, backend proxy |
-| `05_CONTRACTS/prompt-object-schema.yaml` | ~2,500 | PromptObject (generate input) |
-| `05_CONTRACTS/audit-packet-schema.yaml` | ~1,300 | AuditPacket (audit input) |
-| `05_CONTRACTS/phase-consequence-packet-schema.yaml` | ~1,800 | PhaseConsequencePacket (settlement input) |
-| `05_CONTRACTS/collapse-packet-schema.yaml` | ~1,500 | CollapsePacket (collapse input) |
+| `04_MODULES/api-adapter-lite/schema-mapper.md`       | ~3,000 | OpenAI + Gemini format mapping                              |
+| `04_MODULES/api-adapter-lite/runtime.md`             | ~3,500 | TokenInspector, provider config, backend proxy              |
+| `05_CONTRACTS/prompt-object-schema.yaml`             | ~2,500 | PromptObject (generate input)                               |
+| `05_CONTRACTS/audit-packet-schema.yaml`              | ~1,300 | AuditPacket (audit input)                                   |
+| `05_CONTRACTS/phase-consequence-packet-schema.yaml`  | ~1,800 | PhaseConsequencePacket (settlement input)                   |
+| `05_CONTRACTS/collapse-packet-schema.yaml`           | ~1,500 | CollapsePacket (collapse input)                             |
 
 ## Deliverables
 

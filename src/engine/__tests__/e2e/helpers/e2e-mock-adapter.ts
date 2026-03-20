@@ -11,6 +11,7 @@ import type {
   CollapseInput,
   GenerateResult,
   LLMAdapter,
+  RouteRequest,
 } from '@/engine/types/adapter-interface';
 import type {
   AuditPacket,
@@ -23,7 +24,7 @@ import type {
 } from '@/types';
 
 export type AuditBehavior = 'pass' | 'fail-once' | 'fail-always';
-export type AdapterMode = 'generate' | 'audit' | 'settlement' | 'collapse';
+export type AdapterMode = 'generate' | 'audit' | 'settlement' | 'collapse' | 'route';
 
 export interface E2EMockAdapterConfig {
   readonly questionSet?: AuditQuestionSet;
@@ -40,6 +41,7 @@ export interface E2EMockAdapterHarness {
   readonly auditCalls: AuditPacket[];
   readonly settlementCalls: PhaseConsequenceRequest[];
   readonly collapseCalls: CollapseInput[];
+  readonly routeCalls: RouteRequest[];
   getCallCounts(): Readonly<Record<AdapterMode, number>>;
 }
 
@@ -138,6 +140,7 @@ export function createE2EMockAdapter(config: E2EMockAdapterConfig = {}): E2EMock
   const auditCalls: AuditPacket[] = [];
   const settlementCalls: PhaseConsequenceRequest[] = [];
   const collapseCalls: CollapseInput[] = [];
+  const routeCalls: RouteRequest[] = [];
 
   const questionMap = buildQuestionMap(config.questionSet);
 
@@ -160,6 +163,28 @@ export function createE2EMockAdapter(config: E2EMockAdapterConfig = {}): E2EMock
           beatText: response.beatText,
           options: [...response.options],
           ...(response.usage ? { usage: response.usage } : {}),
+        });
+      },
+
+      async route(request) {
+        callLog.push('route');
+        routeCalls.push(request);
+        const normalizedHint = request.context.routerHint?.trim();
+
+        const selectedRouter =
+          request.availableRouters.find((router) => router.routerName === normalizedHint) ??
+          request.availableRouters.find((router) =>
+            normalizedHint ? normalizedHint.includes(router.routerName) : false,
+          ) ??
+          request.availableRouters[0];
+
+        if (!selectedRouter) {
+          throw new Error('E2E mock route requires at least one available router.');
+        }
+
+        return deepFreeze({
+          routerName: selectedRouter.routerName,
+          inferenceTrace: `Route derived from volume ${request.context.currentVolume}.`,
         });
       },
 
@@ -213,12 +238,14 @@ export function createE2EMockAdapter(config: E2EMockAdapterConfig = {}): E2EMock
     auditCalls,
     settlementCalls,
     collapseCalls,
+    routeCalls,
     getCallCounts() {
       return {
         generate: generateCalls.length,
         audit: auditCalls.length,
         settlement: settlementCalls.length,
         collapse: collapseCalls.length,
+        route: routeCalls.length,
       };
     },
   };

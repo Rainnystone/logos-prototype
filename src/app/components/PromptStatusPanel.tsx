@@ -10,6 +10,7 @@ interface PromptStatusPanelProps {
 
 const DIAGNOSTIC_ORDER: readonly WorkbenchOperation[] = [
   'collapse',
+  'route',
   'generate',
   'audit',
   'settlement',

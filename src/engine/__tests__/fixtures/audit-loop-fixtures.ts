@@ -11,6 +11,7 @@ import type {
   CollapseInput,
   GenerateResult,
   LLMAdapter,
+  RouteRequest,
 } from '@/engine/types/adapter-interface';
 import type {
   AuditPacket,
@@ -133,6 +134,7 @@ export function createRecordingAdapter(options: RecordingAdapterOptions = {}) {
   const auditCalls: AuditPacket[] = [];
   const settlementCalls: PhaseConsequenceRequest[] = [];
   const collapseCalls: CollapseInput[] = [];
+  const routeCalls: RouteRequest[] = [];
 
   let generateIndex = 0;
   let auditIndex = 0;
@@ -152,6 +154,27 @@ export function createRecordingAdapter(options: RecordingAdapterOptions = {}) {
       );
 
       return deepFreeze(response);
+    },
+
+    async route(request) {
+      const normalizedHint = request.context.routerHint?.trim();
+      routeCalls.push(request);
+
+      const selectedRouter =
+        request.availableRouters.find((router) => router.routerName === normalizedHint) ??
+        request.availableRouters.find((router) =>
+          normalizedHint ? normalizedHint.includes(router.routerName) : false,
+        ) ??
+        request.availableRouters[0];
+
+      if (!selectedRouter) {
+        throw new Error('Recording adapter route requires at least one available router.');
+      }
+
+      return deepFreeze({
+        routerName: selectedRouter.routerName,
+        inferenceTrace: `route-trace-${routeCalls.length}`,
+      });
     },
 
     async generate(request) {
@@ -195,5 +218,6 @@ export function createRecordingAdapter(options: RecordingAdapterOptions = {}) {
     auditCalls,
     settlementCalls,
     collapseCalls,
+    routeCalls,
   };
 }

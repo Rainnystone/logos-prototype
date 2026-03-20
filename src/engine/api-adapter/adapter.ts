@@ -6,12 +6,14 @@ import {
   parseAuditResult,
   parseCollapseResult,
   parseGenerateResult,
+  parseRouteResult,
   parseSettlementResult,
 } from '@/engine/api-adapter/response-parsers';
 import {
   mapForAudit,
   mapForCollapse,
   mapForGenerate,
+  mapForRoute,
   mapForSettlement,
 } from '@/engine/api-adapter/schema-mapper';
 import { createAnthropicProvider } from '@/engine/api-adapter/providers/anthropic';
@@ -86,6 +88,16 @@ export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
   const provider = createProvider(config);
 
   return {
+    async route(routeRequest) {
+      const request = attachModel(
+        mapForRoute(routeRequest, config.provider, config.routeConfig),
+        config.providerConfig.model,
+      );
+      const response = await provider.call(request);
+
+      return deepFreeze(parseRouteResult(response.content, response.usage));
+    },
+
     async generate(promptObject) {
       const request = attachModel(
         mapForGenerate(validatePromptObject(promptObject), config.provider, config.generateConfig),

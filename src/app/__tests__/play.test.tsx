@@ -46,6 +46,31 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
       await wait(delayMs);
       return createCollapseResponse(request);
     },
+    async route(request) {
+      await wait(delayMs);
+      const normalizedHint = request.context.routerHint?.trim();
+
+      const selectedRouter =
+        request.availableRouters.find((router) => router.routerName === normalizedHint) ??
+        request.availableRouters.find((router) =>
+          normalizedHint ? normalizedHint.includes(router.routerName) : false,
+        ) ??
+        request.availableRouters[0];
+
+      if (!selectedRouter) {
+        throw new Error('Play adapter harness requires at least one available router.');
+      }
+
+      return {
+        routerName: selectedRouter.routerName,
+        inferenceTrace: 'route-trace',
+        usage: {
+          promptTokens: 72,
+          completionTokens: 14,
+          totalTokens: 86,
+        },
+      };
+    },
     async generate(promptObject) {
       generateCount += 1;
       await wait(delayMs);
@@ -123,6 +148,24 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
   };
 }
 
+async function startRound(
+  user: ReturnType<typeof userEvent.setup>,
+  options: { waitForAccepted?: boolean } = {},
+) {
+  const waitForAccepted = options.waitForAccepted ?? true;
+  const startButton = await screen.findByRole('button', { name: 'Start Round' });
+
+  await waitFor(() => {
+    expect(startButton).toBeEnabled();
+  });
+
+  await user.click(startButton);
+
+  if (waitForAccepted) {
+    await screen.findByText('Accepted');
+  }
+}
+
 describe('PlayWorkbench', () => {
   it('shows scene initialization before the workbench is ready', async () => {
     const harness = createPlayAdapterHarness();
@@ -139,9 +182,10 @@ describe('PlayWorkbench', () => {
     expect(screen.getByText('Initializing Scene...', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByText('Signal Room')).toBeInTheDocument();
     expect(
-      await screen.findByText('Beat 1 ready. Choose an option or write the next action.'),
+      await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.'),
     ).toBeInTheDocument();
     expect(screen.getByText('Ready')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start Round' })).toBeInTheDocument();
   });
 
   it('shows generating and auditing statuses before accepting a beat', async () => {
@@ -157,14 +201,14 @@ describe('PlayWorkbench', () => {
       />,
     );
 
-    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
+    await startRound(user);
     await user.type(screen.getByLabelText('Free text action'), 'Advance into the corridor.');
     await user.click(screen.getByRole('button', { name: 'Submit Action' }));
 
     expect(await screen.findByText('Generating...')).toBeInTheDocument();
     expect(await screen.findByText('Auditing...')).toBeInTheDocument();
     expect(await screen.findByText('Accepted')).toBeInTheDocument();
-    expect(await screen.findAllByText('Draft beat 1 for Investigation.')).toHaveLength(2);
+    expect(await screen.findAllByText('Draft beat 2 for Investigation.')).toHaveLength(2);
   });
 
   it('displays rewrite feedback when an audit failure triggers a retry', async () => {
@@ -180,9 +224,7 @@ describe('PlayWorkbench', () => {
       />,
     );
 
-    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
-    await user.type(screen.getByLabelText('Free text action'), 'Advance into the corridor.');
-    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+    await startRound(user, { waitForAccepted: false });
 
     expect(await screen.findByText('Rewriting...')).toBeInTheDocument();
     expect(await screen.findByText(/Blocking audit failures detected\./)).toBeInTheDocument();
@@ -202,9 +244,7 @@ describe('PlayWorkbench', () => {
       />,
     );
 
-    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
-    await user.type(screen.getByLabelText('Free text action'), 'Advance into the corridor.');
-    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+    await startRound(user);
 
     expect(await screen.findByText('Force accepted after retry limit')).toBeInTheDocument();
     await waitFor(() => {
@@ -225,13 +265,13 @@ describe('PlayWorkbench', () => {
       />,
     );
 
-    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
+    await startRound(user);
     await user.type(screen.getByLabelText('Free text action'), 'Cut the local power feed.');
     await user.click(screen.getByRole('button', { name: 'Submit Action' }));
 
-    expect(await screen.findAllByText('Draft beat 1 for Investigation.')).toHaveLength(2);
+    expect(await screen.findAllByText('Draft beat 2 for Investigation.')).toHaveLength(2);
     expect(
-      screen.getByText('Beat 2 ready. Choose an option or write the next action.'),
+      screen.getByText('Beat 3 ready. Choose an option or write the next action.'),
     ).toBeInTheDocument();
   });
 
@@ -248,7 +288,7 @@ describe('PlayWorkbench', () => {
       />,
     );
 
-    await screen.findByText('Beat 1 ready. Choose an option or write the next action.');
+    await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.');
 
     expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show Fixture Reference' }));
@@ -256,12 +296,14 @@ describe('PlayWorkbench', () => {
     expect(screen.getByText(storyPackageFixture.worldBase.locationPatch)).toBeInTheDocument();
     expect(screen.getByText('88 tokens')).toBeInTheDocument();
 
+    await startRound(user);
     await user.type(screen.getByLabelText('Free text action'), 'Inspect the relay cabinet.');
     await user.click(screen.getByRole('button', { name: 'Submit Action' }));
 
     expect(await screen.findByText('232 tokens')).toBeInTheDocument();
+    expect(await screen.findByText('86 tokens')).toBeInTheDocument();
     expect(await screen.findByText('112 tokens')).toBeInTheDocument();
-    expect(screen.getByText('Latest observed call: Audit')).toBeInTheDocument();
+    expect(screen.getByText('Latest observed call: Route')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Hide Fixture Reference' }));
     expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();

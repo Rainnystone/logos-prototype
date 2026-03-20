@@ -158,6 +158,7 @@ describe('providers', () => {
     ]);
     expect(body.temperature).toBe(sampleProviderRequest.temperature);
     expect(body.max_tokens).toBe(sampleProviderRequest.maxOutputTokens);
+    expect(body.response_format).toEqual({ type: 'json_object' });
     expect(response.content).toBe('{"answers":[true,false,true]}');
     expect(response.usage).toEqual({
       promptTokens: 21,
@@ -207,6 +208,66 @@ describe('providers', () => {
 
     expect(body.messages).toEqual([{ role: 'user', content: 'prompt' }]);
     expect(response).toEqual({ content: '{"answers":[true]}' });
+  });
+
+  it('normalizes Gemini chat completion base URLs and sends json_schema response formats', async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: '{"beatText":"beat","options":["a","b","c","d"]}',
+                },
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = createOpenAICompatibleProvider({
+      apiKey: 'google-key',
+      baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completion',
+      model: 'gemini-3-flash-preview',
+    });
+
+    await provider.call({
+      ...sampleProviderRequest,
+      responseFormat: {
+        type: 'json_schema',
+        name: 'logos_generate_result',
+        strict: true,
+        schema: {
+          type: 'object',
+        },
+      },
+    });
+
+    const call = fetchMock.mock.calls.at(0);
+
+    if (!call) {
+      throw new Error('expected fetch to be called');
+    }
+
+    const [url, init] = call as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+    expect(body.response_format).toEqual({
+      type: 'json_schema',
+      json_schema: {
+        name: 'logos_generate_result',
+        schema: {
+          type: 'object',
+        },
+        strict: true,
+      },
+    });
+    expect(body.reasoning_effort).toBeUndefined();
   });
 
   it('includes OpenAI-compatible plain-text error details for non-JSON failures', async () => {

@@ -81,8 +81,8 @@ describe('Audit Resolver', () => {
     expect(result.blockingFailures).toEqual(['question-1', 'question-2']);
     expect(result.rewriteFeedback).toContain('question-1');
     expect(result.rewriteFeedback).toContain('question-2');
-    expect(result.rewriteFeedback).toContain('Expected: true');
-    expect(result.rewriteFeedback).toContain('Expected: false');
+    expect(result.rewriteFeedback).toContain('Correct answer: YES');
+    expect(result.rewriteFeedback).toContain('Correct answer: NO');
   });
 
   it('force-accepts when blocking failures exist after the retry limit', () => {

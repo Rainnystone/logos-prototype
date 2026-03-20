@@ -1,0 +1,173 @@
+# --- Agent Metadata ---
+# contract: state-snapshot-schema
+# type: contract
+# consumed_by: [light-cone-collapse, orchestrator-control-hub]
+# tokens_estimate: 3000
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.state_snapshot
+title: LOGOS StateSnapshot
+version: 1
+description: >
+  当前 Sample 版本的最小运行时状态快照。该结构服务于跨模块传递与阶段结算，
+  不是未来完整版本的全量状态图。
+type: object
+required:
+  - sceneState
+  - roundState
+  - generationState
+  - evaluationState
+properties:
+  sceneState:
+    type: object
+    required:
+      - sceneId
+      - currentPhaseIndex
+      - currentBeatIndexInPhase
+      - mainAxis
+      - endLine
+      - alpha
+      - beta
+    properties:
+      sceneId:
+        type: string
+      currentPhaseIndex:
+        type: integer
+        minimum: 1
+      currentBeatIndexInPhase:
+        type: integer
+        minimum: 1
+      mainAxis:
+        type: string
+      endLine:
+        type: string
+      alpha:
+        type: string
+      beta:
+        type: string
+      sceneProgress:
+        type: string
+        description: 当前 Scene 的摘要性推进说明，可选。
+      phaseConsequences:
+        type: array
+        minItems: 0
+        items:
+          type: string
+        description: >
+          上一 Phase 状态结算得到的真实后果条目。Phase 结束时，
+          这些条目会作为 Light Cone Collapse 重新面向 endLine 推演
+          下一阶段边界的新坐标。每条后果应为一句完整的事实陈述，
+          覆盖以下维度中的至少一项：角色心理/身体状态变化、
+          环境与场景变化、NPC 关系变化、时间流逝与资源消耗。
+          示例：["雾间凪确认异常来源并非偶发，而是外部操控",
+          "凪已离开教室，藤花仍留在原地且未察觉异常",
+          "校园走廊出现电子噪声残留，异常范围开始收缩"]
+  roundState:
+    type: object
+    required:
+      - phaseGoal
+      - currentVolume
+      - currentRouter
+      - verbLexicon
+      - historyWindow
+    properties:
+      phaseGoal:
+        type: string
+      currentVolume:
+        type: string
+        enum:
+          - Low
+          - Med
+          - High
+      currentRouter:
+        type: string
+      verbLexicon:
+        type: array
+        minItems: 1
+        items:
+          type: string
+      historyWindow:
+        type: array
+        minItems: 0
+        description: >
+          当前轮允许访问的前序 Beat 视窗。采用与 PromptObject.history 和
+          AuditPacket.context.precedingBeats 相同的 {role, content} 结构，
+          避免 Prompt Assembler 在装配时需要额外格式转换。
+        items:
+          type: object
+          required:
+            - role
+            - content
+          properties:
+            role:
+              type: string
+              enum:
+                - system
+                - user
+                - assistant
+            content:
+              type: string
+      directorConstraints:
+        type: string
+        description: Director Note Layer 生成前的局部约束原料，可选。
+  generationState:
+    type: object
+    required:
+      - directorNoteSummary
+      - promptObject
+      - currentBeatText
+      - currentOptions
+    properties:
+      directorNoteSummary:
+        type: string
+        description: >
+          Director Note Layer 生成的局部约束摘要文本。注意：此字段是 string 类型的摘要，
+          与 PromptObject.directorNote（object 类型，含 volume/router/verbLexicon/beatConstraints/optionConstraints）
+          是不同层级的表示。前者是人类可读的单行摘要，后者是机器可消费的结构化装配对象。
+      promptObject:
+        type: object
+        description: >
+          当前轮已组装的 PromptObject；在生成前可为空对象，在生成后保留最近一次装配结果。
+          当本轮进入重写路径时，该对象允许额外携带 `generationControl`，以显式回传
+          `retryCount`、`rewriteFeedback` 与上一版失败草稿。
+      currentBeatText:
+        type:
+          - string
+          - "null"
+      currentOptions:
+        type: array
+        minItems: 0
+        maxItems: 4
+        items:
+          type: string
+  evaluationState:
+    type: object
+    required:
+      - auditAnswers
+      - blockingFailures
+      - retryCount
+      - rewriteFeedback
+    properties:
+      auditAnswers:
+        type: array
+        minItems: 0
+        items:
+          type: boolean
+      blockingFailures:
+        type: array
+        minItems: 0
+        items:
+          type: string
+      retryCount:
+        type: integer
+        minimum: 0
+      rewriteFeedback:
+        type:
+          - string
+          - "null"
+notes:
+  - 当前 Sample 只承认单活跃 Scene 与单活跃 Phase。
+  - 光锥边界在 Phase 内稳定；当 Phase 结束时，系统必须基于 `phaseConsequences` 重新推演下一阶段边界。
+  - "`evaluationState.retryCount`、`evaluationState.rewriteFeedback` 与 `generationState.currentBeatText/currentOptions` 会在 retry 时被上游组装为 `PromptObject.generationControl`。"
+  - 本 schema 服务于跨模块共享，不承担 UI 层临时状态建模。

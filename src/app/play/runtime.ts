@@ -17,7 +17,7 @@ export type WorkbenchStatus =
   | 'force-accepted'
   | 'error';
 
-export type WorkbenchOperation = 'collapse' | 'generate' | 'audit' | 'settlement';
+export type WorkbenchOperation = 'collapse' | 'route' | 'generate' | 'audit' | 'settlement';
 
 export interface WorkbenchDiagnostics {
   readonly latestOperation: WorkbenchOperation | null;
@@ -29,6 +29,7 @@ export function createEmptyWorkbenchDiagnostics(): WorkbenchDiagnostics {
     latestOperation: null,
     usage: {
       collapse: null,
+      route: null,
       generate: null,
       audit: null,
       settlement: null,
@@ -69,6 +70,16 @@ export function createTrackedWorkbenchAdapter(
     async collapse(request) {
       const result = await adapter.collapse(request);
       reporter.onUsage('collapse', result.usage ?? null);
+      return result;
+    },
+
+    async route(request) {
+      if (!adapter.route) {
+        throw new Error('LLMAdapter.route is not configured.');
+      }
+
+      const result = await adapter.route(request);
+      reporter.onUsage('route', result.usage ?? null);
       return result;
     },
 

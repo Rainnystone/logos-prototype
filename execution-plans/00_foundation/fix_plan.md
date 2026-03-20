@@ -3,13 +3,16 @@
 ## Pre-flight
 
 ### 1. Branch Setup
+
 - [ ] This is the first phase; no prior PR to verify
 - [ ] `git checkout -b phase/00-foundation`
 
 ### 2. Dependency Verification
+
 - [ ] N/A -- no prior phases
 
 ### 3. Spec Context Load
+
 - [ ] Load Phase 0 context (~4,500 tokens): agent-guide.md, system-map.md, glossary.md, module-dependency-map.md
 - [ ] Load phase-specific context (~22,000 tokens): all 7 contract schemas + core-entities.md + state-model.md + orchestrator-input-output.md + sample-scene fixtures
 - [ ] Confirm total ~26,500 tokens <= 40,000 budget
@@ -21,12 +24,14 @@
 ### Task 1: Next.js Project Scaffold
 
 #### 1.1 RED -- Write Tests
+
 - Create `src/__tests__/project-setup.test.ts`
 - Test case: TypeScript strict mode is enabled (verify tsconfig.json `strict: true`)
 - Test case: Project has `src/engine/`, `src/types/`, `src/story-packages/` directories
 - Expected: tests FAIL (project not yet scaffolded)
 
 #### 1.2 GREEN -- Scaffold
+
 - Initialize Next.js project with App Router:
   ```
   npx create-next-app@latest . --typescript --app --src-dir --eslint
@@ -59,6 +64,7 @@
 - Configure Prettier: standard config (printWidth 100, singleQuote true, semi true)
 
 #### 1.3 IMPROVE
+
 - Add npm scripts: `test`, `test:coverage`, `lint`, `format`, `format:check`
 - Verify `npm run build` succeeds with zero errors
 
@@ -67,6 +73,7 @@
 ### Task 2: TypeScript Types from Contract Schemas
 
 #### 2.1 RED -- Write Tests
+
 - Create `src/types/__tests__/type-conformance.test.ts`
 - Test case: `PromptObject` has required fields `worldBase`, `history`, `narrative`, `directorNote`
 - Test case: `PromptObject.directorNote` has required fields `volume`, `router`, `verbLexicon`, `beatConstraints`, `optionConstraints`
@@ -85,6 +92,7 @@
 - Expected: all tests FAIL (types not yet defined)
 
 #### 2.2 GREEN -- Implement Types
+
 - **`src/types/prompt-object.ts`**
   - Spec: `LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml`
   - Types: `PromptObject`, `WorldBase`, `HistoryEntry`, `Narrative`, `DirectorNote`, `GenerationControl`, `PreviousDraft`
@@ -138,6 +146,7 @@
   - Barrel export of all types
 
 #### 2.3 IMPROVE
+
 - Add JSDoc comments referencing the source YAML schema for each type
 - Add Zod schemas alongside types for runtime validation (see Task 4)
 - Verify every field name matches the YAML schema exactly (camelCase)
@@ -147,6 +156,7 @@
 ### Task 3: Sample Scene Story Package
 
 #### 3.1 RED -- Write Tests
+
 - Create `src/story-packages/__tests__/sample-scene.test.ts`
 - Test case: `sample-scene/scene.yaml` is valid and contains `sceneId: "sample-yanshang-live-room"`
 - Test case: `sample-scene/phase-plans.yaml` contains 6 PhasePlan objects with valid gradientType values
@@ -156,6 +166,7 @@
 - Expected: tests FAIL (story package not yet created)
 
 #### 3.2 GREEN -- Convert Fixtures
+
 - Convert from `LOGOS-SPEC/06_FIXTURES/sample-scene/` into `src/story-packages/sample-scene/`:
   - **`scene.yaml`**: SceneSpec with sceneId, sceneName, mainAxis, endLine from `scene-overview.md`
   - **`phase-plans.yaml`**: Array of 6 PhasePlan objects from `phase-plan.yaml`
@@ -166,6 +177,7 @@
 - All YAML files must be machine-parseable and match TypeScript type definitions
 
 #### 3.3 IMPROVE
+
 - Add a `story-package.schema.md` documenting the expected directory structure of a story package
 - Verify no raw narrative content leaked into engine code (all narrative stays in story-packages/)
 
@@ -174,6 +186,7 @@
 ### Task 4: Schema Validator
 
 #### 4.1 RED -- Write Tests
+
 - Create `src/engine/__tests__/schema-validator.test.ts`
 - Test case: `validatePromptObject()` accepts a valid PromptObject
 - Test case: `validatePromptObject()` rejects an object missing `directorNote`
@@ -187,6 +200,7 @@
 - Expected: tests FAIL
 
 #### 4.2 GREEN -- Implement
+
 - Create `src/engine/schema-validator.ts`
 - Define Zod schemas that mirror every TypeScript type:
   - `PromptObjectSchema`, `StateSnapshotSchema`, `PhasePlanSchema`, `AuditPacketSchema`
@@ -206,6 +220,7 @@
 - Each function: parse with Zod, return typed result on success, throw descriptive error on failure
 
 #### 4.3 IMPROVE
+
 - Add error messages that reference the schema field path (e.g., "directorNote.volume must be Low|Med|High")
 - Ensure all Zod schemas stay in sync with TypeScript types (shared source of truth)
 
@@ -214,6 +229,7 @@
 ### Task 5: Story Package Loader
 
 #### 5.1 RED -- Write Tests
+
 - Create `src/engine/__tests__/story-loader.test.ts`
 - Test case: `loadStoryPackage("sample-scene")` returns a typed `StoryPackage` object
 - Test case: Returned `StoryPackage.sceneSpec.sceneId` equals `"sample-yanshang-live-room"`
@@ -224,6 +240,7 @@
 - Expected: tests FAIL
 
 #### 5.2 GREEN -- Implement
+
 - Create `src/engine/story-loader.ts`
 - Define `StoryPackage` type:
   ```typescript
@@ -260,6 +277,7 @@
 - All returned objects must be deeply frozen (readonly types + Object.freeze)
 
 #### 5.3 IMPROVE
+
 - Extract YAML parsing into a utility function
 - Add error wrapping that includes the file path in validation error messages
 - Verify the loader works with the sample-scene package end-to-end
@@ -269,6 +287,7 @@
 ## Post-flight
 
 ### 1. Quality Gate
+
 - [ ] `npm test` -- all tests pass
 - [ ] `npm run test:coverage` -- >= 80% on new code
 - [ ] `npm run lint` -- zero errors
@@ -276,10 +295,12 @@
 - [ ] `npm run build` -- compiles successfully
 
 ### 2. Commit and PR
+
 - [ ] Stage all new files: `src/types/`, `src/engine/schema-validator.ts`, `src/engine/story-loader.ts`, `src/story-packages/sample-scene/`, config files, tests
 - [ ] `git commit -m "feat: scaffold project with contract types, story loader, and sample scene"`
 - [ ] `git push -u origin phase/00-foundation`
 - [ ] Create PR against `main` with title: "Phase 00: Foundation -- Project Scaffold, Types, and Story Loader"
 
 ### 3. STOP
+
 Do not proceed to Phase 01 or Phase 02 until this PR is reviewed and merged.

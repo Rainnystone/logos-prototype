@@ -178,7 +178,8 @@ ul {
 .panel-actions button,
 .free-text-panel button,
 .section-toggle button,
-.context-strip__actions button {
+.context-strip__actions button,
+.start-round-panel button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -274,7 +275,7 @@ ul {
 .play-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(16rem, 24rem) minmax(0, 1.4fr) minmax(18rem, 26rem);
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1.8fr) minmax(20rem, 28rem);
 }
 
 .play-column {
@@ -353,6 +354,24 @@ ul {
   padding-bottom: 1.25rem;
 }
 
+.beat-display {
+  display: grid;
+  align-content: start;
+}
+
+.beat-display__body {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.beat-display__summary {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+  text-align: right;
+}
+
 .status-badge {
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
@@ -387,6 +406,19 @@ ul {
 .beat-prose,
 .beat-placeholder {
   padding: 1.1rem 1.35rem 0;
+  min-width: 0;
+}
+
+.beat-prose {
+  overflow: visible;
+}
+
+.beat-prose p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.9;
+  text-wrap: pretty;
 }
 
 .history-scroll {
@@ -397,16 +429,55 @@ ul {
   overflow: auto;
 }
 
+.start-round-panel {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 1.35rem 0;
+  padding: 1rem;
+  border: 1px dashed rgba(31, 26, 21, 0.2);
+  border-radius: 0.95rem;
+  background: rgba(53, 95, 118, 0.06);
+}
+
+.hook-preview {
+  margin: 0;
+  padding: 0.85rem;
+  border-left: 3px solid rgba(53, 95, 118, 0.42);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.start-round-panel button {
+  justify-self: start;
+}
+
 .history-card {
   padding: 0.95rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.56);
 }
 
+.player-input {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.player-input--embedded {
+  padding: 1.15rem 1.35rem 0;
+  border-top: 1px solid rgba(31, 26, 21, 0.1);
+  min-width: 0;
+}
+
+.player-input__heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
 .option-grid {
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
+  justify-items: stretch;
   padding: 1.1rem 1.35rem;
 }
 
@@ -414,12 +485,23 @@ ul {
   display: grid;
   gap: 0.55rem;
   align-content: start;
-  min-height: 7rem;
-  padding: 1rem;
+  min-height: 4.8rem;
+  padding: 0.95rem 1rem;
+  width: 100%;
+  max-width: 100%;
   border: 1px solid rgba(31, 26, 21, 0.14);
-  border-radius: 1rem;
+  border-radius: 0.95rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(236, 242, 244, 0.72));
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.option-card--placeholder {
+  border-style: dashed;
+  color: rgba(31, 26, 21, 0.45);
+  background: rgba(255, 255, 255, 0.42);
 }
 
 .option-card__index {
@@ -434,6 +516,12 @@ ul {
 
 .free-text-panel {
   padding: 0 1.35rem 1.35rem;
+}
+
+.generation-workspace-panel__body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.25rem 1.35rem 1.35rem;
 }
 
 .inspector-section {

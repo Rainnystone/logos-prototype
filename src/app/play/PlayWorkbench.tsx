@@ -49,6 +49,7 @@ export function PlayWorkbench({
   const [runtimeSource, setRuntimeSource] = useState<string>('Loading runtime config');
   const [currentState, setCurrentState] = useState<StateSnapshot | null>(null);
   const [beatHistory, setBeatHistory] = useState<readonly BeatHistoryEntry[]>([]);
+  const [roundStarted, setRoundStarted] = useState(false);
   const [rewriteFeedback, setRewriteFeedback] = useState<string | null>(null);
   const [forceAccepted, setForceAccepted] = useState(false);
   const [fixtureReferenceOpen, setFixtureReferenceOpen] = useState(false);
@@ -85,6 +86,7 @@ export function PlayWorkbench({
       setForceAccepted(false);
       setError(null);
       setBeatHistory([]);
+      setRoundStarted(false);
       setDiagnostics(createEmptyWorkbenchDiagnostics());
 
       try {
@@ -167,16 +169,38 @@ export function PlayWorkbench({
     return getGradientSequence(storyPackage, currentState.sceneState.currentPhaseIndex);
   }, [currentState, storyPackage]);
 
+  const openingHookInput = useMemo(() => {
+    const hook = storyPackage.sceneSpec.openingHook?.trim();
+
+    if (hook && hook.length > 0) {
+      return hook;
+    }
+
+    return `Opening hook fallback: ${storyPackage.sceneSpec.mainAxis}`;
+  }, [storyPackage.sceneSpec.mainAxis, storyPackage.sceneSpec.openingHook]);
+
+  const isInputLoading =
+    status === 'initializing' ||
+    status === 'generating' ||
+    status === 'auditing' ||
+    status === 'rewriting';
+
   const readyMessage = currentState
-    ? getReadyMessage(
-        currentState.sceneState.currentBeatIndexInPhase,
-        orchestratorRef.current?.isSceneComplete() ?? false,
-      )
+    ? roundStarted
+      ? getReadyMessage(
+          currentState.sceneState.currentBeatIndexInPhase,
+          orchestratorRef.current?.isSceneComplete() ?? false,
+        )
+      : 'Click Start Round to run the opening hook and generate Beat 1.'
     : 'Initializing Scene...';
 
-  async function handleSubmit(playerInput: string) {
+  const gameViewSummary = currentState
+    ? `Phase ${currentState.sceneState.currentPhaseIndex} · Beat ${currentState.sceneState.currentBeatIndexInPhase} / 4`
+    : 'Scene bootstrap pending';
+
+  async function runRound(playerInput: string, historyLabel = playerInput): Promise<boolean> {
     if (!orchestratorRef.current) {
-      return;
+      return false;
     }
 
     setError(null);
@@ -193,17 +217,39 @@ export function PlayWorkbench({
           ...currentHistory,
           {
             beatNumber: currentHistory.length + 1,
-            playerInput,
+            playerInput: historyLabel,
             beatText: beatResult.beatText,
           },
         ]);
         setForceAccepted(beatResult.forceAccepted);
         setStatus(beatResult.forceAccepted ? 'force-accepted' : 'accepted');
       });
+      return true;
     } catch (runError) {
       setError(runError instanceof Error ? runError.message : 'Failed to run the next beat.');
       setStatus('error');
+      return false;
     }
+  }
+
+  async function handleStartRound() {
+    if (roundStarted || isInputLoading) {
+      return;
+    }
+
+    const started = await runRound(openingHookInput, 'Opening Hook');
+
+    if (started) {
+      setRoundStarted(true);
+    }
+  }
+
+  async function handleSubmit(playerInput: string) {
+    if (!roundStarted) {
+      return;
+    }
+
+    await runRound(playerInput);
   }
 
   const currentOptions = currentState?.generationState.currentOptions ?? [];
@@ -251,22 +297,16 @@ export function PlayWorkbench({
             rewriteFeedback={rewriteFeedback}
             forceAccepted={forceAccepted}
             error={error}
-          />
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <p className="panel-eyebrow">Generation Workspace</p>
-                <h2>{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
-              </div>
-              <p className="panel-note">{readyMessage}</p>
-            </div>
-            <BeatHistory entries={beatHistory} />
+            summary={gameViewSummary}
+          >
             <PlayerInput
               options={currentOptions}
-              isLoading={status !== 'idle' && status !== 'accepted' && status !== 'force-accepted'}
+              isLoading={isInputLoading}
+              disabled={!roundStarted}
+              variant="embedded"
               onSubmit={handleSubmit}
             />
-          </section>
+          </BeatDisplay>
         </div>
 
         <div className="play-column play-column--feedback">
@@ -287,6 +327,52 @@ export function PlayWorkbench({
               <p>Initializing Scene...</p>
             </aside>
           )}
+          <section className="panel generation-workspace-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="panel-eyebrow">Generation Workspace</p>
+                <h2>{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
+              </div>
+              <p className="panel-note">{readyMessage}</p>
+            </div>
+            {!roundStarted ? (
+              <section className="start-round-panel">
+                <p className="panel-note">
+                  Start the round with the scene opening hook before accepting player actions.
+                </p>
+                <blockquote className="hook-preview">
+                  <p>{openingHookInput}</p>
+                </blockquote>
+                <button type="button" onClick={handleStartRound} disabled={isInputLoading}>
+                  Start Round
+                </button>
+              </section>
+            ) : (
+              <div className="generation-workspace-panel__body">
+                <div className="metric-grid">
+                  <div>
+                    <span className="metric-label">Round State</span>
+                    <strong>
+                      {status === 'accepted' || status === 'force-accepted' ? 'Live' : 'Processing'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="metric-label">Current Beat</span>
+                    <strong>
+                      {currentState
+                        ? `Beat ${currentState.sceneState.currentBeatIndexInPhase}`
+                        : 'Pending'}
+                    </strong>
+                  </div>
+                </div>
+                <p className="panel-note">
+                  Opening hook has been dispatched. New options will replace the fixed four slots
+                  after each accepted beat.
+                </p>
+              </div>
+            )}
+          </section>
+          <BeatHistory entries={beatHistory} />
         </div>
       </section>
     </main>

@@ -57,6 +57,38 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
       );
     },
 
+    async route(request) {
+      const normalizedHint = request.context.routerHint?.trim();
+      const hintedRouter = request.availableRouters.find(
+        (router) => router.routerName === normalizedHint,
+      );
+      const partiallyMatchedRouter = normalizedHint
+        ? request.availableRouters.find((router) => normalizedHint.includes(router.routerName))
+        : undefined;
+      const latestUserEntry = [...request.historyWindow]
+        .reverse()
+        .find((entry) => entry.role === 'user');
+      const fallbackRouter =
+        request.availableRouters.find((router) =>
+          latestUserEntry?.content.includes(router.routerName),
+        ) ?? request.availableRouters[0];
+      const selectedRouter = hintedRouter ?? partiallyMatchedRouter ?? fallbackRouter;
+
+      if (!selectedRouter) {
+        throw new Error('Workbench demo adapter requires at least one available router.');
+      }
+
+      return deepFreeze({
+        routerName: selectedRouter.routerName,
+        inferenceTrace: 'Derived locally from the active round context and router prior.',
+        usage: {
+          promptTokens: 64,
+          completionTokens: 20,
+          totalTokens: 84,
+        },
+      });
+    },
+
     async generate(promptObject) {
       generateCount += 1;
 

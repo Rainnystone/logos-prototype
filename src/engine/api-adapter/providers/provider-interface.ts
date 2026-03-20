@@ -13,12 +13,26 @@ export interface ProviderMessage {
   readonly content: string;
 }
 
+export interface JsonObjectResponseFormat {
+  readonly type: 'json_object';
+}
+
+export interface JsonSchemaResponseFormat {
+  readonly type: 'json_schema';
+  readonly name: string;
+  readonly schema: Record<string, unknown>;
+  readonly strict?: boolean | undefined;
+}
+
+export type ProviderResponseFormat = JsonObjectResponseFormat | JsonSchemaResponseFormat;
+
 export interface ProviderRequest {
   readonly messages: readonly ProviderMessage[];
   readonly system?: string;
   readonly temperature: number;
   readonly maxOutputTokens: number;
   readonly model?: string;
+  readonly responseFormat?: ProviderResponseFormat | undefined;
 }
 
 export interface ProviderResponse {
@@ -38,6 +52,7 @@ export interface ModeConfig {
 export interface AdapterConfig {
   readonly provider: ProviderType;
   readonly providerConfig: ProviderConfig;
+  readonly routeConfig?: ModeConfig;
   readonly generateConfig?: ModeConfig;
   readonly auditConfig?: ModeConfig;
   readonly settlementConfig?: ModeConfig;

@@ -1,0 +1,158 @@
+# --- Agent Metadata ---
+# contract: prompt-object-schema
+# type: contract
+# consumed_by: [prompt-assembler, api-adapter-lite]
+# tokens_estimate: 2500
+# last_updated: 2026-03-20
+# --- End Agent Metadata ---
+$schema: "https://json-schema.org/draft/2020-12/schema"
+schema_id: logos.prompt_object
+title: LOGOS PromptObject
+version: 1
+description: >
+  Prompt Assembler 输出给 API Adapter Lite 的统一提示对象。该结构只表达
+  LOGOS 内部统一调用格式，不表达任何具体 provider 协议。
+type: object
+required:
+  - worldBase
+  - history
+  - narrative
+  - directorNote
+properties:
+  worldBase:
+    type: object
+    required:
+      - mainCharacters
+      - locationPatch
+    properties:
+      mainCharacters:
+        type: string
+        description: 主角团或核心角色设定全文。
+      npcCharacters:
+        type: string
+        default: ""
+        description: 按需加载的配角设定；在当前轮无配角补充时允许为空字符串。
+      locationPatch:
+        type: string
+        description: 当前地点环境词池或局部场景描述。
+  history:
+    type: array
+    description: >
+      当前轮允许访问的历史窗口。当前 Sample 默认来自最近 5 个 Beat 的线性视窗。
+    minItems: 0
+    items:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum:
+            - system
+            - user
+            - assistant
+          description: >
+            内部历史角色标记。当前 Sample 常见值为 user 与 assistant；
+            system 仅在特殊需要时保留。
+        content:
+          type: string
+          description: 该历史片段的文本内容。
+  narrative:
+    type: object
+    required:
+      - mainAxis
+      - endLine
+      - phaseGoal
+      - alpha
+      - beta
+    properties:
+      mainAxis:
+        type: string
+        description: Scene 叙事主轴。
+      endLine:
+        type: string
+        description: Scene 终点线说明。
+      phaseGoal:
+        type: string
+        description: 当前 Phase 的局部目标。
+      alpha:
+        type: string
+        description: 当前激进极边界描述。
+      beta:
+        type: string
+        description: 当前消极极边界描述。
+  directorNote:
+    type: object
+    required:
+      - volume
+      - router
+      - verbLexicon
+      - beatConstraints
+      - optionConstraints
+    properties:
+      volume:
+        type: string
+        enum:
+          - Low
+          - Med
+          - High
+        description: 当前 Beat 的声量档位。
+      router:
+        type: string
+        description: 当前轮采用的叙事路由名称。
+      verbLexicon:
+        type: array
+        minItems: 1
+        items:
+          type: string
+        description: 当前轮可用行为词典。
+      beatConstraints:
+        type: string
+        description: 面向当前轮 Beat 正文的导演批注，重点约束镜头尺度、时间流速、感官密度与因果边界。
+      optionConstraints:
+        type: string
+        description: 面向当前轮 4 个选项的导演批注，重点约束动作语义范围、选项正交性、角色行为是否 OOC 以及是否越出 Alpha/Beta 边界。
+  generationControl:
+    type: object
+    description: >
+      仅在重写路径上出现的临时控制包。它不属于四层叙事语义结构，而是把 retry
+      所需的流程信息显式带回生成链路。
+    properties:
+      isRewrite:
+        type: boolean
+        description: 当前调用是否为重写路径。
+      retryCount:
+        type: integer
+        minimum: 0
+        description: 当前轮已进入的重试次数。
+      rewriteFeedback:
+        type:
+          - string
+          - "null"
+        description: 审计失败后由 Audit Resolver 输出的精确修正要求。
+      previousDraft:
+        type:
+          - object
+          - "null"
+        description: >
+          上一版失败草稿，仅在重写时提供，帮助模型在尽量保留有效内容的前提下修复问题。
+        required:
+          - beatText
+          - options
+        properties:
+          beatText:
+            type: string
+          options:
+            type: array
+            minItems: 4
+            maxItems: 4
+            items:
+              type: string
+notes:
+  - worldBase 对应 Prompt Layer 1。
+  - history 对应 Prompt Layer 2。
+  - narrative 对应 Prompt Layer 3。
+  - directorNote 对应 Prompt Layer 4，且必须在最终装配中具有最高近因权重。
+  - "`generationControl` 是 retry-only 的控制覆盖层，不构成第五层叙事语义。"
+  - 本 schema 对齐当前 API 适配器文档中的 generate 请求结构。
