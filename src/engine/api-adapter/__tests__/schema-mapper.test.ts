@@ -1,0 +1,170 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  DEFAULT_MODE_CONFIGS,
+  mapForAudit,
+  mapForCollapse,
+  mapForGenerate,
+  mapForSettlement,
+} from '@/engine/api-adapter/schema-mapper';
+import {
+  sampleAuditPacket,
+  sampleCollapseRequest,
+  sampleInitialCollapseRequest,
+  samplePromptObject,
+  sampleRewritePromptObject,
+  sampleSettlementRequest,
+} from '@/engine/api-adapter/__tests__/fixtures';
+
+describe('schema mapper', () => {
+  describe('generate', () => {
+    it('maps PromptObject into a ProviderRequest with world base and narrative in system', () => {
+      const request = mapForGenerate(samplePromptObject, 'openai-compatible');
+
+      expect(request.system).toContain(samplePromptObject.worldBase.mainCharacters);
+      expect(request.system).toContain(samplePromptObject.worldBase.npcCharacters);
+      expect(request.system).toContain(samplePromptObject.worldBase.locationPatch);
+      expect(request.system).toContain(samplePromptObject.narrative.mainAxis);
+      expect(request.system).toContain(samplePromptObject.narrative.endLine);
+      expect(request.system).toContain(samplePromptObject.narrative.phaseGoal);
+      expect(request.system).toContain(samplePromptObject.narrative.alpha);
+      expect(request.system).toContain(samplePromptObject.narrative.beta);
+    });
+
+    it('preserves history order and appends director note as the final user message', () => {
+      const request = mapForGenerate(samplePromptObject, 'openai-compatible');
+
+      expect(request.messages.slice(0, samplePromptObject.history.length)).toEqual(
+        samplePromptObject.history,
+      );
+      expect(request.messages.at(-1)).toMatchObject({
+        role: 'user',
+        content: expect.stringContaining(samplePromptObject.directorNote.router),
+      });
+      expect(request.messages.at(-1)?.content).toContain(
+        samplePromptObject.directorNote.verbLexicon.join(', '),
+      );
+      expect(request.messages.at(-1)?.content).toContain(
+        samplePromptObject.directorNote.beatConstraints,
+      );
+      expect(request.messages.at(-1)?.content).toContain(
+        samplePromptObject.directorNote.optionConstraints,
+      );
+    });
+
+    it('includes generationControl data on the rewrite path', () => {
+      const request = mapForGenerate(sampleRewritePromptObject, 'anthropic');
+      const finalMessage = request.messages.at(-1)?.content ?? '';
+
+      expect(finalMessage).toContain(
+        String(sampleRewritePromptObject.generationControl?.retryCount),
+      );
+      expect(finalMessage).toContain(
+        sampleRewritePromptObject.generationControl?.rewriteFeedback ?? '',
+      );
+      expect(finalMessage).toContain(
+        sampleRewritePromptObject.generationControl?.previousDraft?.beatText ?? '',
+      );
+      expect(finalMessage).toContain(
+        sampleRewritePromptObject.generationControl?.previousDraft?.options[0] ?? '',
+      );
+    });
+
+    it('uses the generate default temperature and token limit', () => {
+      const request = mapForGenerate(samplePromptObject, 'anthropic');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.generate.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.generate.maxOutputTokens);
+    });
+  });
+
+  describe('audit', () => {
+    it('maps AuditPacket into an audit prompt with context, generated beat, options, and questions', () => {
+      const request = mapForAudit(sampleAuditPacket, 'openai-compatible');
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(request.system).toContain('answers');
+      expect(userMessage).toContain(sampleAuditPacket.context.precedingBeats[0]?.content ?? '');
+      expect(userMessage).toContain(sampleAuditPacket.generatedContent.beatText);
+      expect(userMessage).toContain(sampleAuditPacket.generatedContent.options[0]);
+      expect(userMessage).toContain(sampleAuditPacket.auditQuestions[0]);
+    });
+
+    it('uses the audit default temperature and token limit', () => {
+      const request = mapForAudit(sampleAuditPacket, 'anthropic');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.audit.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.audit.maxOutputTokens);
+    });
+
+    it('handles an empty precedingBeats array without dropping the audit payload', () => {
+      const request = mapForAudit(
+        {
+          ...sampleAuditPacket,
+          context: {
+            precedingBeats: [],
+          },
+        },
+        'openai-compatible',
+      );
+
+      expect(request.messages[0]?.content).toContain('No preceding beats.');
+      expect(request.messages[0]?.content).toContain(sampleAuditPacket.generatedContent.beatText);
+    });
+  });
+
+  describe('settlement', () => {
+    it('maps PhaseConsequenceRequest into a chronological settlement prompt', () => {
+      const request = mapForSettlement(sampleSettlementRequest, 'openai-compatible');
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(request.system).toContain('phaseConsequences');
+      expect(userMessage).toContain(sampleSettlementRequest.context.mainAxis);
+      expect(userMessage).toContain(sampleSettlementRequest.context.endLine);
+      expect(userMessage).toContain(sampleSettlementRequest.context.phaseGoal);
+      expect(
+        userMessage.indexOf(sampleSettlementRequest.phaseTranscript[0]?.content ?? ''),
+      ).toBeLessThan(
+        userMessage.indexOf(sampleSettlementRequest.phaseTranscript[1]?.content ?? ''),
+      );
+    });
+
+    it('uses the settlement default temperature and token limit', () => {
+      const request = mapForSettlement(sampleSettlementRequest, 'anthropic');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.settlement.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.settlement.maxOutputTokens);
+    });
+  });
+
+  describe('collapse', () => {
+    it('maps CollapseRequest into a boundary re-inference prompt', () => {
+      const request = mapForCollapse(sampleCollapseRequest, 'openai-compatible');
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(request.system).toContain('alpha');
+      expect(request.system).toContain('beta');
+      expect(userMessage).toContain(sampleCollapseRequest.context.mainAxis);
+      expect(userMessage).toContain(sampleCollapseRequest.context.endLine);
+      expect(userMessage).toContain(sampleCollapseRequest.context.currentAlpha);
+      expect(userMessage).toContain(sampleCollapseRequest.context.currentBeta);
+      expect(userMessage).toContain(sampleCollapseRequest.phaseConsequences[0]);
+    });
+
+    it('supports the initial-collapse path without prior boundaries or consequences', () => {
+      const request = mapForCollapse(sampleInitialCollapseRequest, 'anthropic');
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(userMessage).toContain(sampleInitialCollapseRequest.context.mainAxis);
+      expect(userMessage).toContain(sampleInitialCollapseRequest.context.endLine);
+      expect(userMessage).not.toContain('current-alpha');
+    });
+
+    it('uses the collapse default temperature and token limit', () => {
+      const request = mapForCollapse(sampleCollapseRequest, 'anthropic');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.collapse.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.collapse.maxOutputTokens);
+    });
+  });
+});

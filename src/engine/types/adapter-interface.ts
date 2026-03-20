@@ -5,6 +5,7 @@ import type {
   PhaseConsequenceRequest,
   PhaseConsequenceResponse,
   PromptObject,
+  UsageInfo,
 } from '@/types';
 
 /**
@@ -26,10 +27,12 @@ export type CollapseInput = CollapseRequest | InitialCollapseRequest;
 export interface GenerateResult {
   readonly beatText: string;
   readonly options: readonly string[];
+  readonly usage?: UsageInfo | undefined;
 }
 
 export interface AuditResult {
   readonly answers: readonly boolean[];
+  readonly usage?: UsageInfo | undefined;
 }
 
 /**
