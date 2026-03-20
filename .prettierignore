@@ -1,0 +1,9 @@
+.next
+coverage
+node_modules
+AGENTS.md
+CLAUDE.md
+README.md
+docs
+execution-plans
+story-packages
