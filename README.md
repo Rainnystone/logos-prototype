@@ -1,8 +1,16 @@
-# LOGOS — Linguistic Oriented Game Orchestration Studio
+# LOGOS NC Test DEV
+
+LOGOS Narrative Control testbed for local iteration, provider integration, and workbench validation.
 
 ## 项目简介
 
-LOGOS 是一个 AI 驱动的叙事编排引擎 (narrative orchestration engine)，面向交互式小说 (interactive fiction) 场景。引擎以 Beat 为最小生成单位，通过 Phase/Scene 层级管理叙事节奏，将 LLM 生成、状态管理、审计校验等环节编排为可控的闭环流程。代码层面保持题材无关 (genre-agnostic) 和故事无关 (story-agnostic)，所有叙事内容均通过 story-packages 加载。
+本仓库是 LOGOS 叙事控制引擎的开发测试仓，面向交互式小说 (interactive fiction) 场景。引擎以 Beat 为最小生成单位，通过 Phase/Scene 层级管理叙事节奏，将 LLM 生成、状态管理、审计校验、重写闭环与本地 workbench UI 编排为可验证的运行链路。代码层面保持题材无关 (genre-agnostic) 和故事无关 (story-agnostic)，所有叙事内容均通过 story-packages 加载。
+
+这个仓库已经内置：
+
+- `vendor/LOGOS-SPEC/`：只读设计规格镜像，确保同事 clone 后无需额外依赖外部路径
+- `src/story-packages/sample-scene/`：可直接本地运行和测试的 sample story package
+- `/play` workbench：用于本地验证 router / collapse / generate / audit 完整链路
 
 ## 技术栈
 
@@ -14,10 +22,10 @@ LOGOS 是一个 AI 驱动的叙事编排引擎 (narrative orchestration engine)�
 
 ## 关联仓库
 
-| 仓库               | 地址                                        | 职责                     |
-| ------------------ | ------------------------------------------- | ------------------------ |
-| **LOGOS** (本仓库) | https://github.com/lishtys/LOGOS            | 引擎实现代码             |
-| **LOGOS-Design**   | https://github.com/Rainnystone/LOGOS-Design | 设计规格文档（权威依据） |
+| 仓库                           | 地址                                             | 职责                     |
+| ------------------------------ | ------------------------------------------------ | ------------------------ |
+| **LOGOS NC Test DEV** (本仓库) | https://github.com/Rainnystone/LOGOS-NC-Test-DEV | 开发测试与本地验证仓库   |
+| **LOGOS-Design**               | https://github.com/Rainnystone/LOGOS-Design      | 设计规格文档（权威依据） |
 
 > 规格与实现如有矛盾，以仓库内 vendored spec `vendor/LOGOS-SPEC` 为准（除非有 ADR 明确覆盖）。
 > 本仓库已内置一份只读 spec 镜像，供本地运行、测试和协作使用：
@@ -33,8 +41,8 @@ LOGOS 是一个 AI 驱动的叙事编排引擎 (narrative orchestration engine)�
 
 ```bash
 # 1. Clone 仓库
-git clone <repo-url> LOGOS
-cd LOGOS
+git clone https://github.com/Rainnystone/LOGOS-NC-Test-DEV.git
+cd LOGOS-NC-Test-DEV
 
 # 2. 安装依赖
 npm install
@@ -52,7 +60,7 @@ npm run dev
 ## 目录结构
 
 ```
-LOGOS/
+LOGOS-NC-Test-DEV/
 ├── src/
 │   ├── app/              # Next.js App Router 页面
 │   ├── engine/           # 核心引擎

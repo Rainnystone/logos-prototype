@@ -64,3 +64,6 @@ secrets.json
 *.log
 *.pid
 *.seed
+
+# Local companion repos / scratch workspaces
+LOGOS Sample DEV/
