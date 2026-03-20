@@ -1,0 +1,20 @@
+package:
+  id: "sample-scene"
+  name: "不吉波普 Sample Scene"
+  version: "1.0.0"
+  schema_version: 1
+  locale: "zh-CN"
+  author: "LOGOS Team"
+  description: >
+    LOGOS Sample 验证用场景。基于 LOGOS-SPEC/06_FIXTURES/sample-scene/ 转化而来。
+    用于验证控制结构闭环，不代表最终产品故事。
+
+files:
+  scene_brief: "scene-brief.yaml"
+  characters: "characters.yaml"
+  world_style: "world-style.yaml"
+  locations: "locations.yaml"
+  phase_plan: "phase-plan.yaml"
+  router_lexicon: "router-lexicon.yaml"
+  audit_questions: "audit-questions.yaml"
+  audit_rules: "audit-rules.yaml"
