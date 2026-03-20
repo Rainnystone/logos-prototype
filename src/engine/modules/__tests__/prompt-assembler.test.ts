@@ -1,0 +1,184 @@
+import { describe, expect, it } from 'vitest';
+
+import { validatePromptObject } from '@/engine/schema-validator';
+import {
+  assemblePromptObject,
+  assembleRewritePromptObject,
+  type PromptAssemblerInput,
+  type RewriteContext,
+} from '@/engine/modules/prompt-assembler';
+import type { DirectorNote, PreviousDraft, WorldBase } from '@/types';
+
+const worldBase: WorldBase = {
+  mainCharacters: 'main-characters',
+  npcCharacters: '',
+  locationPatch: 'location-patch',
+};
+
+const directorNote: DirectorNote = {
+  volume: 'Med',
+  router: '悬疑/探案',
+  verbLexicon: ['勘查', '演绎', '潜伏', '干预'],
+  beatConstraints: 'beat-constraints',
+  optionConstraints: 'option-constraints',
+};
+
+const baseInput: PromptAssemblerInput = {
+  worldBase,
+  precedingBeats: [
+    { role: 'assistant', content: 'beat-1' },
+    { role: 'user', content: 'input-1' },
+  ],
+  mainAxis: 'main-axis',
+  endLine: 'end-line',
+  phaseGoal: 'phase-goal',
+  alpha: 'alpha-boundary',
+  beta: 'beta-boundary',
+  directorNote,
+};
+
+const previousDraft: PreviousDraft = {
+  beatText: 'previous-beat-text',
+  options: ['option-1', 'option-2', 'option-3', 'option-4'],
+};
+
+const rewriteContext: RewriteContext = {
+  retryCount: 1,
+  rewriteFeedback: 'Fix the failing constraint.',
+  previousDraft,
+};
+
+describe('Prompt Assembler', () => {
+  it('assembles a valid PromptObject on the normal path', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(validatePromptObject(promptObject)).toEqual(promptObject);
+  });
+
+  it('returns all required top-level fields and omits generationControl on the normal path', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(promptObject).toHaveProperty('worldBase');
+    expect(promptObject).toHaveProperty('history');
+    expect(promptObject).toHaveProperty('narrative');
+    expect(promptObject).toHaveProperty('directorNote');
+    expect(promptObject).not.toHaveProperty('generationControl');
+  });
+
+  it('maps layer 1 worldBase fields exactly', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(promptObject.worldBase.mainCharacters).toBe(worldBase.mainCharacters);
+    expect(promptObject.worldBase.locationPatch).toBe(worldBase.locationPatch);
+    expect(promptObject.worldBase.npcCharacters).toBe('');
+  });
+
+  it('maps layer 2 history from precedingBeats using a new array', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(promptObject.history).toEqual(baseInput.precedingBeats);
+    expect(promptObject.history).not.toBe(baseInput.precedingBeats);
+  });
+
+  it('maps an empty history window to an empty history array', () => {
+    const promptObject = assemblePromptObject({
+      ...baseInput,
+      precedingBeats: [],
+    });
+
+    expect(promptObject.history).toEqual([]);
+  });
+
+  it('maps layer 3 narrative fields exactly', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(promptObject.narrative.mainAxis).toBe(baseInput.mainAxis);
+    expect(promptObject.narrative.endLine).toBe(baseInput.endLine);
+    expect(promptObject.narrative.phaseGoal).toBe(baseInput.phaseGoal);
+    expect(promptObject.narrative.alpha).toBe(baseInput.alpha);
+    expect(promptObject.narrative.beta).toBe(baseInput.beta);
+  });
+
+  it('maps layer 4 directorNote fields exactly', () => {
+    const promptObject = assemblePromptObject(baseInput);
+
+    expect(promptObject.directorNote.volume).toBe(directorNote.volume);
+    expect(promptObject.directorNote.router).toBe(directorNote.router);
+    expect(promptObject.directorNote.verbLexicon).toEqual(directorNote.verbLexicon);
+    expect(promptObject.directorNote.beatConstraints).toBe(directorNote.beatConstraints);
+    expect(promptObject.directorNote.optionConstraints).toBe(directorNote.optionConstraints);
+  });
+
+  it('returns an immutable deep-copied object and does not mutate inputs', () => {
+    const frozenInput = {
+      ...baseInput,
+      worldBase: Object.freeze({ ...worldBase }),
+      precedingBeats: Object.freeze([...baseInput.precedingBeats]),
+      directorNote: Object.freeze({
+        ...directorNote,
+        verbLexicon: Object.freeze([...directorNote.verbLexicon]),
+      }),
+    } as PromptAssemblerInput;
+
+    const promptObject = assemblePromptObject(frozenInput);
+
+    expect(Object.isFrozen(promptObject)).toBe(true);
+    expect(Object.isFrozen(promptObject.worldBase)).toBe(true);
+    expect(Object.isFrozen(promptObject.history)).toBe(true);
+    expect(Object.isFrozen(promptObject.narrative)).toBe(true);
+    expect(Object.isFrozen(promptObject.directorNote)).toBe(true);
+    expect(Object.isFrozen(promptObject.directorNote.verbLexicon)).toBe(true);
+    expect(frozenInput.directorNote.router).toBe(directorNote.router);
+  });
+
+  it('assembles a valid PromptObject on the rewrite path', () => {
+    const promptObject = assembleRewritePromptObject(baseInput, rewriteContext);
+
+    expect(validatePromptObject(promptObject)).toEqual(promptObject);
+  });
+
+  it('attaches generationControl with rewrite-specific fields', () => {
+    const promptObject = assembleRewritePromptObject(baseInput, rewriteContext);
+
+    expect(promptObject.generationControl).toEqual({
+      isRewrite: true,
+      retryCount: rewriteContext.retryCount,
+      rewriteFeedback: rewriteContext.rewriteFeedback,
+      previousDraft: {
+        beatText: previousDraft.beatText,
+        options: previousDraft.options,
+      },
+    });
+  });
+
+  it('preserves all four layers on the rewrite path', () => {
+    const promptObject = assembleRewritePromptObject(baseInput, rewriteContext);
+
+    expect(promptObject.worldBase.mainCharacters).toBe(worldBase.mainCharacters);
+    expect(promptObject.history).toEqual(baseInput.precedingBeats);
+    expect(promptObject.narrative.phaseGoal).toBe(baseInput.phaseGoal);
+    expect(promptObject.directorNote.router).toBe(directorNote.router);
+  });
+
+  it('supports retryCount values at both 0 and 3', () => {
+    const zeroRetry = assembleRewritePromptObject(baseInput, {
+      ...rewriteContext,
+      retryCount: 0,
+    });
+    const maxRetry = assembleRewritePromptObject(baseInput, {
+      ...rewriteContext,
+      retryCount: 3,
+    });
+
+    expect(zeroRetry.generationControl?.retryCount).toBe(0);
+    expect(maxRetry.generationControl?.retryCount).toBe(3);
+  });
+
+  it('copies previousDraft options on the rewrite path', () => {
+    const promptObject = assembleRewritePromptObject(baseInput, rewriteContext);
+
+    expect(promptObject.generationControl?.previousDraft?.options).toEqual(previousDraft.options);
+    expect(promptObject.generationControl?.previousDraft?.options).not.toBe(previousDraft.options);
+    expect(promptObject.generationControl?.previousDraft?.options).toHaveLength(4);
+  });
+});
