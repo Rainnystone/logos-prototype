@@ -5,7 +5,7 @@ import { resolveAudit } from '@/engine/modules/audit-resolver';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
-import type { AuditQuestion, AuditQuestionSet, PhasePlan, StoryPackage } from '@/types';
+import type { AuditQuestion, AuditQuestionSet, PhasePlan, StoryPackage, UsageInfo } from '@/types';
 
 export type WorkbenchStatus =
   | 'initializing'
@@ -17,9 +17,29 @@ export type WorkbenchStatus =
   | 'force-accepted'
   | 'error';
 
+export type WorkbenchOperation = 'collapse' | 'generate' | 'audit' | 'settlement';
+
+export interface WorkbenchDiagnostics {
+  readonly latestOperation: WorkbenchOperation | null;
+  readonly usage: Readonly<Record<WorkbenchOperation, UsageInfo | null>>;
+}
+
+export function createEmptyWorkbenchDiagnostics(): WorkbenchDiagnostics {
+  return {
+    latestOperation: null,
+    usage: {
+      collapse: null,
+      generate: null,
+      audit: null,
+      settlement: null,
+    },
+  };
+}
+
 export interface WorkbenchReporter {
   onStatusChange(status: WorkbenchStatus): void;
   onRewriteFeedback(feedback: string | null): void;
+  onUsage(operation: WorkbenchOperation, usage: UsageInfo | null): void;
 }
 
 function buildQuestionMap(questionSet: AuditQuestionSet): Map<string, AuditQuestion> {
@@ -47,7 +67,9 @@ export function createTrackedWorkbenchAdapter(
 
   return {
     async collapse(request) {
-      return adapter.collapse(request);
+      const result = await adapter.collapse(request);
+      reporter.onUsage('collapse', result.usage ?? null);
+      return result;
     },
 
     async generate(promptObject) {
@@ -59,7 +81,9 @@ export function createTrackedWorkbenchAdapter(
         promptObject.generationControl?.isRewrite ? 'rewriting' : 'generating',
       );
 
-      return adapter.generate(promptObject);
+      const result = await adapter.generate(promptObject);
+      reporter.onUsage('generate', result.usage ?? null);
+      return result;
     },
 
     async audit(packet) {
@@ -69,6 +93,7 @@ export function createTrackedWorkbenchAdapter(
 
       reporter.onStatusChange('auditing');
       const result = await adapter.audit(packet);
+      reporter.onUsage('audit', result.usage ?? null);
       const selectedQuestions = packet.auditQuestions.map((questionText) => {
         const question = questionMap.get(questionText);
 
@@ -96,7 +121,9 @@ export function createTrackedWorkbenchAdapter(
         throw new Error('LLMAdapter.settlement is not configured.');
       }
 
-      return adapter.settlement(packet);
+      const result = await adapter.settlement(packet);
+      reporter.onUsage('settlement', result.usage ?? null);
+      return result;
     },
   };
 }

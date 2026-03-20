@@ -177,7 +177,8 @@ ul {
 .primary-link,
 .panel-actions button,
 .free-text-panel button,
-.section-toggle button {
+.section-toggle button,
+.context-strip__actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -251,12 +252,23 @@ ul {
   box-shadow: 0 18px 54px rgba(31, 26, 21, 0.08);
 }
 
+.context-strip__side {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: end;
+}
+
 .context-strip__meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.55rem;
   max-width: 34rem;
+}
+
+.context-strip__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .play-grid {
@@ -335,7 +347,9 @@ ul {
 }
 
 .beat-display,
-.inspector-panel {
+.inspector-panel,
+.prompt-status-panel,
+.fixture-panel {
   padding-bottom: 1.25rem;
 }
 
@@ -426,6 +440,46 @@ ul {
   display: grid;
   gap: 0.75rem;
   padding: 1rem 1.35rem 0;
+}
+
+.fixture-grid,
+.usage-grid,
+.router-reference-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.fixture-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 1.1rem 1.35rem 0;
+}
+
+.fixture-card,
+.usage-card,
+.router-reference-card {
+  padding: 1rem;
+  border: 1px solid rgba(31, 26, 21, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.fixture-card {
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.fixture-card--wide {
+  grid-column: 1 / -1;
+}
+
+.usage-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.usage-card {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .metric-grid,
@@ -544,6 +598,7 @@ ul {
   .context-strip,
   .panel-heading,
   .panel-actions,
+  .context-strip__side,
   .scene-overview__header,
   .phase-plan-card__header,
   .history-card__header,
@@ -554,7 +609,13 @@ ul {
 
   .option-grid,
   .metric-grid,
-  .boundary-grid {
+  .boundary-grid,
+  .fixture-grid,
+  .usage-grid {
     grid-template-columns: 1fr;
+  }
+
+  .fixture-card--wide {
+    grid-column: auto;
   }
 }

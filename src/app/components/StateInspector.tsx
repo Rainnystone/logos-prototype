@@ -123,10 +123,23 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
       </section>
 
       <section className="inspector-section">
-        <h3>Prompt Assembly Status</h3>
-        <p>{state.generationState.directorNoteSummary}</p>
+        <h3>Audit Snapshot</h3>
+        {state.evaluationState.blockingFailures.length > 0 ? (
+          <ul className="stack-list">
+            {state.evaluationState.blockingFailures.map((failure) => (
+              <li key={failure}>{failure}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="panel-note">No blocking failures in the latest accepted round.</p>
+        )}
         <p className="panel-note">
-          Prompt layers: {Object.keys(state.generationState.promptObject).join(', ') || 'pending'}
+          Latest audit answers:{' '}
+          {state.evaluationState.auditAnswers.length > 0
+            ? state.evaluationState.auditAnswers
+                .map((answer) => (answer ? 'Pass' : 'Fail'))
+                .join(', ')
+            : 'pending'}
         </p>
         {state.evaluationState.rewriteFeedback ? (
           <p className="feedback-inline">{state.evaluationState.rewriteFeedback}</p>
