@@ -5,7 +5,7 @@ function formatIssuePath(label: string, path: Array<string | number>): string {
     return label;
   }
 
-  return path.join('.');
+  return `${label}.${path.join('.')}`;
 }
 
 export function formatZodError(label: string, error: ZodError): string {
