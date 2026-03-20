@@ -82,3 +82,5 @@ export async function loadStoryPackage(packageName: string): Promise<StoryPackag
     ),
   );
 }
+
+export type { RouterProfile, SceneSpec, StoryPackage } from '@/types/story-package';
