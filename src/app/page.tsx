@@ -1,13 +1,22 @@
-export default function HomePage() {
+import { StoryPackageSelector } from '@/app/components/StoryPackageSelector';
+import { listStoryPackageCatalog } from '@/app/story-package-catalog';
+
+export default async function HomePage() {
+  const packages = await listStoryPackageCatalog();
+
   return (
-    <main>
-      <section className="foundation-shell">
-        <h1>LOGOS</h1>
-        <p>
-          Phase 00 foundation is in place. The engine scaffold, contract types, schema validators,
-          and story package loader live under <code>src/</code>.
-        </p>
+    <main className="workspace-page">
+      <section className="dashboard-hero panel">
+        <div>
+          <p className="panel-eyebrow">Project and Sample Layer</p>
+          <h1>LOGOS Sample Dashboard</h1>
+          <p>
+            Confirm the active scene package, inspect its narrative axis and end line, then enter
+            the workbench to run the beat loop with live state feedback.
+          </p>
+        </div>
       </section>
+      <StoryPackageSelector packages={packages} />
     </main>
   );
 }
