@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html {
   font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
 }
