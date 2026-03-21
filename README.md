@@ -57,6 +57,17 @@ npm run dev
 
 开发服务器默认运行在 `http://localhost:3000`。
 
+## 启动工作台
+
+启动 `npm run dev` 后，打开 `http://localhost:3000/play` 进入 Play Workbench。按下面两步就可以开始一轮游戏：
+
+1. 在左侧 `Provider Setup` 区域填入 API Key、模型和 Base URL，然后点击 `Save Runtime Config`。
+2. 在右侧 `Generation Workspace` 区域点击 `Start Round`，系统会先运行开场钩子，再进入 `Beat 1`。
+
+![Play Workbench start flow](vendor/LOGOS-SPEC/08_UX/design-artifacts/assets/ui-round-1-sketch-layout.png)
+
+图中蓝色方框对应 `Provider Setup`，红色方框对应 `Generation Workspace` 的 `Start Round` 按钮。先保存运行配置，再开始回合，才能启动完整的叙事循环。
+
 ## 目录结构
 
 ```
