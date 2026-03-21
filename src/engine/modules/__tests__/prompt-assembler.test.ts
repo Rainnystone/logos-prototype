@@ -17,8 +17,6 @@ const worldBase: WorldBase = {
 
 const directorNote: DirectorNote = {
   volume: 'Med',
-  router: '悬疑/探案',
-  verbLexicon: ['勘查', '演绎', '潜伏', '干预'],
   beatConstraints: 'beat-constraints',
   optionConstraints: 'option-constraints',
 };
@@ -34,6 +32,8 @@ const baseInput: PromptAssemblerInput = {
   phaseGoal: 'phase-goal',
   alpha: 'alpha-boundary',
   beta: 'beta-boundary',
+  currentRouter: '悬疑/探案',
+  verbLexicon: ['勘查', '演绎', '潜伏', '干预'],
   directorNote,
 };
 
@@ -103,8 +103,8 @@ describe('Prompt Assembler', () => {
     const promptObject = assemblePromptObject(baseInput);
 
     expect(promptObject.directorNote.volume).toBe(directorNote.volume);
-    expect(promptObject.directorNote.router).toBe(directorNote.router);
-    expect(promptObject.directorNote.verbLexicon).toEqual(directorNote.verbLexicon);
+    expect(promptObject.directorNote.router).toBe(baseInput.currentRouter);
+    expect(promptObject.directorNote.verbLexicon).toEqual(baseInput.verbLexicon);
     expect(promptObject.directorNote.beatConstraints).toBe(directorNote.beatConstraints);
     expect(promptObject.directorNote.optionConstraints).toBe(directorNote.optionConstraints);
   });
@@ -114,10 +114,8 @@ describe('Prompt Assembler', () => {
       ...baseInput,
       worldBase: Object.freeze({ ...worldBase }),
       precedingBeats: Object.freeze([...baseInput.precedingBeats]),
-      directorNote: Object.freeze({
-        ...directorNote,
-        verbLexicon: Object.freeze([...directorNote.verbLexicon]),
-      }),
+      verbLexicon: Object.freeze([...baseInput.verbLexicon]),
+      directorNote: Object.freeze({ ...directorNote }),
     } as PromptAssemblerInput;
 
     const promptObject = assemblePromptObject(frozenInput);
@@ -128,7 +126,7 @@ describe('Prompt Assembler', () => {
     expect(Object.isFrozen(promptObject.narrative)).toBe(true);
     expect(Object.isFrozen(promptObject.directorNote)).toBe(true);
     expect(Object.isFrozen(promptObject.directorNote.verbLexicon)).toBe(true);
-    expect(frozenInput.directorNote.router).toBe(directorNote.router);
+    expect(frozenInput.directorNote.volume).toBe(directorNote.volume);
   });
 
   it('assembles a valid PromptObject on the rewrite path', () => {
@@ -157,7 +155,8 @@ describe('Prompt Assembler', () => {
     expect(promptObject.worldBase.mainCharacters).toBe(worldBase.mainCharacters);
     expect(promptObject.history).toEqual(baseInput.precedingBeats);
     expect(promptObject.narrative.phaseGoal).toBe(baseInput.phaseGoal);
-    expect(promptObject.directorNote.router).toBe(directorNote.router);
+    expect(promptObject.directorNote.router).toBe(baseInput.currentRouter);
+    expect(promptObject.directorNote.optionConstraints).toBe(directorNote.optionConstraints);
   });
 
   it('supports retryCount values at both 0 and 3', () => {

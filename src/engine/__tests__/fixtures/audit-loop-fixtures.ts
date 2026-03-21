@@ -80,6 +80,7 @@ export const storyPackageFixture: StoryPackage = deepFreeze({
       gradientType: 'Rising',
       beatCount: 4,
       routerHint: 'investigation',
+      notes: 'phase-one-note',
     },
     {
       phaseId: 'phase-02',
@@ -88,6 +89,7 @@ export const storyPackageFixture: StoryPackage = deepFreeze({
       gradientType: 'Falling',
       beatCount: 4,
       routerHint: 'action',
+      notes: 'phase-two-note',
     },
   ],
   routerProfiles: [

@@ -101,9 +101,10 @@ API 适配器对外暴露四个方法：`generate()`、`audit()`、`settlePhaseC
 | `prompt.narrative.endLine` | `StateSnapshot.sceneState.endLine` → `PromptObject.narrative.endLine` | 全链路统一使用 `endLine`，不再使用 `endState` 别名。 |
 | `prompt.history[]` | `StateSnapshot.roundState.historyWindow` → `PromptObject.history` | 历史窗口先由 Prompt Assembler 规整为对话数组，再交给适配器。 |
 | `prompt.directorNote.volume` | `StateSnapshot.roundState.currentVolume` → `PromptObject.directorNote.volume` | 声量属于编排层状态，API 适配层只消费收束后的导演批注结果。 |
-| `prompt.directorNote.router` | `StateSnapshot.roundState.currentRouter` → `PromptObject.directorNote.router` | 路由选择权仍在编排层，适配器不重新推导。 |
-| `prompt.directorNote.beatConstraints` | `Director Note Layer.beatConstraints` → `PromptObject.directorNote.beatConstraints` | 面向正文的约束文本由导演批注层生成，SchemaMapper 不得注入额外叙事控制语义。 |
-| `prompt.directorNote.optionConstraints` | `Director Note Layer.optionConstraints` → `PromptObject.directorNote.optionConstraints` | 面向选项的约束文本由导演批注层生成，重点约束正交性与 OOC 检查。 |
+| `prompt.directorNote.router` | `StateSnapshot.roundState.currentRouter` → `PromptObject.directorNote.router` | 运行态路由会继续进入生成链路，但不应再被 Director Note 文本重复包装成硬锁。 |
+| `prompt.directorNote.verbLexicon` | `StateSnapshot.roundState.verbLexicon` → `PromptObject.directorNote.verbLexicon` | 运行态行为词典会继续进入生成链路，但不应再被 Director Note 文本改写成固定选项模板。 |
+| `prompt.directorNote.beatConstraints` | `Director Note Layer.beatConstraints` → `PromptObject.directorNote.beatConstraints` | 面向正文的约束文本由导演批注层生成，必须保留其段落纪律要求；SchemaMapper 不得稀释“多段输出、墙文本视为失败”的控制语义。 |
+| `prompt.directorNote.optionConstraints` | `Director Note Layer.optionConstraints` → `PromptObject.directorNote.optionConstraints` | 面向选项的约束文本由导演批注层生成，重点约束正交性与 OOC 检查；当前版本不再把 runtime router / verb lexicon 写进该文本块作为硬锁。 |
 | `prompt.generationControl.retryCount` | `StateSnapshot.evaluationState.retryCount` → `PromptObject.generationControl.retryCount` | 只在 retry 路径上挂载。 |
 | `prompt.generationControl.rewriteFeedback` | `Audit Resolver.RewriteFeedback` → `PromptObject.generationControl.rewriteFeedback` | 由 Orchestrator 负责收束并交给 Prompt Assembler。 |
 | `prompt.generationControl.previousDraft.beatText` | `StateSnapshot.generationState.currentBeatText` → `PromptObject.generationControl.previousDraft.beatText` | 明确把上一版失败正文回传给生成链路。 |

@@ -75,11 +75,7 @@ function getPhasePlan(storyPackage: StoryPackage, phaseIndex: number): PhasePlan
 }
 
 function summarizeDirectorNote(directorNote: DirectorNote): string {
-  return [
-    `Volume=${directorNote.volume}`,
-    `Router=${directorNote.router}`,
-    `VerbLexicon=${directorNote.verbLexicon.join(', ')}`,
-  ].join(' | ');
+  return [`Volume=${directorNote.volume}`, 'BeatRules=Active', 'OptionRules=Active'].join(' | ');
 }
 
 function freezeState(state: StateSnapshot): StateSnapshot {
@@ -99,6 +95,25 @@ function buildAuditAnswerTargets(selectedQuestions: readonly AuditQuestion[]): s
     .join(' ');
 }
 
+function buildDirectorConstraints(
+  phasePlan: PhasePlan,
+  selectedQuestions: readonly AuditQuestion[],
+): string | undefined {
+  const constraints: string[] = [];
+  const normalizedNotes = phasePlan.notes?.trim() ?? '';
+  const auditAnswerTargets = buildAuditAnswerTargets(selectedQuestions);
+
+  if (normalizedNotes.length > 0) {
+    constraints.push(`Strict phase-plan red lines: ${normalizedNotes}`);
+  }
+
+  if (auditAnswerTargets.length > 0) {
+    constraints.push(`Audit-grounded answer targets: ${auditAnswerTargets}`);
+  }
+
+  return constraints.length > 0 ? constraints.join(' ') : undefined;
+}
+
 function buildPromptAssemblerInput(
   storyPackage: StoryPackage,
   phasePlan: PhasePlan,
@@ -114,6 +129,8 @@ function buildPromptAssemblerInput(
     phaseGoal: phasePlan.phaseGoal,
     alpha: state.sceneState.alpha,
     beta: state.sceneState.beta,
+    currentRouter: state.roundState.currentRouter,
+    verbLexicon: state.roundState.verbLexicon,
     directorNote,
   };
 }
@@ -273,7 +290,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         initialVolume,
         initialRouter,
         [],
-        buildAuditAnswerTargets(initialAuditQuestions),
+        buildDirectorConstraints(firstPhase, initialAuditQuestions),
       );
       const initialDirectorNote = buildDirectorNote(
         initialRoundState,
@@ -344,7 +361,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         currentVolume,
         routerSelection,
         historyWindow,
-        buildAuditAnswerTargets(selectedQuestions),
+        buildDirectorConstraints(phasePlan, selectedQuestions),
       );
       const directorNote = buildDirectorNote(
         roundState,
@@ -443,7 +460,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
             nextVolume,
             nextRouter,
             nextHistoryWindow,
-            buildAuditAnswerTargets(
+            buildDirectorConstraints(
+              nextPhasePlan,
               selectAuditQuestions(config.storyPackage.auditQuestionSet, nextPhasePlan.phaseId)
                 .selectedQuestions,
             ),
@@ -483,7 +501,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           nextVolume,
           nextRouter,
           nextHistoryWindow,
-          buildAuditAnswerTargets(selectedQuestions),
+          buildDirectorConstraints(phasePlan, selectedQuestions),
         );
       }
 

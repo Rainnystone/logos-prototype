@@ -52,6 +52,12 @@ describe('sample-scene story package', () => {
 
     expect(sceneSpec.sceneId).toBe(extractOverviewValue('sceneId'));
     expect(sceneSpec.sceneName).toBe(extractOverviewValue('sceneName'));
+    expect(sceneSpec.samplePurpose).toBe(extractOverviewValue('samplePurpose'));
+    expect(sceneSpec.mainAxis).toBe(extractOverviewValue('mainAxis'));
+    expect(sceneSpec.endLine).toBe(extractOverviewValue('endLine'));
+    expect(sceneSpec.openingHook).not.toContain('恶意信号');
+    expect(sceneSpec.openingHook).not.toContain('翻出了窗户');
+    expect(sceneSpec.openingHook).toContain('一步步查清幕后操控者');
   });
 
   it('converts PhasePlan fixtures into a valid phase-plans.yaml file', () => {
@@ -117,7 +123,7 @@ describe('sample-scene story package', () => {
       auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-01-prologue']?.append,
     ).toContain('AQ-P1-001');
     expect(
-      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-signal-chase']?.append,
+      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-hunt']?.append,
     ).toContain('AQ-P2-001');
     expect(
       auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-03-first-contact']?.append,
@@ -125,6 +131,40 @@ describe('sample-scene story package', () => {
     expect(
       auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-04-streamer-domain']?.append,
     ).toContain('AQ-P4-000');
+    expect(auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-signal-chase']).toBe(
+      undefined,
+    );
+    expect(
+      auditQuestionSet.phaseSpecificQuestions?.['phase-02-hunt']?.find(
+        (question) => question.id === 'AQ-P2-002',
+      ),
+    ).toMatchObject({
+      question: '雾间凪的追踪与排查手段是否依赖了超自然感知？',
+      expected: false,
+    });
+  });
+
+  it('keeps audit questions mirrored between src and vendor fixtures and aligned with phase ids', () => {
+    const projectAuditQuestions = AuditQuestionSetSchema.parse(
+      readYamlFile(path.resolve(projectFixtureRoot, 'audit-questions.yaml')),
+    );
+    const designAuditQuestions = AuditQuestionSetSchema.parse(
+      readYamlFile(path.resolve(designFixtureRoot, 'audit-questions.yaml')),
+    );
+    const phasePlans = PhasePlansFileSchema.parse(
+      readYamlFile(path.resolve(projectFixtureRoot, 'phase-plans.yaml')),
+    );
+    const phaseIds = new Set(phasePlans.phasePlans.map((phasePlan) => phasePlan.phaseId));
+
+    expect(projectAuditQuestions).toEqual(designAuditQuestions);
+
+    for (const phaseId of Object.keys(projectAuditQuestions.phaseSpecificQuestions ?? {})) {
+      expect(phaseIds.has(phaseId)).toBe(true);
+    }
+
+    for (const phaseId of Object.keys(projectAuditQuestions.selectionPolicy.phaseOverrides ?? {})) {
+      expect(phaseIds.has(phaseId)).toBe(true);
+    }
   });
 
   it('stores world-base content in machine-parseable YAML', () => {
@@ -143,5 +183,21 @@ describe('sample-scene story package', () => {
     const designSnapshots = readYamlFile(path.resolve(designFixtureRoot, 'state-snapshots.yaml'));
 
     expect(projectSnapshots).toEqual(designSnapshots);
+  });
+
+  it('keeps director note summaries separate from the active router and verb lexicon', () => {
+    const snapshots = StateSnapshotsFileSchema.parse(
+      readYamlFile(path.resolve(projectFixtureRoot, 'state-snapshots.yaml')),
+    );
+
+    for (const snapshot of snapshots.snapshots) {
+      expect(snapshot.generationState.directorNoteSummary).not.toContain(
+        snapshot.roundState.currentRouter,
+      );
+
+      for (const verb of snapshot.roundState.verbLexicon) {
+        expect(snapshot.generationState.directorNoteSummary).not.toContain(verb);
+      }
+    }
   });
 });

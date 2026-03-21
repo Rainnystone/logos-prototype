@@ -22,15 +22,16 @@ const baseSceneState: SceneState = {
 };
 
 describe('Option Generator constraint builder', () => {
-  it('mentions all verbs from the current lexicon', () => {
+  it('does not mention the current router or any verb lexicon entries', () => {
     const constraints = buildOptionConstraints(
       baseRoundState,
       baseSceneState,
       'disciplined character profile',
     );
 
+    expect(constraints).not.toContain(baseRoundState.currentRouter);
     for (const verb of baseRoundState.verbLexicon) {
-      expect(constraints).toContain(verb);
+      expect(constraints).not.toContain(verb);
     }
   });
 
@@ -55,7 +56,7 @@ describe('Option Generator constraint builder', () => {
     );
 
     expect(constraints).toMatch(/exactly 4 options/i);
-    expect(constraints).toMatch(/orthogonal/i);
+    expect(constraints).toMatch(/orthogonal|materially distinct/i);
   });
 
   it('mentions Anti-OOC and Chain-of-Thought checks', () => {
@@ -70,28 +71,23 @@ describe('Option Generator constraint builder', () => {
     expect(constraints).toMatch(/local canon authority|franchise|worldview/i);
   });
 
-  it('covers the 4-verb lexicon case by mentioning each verb', () => {
+  it('remains stable even when the runtime router result changes', () => {
     const constraints = buildOptionConstraints(
       baseRoundState,
       baseSceneState,
       'disciplined character profile',
     );
-
-    expect(constraints).toContain('强攻');
-    expect(constraints).toContain('机动');
-  });
-
-  it('covers the 6-verb lexicon case by saying select 4 from these 6', () => {
-    const constraints = buildOptionConstraints(
+    const alternateConstraints = buildOptionConstraints(
       {
         ...baseRoundState,
-        verbLexicon: ['强攻', '牵制', '防御', '机动', '脱离', '器物'],
+        currentRouter: '悬疑/探案',
+        verbLexicon: ['勘查', '演绎', '潜伏', '干预', '质证', '诱导'],
       },
       baseSceneState,
       'disciplined character profile',
     );
 
-    expect(constraints).toMatch(/select 4 from these 6/i);
+    expect(alternateConstraints).toBe(constraints);
   });
 
   it('still produces valid constraints when character profile is empty', () => {

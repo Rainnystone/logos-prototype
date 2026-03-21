@@ -96,7 +96,7 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
       const prefix = promptObject.generationControl?.isRewrite ? 'Revised beat' : 'Demo beat';
 
       return deepFreeze({
-        beatText: `${prefix} ${generateCount}. The player action "${playerInput}" shifts the scene through the ${promptObject.directorNote.router} route at ${promptObject.directorNote.volume} intensity while the engine stays inside the active boundaries.`,
+        beatText: `${prefix} ${generateCount}. The player action "${playerInput}" pushes toward ${promptObject.narrative.phaseGoal} at ${promptObject.directorNote.volume} intensity while the engine stays inside the active boundaries.`,
         options: buildOptions(
           generateCount,
           promptObject.directorNote.verbLexicon,

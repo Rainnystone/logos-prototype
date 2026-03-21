@@ -74,7 +74,7 @@ SchemaMapper.map(mode, prompt, providerConfig, generationConfig)
     },
     {
       "role": "user",
-      "content": "玩家选择了：XXX\n\n---\n【导演批注 - 本轮最高优先级指令】\n当前声量: High\n叙事路由: 动作/战斗\n行为词典: [强攻, 牵制, 防御, 脱离]\n正文约束: {directorNote.beatConstraints}\n选项约束: {directorNote.optionConstraints}\n\n【重写控制 - 仅 retry 时出现】\n重试次数: {generationControl.retryCount}\n修正要求: {generationControl.rewriteFeedback}\n上一版失败正文: {generationControl.previousDraft.beatText}\n上一版失败选项: A. ... / B. ... / C. ... / D. ..."
+      "content": "玩家选择了：XXX\n\n---\n【运行态路由上下文】\n当前路由: 动作/战斗\n当前行为词典: [强攻, 牵制, 防御, 脱离]\n选项路由纪律: 4 个选项必须保持在当前路由内，并各自对应行为词典中的不同方向。\n\n【导演批注 - 本轮最高优先级指令】\n当前声量: High\n正文约束: {directorNote.beatConstraints}\n选项约束: {directorNote.optionConstraints}\n\n【重写控制 - 仅 retry 时出现】\n重试次数: {generationControl.retryCount}\n修正要求: {generationControl.rewriteFeedback}\n上一版失败正文: {generationControl.previousDraft.beatText}\n上一版失败选项: A. ... / B. ... / C. ... / D. ..."
     }
   ],
   "response_format": { "type": "json_object" },
@@ -91,6 +91,8 @@ SchemaMapper.map(mode, prompt, providerConfig, generationConfig)
 4. 若 `generationControl.isRewrite === true`，则在 `directorNote` 后继续追加一段“重写控制”块，把 `retryCount`、`rewriteFeedback` 与 `previousDraft` 放在最终消息的最末尾；若无该字段，则完全不注入
 5. `generationConfig` → 平铺为顶层参数
 6. generate 的规范性返回契约是 `GenerateResult`；OpenAI 兼容 provider 至少要提供原生 JSON Object 输出能力，后端再用 `GenerateResult` 做二次校验
+7. generate 路径的 system prompt 应与 `directorNote.beatConstraints` 一起重复强调段落纪律：`beatText` 必须拆成多个可读段落；单个超长段落或无自然断点的墙文本应被视为失败输出，而不是可接受的风格变体
+8. 当前版本需要继续把 runtime router / verb lexicon 送入 generate 消息，但应放在独立的“运行态路由上下文”块中，而不是折叠进 Director Note 文本内部，以免局部批注反向锁死选项空间
 
 ### 4.3 OpenAI 兼容格式 — 审计模式
 
@@ -154,7 +156,7 @@ SchemaMapper.map(mode, prompt, providerConfig, generationConfig)
     },
     {
       "role": "user",
-      "parts": [{ "text": "玩家选择了：XXX\n\n---\n【导演批注 - 本轮最高优先级指令】\n当前声量: High\n叙事路由: 动作/战斗\n行为词典: [强攻, 牵制, 防御, 脱离]\n正文约束: {directorNote.beatConstraints}\n选项约束: {directorNote.optionConstraints}\n\n【重写控制 - 仅 retry 时出现】\n重试次数: {generationControl.retryCount}\n修正要求: {generationControl.rewriteFeedback}\n上一版失败正文: {generationControl.previousDraft.beatText}\n上一版失败选项: ..." }]
+      "parts": [{ "text": "玩家选择了：XXX\n\n---\n【运行态路由上下文】\n当前路由: 动作/战斗\n当前行为词典: [强攻, 牵制, 防御, 脱离]\n选项路由纪律: 4 个选项必须保持在当前路由内，并各自对应行为词典中的不同方向。\n\n【导演批注 - 本轮最高优先级指令】\n当前声量: High\n正文约束: {directorNote.beatConstraints}\n选项约束: {directorNote.optionConstraints}\n\n【重写控制 - 仅 retry 时出现】\n重试次数: {generationControl.retryCount}\n修正要求: {generationControl.rewriteFeedback}\n上一版失败正文: {generationControl.previousDraft.beatText}\n上一版失败选项: ..." }]
     }
   ],
   "generationConfig": {

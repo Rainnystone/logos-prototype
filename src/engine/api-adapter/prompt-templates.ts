@@ -42,7 +42,10 @@ export function buildGenerateSystemPrompt(prompt: PromptObject): string {
     'Return JSON only with keys "beatText" and "options".',
     'The "beatText" field must be a complete adventure turn, not a short summary.',
     'Target a beatText length of roughly 1500-2500 Chinese characters, with natural paragraph breaks.',
-    'Do not write beatText as one oversized paragraph; use multiple readable paragraphs with visible pacing.',
+    'Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs with visible pacing.',
+    'A single oversized paragraph or visually dense unbroken wall of text is unacceptable and counts as a hard failure, even if the plot content is otherwise correct.',
+    'Insert paragraph breaks whenever action focus, speaker, time step, or causal beat shifts.',
+    'If unsure, prefer more paragraph breaks and shorter paragraphs over one long block.',
     'The "options" array must contain exactly 4 distinct action strings.',
     'Never omit, rename, or nest the options array.',
     'If output budget becomes tight, compress toward the lower end of the beatText range before dropping any option.',
@@ -50,17 +53,21 @@ export function buildGenerateSystemPrompt(prompt: PromptObject): string {
 }
 
 export function buildGenerateFinalUserMessage(prompt: PromptObject): string {
+  const routeBlock = [
+    '[Runtime Route State]',
+    `Active router: ${prompt.directorNote.router}`,
+    `Active verb lexicon: ${prompt.directorNote.verbLexicon.join(', ')}`,
+    'Option route discipline: keep all 4 options inside the active router and map them to 4 distinct directions drawn from the active verb lexicon.',
+  ].join('\n');
   const directorBlock = [
     '[Director Note - Highest Priority]',
     `Volume: ${prompt.directorNote.volume}`,
-    `Router: ${prompt.directorNote.router}`,
-    `Verb lexicon: ${prompt.directorNote.verbLexicon.join(', ')}`,
     `Beat constraints: ${prompt.directorNote.beatConstraints}`,
     `Option constraints: ${prompt.directorNote.optionConstraints}`,
   ].join('\n');
 
   if (!prompt.generationControl?.isRewrite) {
-    return directorBlock;
+    return [routeBlock, directorBlock].join('\n');
   }
 
   const previousOptions = prompt.generationControl.previousDraft?.options
@@ -68,6 +75,7 @@ export function buildGenerateFinalUserMessage(prompt: PromptObject): string {
     .join('\n');
 
   return [
+    routeBlock,
     directorBlock,
     '---',
     '[Audit Corrections - Immediate Repair Targets]',

@@ -24,11 +24,11 @@ last_updated: 2026-03-20
 | `Phase Consequence Settlement` | `mainAxis`、`endLine`、`phaseGoal`、当前 Phase 已接受转录 | `phaseConsequences[]`、`settlementTrace` | `Orchestrator`、`Light Cone Collapse` |
 | `Light Cone Collapse` | `mainAxis`、`endLine`、`StateSnapshot`（含 `phaseConsequences`） | `alpha`、`beta`、边界说明 / 重推演说明 | `Orchestrator`、`Director Note Layer`、`Prompt Assembler`、`Option Generator` |
 | `Phase Gradient` | `gradientType`、`currentBeatIndexInPhase` | `volumeSequence`、`currentVolume` | `Orchestrator`、`Director Note Layer`、`Prompt Assembler`、`Option Generator` |
-| `Narrative Router` | 当前场景判定、`RouterProfile` | `routerName`、`verbLexicon` | `Orchestrator`、`Director Note Layer`、`Option Generator` |
+| `Narrative Router` | 当前场景判定、`RouterProfile` | `routerName`、`verbLexicon` | `Orchestrator`、`Option Generator`、`Prompt Assembler` |
 | `Option Generator` | `precedingBeats`、`routerName`、`verbLexicon`、主角性格、`alpha`、`beta`、`currentVolume` | `optionConstraints` 生成逻辑（设计时约束） | `Director Note Layer`、`Prompt Assembler` |
 | `Director Note Layer` | `RoundState`、局部硬规则 | `beatConstraints`、`optionConstraints` | `Prompt Assembler` |
 | `Memory Placeholder` | 已接受历史窗口 | `precedingBeats` | `Prompt Assembler`、`Auditor`、`Orchestrator`、`Option Generator` |
-| `Prompt Assembler` | `worldBase`、`precedingBeats`、`mainAxis`、`endLine`、`phaseGoal`、`alpha`、`beta`、`currentVolume`、`routerName`、`verbLexicon`、`beatConstraints`、`optionConstraints`、可选 `generationControl` | `PromptObject` | `API Adapter Lite` |
+| `Prompt Assembler` | `worldBase`、`precedingBeats`、`mainAxis`、`endLine`、`phaseGoal`、`alpha`、`beta`、`routerName`、`verbLexicon`、`directorNote`、可选 `generationControl` | `PromptObject` | `API Adapter Lite` |
 | `API Adapter Lite` | `PromptObject`、`AuditPacket`、`PhaseConsequencePacket` 或 `CollapsePacket`、provider 配置 | 统一响应对象（`GenerateResult` / `AuditResult` / `PhaseConsequenceResult` / `CollapseResult`）、`usage`、`tokenReport` | 生成链路、审计链路、阶段后果结算链路、光锥坍缩链路 |
 | `Auditor` | `AuditPacket` | `AuditResult` / 布尔答案数组 | `Audit Resolver` |
 | `Audit Resolver`（代码层） | `AuditResult`、阻塞规则、`retryCount` | `pass/fail`、`blockingFailures`、`RewriteFeedback` | `Orchestrator`、重写链路 |
@@ -48,7 +48,7 @@ last_updated: 2026-03-20
 
 这里有一个容易混淆的点：`Memory Placeholder` 的模块输出字段名是 `precedingBeats`，但在 `PromptObject` 里，这部分被装配到 `history` 字段下。也就是说，模块输入名与装配后对象名并不完全相同，这属于正常映射，而不是冲突。
 
-另一个容易混淆的点是 `Option Generator`。当前版本中，它不是一次独立的运行时模块调用，而是定义“4 个选项应如何被约束地产出”的三步管线。它的结果先被 `Director Note Layer` 写成 `optionConstraints`，再进入 `PromptObject.directorNote`；玩家最终看到的 4 个选项，则由同一次 generate 调用返回的 `GenerateResult.options[]` 承载。
+另一个容易混淆的点是 `Option Generator`。当前版本中，它不是一次独立的运行时模块调用，而是定义“4 个选项应如何被约束地产出”的三步管线。它的结果先被 `Director Note Layer` 写成 `optionConstraints`，再进入 `PromptObject.directorNote`；玩家最终看到的 4 个选项，则由同一次 generate 调用返回的 `GenerateResult.options[]` 承载。当前版本明确取消了把 `routerName` / `verbLexicon` 直接写进 Director Note 的硬锁做法。
 
 还有一个容易混淆的点是 `generationControl`。它不是第五层世界语义，也不是 `Director Note Layer` 的替身；它只是在 retry 路径上由 Orchestrator 基于 `retryCount`、`RewriteFeedback` 与上一版失败草稿临时附着到 `PromptObject` 的控制覆盖层。
 

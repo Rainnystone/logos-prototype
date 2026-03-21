@@ -63,27 +63,30 @@ describe('schema mapper', () => {
       expect(request.system).toContain(samplePromptObject.narrative.phaseGoal);
       expect(request.system).toContain(samplePromptObject.narrative.alpha);
       expect(request.system).toContain(samplePromptObject.narrative.beta);
+      expect(request.system).toMatch(/multiple readable paragraphs|natural paragraph breaks/i);
+      expect(request.system).toMatch(/hard failure|unacceptable/i);
+      expect(request.system).toMatch(/prefer more paragraph breaks|shorter paragraphs/i);
     });
 
     it('preserves history order and appends director note as the final user message', () => {
       const request = mapForGenerate(samplePromptObject, 'openai-compatible');
+      const finalMessage = request.messages.at(-1)?.content ?? '';
 
       expect(request.messages.slice(0, samplePromptObject.history.length)).toEqual(
         samplePromptObject.history,
       );
-      expect(request.messages.at(-1)).toMatchObject({
-        role: 'user',
-        content: expect.stringContaining(samplePromptObject.directorNote.router),
-      });
-      expect(request.messages.at(-1)?.content).toContain(
-        samplePromptObject.directorNote.verbLexicon.join(', '),
+      expect(request.messages.at(-1)?.role).toBe('user');
+      expect(finalMessage).toContain(`Active router: ${samplePromptObject.directorNote.router}`);
+      expect(finalMessage).toContain(
+        `Active verb lexicon: ${samplePromptObject.directorNote.verbLexicon.join(', ')}`,
       );
-      expect(request.messages.at(-1)?.content).toContain(
-        samplePromptObject.directorNote.beatConstraints,
+      expect(finalMessage).toContain(
+        'Option route discipline: keep all 4 options inside the active router',
       );
-      expect(request.messages.at(-1)?.content).toContain(
-        samplePromptObject.directorNote.optionConstraints,
-      );
+      expect(finalMessage).toContain(`Volume: ${samplePromptObject.directorNote.volume}`);
+      expect(finalMessage).toContain(samplePromptObject.directorNote.beatConstraints);
+      expect(finalMessage).toContain(samplePromptObject.directorNote.optionConstraints);
+      expect(finalMessage).toContain('[Director Note - Highest Priority]');
     });
 
     it('includes generationControl data on the rewrite path', () => {

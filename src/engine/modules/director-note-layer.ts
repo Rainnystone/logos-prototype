@@ -36,16 +36,24 @@ function resolveDirectorConstraints(directorConstraints: string | undefined): st
     return 'No additional local hard rules were supplied for this round.';
   }
 
-  return `Audit-grounded answer targets: ${normalizedConstraints}`;
+  return `Local hard rules to obey without exception: ${normalizedConstraints}`;
+}
+
+function buildParagraphDiscipline(): string {
+  return [
+    'Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs.',
+    'A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct.',
+    'Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts.',
+    'If unsure, prefer shorter paragraphs and more breaks over one long block.',
+  ].join(' ');
 }
 
 function buildBeatConstraints(roundState: RoundState, sceneState: SceneState): string {
   return [
     `Volume discipline (${roundState.currentVolume}): ${VOLUME_BEAT_CONSTRAINTS[roundState.currentVolume]}`,
-    `This Beat should advance the current Phase goal: ${roundState.phaseGoal}.`,
+    `Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (${roundState.phaseGoal}) without skipping ahead to later-phase outcomes or violating active red lines.`,
     `Generated prose must stay within Alpha boundary (${sceneState.alpha}) and Beta boundary (${sceneState.beta}).`,
-    `Router alignment remains ${roundState.currentRouter}; keep the prose compatible with the active verb lexicon.`,
-    'Reading experience rule: never output the beat as one giant wall of text. Use multiple well-paced paragraphs, preserve natural paragraph breaks, and keep the visual rhythm easy to read on screen.',
+    buildParagraphDiscipline(),
     buildCanonGrounding(),
     resolveDirectorConstraints(roundState.directorConstraints),
   ].join(' ');
@@ -71,13 +79,12 @@ export function buildOptionConstraints(
   sceneState: SceneState,
   characterProfile: string,
 ): string {
-  const verbCount = roundState.verbLexicon.length;
-  const verbList = roundState.verbLexicon.join(', ');
   const resolvedCharacterProfile = resolveCharacterProfile(characterProfile);
 
   return [
-    `Step 1 - Route Locking: Generate exactly 4 options. Select 4 from these ${verbCount} verb directions: [${verbList}]. Each option must be orthogonal to the others and map to a distinct action direction.`,
+    'Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation.',
     `Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ${resolvedCharacterProfile}. ${buildCanonGrounding()} Verify the action remains psychologically plausible and compliant with Alpha (${sceneState.alpha}) / Beta (${sceneState.beta}) boundaries.`,
+    `Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (${roundState.phaseGoal}) without jumping to later-phase resolutions or violating active red lines.`,
     `Step 3 - Volume Formatting: Format each option at ${roundState.currentVolume} grain using ${VOLUME_OPTION_FORMATTING[roundState.currentVolume]}.`,
     resolveDirectorConstraints(roundState.directorConstraints),
   ].join(' ');
@@ -97,8 +104,6 @@ export function buildDirectorNote(
     DirectorNoteSchema,
     {
       volume: roundState.currentVolume,
-      router: roundState.currentRouter,
-      verbLexicon: [...roundState.verbLexicon],
       beatConstraints: buildBeatConstraints(roundState, sceneState),
       optionConstraints: buildOptionConstraints(roundState, sceneState, worldBase.mainCharacters),
     },

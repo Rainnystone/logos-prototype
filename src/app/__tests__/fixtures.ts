@@ -100,7 +100,7 @@ export const stateSnapshotFixture: StateSnapshot = {
     directorConstraints: 'Stay precise, physical, and local.',
   },
   generationState: {
-    directorNoteSummary: 'Volume=High | Router=Counterplay | VerbLexicon=break, feint',
+    directorNoteSummary: 'Volume=High | BeatRules=Active | OptionRules=Active',
     promptObject: {
       worldBase: storyPackageFixture.worldBase,
       history: [

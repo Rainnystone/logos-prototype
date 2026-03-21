@@ -28,13 +28,23 @@ export type Narrative = z.infer<typeof NarrativeSchema>;
 export const DirectorNoteSchema = z
   .object({
     volume: VolumeSchema,
+    beatConstraints: z.string(),
+    optionConstraints: z.string(),
+  })
+  .strict();
+export type DirectorNote = z.infer<typeof DirectorNoteSchema>;
+
+/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+export const PromptDirectorNoteSchema = z
+  .object({
+    volume: VolumeSchema,
     router: z.string(),
     verbLexicon: z.array(z.string()).min(1),
     beatConstraints: z.string(),
     optionConstraints: z.string(),
   })
   .strict();
-export type DirectorNote = z.infer<typeof DirectorNoteSchema>;
+export type PromptDirectorNote = z.infer<typeof PromptDirectorNoteSchema>;
 
 /** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const PreviousDraftSchema = z
@@ -62,7 +72,7 @@ export const PromptObjectSchema = z
     worldBase: WorldBaseSchema,
     history: z.array(HistoryEntrySchema),
     narrative: NarrativeSchema,
-    directorNote: DirectorNoteSchema,
+    directorNote: PromptDirectorNoteSchema,
     generationControl: GenerationControlSchema.optional(),
   })
   .strict();

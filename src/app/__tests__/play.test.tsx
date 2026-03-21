@@ -79,7 +79,7 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
       const suffix = isRewrite ? 'Rewritten' : 'Draft';
 
       return {
-        beatText: `${suffix} beat ${generateCount} for ${promptObject.directorNote.router}.`,
+        beatText: `${suffix} beat ${generateCount} for ${promptObject.narrative.phaseGoal}.`,
         options: [
           `Option ${generateCount}-1`,
           `Option ${generateCount}-2`,
@@ -208,7 +208,9 @@ describe('PlayWorkbench', () => {
     expect(await screen.findByText('Generating...')).toBeInTheDocument();
     expect(await screen.findByText('Auditing...')).toBeInTheDocument();
     expect(await screen.findByText('Accepted')).toBeInTheDocument();
-    expect(await screen.findAllByText('Draft beat 2 for Investigation.')).toHaveLength(2);
+    expect(
+      await screen.findAllByText(`Draft beat 2 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).toHaveLength(2);
   });
 
   it('displays rewrite feedback when an audit failure triggers a retry', async () => {
@@ -228,7 +230,11 @@ describe('PlayWorkbench', () => {
 
     expect(await screen.findByText('Rewriting...')).toBeInTheDocument();
     expect(await screen.findByText(/Blocking audit failures detected\./)).toBeInTheDocument();
-    expect(await screen.findAllByText('Rewritten beat 2 for Investigation.')).toHaveLength(2);
+    expect(
+      await screen.findAllByText(
+        `Rewritten beat 2 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`,
+      ),
+    ).toHaveLength(2);
   });
 
   it('shows a force-accept warning when retries are exhausted', async () => {
@@ -269,7 +275,9 @@ describe('PlayWorkbench', () => {
     await user.type(screen.getByLabelText('Free text action'), 'Cut the local power feed.');
     await user.click(screen.getByRole('button', { name: 'Submit Action' }));
 
-    expect(await screen.findAllByText('Draft beat 2 for Investigation.')).toHaveLength(2);
+    expect(
+      await screen.findAllByText(`Draft beat 2 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).toHaveLength(2);
     expect(
       screen.getByText('Beat 3 ready. Choose an option or write the next action.'),
     ).toBeInTheDocument();

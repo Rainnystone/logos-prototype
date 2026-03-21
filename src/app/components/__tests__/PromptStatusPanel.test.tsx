@@ -41,9 +41,7 @@ describe('PromptStatusPanel', () => {
       <PromptStatusPanel state={stateSnapshotFixture} diagnostics={createDiagnosticsFixture()} />,
     );
 
-    expect(
-      screen.getByText('Volume=High | Router=Counterplay | VerbLexicon=break, feint'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Volume=High | BeatRules=Active | OptionRules=Active')).toBeInTheDocument();
     expect(screen.getByText('4 layers')).toBeInTheDocument();
     expect(screen.getByText('2 entries')).toBeInTheDocument();
     expect(screen.getByText('Latest observed call: Audit')).toBeInTheDocument();

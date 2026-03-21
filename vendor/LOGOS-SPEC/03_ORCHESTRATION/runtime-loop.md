@@ -112,7 +112,7 @@ flowchart TD
 
 ### 5. 重写循环
 
-如果审计结果中出现阻塞失败项，系统不会直接进入下一轮，而是进入重写循环。重写循环的输入是当前轮已有产物、失败项与精确的 `RewriteFeedback`；在对外契约上，这些信息会被 Orchestrator 收束为 `PromptObject.generationControl`，其中至少包括 `retryCount`、`rewriteFeedback` 与上一版失败草稿。重写的目标不是重新讲一个新故事，而是在尽可能保留既有内容的前提下修复当前失败条件。
+如果审计结果中出现阻塞失败项，系统不会直接进入下一轮，而是进入重写循环。重写循环的输入是当前轮已有产物、失败项与精确的 `RewriteFeedback`；在对外契约上，这些信息会被 Orchestrator 收束为 `PromptObject.generationControl`，其中至少包括 `retryCount`、`rewriteFeedback` 与上一版失败草稿。这里的 `rewriteFeedback` 不是笼统提示，而应显式带上失败的 audit question 文本以及该问题的正确答案，使下一轮生成能够直接对照修复。重写的目标不是重新讲一个新故事，而是在尽可能保留既有内容的前提下修复当前失败条件。
 
 当前 Sample 版本规定重写次数上限为 3 次。只要仍然在重试同一个 Beat，它就仍然属于同一轮；只有当当前 Beat 被接受或被强制放行并写入历史之后，系统才算真正离开本轮。
 

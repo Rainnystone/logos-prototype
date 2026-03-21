@@ -64,12 +64,36 @@ phaseSpecificQuestions:
       blocking: true
       rationale: Phase 1 只能建立异常前奏，不能提前结束反派威胁。
 
-  phase-02-signal-chase:
+    - id: AQ-P1-002
+      question: 本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？
+      expected: false
+      blocking: true
+      rationale: Phase 1 必须保留逐步探索和发现灰谷烈存在的过程，不能直接摊开完整敌情。
+
+    - id: AQ-P1-003
+      question: 雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？
+      expected: false
+      blocking: true
+      rationale: Phase 1 只能推进到异常调查与发现阶段，不能提前进入正面对抗。
+
+  phase-02-hunt:
     - id: AQ-P2-001
       question: 灰谷烈是否已经被击败、失去异能？
       expected: false
       blocking: true
       rationale: Phase 2 仍处于追踪与逼近阶段，反派不能提前失去威胁。
+
+    - id: AQ-P2-002
+      question: 雾间凪的追踪与排查手段是否依赖了超自然感知？
+      expected: false
+      blocking: true
+      rationale: Phase 2 的推进必须建立在物理调查与破解上，不能借超自然感知直接锁定目标。
+
+    - id: AQ-P2-003
+      question: 故事是否已经提前转入与灰谷烈的正面高强度战斗？
+      expected: false
+      blocking: true
+      rationale: Phase 2 仍应保持追踪、排查与逼近，不应提前升级为正面战斗段。
 
   phase-03-first-contact:
     - id: AQ-P3-000
@@ -132,9 +156,13 @@ selectionPolicy:
     phase-01-prologue:
       append:
         - AQ-P1-001
-    phase-02-signal-chase:
+        - AQ-P1-002
+        - AQ-P1-003
+    phase-02-hunt:
       append:
         - AQ-P2-001
+        - AQ-P2-002
+        - AQ-P2-003
     phase-03-first-contact:
       append:
         - AQ-P3-000

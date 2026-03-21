@@ -26,15 +26,15 @@ last_updated: 2026-03-20
 
 ## 模块定位
 
-`Option Generator` 是负责在每一轮生成 4 个玩家可选行动的结构化管线模块。它不是一个自由发散器，而是一条三步约束管线：先从路由词典中锁定行动语义方向，再通过强制思维链推导角色心理动机以防止 OOC，最后根据目标声量对选项文本进行最终润色。
+`Option Generator` 是负责在每一轮生成 4 个玩家可选行动的结构化管线模块。它不是一个自由发散器，而是一条三步约束管线：先根据当前运行态路由与局部态势确定行动语义重心，再通过强制思维链推导角色心理动机以防止 OOC，最后根据目标声量对选项文本进行最终润色。
 
-这个模块之所以必须独立存在，是因为选项质量直接决定玩家体验的区分度和角色一致性。如果选项生成被简化为"让模型随手写四个选择"，系统就会迅速退化为无差别发散，既丧失路由纪律，也无法保证角色行为的心理合理性。
+这个模块之所以必须独立存在，是因为选项质量直接决定玩家体验的区分度和角色一致性。如果选项生成被简化为"让模型随手写四个选择"，系统就会迅速退化为无差别发散，也无法保证角色行为的心理合理性。
 
 ## 核心职责
 
 当前 Sample 中，Option Generator 负责按以下三步顺序生成 4 个选项：
 
-1. 从当前路由的行为词典中锁定 4 个正交行动方向。
+1. 从当前运行态路由与局部态势中拉开 4 个正交行动方向。
 2. 强制执行 CoT 心理推导，确保每个方向在当前角色性格和光锥边界下具有心理合理性。
 3. 根据目标声量的颗粒度要求，对推导结果进行最终文本润色。
 
@@ -44,9 +44,9 @@ last_updated: 2026-03-20
 
 ### 第一步：上下文读取与路由定调 (Context & Router)
 
-引擎首先回顾前文（当前版本默认提取前 5 个 Beat 的剧情），确立玩家当前的处境与状态。随后，引擎从当前轮的 `Narrative Router` 所指定的行为词典中，强制抽取 4 个正交的动作方向，或其绝对近义词。
+引擎首先回顾前文（当前版本默认提取前 5 个 Beat 的剧情），确立玩家当前的处境与状态。随后，引擎结合当前运行态 `routerName` 与 `verbLexicon`，从该语义重心中拉开 4 个正交的动作方向，让它们在策略、风险、投入程度或即时战术上形成清晰区分。
 
-这一步在物理层面上限制了选项的情景范围，确保 4 个选项截然不同且不脱离当前情境。词典中的词汇不是装饰性标签，而是选项语义骨架的硬约束。
+这一步在物理层面上限制了选项的情景范围，确保 4 个选项截然不同且不脱离当前情境。当前版本明确要求：runtime router 名称与 verb lexicon 应继续进入生成链路，但不再被 Director Note 文本直接改写成固定选项模板或硬锁句式。
 
 ### 第二步：基于 CoT 的心理学推导 (Anti-OOC Engine)
 
@@ -65,7 +65,7 @@ last_updated: 2026-03-20
 Option Generator 的最小输入包括：
 
 - `precedingBeats`（前序历史窗口）
-- `routerName` + `verbLexicon`（当前路由与行为词典）
+- `routerName` + `verbLexicon`（当前运行态路由与行为词典）
 - 主角性格设定（来自 `WorldBase`）
 - `alpha` / `beta`（当前光锥边界）
 - `currentVolume`（当前 Beat 声量）
@@ -78,7 +78,7 @@ Option Generator 的最小输入包括：
 
 ## 与其他模块的关系
 
-Option Generator 的上游是 `Narrative Router`（提供词典）、`Light Cone Collapse`（提供边界）、`Phase Gradient`（提供声量）和 `Memory Placeholder`（提供历史窗口）。这些输入并不会被它组装成一次独立 API 调用，而是被 `Director Note Layer` 消费后写入 `optionConstraints`，再由 `Prompt Assembler` 并入最终 `PromptObject`。
+Option Generator 的上游是 `Narrative Router`（提供运行态路由结果）、`Light Cone Collapse`（提供边界）、`Phase Gradient`（提供声量）和 `Memory Placeholder`（提供历史窗口）。这些输入并不会被它组装成一次独立 API 调用，而是被 `Prompt Assembler` 以“运行态路由上下文 + Director Note 约束文本”的组合方式并入最终 `PromptObject`。
 
 在当前架构中，Option Generator 与 Beat 正文在同一轮生成调用中同步产出（见 `09_ADR/adr-001-generation-order.md`），但无论调用方式如何，它都必须经过完整的三步管线，不允许跳过 Anti-OOC Engine 直接输出。
 
@@ -96,7 +96,7 @@ Option Generator 的上游是 `Narrative Router`（提供词典）、`Light Cone
 
 ## 与 Prompt Assembler 的架构关系
 
-根据 ADR-001 的决策，Beat 正文与 4 个选项在同一轮 LLM 调用中同步产出。这意味着 Option Generator 的三步管线（路由定调 → Anti-OOC CoT → 声量模具）并不是一个独立的代码调用链，而是通过 `Director Note Layer` 生成的 `optionConstraints` 嵌入到 `PromptObject` 中，由 LLM 在同一次 generate 调用内部执行。
+根据 ADR-001 的决策，Beat 正文与 4 个选项在同一轮 LLM 调用中同步产出。这意味着 Option Generator 的三步管线（路由定调 → Anti-OOC CoT → 声量模具）并不是一个独立的代码调用链，而是通过“运行态路由上下文 + `Director Note Layer` 生成的 `optionConstraints`”共同嵌入到 `PromptObject` 中，由 LLM 在同一次 generate 调用内部执行。
 
 换句话说，Option Generator 在当前架构中是一个"设计时模块"而非"运行时独立调用"。它的三步管线定义了选项生成必须遵循的约束顺序，而这些约束最终通过 `PromptObject.directorNote.optionConstraints` 传递给模型。Orchestrator 不需要单独调用 Option Generator；真正直接消费本模块设计的是 `Director Note Layer`，随后由 `Prompt Assembler` 把约束正式外发给 API Adapter。
 

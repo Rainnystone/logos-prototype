@@ -35,6 +35,8 @@ describe('Orchestrator', () => {
     expect(collapseCalls).toHaveLength(1);
     expect(state.sceneState.alpha).toBe('alpha-init');
     expect(state.sceneState.beta).toBe('beta-init');
+    expect(state.roundState.directorConstraints).toContain('phase-one-note');
+    expect(state.roundState.directorConstraints).toContain('correct answer must be YES');
     expect(validateStateSnapshot(state)).toEqual(state);
   });
 
@@ -74,6 +76,9 @@ describe('Orchestrator', () => {
     expect(beatResult.forceAccepted).toBe(false);
     expect(state.sceneState.currentBeatIndexInPhase).toBe(2);
     expect(state.generationState.currentBeatText).toBe('beat-1');
+    expect(state.generationState.directorNoteSummary).toBe('Volume=Low | BeatRules=Active | OptionRules=Active');
+    expect(generateCalls[0]?.directorNote.router).toBe(state.roundState.currentRouter);
+    expect(generateCalls[0]?.directorNote.verbLexicon).toEqual(state.roundState.verbLexicon);
   });
 
   it('retries with generationControl when audit fails before eventually passing', async () => {
@@ -109,7 +114,13 @@ describe('Orchestrator', () => {
 
     expect(generateCalls).toHaveLength(2);
     expect(rewriteSpy).toHaveBeenCalledTimes(1);
+    expect(generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
+      'Does the generated beat remain inside the required boundary?',
+    );
     expect(generateCalls[1]?.generationControl?.rewriteFeedback).toContain('Correct answer: YES');
+    expect(generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
+      'Your last draft implied: NO',
+    );
     expect(beatResult.retryCount).toBe(1);
     expect(beatResult.auditPassed).toBe(true);
     expect(state.generationState.currentBeatText).toBe('rewritten-beat');

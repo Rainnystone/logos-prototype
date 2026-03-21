@@ -63,12 +63,11 @@ Prompt Assembler 当前最小输入包括：
 - `phaseGoal`
 - `alpha`
 - `beta`
-- `currentVolume`
 - `routerName`
 - `verbLexicon`
 - `directorNote`
 - `retryCount`（仅重写时）
-- `rewriteFeedback`（仅重写时）
+- `rewriteFeedback`（仅重写时；其中应包含失败的 audit question 文本与对应正确答案）
 - `currentBeatText` / `currentOptions`（仅重写时，作为 `previousDraft` 来源）
 
 这些字段来源于不同上游模块，但它们一旦进入 Prompt Assembler，就不应被再次语义重写，而应被视为已经就绪的装配材料。

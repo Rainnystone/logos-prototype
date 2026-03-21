@@ -6,7 +6,6 @@ priority: core
 depends_on:
   - light-cone-collapse
   - phase-gradient
-  - narrative-router
 consumed_by:
   - prompt-assembler
 contracts: []
@@ -35,6 +34,8 @@ last_updated: 2026-03-19
 3. 为选项集生成面向选项的局部批注。
 4. 压缩本轮最关键的规则，避免生成第二份膨胀的系统提示。
 5. 保持批注格式稳定，使后续调参与测试可重复。
+6. 对 Beat 正文施加强制段落纪律，明确禁止“整段无换行的大墙文本”。
+7. 不把 runtime router 与 verb lexicon 重新固化为 Director Note 的硬锁，避免局部批注反过来压死本轮涌现空间。
 
 这些职责共同构成它的本质：重申控制，而不是增加设定。
 
@@ -55,13 +56,14 @@ last_updated: 2026-03-19
 这个模块当前最小输入包括：
 
 - 当前 `Volume`
-- 当前 `Router` 与 `Verb Lexicon`
 - 当前 `Phase Goal`
 - 当前 Scene 方向
 - 当前 `Alpha/Beta` 边界
 - 必要的少量硬规则
 
 这些输入的共同特点，是它们都描述“模型这轮必须优先服从什么”。它不需要重新读取完整世界观，也不需要重新解释历史窗口。
+
+需要特别强调的是：当前版本允许 `RoundState` 继续保存 runtime router 与 verb lexicon，供编排层、Prompt Assembler 与状态检查使用；但 `Director Note Layer` 不再把它们直接重写成正文/选项的硬锁约束。
 
 ## 输出
 
@@ -71,6 +73,8 @@ last_updated: 2026-03-19
 - 面向选项的导演批注
 
 在 Sample 版本中，二者可以共享一套当前轮控制状态，但应允许使用不同模板，以便分别强调镜头尺度和选项正交性。
+
+其中，面向正文的导演批注必须显式约束段落结构。当前版本不接受“单个超长段落”或“视觉上没有自然断点的大块正文”作为合格输出；如果正文退化为这类墙文本，应视为当前轮局部控制失败，而不是把它当作纯风格差异放过。
 
 ## 与其他模块的关系
 

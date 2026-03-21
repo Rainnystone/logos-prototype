@@ -65,7 +65,7 @@ Audit Resolver 的最小输入包括：
 
 ## RewriteFeedback 生成方式
 
-当前版本中，`RewriteFeedback` 由代码基于阻塞失败项拼接生成，不需要额外 LLM 调用。拼接逻辑为：列出所有阻塞失败项的问题文本与期望答案，形成一段精确的修正要求；随后由 Orchestrator 把它与 `retryCount`、`currentBeatText`、`currentOptions` 一起组装为 `PromptObject.generationControl`，在重写时作为显式控制包注入。
+当前版本中，`RewriteFeedback` 由代码基于阻塞失败项拼接生成，不需要额外 LLM 调用。拼接逻辑为：列出所有阻塞失败项的问题文本、正确答案，以及上一版草稿实际暗示出的错误答案，形成一段精确的修正要求；随后由 Orchestrator 把它与 `retryCount`、`currentBeatText`、`currentOptions` 一起组装为 `PromptObject.generationControl`，在重写时作为显式控制包注入。
 
 ## 与其他模块的关系
 

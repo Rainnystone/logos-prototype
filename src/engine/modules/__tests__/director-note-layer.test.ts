@@ -10,7 +10,7 @@ const baseRoundState: RoundState = {
   verbLexicon: ['勘查', '演绎', '潜伏', '干预'],
   historyWindow: [],
   directorConstraints:
-    '[AQ-G-001] For "宫下藤花是否察觉到了异常，或者表现出对生命安全的恐慌？", the correct answer must be NO. [AQ-C-001] For "本轮 Beat 正文是否符合当前声量要求？", the correct answer must be YES.',
+    'Strict phase-plan red lines: the protagonist must not identify the culprit too early and must not confront the villain head-on in this phase. [AQ-G-001] For "宫下藤花是否察觉到了异常，或者表现出对生命安全的恐慌？", the correct answer must be NO. [AQ-C-001] For "本轮 Beat 正文是否符合当前声量要求？", the correct answer must be YES.',
 };
 
 const baseSceneState: SceneState = {
@@ -34,10 +34,10 @@ describe('Director Note Layer', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
 
     expect(directorNote.volume).toBe(baseRoundState.currentVolume);
-    expect(directorNote.router).toBe(baseRoundState.currentRouter);
-    expect(directorNote.verbLexicon).toEqual(baseRoundState.verbLexicon);
     expect(directorNote.beatConstraints.length).toBeGreaterThan(0);
     expect(directorNote.optionConstraints.length).toBeGreaterThan(0);
+    expect(directorNote).not.toHaveProperty('router');
+    expect(directorNote).not.toHaveProperty('verbLexicon');
   });
 
   it('mentions high-volume slow motion and sensory detail constraints', () => {
@@ -66,31 +66,48 @@ describe('Director Note Layer', () => {
     expect(directorNote.beatConstraints).toMatch(/real-time|standard pacing|causal chain/i);
   });
 
-  it('references Alpha, Beta, phaseGoal, canon grounding, and audit answer targets in beat constraints', () => {
+  it('references Alpha, Beta, phaseGoal, canon grounding, phase-plan red lines, and audit answer targets in beat constraints', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
 
     expect(directorNote.beatConstraints).toContain(baseSceneState.alpha);
     expect(directorNote.beatConstraints).toContain(baseSceneState.beta);
     expect(directorNote.beatConstraints).toContain(baseRoundState.phaseGoal);
+    expect(directorNote.beatConstraints).not.toContain(baseRoundState.currentRouter);
+    for (const verb of baseRoundState.verbLexicon) {
+      expect(directorNote.beatConstraints).not.toContain(verb);
+    }
+    expect(directorNote.beatConstraints).toMatch(/strictly obey|must obey|mandatory/i);
+    expect(directorNote.beatConstraints).toMatch(/phase plan|phase goal/i);
     expect(directorNote.beatConstraints).toMatch(/wall of text|paragraph/i);
+    expect(directorNote.beatConstraints).toMatch(/hard failure|unacceptable|must be rejected/i);
+    expect(directorNote.beatConstraints).toMatch(/prefer shorter paragraphs|more breaks/i);
     expect(directorNote.beatConstraints).toMatch(/local canon authority|franchise|worldview/i);
+    expect(directorNote.beatConstraints).toContain(
+      'must not identify the culprit too early and must not confront the villain head-on',
+    );
     expect(directorNote.beatConstraints).toContain('宫下藤花是否察觉到了异常');
     expect(directorNote.beatConstraints).toMatch(/correct answer must be NO/i);
   });
 
-  it('references verb lexicon, anti-OOC, boundaries, volume, and audit answer targets in option constraints', () => {
+  it('references anti-OOC, boundaries, volume, phase-goal obedience, and audit answer targets in option constraints without route locking', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
-
-    for (const verb of baseRoundState.verbLexicon) {
-      expect(directorNote.optionConstraints).toContain(verb);
-    }
 
     expect(directorNote.optionConstraints).toMatch(/Anti-OOC|Chain-of-Thought/i);
     expect(directorNote.optionConstraints).toContain(baseSceneState.alpha);
     expect(directorNote.optionConstraints).toContain(baseSceneState.beta);
     expect(directorNote.optionConstraints).toContain(baseRoundState.currentVolume);
+    expect(directorNote.optionConstraints).toContain(baseRoundState.phaseGoal);
+    expect(directorNote.optionConstraints).not.toContain(baseRoundState.currentRouter);
+    for (const verb of baseRoundState.verbLexicon) {
+      expect(directorNote.optionConstraints).not.toContain(verb);
+    }
+    expect(directorNote.optionConstraints).toMatch(/phase plan|phase goal/i);
+    expect(directorNote.optionConstraints).toContain(
+      'must not identify the culprit too early and must not confront the villain head-on',
+    );
     expect(directorNote.optionConstraints).toContain('本轮 Beat 正文是否符合当前声量要求');
     expect(directorNote.optionConstraints).toMatch(/correct answer must be YES/i);
+    expect(directorNote.optionConstraints).toMatch(/materially distinct|orthogonal/i);
   });
 
   it('works with minimal required RoundState fields', () => {
@@ -104,8 +121,8 @@ describe('Director Note Layer', () => {
 
     const directorNote = buildDirectorNote(minimalRoundState, baseSceneState, baseWorldBase);
 
-    expect(directorNote.router).toBe('日常/闲暇');
-    expect(directorNote.verbLexicon).toEqual(['闲散']);
+    expect(directorNote.volume).toBe('Low');
+    expect(directorNote.beatConstraints).toContain('goal');
   });
 
   it('returns an immutable result and does not mutate inputs', () => {
@@ -126,7 +143,7 @@ describe('Director Note Layer', () => {
     const directorNote = buildDirectorNote(frozenRoundState, frozenSceneState, frozenWorldBase);
 
     expect(Object.isFrozen(directorNote)).toBe(true);
-    expect(Object.isFrozen(directorNote.verbLexicon)).toBe(true);
     expect(frozenRoundState.currentRouter).toBe(baseRoundState.currentRouter);
+    expect(frozenRoundState.verbLexicon).toEqual(baseRoundState.verbLexicon);
   });
 });

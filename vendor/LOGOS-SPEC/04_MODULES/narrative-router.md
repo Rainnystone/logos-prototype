@@ -7,7 +7,6 @@ depends_on:
   - router-profile
 consumed_by:
   - orchestrator-control-hub
-  - director-note-layer
   - option-generator
   - prompt-assembler
 contracts: []
@@ -23,7 +22,7 @@ last_updated: 2026-03-20
 
 ## 模块定位
 
-`Narrative Router` 模块的任务，是在当前轮把“可行动空间”缩小到一个明确的语义区域。它不告诉模型具体写哪一句话，而是告诉系统“这一轮的选项与行动应该从哪一类行为语义中抽取”。因此，它是一个限制器，而不是一个内容生成器。
+`Narrative Router` 模块的任务，是在当前轮把“可行动空间”缩小到一个明确的语义区域。它不告诉模型具体写哪一句话，而是告诉系统“这一轮的行动语义重心更接近哪一类局部模式”。因此，它是一个限制器，而不是一个内容生成器。
 
 这一点非常关键，因为在 LOGOS 里，选项的价值不只是可点，而是它们必须彼此区分、同时又都不脱离当前情境。如果没有 Router，系统很快就会退化成“模型随手发散四种看似不同但本质相近的行为”。
 
@@ -33,7 +32,7 @@ last_updated: 2026-03-20
 
 1. 根据当前场景状态判断本轮应使用哪条路由。
 2. 提供该路由对应的 `Verb Lexicon`。
-3. 约束选项生成只能在该语义空间内发散，而不能越过当前情境。
+3. 把当前轮的语义路由结果保存在 runtime 状态中，供编排层和状态检查使用。
 
 换句话说，它决定的是“这轮允许怎样行动”，而不是“这轮该写得多细”。
 
@@ -52,6 +51,7 @@ Narrative Router 的标准输出包括：
 - `verbLexicon`
 
 在工程上，最关键的是 `verbLexicon`，因为它会被选项生成链直接消费，用来限制本轮四个选项的语义方向。
+在工程上，`routerName` 与 `verbLexicon` 仍是重要的 runtime 控制元数据；但当前版本不再把它们直接镜像进 `Director Note` 的约束文本作为硬锁，而是由 Prompt Assembler 作为独立运行态路由上下文继续送入生成链路。
 
 ## 基础路由范围
 

@@ -46,6 +46,12 @@ describe('E2E audit behavior', () => {
       isRewrite: true,
       retryCount: 1,
     });
+    expect(harness.generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
+      '宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？',
+    );
+    expect(harness.generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
+      'Correct answer: NO',
+    );
   });
 
   it('force-accepts after three failed retries and still writes the beat into history', async () => {

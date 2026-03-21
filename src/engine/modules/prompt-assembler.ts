@@ -10,6 +10,8 @@ export interface PromptAssemblerInput {
   readonly phaseGoal: string;
   readonly alpha: string;
   readonly beta: string;
+  readonly currentRouter: string;
+  readonly verbLexicon: readonly string[];
   readonly directorNote: DirectorNote;
 }
 
@@ -39,8 +41,8 @@ function buildBasePromptObject(input: PromptAssemblerInput): PromptObject {
     },
     directorNote: {
       volume: input.directorNote.volume,
-      router: input.directorNote.router,
-      verbLexicon: [...input.directorNote.verbLexicon],
+      router: input.currentRouter,
+      verbLexicon: [...input.verbLexicon],
       beatConstraints: input.directorNote.beatConstraints,
       optionConstraints: input.directorNote.optionConstraints,
     },
