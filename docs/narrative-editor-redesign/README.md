@@ -41,8 +41,12 @@ Current section drafts:
 
 - `01-worldbase-and-cast.md`
 
+Current section plans:
+
+- `plans/2026-03-22-worldbase-and-cast-implementation-plan.md`
+
 Coding agents should treat `redesign-design-recorder.md` as the master index and
-then read the matching section draft before implementing that page.
+then read the matching section draft and matching section plan before implementing that page.
 
 ## Promotion Rule
 

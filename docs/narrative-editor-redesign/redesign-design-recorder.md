@@ -25,6 +25,10 @@
 
 - [世界与角色](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/docs/narrative-editor-redesign/01-worldbase-and-cast.md)
 
+当前 section 执行计划：
+
+- [世界与角色 Plan](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/docs/narrative-editor-redesign/plans/2026-03-22-worldbase-and-cast-implementation-plan.md)
+
 后续 coding agent 在进入具体 section 实现前，除了本主索引外，还必须读取对应 section 的独立 md。
 
 ## 2. 当前设计前提
@@ -208,7 +212,6 @@
 - 重要配角定义
 - 普通配角定义
 - 地点词池 / 场景元素
-- 可出场 / 禁出场角色范围
 
 ### 8.3 对应当前系统对象
 
