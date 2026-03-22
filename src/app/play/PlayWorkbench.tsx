@@ -320,45 +320,50 @@ export function PlayWorkbench({
               <p>Initializing Scene...</p>
             </aside>
           )}
-          <section className="panel generation-workspace-panel">
-            <div className="panel-heading">
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col font-sans mb-[1.25rem]">
+            <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:justify-between md:items-start gap-2">
               <div>
-                <p className="panel-eyebrow">Generation Workspace</p>
-                <h2>{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
+                <p className="text-[10px] tracking-widest uppercase text-slate-500 mb-1">Generation Workspace</p>
+                <h2 className="text-lg font-bold text-slate-800 tracking-tight">{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
               </div>
-              <p className="panel-note">{readyMessage}</p>
+              <p className="text-xs text-slate-400 max-w-sm md:text-right">{readyMessage}</p>
             </div>
             {!roundStarted ? (
-              <section className="start-round-panel">
-                <p className="panel-note">
+              <section className="p-5 m-5 border border-dashed border-slate-300 rounded-lg bg-slate-50 flex flex-col gap-4">
+                <p className="text-sm text-slate-600">
                   Start the round with the scene opening hook before accepting player actions.
                 </p>
-                <blockquote className="hook-preview">
-                  <p>{openingHookInput}</p>
+                <blockquote className="pl-4 py-2 border-l-4 border-slate-300 bg-white rounded-r-md">
+                  <p className="font-serif text-slate-800 italic">{openingHookInput}</p>
                 </blockquote>
-                <button type="button" onClick={handleStartRound} disabled={isInputLoading}>
+                <button 
+                  className="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm" 
+                  type="button" 
+                  onClick={handleStartRound} 
+                  disabled={isInputLoading}
+                >
                   Start Round
                 </button>
               </section>
             ) : (
-              <div className="generation-workspace-panel__body">
-                <div className="metric-grid">
-                  <div>
-                    <span className="metric-label">Round State</span>
-                    <strong>
+              <div className="p-5 flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
+                    <span className="block text-[10px] uppercase text-slate-500 mb-1">Round State</span>
+                    <strong className="text-slate-800">
                       {status === 'accepted' || status === 'force-accepted' ? 'Live' : 'Processing'}
                     </strong>
                   </div>
-                  <div>
-                    <span className="metric-label">Current Beat</span>
-                    <strong>
+                  <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
+                    <span className="block text-[10px] uppercase text-slate-500 mb-1">Current Beat</span>
+                    <strong className="text-slate-800">
                       {currentState
                         ? `Beat ${currentState.sceneState.currentBeatIndexInPhase}`
                         : 'Pending'}
                     </strong>
                   </div>
                 </div>
-                <p className="panel-note">
+                <p className="text-sm text-slate-500 mt-2">
                   Opening hook has been dispatched. New options will replace the fixed four slots
                   after each accepted beat.
                 </p>
