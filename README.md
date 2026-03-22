@@ -1,8 +1,14 @@
-# LOGOS Workbench DEV
+# LOGOS Narrative Editor
 
-LOGOS Narrative Control Workbench testbed for local iteration, provider integration, and workbench validation.
+LOGOS Narrative Editor for local iteration, provider integration, and
+narrative-editor workflow validation.
 
-Current active stream: `branch/narrative-editor`. Branch-specific workflow
+Canonical repo: `https://github.com/Rainnystone/LOGOS-Narrative-Editor`
+
+Canonical development branch: `branch/narrative-editor`
+
+`main` is kept aligned to the same baseline for compatibility, but day-to-day
+development only targets `branch/narrative-editor`. Branch-specific workflow
 rules are documented in `docs/narrative-editor-branch.md`.
 
 ## 项目简介
@@ -26,14 +32,14 @@ rules are documented in `docs/narrative-editor-branch.md`.
 
 ## 关联仓库
 
-| 仓库                           | 地址                                             | 职责                     |
-| ------------------------------ | ------------------------------------------------ | ------------------------ |
-| **LOGOS NC Test DEV** (本仓库) | https://github.com/Rainnystone/LOGOS-NC-Test-DEV | 开发测试与本地验证仓库   |
-| **LOGOS-Design**               | https://github.com/Rainnystone/LOGOS-Design      | 上游设计来源与历史参考   |
+| 仓库                           | 地址                                                     | 职责                     |
+| ------------------------------ | -------------------------------------------------------- | ------------------------ |
+| **LOGOS Narrative Editor**     | https://github.com/Rainnystone/LOGOS-Narrative-Editor    | 当前唯一官方实现仓库     |
+| **LOGOS-Design**               | https://github.com/Rainnystone/LOGOS-Design              | 上游设计来源与历史参考   |
 
 > 在 `branch/narrative-editor` 上，仓库内的 `vendor/LOGOS-SPEC` 不再只是只读镜像，
 > 而是需要与实现、测试一起同步演进的设计快照。
-> 旧的 phase 执行计划与 spec-first 流程保留为历史参考，不再自动主导新开发。
+> 旧的 phase 执行计划与 phase-first 流程已经退役，不再作为本仓库的默认入口。
 >
 > ```
 > LOGOS/
@@ -46,8 +52,8 @@ rules are documented in `docs/narrative-editor-branch.md`.
 
 ```bash
 # 1. Clone 仓库
-git clone https://github.com/Rainnystone/LOGOS-NC-Test-DEV.git
-cd LOGOS-NC-Test-DEV
+git clone https://github.com/Rainnystone/LOGOS-Narrative-Editor.git
+cd LOGOS-Narrative-Editor
 
 # 2. 安装依赖
 npm install
@@ -80,7 +86,7 @@ npm run dev
 ## 目录结构
 
 ```
-LOGOS-NC-Test-DEV/
+LOGOS-Narrative-Editor/
 ├── src/
 │   ├── app/              # Next.js App Router 页面
 │   ├── engine/           # 核心引擎
@@ -93,9 +99,7 @@ LOGOS-NC-Test-DEV/
 │   └── LOGOS-SPEC/       # 与实现同步维护的设计快照
 ├── story-packages/       # 叙事内容包（YAML）
 ├── src/**/__tests__/     # 与实现共置的测试文件
-├── execution-plans/      # 分阶段执行计划
-├── docs/                 # 项目文档
-│   └── claude-code-guide/  # Claude Code 团队协作指南
+├── docs/                 # 当前项目文档
 └── .claude/              # Claude Code 配置
 ```
 
@@ -107,7 +111,8 @@ LOGOS-NC-Test-DEV/
 4. **选择合适测试套件** — 迭代时优先跑 `test:core` / `test:ui` / `test:e2e`
 5. **提交 PR** — 在 `branch/narrative-editor` 上归拢相关改动并接受人工 review
 
-详细的 Claude Code 协作指南请参阅: [docs/claude-code-guide/](./docs/claude-code-guide/)
+历史 phase 工作流文档与执行计划已移除；当前以本 README、[AGENTS.md](./AGENTS.md)
+和 [docs/narrative-editor-branch.md](./docs/narrative-editor-branch.md) 为准。
 
 ## 相关命令
 

@@ -5,13 +5,15 @@
 LOGOS (Linguistic Oriented Game Orchestration Studio) is an AI-driven narrative
 orchestration engine for interactive fiction. Built with Next.js (TypeScript).
 
-This is the implementation repo. On `branch/narrative-editor`, the vendored
-specification at `vendor/LOGOS-SPEC/` is an in-repo design snapshot that must
-co-evolve with implementation work instead of remaining read-only.
+This is the implementation repo for
+`https://github.com/Rainnystone/LOGOS-Narrative-Editor`. The canonical working
+branch is `branch/narrative-editor`.
 
-Branch transition rules live at `docs/narrative-editor-branch.md`. When that
-document conflicts with older phase-era workflow text, the branch transition
-document wins.
+On this repo, the vendored specification at `vendor/LOGOS-SPEC/` is an in-repo
+design snapshot that must co-evolve with implementation work instead of
+remaining read-only.
+
+Branch transition rules live at `docs/narrative-editor-branch.md`.
 
 ## Architecture
 
@@ -61,8 +63,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 - Every session: read this file plus `docs/narrative-editor-branch.md`
 - Load `vendor/LOGOS-SPEC/` selectively as reference context, not as a hard gate
-- Old phase `PROMPT.md` files are historical references; they do not constrain
-  new narrative-editor work unless explicitly revived
+- `branch/narrative-editor` is the only default development branch
 - Spec text budget: max 40,000 tokens per session
 - Never load: Agent Client/, LOGOS Prototype/, SillyTavern调研/
 
@@ -76,7 +77,6 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 | Glossary (terminology lock) | LOGOS-SPEC/02_DOMAIN/glossary.md  |
 | Contract schemas            | LOGOS-SPEC/05_CONTRACTS/\*.yaml   |
 | Module specs                | LOGOS-SPEC/04_MODULES/            |
-| Execution plans             | execution-plans/                  |
 | Engine source               | src/engine/                       |
 | TypeScript types            | src/types/                        |
 | Story packages              | story-packages/                   |
@@ -128,10 +128,10 @@ STOP and wait for human if the fix would change:
 
 ## Git
 
-- Active branch for the current workstream: `branch/narrative-editor`
-- Older phase branch naming (`feature/XX-phase-name`) is legacy guidance for the
-  completed phase-by-phase rollout
+- Canonical GitHub repo: `Rainnystone/LOGOS-Narrative-Editor`
+- Active development branch: `branch/narrative-editor`
+- `main` is a compatibility mirror of the same baseline, not the primary branch
 - Commit format: <type>: <description>
 - Types: feat, fix, refactor, test, docs, chore
-- PR required for merge to develop
+- PRs should target `branch/narrative-editor` unless the human explicitly says otherwise
 - Human review required before merge
