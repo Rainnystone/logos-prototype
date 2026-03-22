@@ -1,56 +1,52 @@
 # Narrative Editor Redesign
 
-This directory is the working area for narrative editor redesign exploration,
-architecture decisions, section-by-section drafts, and approved design records
-inside the implementation repo.
+This directory holds the active redesign record for the LOGOS Narrative Editor.
 
-## Current Working Record
+## Active Entry Point
 
-The current primary design recorder is:
+The only active master index is:
 
-- `redesign-design-recorder.md`
+- `master-record.md`
 
-This file is the running design source for the redesign discussion. It records:
+Coding agents should begin there before reading any follow-up redesign document.
 
-- agreed information architecture
-- approved scope boundaries
-- architecture decisions needed before coding plans
-- constraints aimed at AI coding agents
+## Current Active Direction
 
-## Current Approved Architecture Direction
+The redesign is now `coordinator-first`, not `page-first`.
 
-The redesign currently assumes:
+This means the current design priority is:
 
-- the webapp will gain controlled local file read/write capability
-- this capability will stay inside the existing Next.js app
-- first-phase write scope is limited to repo-controlled story package files
-- browser components will not directly access the filesystem
+- define the `router-controller` coordinator agent
+- define the section skill inventory around that coordinator
+- define the validation, repair, writeback, and reload flow
+- only then revisit section pages as downstream surfaces
 
-This is intentionally a lightweight, maintainable local-first architecture, not a
-desktop-shell rewrite and not a freeform file manager.
+## What Coding Agents Should Read
 
-## Planned Contents For This Folder
+Start with:
 
-This folder is expected to hold:
+- `master-record.md`
 
-- the running redesign recorder
-- four dedicated markdown drafts for the four redesign sections/pages
-- follow-up design notes that are still being iterated before promotion
+Do not treat archived section drafts or archived plans as active implementation guidance.
 
-Current section drafts:
+## Archive
 
-- `01-worldbase-and-cast.md`
+Historical page-first drafts and early plans have been moved to:
 
-Current section plans:
+- `archive/`
 
-- `plans/2026-03-22-worldbase-and-cast-implementation-plan.md`
+Those files are preserved only as historical discussion context. They are not the
+current approved architecture path.
 
-Coding agents should treat `redesign-design-recorder.md` as the master index and
-then read the matching section draft and matching section plan before implementing that page.
+Read:
+
+- `archive/README.md`
+
+if you need the archive policy.
 
 ## Promotion Rule
 
-- redesign discussions can be iterated here first
-- once a design slice is approved, it should remain readable here as a stable record
-- if an approved design changes behavior, contracts, or workflows, the relevant
-  `vendor/LOGOS-SPEC/` documents should later be updated in the same branch
+- active redesign decisions should stay readable in this folder
+- once a behavior, contract, or workflow is approved for implementation, the
+  corresponding `vendor/LOGOS-SPEC/` documents should later be updated in the
+  same branch
