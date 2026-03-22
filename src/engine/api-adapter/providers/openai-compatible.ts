@@ -32,6 +32,47 @@ interface OpenAIApiResponse {
   };
 }
 
+function extractJsonErrorDetail(payload: unknown): string | undefined {
+  if (typeof payload === 'string') {
+    const trimmedPayload = payload.trim();
+    return trimmedPayload.length > 0 ? trimmedPayload : undefined;
+  }
+
+  if (Array.isArray(payload)) {
+    for (const item of payload) {
+      const detail = extractJsonErrorDetail(item);
+
+      if (detail) {
+        return detail;
+      }
+    }
+
+    return undefined;
+  }
+
+  if (typeof payload !== 'object' || payload === null) {
+    return undefined;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const directMessage =
+    typeof record.message === 'string' ? record.message.trim() : undefined;
+
+  if (directMessage && directMessage.length > 0) {
+    return directMessage;
+  }
+
+  if ('error' in record) {
+    const errorDetail = extractJsonErrorDetail(record.error);
+
+    if (errorDetail) {
+      return errorDetail;
+    }
+  }
+
+  return undefined;
+}
+
 function trimTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
@@ -108,9 +149,9 @@ async function parseErrorDetail(response: Response): Promise<string | undefined>
 
   try {
     if (contentType.includes('application/json')) {
-      const data = (await response.json()) as OpenAIApiResponse;
+      const data = (await response.json()) as OpenAIApiResponse | unknown;
 
-      return data.error?.message;
+      return extractJsonErrorDetail(data);
     }
 
     const text = await response.text();

@@ -256,41 +256,32 @@ export function PlayWorkbench({
 
   return (
     <main className="play-page">
-      <section className="context-strip">
-        <div>
-          <p className="panel-eyebrow">Sample Context</p>
-          <h1>{storyPackage.sceneSpec.sceneName}</h1>
-          <p>{storyPackage.sceneSpec.mainAxis}</p>
-        </div>
-        <div className="context-strip__side">
-          <div className="context-strip__meta">
-            <span>{storyPackageName}</span>
-            <span>{storyPackage.sceneSpec.endLine}</span>
-            <span>{runtimeSource}</span>
-          </div>
-          <div className="context-strip__actions">
-            <button type="button" onClick={() => setFixtureReferenceOpen((current) => !current)}>
-              {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
-            </button>
-          </div>
-        </div>
-      </section>
+      <AuthorControlPanel
+        storyPackage={storyPackage}
+        currentPhaseIndex={currentState?.sceneState.currentPhaseIndex ?? 1}
+        metaItems={[storyPackageName, runtimeSource]}
+        actions={
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c4e2f] to-[#355f76] px-4 py-2 text-sm font-medium text-[#fffaf2]"
+            onClick={() => setFixtureReferenceOpen((current) => !current)}
+          >
+            {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
+          </button>
+        }
+      />
 
       {fixtureReferenceOpen ? (
         <FixtureReferencePanel storyPackage={storyPackage} storyPackageName={storyPackageName} />
       ) : null}
 
       <section className="play-grid">
-        <div className="play-column play-column--controls">
-          <AuthorControlPanel
-            storyPackage={storyPackage}
-            currentPhaseIndex={currentState?.sceneState.currentPhaseIndex ?? 1}
-          />
+        <div className="play-column">
           <ConfigPanel initialConfig={adapterConfig} onSave={setAdapterConfig} />
           <PromptStatusPanel state={currentState} diagnostics={diagnostics} />
         </div>
 
-        <div className="play-column play-column--main">
+        <div className="play-column">
           <BeatDisplay
             status={status}
             beatText={currentState?.generationState.currentBeatText ?? null}

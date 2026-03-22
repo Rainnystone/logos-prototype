@@ -113,6 +113,39 @@ describe('providers', () => {
     await expect(provider.call(sampleProviderRequest)).rejects.toThrow(/400.*bad request/i);
   });
 
+  it('extracts error details from array-wrapped JSON error responses for OpenAI-compatible providers', async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify([
+            {
+              error: {
+                code: 400,
+                message: 'Request contains an invalid argument.',
+                status: 'INVALID_ARGUMENT',
+              },
+            },
+          ]),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = createOpenAICompatibleProvider({
+      apiKey: 'google-key',
+      baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+      model: 'gemini-3-flash-preview',
+    });
+
+    await expect(provider.call(sampleProviderRequest)).rejects.toThrow(
+      /400.*Request contains an invalid argument/i,
+    );
+  });
+
   it('formats OpenAI-compatible requests as a messages array and parses usage', async () => {
     const fetchMock = vi.fn(
       async () =>
