@@ -176,8 +176,8 @@
 
 对应文件见：
 
-- [prompt-object.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/prompt-object.ts)
-- [world-base.yaml](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/sample-scene/world-base.yaml)
+- [prompt-object.ts](../../../src/types/prompt-object.ts)
+- [world-base.yaml](../../../src/story-packages/sample-scene/world-base.yaml)
 
 这意味着：
 
@@ -216,7 +216,7 @@
 
 当前最直接相关的 UI 是：
 
-- [FixtureReferencePanel.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/FixtureReferencePanel.tsx)
+- [FixtureReferencePanel.tsx](../../../src/app/components/FixtureReferencePanel.tsx)
 
 它目前只做 read-only 展示，直接显示：
 
@@ -233,7 +233,7 @@
 
 相关文件：
 
-- [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/play/PlayWorkbench.tsx)
+- [PlayWorkbench.tsx](../../../src/app/play/PlayWorkbench.tsx)
 
 它通过 fixture drawer 间接消费 `WorldBase`。本次 redesign 不应让这一页承担 authoring 编辑职责，但任何 `WorldBase` 形状变动都必须确认这里的 fixture reference 仍能正常显示。
 
@@ -243,7 +243,7 @@
 
 相关文件：
 
-- [story-loader.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/story-loader.ts)
+- [story-loader.ts](../../../src/engine/story-loader.ts)
 
 它会从 `world-base.yaml` 读取并用 `WorldBaseSchema` 校验。只要 redesign 页面改写了 `world-base.yaml` 的输出格式，这里就必须同步处理。
 
@@ -251,7 +251,7 @@
 
 相关文件：
 
-- [director-note-layer.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/director-note-layer.ts)
+- [director-note-layer.ts](../../../src/engine/modules/director-note-layer.ts)
 
 这里当前直接把 `worldBase.mainCharacters` 作为 option constraint 的角色资料来源之一。也就是说：
 
@@ -262,7 +262,7 @@
 
 相关文件：
 
-- [prompt-assembler.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/prompt-assembler.ts)
+- [prompt-assembler.ts](../../../src/engine/modules/prompt-assembler.ts)
 
 这里会原样把 `worldBase` 三个字段塞进 `PromptObject`。所以 redesign 页如果采用结构化角色卡，必须先有一层 serializer / mapper，把结构化 authoring 数据重新拼装成当前 runtime worldBase。
 
@@ -270,7 +270,7 @@
 
 相关文件：
 
-- [prompt-templates.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/api-adapter/prompt-templates.ts)
+- [prompt-templates.ts](../../../src/engine/api-adapter/prompt-templates.ts)
 
 这里直接把：
 
@@ -317,25 +317,25 @@
 
 优先检查这些文件：
 
-- [prompt-object.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/prompt-object.ts)
-- [story-package.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/story-package.ts)
-- [story-loader.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/story-loader.ts)
-- [world-base.yaml](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/sample-scene/world-base.yaml)
-- [story-package.schema.md](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/story-package.schema.md)
-- [FixtureReferencePanel.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/FixtureReferencePanel.tsx)
-- [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/play/PlayWorkbench.tsx)
-- [director-note-layer.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/director-note-layer.ts)
-- [prompt-assembler.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/prompt-assembler.ts)
-- [prompt-templates.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/api-adapter/prompt-templates.ts)
+- [prompt-object.ts](../../../src/types/prompt-object.ts)
+- [story-package.ts](../../../src/types/story-package.ts)
+- [story-loader.ts](../../../src/engine/story-loader.ts)
+- [world-base.yaml](../../../src/story-packages/sample-scene/world-base.yaml)
+- [story-package.schema.md](../../../src/story-packages/story-package.schema.md)
+- [FixtureReferencePanel.tsx](../../../src/app/components/FixtureReferencePanel.tsx)
+- [PlayWorkbench.tsx](../../../src/app/play/PlayWorkbench.tsx)
+- [director-note-layer.ts](../../../src/engine/modules/director-note-layer.ts)
+- [prompt-assembler.ts](../../../src/engine/modules/prompt-assembler.ts)
+- [prompt-templates.ts](../../../src/engine/api-adapter/prompt-templates.ts)
 
 ### 7.3 当前强关联测试
 
 优先检查这些测试：
 
-- [sample-scene.test.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/__tests__/sample-scene.test.ts)
-- [story-loader.test.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/__tests__/story-loader.test.ts)
-- [FixtureReferencePanel.test.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/__tests__/FixtureReferencePanel.test.tsx)
-- [play.test.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/__tests__/play.test.tsx)
+- [sample-scene.test.ts](../../../src/story-packages/__tests__/sample-scene.test.ts)
+- [story-loader.test.ts](../../../src/engine/__tests__/story-loader.test.ts)
+- [FixtureReferencePanel.test.tsx](../../../src/app/components/__tests__/FixtureReferencePanel.test.tsx)
+- [play.test.tsx](../../../src/app/__tests__/play.test.tsx)
 - `prompt-assembler` / `director-note-layer` / `schema-mapper` 相关测试
 
 ## 8. 如何检索潜在关联文件

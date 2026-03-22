@@ -22,6 +22,17 @@ This document exists to keep AI coding agents from guessing:
 - how section skills relate to section pages
 - how validation and repair should work before any file write happens
 
+## 1.1 Active Document Index
+
+Current active redesign documents:
+
+- [master-record.md](master-record.md)
+- [coordinator-agent.md](coordinator-agent.md)
+- [TODO.zh-CN.md](TODO.zh-CN.md)
+
+Coding agents should start from this file, then read the coordinator agent design
+before attempting implementation planning.
+
 ## 2. Reset Of Active Direction
 
 The redesign has shifted from:
@@ -321,8 +332,9 @@ The next active redesign documents should be:
 
 1. `coordinator-agent.md`
 2. `section-skills.md`
-3. a future validation/writeback design note if needed
-4. only after that, refreshed section page drafts
+3. `TODO.zh-CN.md`
+4. a future validation/writeback design note if needed
+5. only after that, refreshed section page drafts
 
 These follow-up documents should all refer back to this master record.
 
@@ -335,7 +347,7 @@ current implementation direction.
 
 See:
 
-- [archive/README.md](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/docs/narrative-editor-redesign/archive/README.md)
+- [archive/README.md](archive/README.md)
 
 Coding agents should not read archived drafts unless a human explicitly asks for
 historical comparison.

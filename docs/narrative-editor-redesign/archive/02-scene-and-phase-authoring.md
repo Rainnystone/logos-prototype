@@ -114,8 +114,8 @@
 
 对应当前类型与文件：
 
-- [story-package.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/story-package.ts)
-- [scene.yaml](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/sample-scene/scene.yaml)
+- [story-package.ts](../../../src/types/story-package.ts)
+- [scene.yaml](../../../src/story-packages/sample-scene/scene.yaml)
 
 当前字段：
 
@@ -148,8 +148,8 @@
 
 对应当前类型与文件：
 
-- [phase-plan.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/phase-plan.ts)
-- [phase-plans.yaml](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/sample-scene/phase-plans.yaml)
+- [phase-plan.ts](../../../src/types/phase-plan.ts)
+- [phase-plans.yaml](../../../src/story-packages/sample-scene/phase-plans.yaml)
 
 当前字段：
 
@@ -188,8 +188,8 @@
 
 对应当前类型与文件：
 
-- [audit-question-set.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/audit-question-set.ts)
-- [audit-questions.yaml](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/story-packages/sample-scene/audit-questions.yaml)
+- [audit-question-set.ts](../../../src/types/audit-question-set.ts)
+- [audit-questions.yaml](../../../src/story-packages/sample-scene/audit-questions.yaml)
 
 当前字段：
 
@@ -220,8 +220,8 @@
 
 相关文件：
 
-- [StoryPackageSelector.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/StoryPackageSelector.tsx)
-- [SceneOverview.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/SceneOverview.tsx)
+- [StoryPackageSelector.tsx](../../../src/app/components/StoryPackageSelector.tsx)
+- [SceneOverview.tsx](../../../src/app/components/SceneOverview.tsx)
 
 当前首页已经展示了：
 
@@ -249,7 +249,7 @@
 
 相关文件：
 
-- [AuthorControlPanel.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/AuthorControlPanel.tsx)
+- [AuthorControlPanel.tsx](../../../src/app/components/AuthorControlPanel.tsx)
 
 当前 workbench 中，这个组件直接展示：
 
@@ -278,7 +278,7 @@
 
 相关文件：
 
-- [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/play/PlayWorkbench.tsx)
+- [PlayWorkbench.tsx](../../../src/app/play/PlayWorkbench.tsx)
 
 这里当前直接消费：
 
@@ -307,7 +307,7 @@
 
 相关文件：
 
-- [story-loader.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/story-loader.ts)
+- [story-loader.ts](../../../src/engine/story-loader.ts)
 
 它负责读取：
 
@@ -332,7 +332,7 @@
 
 相关文件：
 
-- [orchestrator.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/orchestrator.ts)
+- [orchestrator.ts](../../../src/engine/orchestrator.ts)
 
 这里会直接消费：
 
@@ -450,18 +450,18 @@
 
 如果后续有 coding agent 来实现这一页，它最应该先对齐这些文件：
 
-- [story-package.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/story-package.ts)
-- [phase-plan.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/phase-plan.ts)
-- [audit-question-set.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/types/audit-question-set.ts)
-- [story-loader.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/story-loader.ts)
-- [SceneOverview.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/SceneOverview.tsx)
-- [AuthorControlPanel.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/components/AuthorControlPanel.tsx)
-- [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/play/PlayWorkbench.tsx)
-- [story-package-catalog.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/app/story-package-catalog.ts)
-- [auditor.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/auditor.ts)
-- [narrative-router.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/narrative-router.ts)
-- [phase-gradient.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/modules/phase-gradient.ts)
-- [orchestrator.ts](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/src/engine/orchestrator.ts)
+- [story-package.ts](../../../src/types/story-package.ts)
+- [phase-plan.ts](../../../src/types/phase-plan.ts)
+- [audit-question-set.ts](../../../src/types/audit-question-set.ts)
+- [story-loader.ts](../../../src/engine/story-loader.ts)
+- [SceneOverview.tsx](../../../src/app/components/SceneOverview.tsx)
+- [AuthorControlPanel.tsx](../../../src/app/components/AuthorControlPanel.tsx)
+- [PlayWorkbench.tsx](../../../src/app/play/PlayWorkbench.tsx)
+- [story-package-catalog.ts](../../../src/app/story-package-catalog.ts)
+- [auditor.ts](../../../src/engine/modules/auditor.ts)
+- [narrative-router.ts](../../../src/engine/modules/narrative-router.ts)
+- [phase-gradient.ts](../../../src/engine/modules/phase-gradient.ts)
+- [orchestrator.ts](../../../src/engine/orchestrator.ts)
 
 潜在还会波及：
 

@@ -11,7 +11,7 @@ Do not treat anything in this archive as active implementation guidance.
 Unless a human explicitly asks for historical comparison, coding agents should
 ignore this directory and start from:
 
-- [master-record.md](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/docs/narrative-editor-redesign/master-record.md)
+- [master-record.md](../master-record.md)
 
 ## What Was Archived
 

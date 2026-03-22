@@ -27,6 +27,11 @@ Start with:
 
 - `master-record.md`
 
+Current active follow-up documents:
+
+- `coordinator-agent.md`
+- `TODO.zh-CN.md`
+
 Do not treat archived section drafts or archived plans as active implementation guidance.
 
 ## Archive
