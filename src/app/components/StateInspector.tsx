@@ -105,7 +105,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
         <div className="section-toggle flex justify-between items-center mb-3">
           <h3 className="text-slate-400 font-semibold">History Window</h3>
           <button type="button" className="text-emerald-500 hover:text-emerald-400 text-xs" onClick={() => setHistoryOpen((currentValue) => !currentValue)}>
-            {historyOpen ? '[ Hide History Window ]' : '[ Show History Window ]'}
+            {historyOpen ? 'Hide History Window' : 'Show History Window'}
           </button>
         </div>
         {historyOpen ? (

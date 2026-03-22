@@ -43,8 +43,8 @@ export function PromptStatusPanel({ state, diagnostics }: PromptStatusPanelProps
         <h2 className="text-lg font-bold text-slate-100 tracking-tight">Prompt Status</h2>
         <p className="text-slate-500 mt-2 text-xs">
           {diagnostics.latestOperation
-            ? `> Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
-            : '> Awaiting first assembled prompt.'}
+            ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
+            : 'Awaiting first assembled prompt.'}
         </p>
       </div>
 

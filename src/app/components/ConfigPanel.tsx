@@ -126,19 +126,22 @@ export function ConfigPanel({
     formState.model.trim().length === 0 ||
     (formState.provider === 'openai-compatible' && formState.baseUrl.trim().length === 0);
 
+  const inputClass = "w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-slate-400 focus:outline-none font-sans";
+
   return (
-    <section className="panel">
-      <div className="panel-heading">
+    <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 font-sans">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="panel-eyebrow">Runtime Config</p>
-          <h2>Provider Setup</h2>
+          <p className="text-[10px] tracking-widest uppercase text-slate-500 mb-1">Runtime Config</p>
+          <h2 className="text-lg font-bold text-slate-800 tracking-tight">Provider Setup</h2>
         </div>
-        <p className="panel-note">Stored in localStorage only.</p>
+        <p className="text-xs text-slate-400">Stored in localStorage only.</p>
       </div>
-      <div className="form-grid">
-        <label className="form-field">
-          <span>Provider</span>
+      <div className="grid gap-3 mb-4">
+        <label className="grid gap-1">
+          <span className="text-sm font-medium text-slate-700">Provider</span>
           <select
+            className={inputClass}
             aria-label="Provider"
             value={formState.provider}
             onChange={(event) => handleProviderChange(event.currentTarget.value as ProviderType)}
@@ -147,18 +150,20 @@ export function ConfigPanel({
             <option value="openai-compatible">OpenAI Compatible</option>
           </select>
         </label>
-        <label className="form-field">
-          <span>API Key</span>
+        <label className="grid gap-1">
+          <span className="text-sm font-medium text-slate-700">API Key</span>
           <input
+            className={inputClass}
             aria-label="API Key"
             type="password"
             value={formState.apiKey}
             onChange={(event) => updateField('apiKey', event.currentTarget.value)}
           />
         </label>
-        <label className="form-field">
-          <span>Model</span>
+        <label className="grid gap-1">
+          <span className="text-sm font-medium text-slate-700">Model</span>
           <input
+            className={inputClass}
             aria-label="Model"
             type="text"
             value={formState.model}
@@ -166,9 +171,10 @@ export function ConfigPanel({
           />
         </label>
         {formState.provider === 'openai-compatible' ? (
-          <label className="form-field">
-            <span>Base URL</span>
+          <label className="grid gap-1">
+            <span className="text-sm font-medium text-slate-700">Base URL</span>
             <input
+              className={inputClass}
               aria-label="Base URL"
               type="url"
               value={formState.baseUrl}
@@ -177,31 +183,36 @@ export function ConfigPanel({
           </label>
         ) : null}
       </div>
-      <div className="panel-actions">
-        <button type="button" onClick={handleSave} disabled={isSaveDisabled}>
+      <div className="flex items-center justify-between mb-6">
+        <button 
+          className="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button" 
+          onClick={handleSave} 
+          disabled={isSaveDisabled}
+        >
           Save Runtime Config
         </button>
-        {statusMessage ? <p className="panel-note">{statusMessage}</p> : null}
+        {statusMessage ? <p className="text-sm text-emerald-600 font-medium">{statusMessage}</p> : null}
       </div>
 
-      <section className="inspector-section">
-        <div className="section-toggle">
-          <h3>Runtime Usage</h3>
-          <p className="panel-note">
+      <section className="pt-4 border-t border-slate-100">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-slate-800">Runtime Usage</h3>
+          <p className="text-xs text-slate-500">
             {diagnostics?.latestOperation
               ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
               : 'Awaiting first adapter call.'}
           </p>
         </div>
-        <div className="usage-grid">
+        <div className="grid grid-cols-2 gap-3">
           {DIAGNOSTIC_ORDER.map((operation) => {
             const usage = diagnostics?.usage[operation] ?? null;
 
             return (
-              <article key={operation} className="usage-card">
-                <span className="metric-label">{formatOperationLabel(operation)}</span>
-                <strong>{formatUsageHeadline(usage)}</strong>
-                <p className="panel-note">{formatUsageBreakdown(usage)}</p>
+              <article key={operation} className="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500">{formatOperationLabel(operation)}</span>
+                <strong className="text-sm text-slate-800">{formatUsageHeadline(usage)}</strong>
+                <p className="text-xs text-slate-400">{formatUsageBreakdown(usage)}</p>
               </article>
             );
           })}

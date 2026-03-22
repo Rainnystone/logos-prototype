@@ -312,12 +312,10 @@ export function PlayWorkbench({
               totalPhases={storyPackage.phasePlans.length}
             />
           ) : (
-            <aside className="panel inspector-panel">
-              <div className="panel-heading">
-                <div>
-                  <p className="panel-eyebrow">Narrative State Dashboard</p>
-                  <h2>State Inspector</h2>
-                </div>
+            <aside className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg font-mono text-slate-300 text-sm break-words">
+              <div className="border-b border-slate-800 pb-4 mb-4">
+                <p className="text-[10px] tracking-widest uppercase text-emerald-500 mb-1">[ Narrative State Dashboard ]</p>
+                <h2 className="text-lg font-bold text-slate-100 tracking-tight">State Inspector</h2>
               </div>
               <p>Initializing Scene...</p>
             </aside>
