@@ -19,6 +19,14 @@
 - 哪些字段可编辑，哪些字段只应展示或校验
 - 当前 Sample 阶段哪些能力是正式范围，哪些仍是占位
 
+## 1.1 Section 文档索引
+
+当前 section 细化文档：
+
+- [世界与角色](/Users/tachikoma/Desktop/DEV/LOGOS%20DEV/docs/narrative-editor-redesign/01-worldbase-and-cast.md)
+
+后续 coding agent 在进入具体 section 实现前，除了本主索引外，还必须读取对应 section 的独立 md。
+
 ## 2. 当前设计前提
 
 本设计建立在以下前提之上：
@@ -199,7 +207,6 @@
 - 反派角色定义
 - 重要配角定义
 - 普通配角定义
-- 角色关系、立场、目标、秘密、约束
 - 地点词池 / 场景元素
 - 可出场 / 禁出场角色范围
 

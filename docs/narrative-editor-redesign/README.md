@@ -37,6 +37,13 @@ This folder is expected to hold:
 - four dedicated markdown drafts for the four redesign sections/pages
 - follow-up design notes that are still being iterated before promotion
 
+Current section drafts:
+
+- `01-worldbase-and-cast.md`
+
+Coding agents should treat `redesign-design-recorder.md` as the master index and
+then read the matching section draft before implementing that page.
+
 ## Promotion Rule
 
 - redesign discussions can be iterated here first
