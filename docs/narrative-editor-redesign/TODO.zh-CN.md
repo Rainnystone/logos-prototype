@@ -31,8 +31,8 @@
 - [x] 重写 active master record，明确 coordinator-first 路线
 - [x] 建立 archive 规则，避免 coding agent 误读旧文档
 - [x] 创建 `coordinator-agent.md`
+- [x] 创建 `authoring-runtime-bridge.md`
 - [ ] 创建 `section-skills.md`
-- [ ] 如有必要，单独创建 validation/writeback 设计说明
 
 状态：进行中
 
@@ -61,8 +61,10 @@
 
 - [x] 锁定 schema / reference / package / round-trip 四层校验
 - [x] 锁定 repairable / needs-human-decision / infra-failure 三类失败
-- [ ] 明确 coordinator 与 repository / validator / projection / reload service 的推荐接口名
-- [ ] 明确哪些错误可以自动 repair，哪些必须停下来问人
+- [x] 明确 coordinator 与 repository / validator / projection / reload service 的推荐接口名
+- [x] 明确哪些错误可以自动 repair，哪些必须停下来问人
+- [x] 明确 active bridge 文档承接 archive 中已有的本地写回经验
+- [ ] 细化 direct-backed section 与 projected section 的适用边界
 
 ### A4. 建立 redesign 账本与阅读路径
 
@@ -85,6 +87,7 @@
 
 ### Stage C：validation / writeback 设计
 
+- [x] 创建 `authoring-runtime-bridge.md`
 - [ ] 细化 repository 写回边界
 - [ ] 细化 runtime projection 策略
 - [ ] 细化 round-trip reload 结果协议

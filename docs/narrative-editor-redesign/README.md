@@ -30,6 +30,7 @@ Start with:
 Current active follow-up documents:
 
 - `coordinator-agent.md`
+- `authoring-runtime-bridge.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.

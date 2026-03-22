@@ -28,6 +28,7 @@ Current active redesign documents:
 
 - [master-record.md](master-record.md)
 - [coordinator-agent.md](coordinator-agent.md)
+- [authoring-runtime-bridge.md](authoring-runtime-bridge.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -331,10 +332,11 @@ The current redesign still does not aim to do the following right now:
 The next active redesign documents should be:
 
 1. `coordinator-agent.md`
-2. `section-skills.md`
-3. `TODO.zh-CN.md`
-4. a future validation/writeback design note if needed
-5. only after that, refreshed section page drafts
+2. `authoring-runtime-bridge.md`
+3. `section-skills.md`
+4. `TODO.zh-CN.md`
+5. a future validation/writeback design note if needed
+6. only after that, refreshed section page drafts
 
 These follow-up documents should all refer back to this master record.
 
