@@ -85,7 +85,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
             />
           ))}
         </div>
-        <p className="panel-note text-slate-500 mt-2">Verb lexicon: {state.roundState.verbLexicon.join(', ')}</p>
+        <p className="text-slate-500 mt-2">Verb lexicon: {state.roundState.verbLexicon.join(', ')}</p>
       </section>
 
       <section className="inspector-section mb-6">
@@ -97,7 +97,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
             ))}
           </ul>
         ) : (
-          <p className="panel-note text-slate-500">No phase consequences have been settled yet.</p>
+          <p className="text-slate-500">No phase consequences have been settled yet.</p>
         )}
       </section>
 
@@ -129,9 +129,9 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
             ))}
           </ul>
         ) : (
-          <p className="panel-note text-slate-500 mb-3">No blocking failures in the latest accepted round.</p>
+          <p className="text-slate-500 mb-3">No blocking failures in the latest accepted round.</p>
         )}
-        <p className="panel-note text-slate-500 mb-3">
+        <p className="text-slate-500 mb-3">
           Latest audit answers:{' '}
           {state.evaluationState.auditAnswers.length > 0
             ? state.evaluationState.auditAnswers
