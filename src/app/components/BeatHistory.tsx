@@ -20,7 +20,7 @@ export function BeatHistory({ entries }: BeatHistoryProps) {
   }, [entries]);
 
   return (
-    <section className="panel">
+    <section className="bg-white border border-slate-200 rounded-xl shadow-sm font-serif">
       <div className="panel-heading">
         <div>
           <p className="panel-eyebrow">Accepted Beats</p>
@@ -32,7 +32,7 @@ export function BeatHistory({ entries }: BeatHistoryProps) {
           <p className="panel-note">No accepted beats yet.</p>
         ) : (
           entries.map((entry) => (
-            <article key={entry.beatNumber} className="history-card">
+            <article key={entry.beatNumber} className="p-4 border-b border-slate-100 last:border-0 bg-slate-50/50 rounded-lg mb-2">
               <div className="history-card__header">
                 <strong>{`Beat ${entry.beatNumber}`}</strong>
                 <span>{entry.playerInput}</span>

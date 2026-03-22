@@ -708,13 +708,3 @@ ul {
     grid-column: auto;
   }
 }
-y-grid,
-  .fixture-grid,
-  .usage-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .fixture-card--wide {
-    grid-column: auto;
-  }
-}
