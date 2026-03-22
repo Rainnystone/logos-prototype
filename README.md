@@ -64,9 +64,13 @@ npm run dev
 1. 在左侧 `Provider Setup` 区域填入 API Key、模型和 Base URL，然后点击 `Save Runtime Config`。
 2. 在右侧 `Generation Workspace` 区域点击 `Start Round`，系统会先运行开场钩子，再进入 `Beat 1`。
 
-![Play Workbench start flow](docs/assets/how-to-start.png)
+![Play Workbench start flow](docs/assets/how-to-start-new.png)
 
 图中蓝色方框对应 `Provider Setup`，红色方框对应 `Generation Workspace` 的 `Start Round` 按钮。先保存运行配置，再开始回合，才能启动完整的叙事循环。
+
+下面是当前 Workbench 页面示例：
+
+![Play Workbench example](docs/assets/example.png)
 
 ## 目录结构
 
