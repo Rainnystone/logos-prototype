@@ -1,6 +1,6 @@
-# LOGOS NC Test DEV
+# LOGOS Workbench DEV
 
-LOGOS Narrative Control testbed for local iteration, provider integration, and workbench validation.
+LOGOS Narrative Control Workbench testbed for local iteration, provider integration, and workbench validation.
 
 ## 项目简介
 
