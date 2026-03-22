@@ -1,0 +1,82 @@
+<h2>LOGOS IA First Pass</h2>
+<p class="subtitle">
+  Your 3-way split is close. The main gap I see is not a missing lore field, but a missing
+  binding layer: reusable project-level definitions vs scene-level overrides vs abstract-control
+  attachments.
+</p>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-body">
+      <div class="label">Section 1</div>
+      <h3>World & Cast</h3>
+      <p>
+        Worldview, setting bible, player role, protagonist, core cast, antagonist, key supporting
+        cast, relationship anchors, factions.
+      </p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="label">Section 2</div>
+      <h3>Story & Narrative Control</h3>
+      <p>
+        Scene and phase structure, phase count, end line, main axis, audit questions, beat volume,
+        paragraph gradient, pacing controls.
+      </p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="label">Section 3</div>
+      <h3>Abstract Control System</h3>
+      <p>
+        Story-decoupled control primitives such as Light Cone Alpha/Beta, Director Note Layer, and
+        other reusable orchestration concepts.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Where the current split gets blurry</div>
+    <div class="mockup-body">
+      <p>
+        <strong>Likely missing:</strong> project scope and binding rules.
+      </p>
+      <p>
+        Example questions: which definitions are global across the whole project, which are per
+        scene, and how do abstract controls attach to concrete story objects such as characters,
+        scenes, phases, or role groups?
+      </p>
+      <p>
+        This may become a fourth page, but it could also live as a cross-cutting layer inside the
+        3-page design if we keep the ownership boundaries very explicit.
+      </p>
+    </div>
+  </div>
+</div>
+
+<h3>One Key Scope Question</h3>
+<p class="subtitle">
+  This will decide whether 3 pages are enough or whether you need a project-setup layer above
+  them.
+</p>
+
+<div class="options">
+  <div class="option" data-choice="single-package" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Single Story Package</h3>
+      <p>The editor mainly configures one package centered on one current story/scene flow.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="world-project" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Reusable World Project</h3>
+      <p>World, cast, and abstract controls are long-lived assets that multiple scenes can share.</p>
+    </div>
+  </div>
+</div>
