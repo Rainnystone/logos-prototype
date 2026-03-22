@@ -6,7 +6,13 @@ module.exports = {
     preflight: false,
   },
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        serif: ['"Iowan Old Style"', 'Palatino Linotype', '"Book Antiqua"', 'serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+      }
+    },
   },
   plugins: [],
 };
