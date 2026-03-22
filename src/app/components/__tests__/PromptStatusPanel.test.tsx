@@ -36,7 +36,7 @@ function createDiagnosticsFixture(): WorkbenchDiagnostics {
 }
 
 describe('PromptStatusPanel', () => {
-  it('renders prompt summary, context length, and runtime usage diagnostics', () => {
+  it('renders prompt summary and prompt object diagnostics', () => {
     render(
       <PromptStatusPanel state={stateSnapshotFixture} diagnostics={createDiagnosticsFixture()} />,
     );
@@ -45,18 +45,13 @@ describe('PromptStatusPanel', () => {
     expect(screen.getByText('4 layers')).toBeInTheDocument();
     expect(screen.getByText('2 entries')).toBeInTheDocument();
     expect(screen.getByText('Latest observed call: Audit')).toBeInTheDocument();
-    expect(screen.getByText('72 tokens')).toBeInTheDocument();
-    expect(screen.getByText('316 tokens')).toBeInTheDocument();
-    expect(screen.getByText('144 tokens')).toBeInTheDocument();
-    expect(screen.getByText('Not reported')).toBeInTheDocument();
+    expect(screen.queryByText('Runtime Usage')).not.toBeInTheDocument();
   });
 
   it('shows a pending state before the first prompt is assembled', () => {
     render(<PromptStatusPanel state={null} diagnostics={createEmptyWorkbenchDiagnostics()} />);
 
     expect(screen.getByText('Awaiting first assembled prompt.')).toBeInTheDocument();
-    expect(
-      screen.getByText('Runtime usage will appear after the first adapter call.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Prompt Status')).toBeInTheDocument();
   });
 });

@@ -311,7 +311,7 @@ describe('PlayWorkbench', () => {
     expect(await screen.findByText('232 tokens')).toBeInTheDocument();
     expect(await screen.findByText('86 tokens')).toBeInTheDocument();
     expect(await screen.findByText('112 tokens')).toBeInTheDocument();
-    expect(screen.getByText('Latest observed call: Route')).toBeInTheDocument();
+    expect(screen.getAllByText('Latest observed call: Route').length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: 'Hide Fixture Reference' }));
     expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();

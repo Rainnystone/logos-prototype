@@ -1,20 +1,12 @@
 'use client';
 
 import type { WorkbenchDiagnostics, WorkbenchOperation } from '@/app/play/runtime';
-import type { StateSnapshot, UsageInfo } from '@/types';
+import type { StateSnapshot } from '@/types';
 
 interface PromptStatusPanelProps {
   readonly state: StateSnapshot | null;
   readonly diagnostics: WorkbenchDiagnostics;
 }
-
-const DIAGNOSTIC_ORDER: readonly WorkbenchOperation[] = [
-  'collapse',
-  'route',
-  'generate',
-  'audit',
-  'settlement',
-];
 
 function formatOperationLabel(operation: WorkbenchOperation) {
   return operation.charAt(0).toUpperCase() + operation.slice(1);
@@ -38,28 +30,6 @@ function resolveContextEntryCount(state: StateSnapshot | null) {
   return Array.isArray(promptHistory)
     ? promptHistory.length
     : state.roundState.historyWindow.length;
-}
-
-function formatUsageHeadline(usage: UsageInfo | null) {
-  if (!usage) {
-    return 'Not reported';
-  }
-
-  if (usage.totalTokens !== undefined) {
-    return `${usage.totalTokens} tokens`;
-  }
-
-  const derivedTotal = (usage.promptTokens ?? 0) + (usage.completionTokens ?? 0);
-
-  return derivedTotal > 0 ? `${derivedTotal} tokens` : 'Not reported';
-}
-
-function formatUsageBreakdown(usage: UsageInfo | null) {
-  if (!usage) {
-    return 'Prompt -, Completion -';
-  }
-
-  return `Prompt ${usage.promptTokens ?? '-'}, Completion ${usage.completionTokens ?? '-'}`;
 }
 
 export function PromptStatusPanel({ state, diagnostics }: PromptStatusPanelProps) {
@@ -116,27 +86,6 @@ export function PromptStatusPanel({ state, diagnostics }: PromptStatusPanelProps
           </>
         ) : (
           <p>Prompt object details will appear after the first accepted round.</p>
-        )}
-      </section>
-
-      <section className="inspector-section">
-        <h3>Runtime Usage</h3>
-        {diagnostics.latestOperation ? (
-          <div className="usage-grid">
-            {DIAGNOSTIC_ORDER.map((operation) => {
-              const usage = diagnostics.usage[operation];
-
-              return (
-                <article key={operation} className="usage-card">
-                  <span className="metric-label">{formatOperationLabel(operation)}</span>
-                  <strong>{formatUsageHeadline(usage)}</strong>
-                  <p className="panel-note">{formatUsageBreakdown(usage)}</p>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <p>Runtime usage will appear after the first adapter call.</p>
         )}
       </section>
     </aside>

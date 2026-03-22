@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
+import type { WorkbenchDiagnostics, WorkbenchOperation } from '@/app/play/runtime';
 import { buildAdapterConfig, getDefaultBaseUrl, saveAdapterConfig } from '@/app/runtime-config';
 import type {
   AdapterConfig,
   ProviderType,
 } from '@/engine/api-adapter/providers/provider-interface';
+import type { UsageInfo } from '@/types';
 
 interface ConfigPanelProps {
   readonly initialConfig?: AdapterConfig | null;
   readonly onSave: (config: AdapterConfig) => void;
+  readonly diagnostics?: WorkbenchDiagnostics | undefined;
 }
 
 interface ConfigFormState {
@@ -18,6 +21,40 @@ interface ConfigFormState {
   readonly apiKey: string;
   readonly model: string;
   readonly baseUrl: string;
+}
+
+const DIAGNOSTIC_ORDER: readonly WorkbenchOperation[] = [
+  'collapse',
+  'route',
+  'generate',
+  'audit',
+  'settlement',
+];
+
+function formatOperationLabel(operation: WorkbenchOperation) {
+  return operation.charAt(0).toUpperCase() + operation.slice(1);
+}
+
+function formatUsageHeadline(usage: UsageInfo | null) {
+  if (!usage) {
+    return 'Not reported';
+  }
+
+  if (usage.totalTokens !== undefined) {
+    return `${usage.totalTokens} tokens`;
+  }
+
+  const derivedTotal = (usage.promptTokens ?? 0) + (usage.completionTokens ?? 0);
+
+  return derivedTotal > 0 ? `${derivedTotal} tokens` : 'Not reported';
+}
+
+function formatUsageBreakdown(usage: UsageInfo | null) {
+  if (!usage) {
+    return 'Prompt -, Completion -';
+  }
+
+  return `Prompt ${usage.promptTokens ?? '-'}, Completion ${usage.completionTokens ?? '-'}`;
 }
 
 function getInitialFormState(config: AdapterConfig | null | undefined): ConfigFormState {
@@ -38,7 +75,11 @@ function getInitialFormState(config: AdapterConfig | null | undefined): ConfigFo
   };
 }
 
-export function ConfigPanel({ initialConfig = null, onSave }: ConfigPanelProps) {
+export function ConfigPanel({
+  initialConfig = null,
+  onSave,
+  diagnostics,
+}: ConfigPanelProps) {
   const [formState, setFormState] = useState<ConfigFormState>(() =>
     getInitialFormState(initialConfig),
   );
@@ -142,6 +183,30 @@ export function ConfigPanel({ initialConfig = null, onSave }: ConfigPanelProps) 
         </button>
         {statusMessage ? <p className="panel-note">{statusMessage}</p> : null}
       </div>
+
+      <section className="inspector-section">
+        <div className="section-toggle">
+          <h3>Runtime Usage</h3>
+          <p className="panel-note">
+            {diagnostics?.latestOperation
+              ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
+              : 'Awaiting first adapter call.'}
+          </p>
+        </div>
+        <div className="usage-grid">
+          {DIAGNOSTIC_ORDER.map((operation) => {
+            const usage = diagnostics?.usage[operation] ?? null;
+
+            return (
+              <article key={operation} className="usage-card">
+                <span className="metric-label">{formatOperationLabel(operation)}</span>
+                <strong>{formatUsageHeadline(usage)}</strong>
+                <p className="panel-note">{formatUsageBreakdown(usage)}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </section>
   );
 }

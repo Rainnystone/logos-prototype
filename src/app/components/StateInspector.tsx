@@ -27,7 +27,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
   const resolvedTotalPhases = totalPhases ?? state.sceneState.currentPhaseIndex;
 
   return (
-    <aside className="panel inspector-panel">
+    <aside className="panel inspector-panel break-words">
       <div className="panel-heading">
         <div>
           <p className="panel-eyebrow">Narrative State Dashboard</p>
@@ -60,14 +60,14 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
             <strong>{state.roundState.currentRouter}</strong>
           </div>
         </div>
-        <div className="boundary-grid">
-          <article>
-            <h4>Alpha</h4>
-            <p>{state.sceneState.alpha}</p>
+        <div className="grid gap-3">
+          <article className="rounded-xl border border-[rgba(31,26,21,0.12)] bg-[rgba(255,255,255,0.45)] p-3">
+            <h4 className="mb-1">Alpha</h4>
+            <p className="whitespace-pre-wrap break-words leading-relaxed">{state.sceneState.alpha}</p>
           </article>
-          <article>
-            <h4>Beta</h4>
-            <p>{state.sceneState.beta}</p>
+          <article className="rounded-xl border border-[rgba(31,26,21,0.12)] bg-[rgba(255,255,255,0.45)] p-3">
+            <h4 className="mb-1">Beta</h4>
+            <p className="whitespace-pre-wrap break-words leading-relaxed">{state.sceneState.beta}</p>
           </article>
         </div>
       </section>

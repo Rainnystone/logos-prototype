@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConfigPanel } from '@/app/components/ConfigPanel';
+import { createEmptyWorkbenchDiagnostics } from '@/app/play/runtime';
 
 describe('ConfigPanel', () => {
   beforeEach(() => {
@@ -66,5 +67,33 @@ describe('ConfigPanel', () => {
         model: 'claude-workbench',
       },
     });
+  });
+
+  it('renders runtime usage in the same panel as runtime config', () => {
+    render(
+      <ConfigPanel
+        diagnostics={{
+          ...createEmptyWorkbenchDiagnostics(),
+          latestOperation: 'route',
+          usage: {
+            collapse: null,
+            route: {
+              promptTokens: 60,
+              completionTokens: 12,
+              totalTokens: 72,
+            },
+            generate: null,
+            audit: null,
+            settlement: null,
+          },
+        }}
+        onSave={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Runtime Usage' })).toBeInTheDocument();
+    expect(screen.getByText('Latest observed call: Route')).toBeInTheDocument();
+    expect(screen.getByText('72 tokens')).toBeInTheDocument();
+    expect(screen.getAllByText('Not reported').length).toBeGreaterThan(0);
   });
 });

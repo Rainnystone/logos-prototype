@@ -277,8 +277,12 @@ export function PlayWorkbench({
 
       <section className="play-grid">
         <div className="play-column">
-          <ConfigPanel initialConfig={adapterConfig} onSave={setAdapterConfig} />
           <PromptStatusPanel state={currentState} diagnostics={diagnostics} />
+          <ConfigPanel
+            initialConfig={adapterConfig}
+            diagnostics={diagnostics}
+            onSave={setAdapterConfig}
+          />
         </div>
 
         <div className="play-column">
