@@ -10,6 +10,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "test:core": "vitest run src/__tests__ src/types/__tests__ src/story-packages/__tests__ src/engine/api-adapter/__tests__ src/engine/modules/__tests__ src/engine/__tests__/schema-validator.test.ts src/engine/__tests__/story-loader.test.ts src/engine/__tests__/mock-adapter.test.ts src/engine/__tests__/orchestrator.test.ts",
+    "test:ui": "vitest run src/app",
+    "test:e2e": "vitest run src/engine/__tests__/e2e",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit"

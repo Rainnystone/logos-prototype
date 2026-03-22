@@ -5,8 +5,13 @@
 LOGOS (Linguistic Oriented Game Orchestration Studio) is an AI-driven narrative
 orchestration engine for interactive fiction. Built with Next.js (TypeScript).
 
-This is the implementation repo. The read-only design specification is vendored at:
-vendor/LOGOS-SPEC/
+This is the implementation repo. On `branch/narrative-editor`, the vendored
+specification at `vendor/LOGOS-SPEC/` is an in-repo design snapshot that must
+co-evolve with implementation work instead of remaining read-only.
+
+Branch transition rules live at `docs/narrative-editor-branch.md`. When that
+document conflicts with older phase-era workflow text, the branch transition
+document wins.
 
 ## Architecture
 
@@ -18,11 +23,14 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 ## Mandatory Rules
 
-### 1. LOGOS-SPEC is the design authority
+### 1. Narrative editor branch uses spec co-evolution
 
-- All module implementations must trace back to a spec document
-- If code contradicts spec, spec wins unless an ADR overrides
-- Never modify the vendored `vendor/LOGOS-SPEC/` files as part of implementation work
+- New work on `branch/narrative-editor` may start from product intent and
+  implementation discoveries, even when no existing spec document covers it
+- `vendor/LOGOS-SPEC/` is editable on this branch and must be updated together
+  with code when behavior, contracts, or workflows change
+- If code, tests, and spec disagree, resolve the intended behavior first, then
+  bring all three back into sync in the same branch
 
 ### 2. No hardcoded narrative content
 
@@ -51,8 +59,10 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 ### 6. Context loading discipline
 
-- Every session: read agent-guide.md, system-map.md, glossary.md, dependency-map
-- Per-task: only load spec files listed in the phase PROMPT.md
+- Every session: read this file plus `docs/narrative-editor-branch.md`
+- Load `vendor/LOGOS-SPEC/` selectively as reference context, not as a hard gate
+- Old phase `PROMPT.md` files are historical references; they do not constrain
+  new narrative-editor work unless explicitly revived
 - Spec text budget: max 40,000 tokens per session
 - Never load: Agent Client/, LOGOS Prototype/, SillyTavern调研/
 
@@ -61,6 +71,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 | What                        | Where                             |
 | --------------------------- | --------------------------------- |
 | Spec root                   | vendor/LOGOS-SPEC/                |
+| Branch transition guide     | docs/narrative-editor-branch.md   |
 | Agent routing guide         | LOGOS-SPEC/00_META/agent-guide.md |
 | Glossary (terminology lock) | LOGOS-SPEC/02_DOMAIN/glossary.md  |
 | Contract schemas            | LOGOS-SPEC/05_CONTRACTS/\*.yaml   |
@@ -69,7 +80,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 | Engine source               | src/engine/                       |
 | TypeScript types            | src/types/                        |
 | Story packages              | story-packages/                   |
-| Tests                       | tests/                            |
+| Tests                       | src/**/__tests__/, src/**/*.test.* |
 
 ## Module → Spec Mapping
 
@@ -97,7 +108,7 @@ When blocked during implementation:
 1. Field missing producer → add the producer
 2. Output has no downstream entry → add to nearest shared contract
 3. Code forced to understand semantics → convert to LLM three-stage pattern
-4. Naming conflict → follow resolution order in agent-guide.md appendix
+4. Naming conflict → prefer the current branch canonical name, then sync code/spec/tests
 
 STOP and wait for human if the fix would change:
 
@@ -112,10 +123,14 @@ STOP and wait for human if the fix would change:
 - Coverage minimum: 80%
 - Story package content must never appear in test assertions as hardcoded
   strings — load from test fixtures instead
+- Prefer targeted suites while iterating: `npm run test:core`, `npm run test:ui`,
+  `npm run test:e2e`; run full `npm test` before calling work complete
 
 ## Git
 
-- Branch per phase: feature/XX-phase-name
+- Active branch for the current workstream: `branch/narrative-editor`
+- Older phase branch naming (`feature/XX-phase-name`) is legacy guidance for the
+  completed phase-by-phase rollout
 - Commit format: <type>: <description>
 - Types: feat, fix, refactor, test, docs, chore
 - PR required for merge to develop
