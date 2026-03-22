@@ -1,17 +1,45 @@
 # Narrative Editor Redesign
 
 This directory is the working area for narrative editor redesign exploration,
-iteration notes, and approved design drafts in the implementation repo.
+architecture decisions, section-by-section drafts, and approved design records
+inside the implementation repo.
 
-Current purpose:
+## Current Working Record
 
-- track brainstorming outputs before they are promoted into a formal design doc
-- keep redesign discussion artifacts separate from the vendored spec snapshot
-- provide a stable home for the final approved markdown once the design is signed off
+The current primary design recorder is:
 
-Promotion rule:
+- `redesign-design-recorder.md`
 
-- working iterations can live here first
-- once approved, the refined markdown design can be added here as a dated design file
-- if the approved design changes product behavior, contracts, or workflows, the relevant
+This file is the running design source for the redesign discussion. It records:
+
+- agreed information architecture
+- approved scope boundaries
+- architecture decisions needed before coding plans
+- constraints aimed at AI coding agents
+
+## Current Approved Architecture Direction
+
+The redesign currently assumes:
+
+- the webapp will gain controlled local file read/write capability
+- this capability will stay inside the existing Next.js app
+- first-phase write scope is limited to repo-controlled story package files
+- browser components will not directly access the filesystem
+
+This is intentionally a lightweight, maintainable local-first architecture, not a
+desktop-shell rewrite and not a freeform file manager.
+
+## Planned Contents For This Folder
+
+This folder is expected to hold:
+
+- the running redesign recorder
+- four dedicated markdown drafts for the four redesign sections/pages
+- follow-up design notes that are still being iterated before promotion
+
+## Promotion Rule
+
+- redesign discussions can be iterated here first
+- once a design slice is approved, it should remain readable here as a stable record
+- if an approved design changes behavior, contracts, or workflows, the relevant
   `vendor/LOGOS-SPEC/` documents should later be updated in the same branch

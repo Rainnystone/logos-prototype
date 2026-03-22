@@ -30,6 +30,7 @@
 5. `Memory Placeholder` 必须在信息架构中留出明确位置，方便后续无痛升级
 6. `Director Note Layer` 继续遵循当前实现与 Spec 的混合抓取逻辑，但不向作者开放自定义编辑
 7. `Light Cone Collapse`、`Director Note Layer`、`Memory Placeholder` 的定义必须服从 LOGOS Spec 当前概念，而不是用通用写作工具的常见说法替代
+8. redesign 后的 webapp 需要具备受控的本地文件读写能力，但第一阶段只服务于仓库内 story package 文件
 
 ## 3. 明确保留不动的部分
 
@@ -64,7 +65,106 @@
 - 不让作者直接逐 Beat 编写正文
 - 不把 play/workbench 页面改造成新的作者配置中心
 
-## 6. 推荐信息架构
+## 6. 本地文件读写能力架构决定
+
+### 6.1 需求与判断结论
+
+本次 redesign 不是只读浏览器壳，而是作者配置界面。因此，webapp 必须能够从页面发起对本地 story package 文件的读取与修改。
+
+当前实现的架构结论如下：
+
+- 已支持服务端读取本地文件
+- 尚未支持浏览器触发的受控写回本地文件
+- 浏览器本身不应直接拥有磁盘写权限
+- 真正的文件读写必须由 Next.js 的 Node 侧代码负责
+
+这意味着当前架构不是完全不支持本地文件能力，而是“读已具备，写的应用层通道尚未建立”。
+
+### 6.2 已批准的方案
+
+本项目采用轻便、易维护的 `方案 A`：
+
+在现有 Next.js 应用内部增加一层受控的本地文件访问层，由该层统一负责 story package 文件的读取、校验、写回和错误处理。
+
+这意味着：
+
+- 不新增额外 daemon / companion 进程
+- 不引入 Electron / Tauri 这类桌面壳
+- 不让浏览器直接读写磁盘
+- 不做“任意路径、任意文件”的自由文件管理器
+
+### 6.3 第一阶段作用域
+
+第一阶段只支持仓库内受控目录的读写，重点是：
+
+- `src/story-packages/<package>/scene.yaml`
+- `src/story-packages/<package>/phase-plans.yaml`
+- `src/story-packages/<package>/world-base.yaml`
+- `src/story-packages/<package>/audit-questions.yaml`
+- `src/story-packages/<package>/router-lexicon.yaml`
+
+是否扩展到更多本地文件，留待后续单独设计；当前不做“任意磁盘路径选择器”。
+
+### 6.4 推荐架构形态
+
+推荐给 coding agent 的实现形态如下：
+
+1. `StoryPackageRepository`
+   唯一负责 story package 文件系统读写的服务层。
+2. `Section DTO / View Model`
+   为“世界与角色 / 故事结构 / 控制模块 / 组装与校验”提供各自稳定的读写模型，不让页面直接操作底层 YAML 结构。
+3. `Route Handlers` 或 `Server Actions`
+   作为 Web UI 发起读取/保存时的受控入口。
+4. `Schema Validation`
+   利用现有类型和 schema，在写入前校验结构合法性。
+5. `Atomic Write Utils`
+   统一处理临时写入、替换、报错与回滚，避免半写入损坏文件。
+
+### 6.5 推荐请求流
+
+推荐的数据流如下：
+
+`Section Page Form` -> `Server Entry` -> `StoryPackageRepository` -> `Schema Validation` -> `Atomic Write` -> `Reload StoryPackage Aggregate` -> `UI Result`
+
+关键含义：
+
+- 页面只提交结构化字段
+- server entry 只做鉴权、参数检查、调用服务
+- repository 负责路径解析、读写和聚合
+- 写入完成后，应返回最新可读状态，而不是只返回“成功”
+
+### 6.6 必须遵守的工程约束
+
+后续实现这层能力时，必须遵守：
+
+1. 所有本地文件写操作必须集中在同一个服务层，不得散落在页面组件中
+2. 浏览器端不得直接持有任何原始文件系统能力
+3. 只允许写入受控白名单路径，禁止任意路径穿透
+4. 页面层不应直接拼接磁盘路径
+5. 页面层不应直接操作原始 YAML 文本
+6. schema 校验必须发生在写回前，而不是只在读入时校验
+7. `Memory Placeholder` 的当前策略不能因为新增写能力而被复制成多处硬编码
+
+### 6.7 为什么选这个方案
+
+这个方案最适合当前阶段，原因是：
+
+- 它与现有 Next.js 架构天然连续
+- 当前系统已经有服务端本地读取逻辑，补写入层的心智成本最低
+- 它不会引入额外长驻进程，维护负担小
+- 它最适合后续讨论“四个新页面如何映射到现有页面和现有 story package 文件”
+- 它给未来 memory system 升级留下了清晰的服务层扩展位
+
+### 6.8 当前明确不做的事
+
+这一阶段明确不做：
+
+- 任意磁盘路径浏览与写入
+- 独立本地 daemon
+- Electron / Tauri 桌面化封装
+- 面向整个仓库的自由文件编辑器
+
+## 7. 推荐信息架构
 
 本次改版新增 4 个核心 section，作为新的作者配置主入口：
 
@@ -77,9 +177,9 @@
 
 ---
 
-## 7. Section 1：世界与角色
+## 8. Section 1：世界与角色
 
-### 7.1 目标
+### 8.1 目标
 
 这一页负责管理 story package 中的静态内容资产，也就是运行前已经存在、不会在每一轮运行时临时重建的内容基础。
 
@@ -89,7 +189,7 @@
 - 谁是主角、核心角色、反派、重要配角、普通配角
 - 世界规则、风格边界、地点素材是什么
 
-### 7.2 应包含内容
+### 8.2 应包含内容
 
 - 世界观基础设定
 - 世界规则 / 世界禁令 / 异常性质
@@ -103,12 +203,12 @@
 - 地点词池 / 场景元素
 - 可出场 / 禁出场角色范围
 
-### 7.3 对应当前系统对象
+### 8.3 对应当前系统对象
 
 - `WorldBase`
 - 未来可扩展的人物与地点结构化字段
 
-### 7.4 不应包含内容
+### 8.4 不应包含内容
 
 - `mainAxis`
 - `endLine`
@@ -119,7 +219,7 @@
 - `Director Note Layer`
 - provider/runtime 配置
 
-### 7.5 给 coding agent 的实现提示
+### 8.5 给 coding agent 的实现提示
 
 - 这页优先落成内容资产编辑页，而不是控制页
 - 即使当前底层类型仍较扁平，也应在 UI 结构上预留角色分组与世界分组
@@ -128,9 +228,9 @@
 
 ---
 
-## 8. Section 2：故事结构
+## 9. Section 2：故事结构
 
-### 8.1 目标
+### 9.1 目标
 
 这一页负责定义当前 story package 的具体故事组织方式，也就是 `SceneSpec`、`PhasePlan` 和 `AuditQuestionSet` 中最贴近作者掌舵的部分。
 
@@ -141,7 +241,7 @@
 - 每个 Phase 要完成什么
 - 审计系统当前要盯什么
 
-### 8.2 应包含内容
+### 9.2 应包含内容
 
 - `sceneName`
 - `mainAxis`
@@ -156,13 +256,13 @@
 - 阶段特定审计问题
 - 审计问题选择策略
 
-### 8.3 对应当前系统对象
+### 9.3 对应当前系统对象
 
 - `SceneSpec`
 - `PhasePlan`
 - `AuditQuestionSet`
 
-### 8.4 不应包含内容
+### 9.4 不应包含内容
 
 - 梯度机制本身的定义
 - `Light Cone Collapse` 的机制定义
@@ -170,7 +270,7 @@
 - 记忆窗口策略
 - provider/runtime 配置
 
-### 8.5 给 coding agent 的实现提示
+### 9.5 给 coding agent 的实现提示
 
 - “选择某个梯度类型”属于本页
 - “定义梯度类型如何映射成 beat volume”不属于本页
@@ -179,9 +279,9 @@
 
 ---
 
-## 9. Section 3：控制模块
+## 10. Section 3：控制模块
 
-### 9.1 目标
+### 10.1 目标
 
 这一页负责 story package 内与故事内容解耦、但直接参与控制链路的模块配置与说明。
 
@@ -191,7 +291,7 @@
 - 这些控制模块在这个 story package 中怎么被理解和配置
 - 当前版本哪些控制模块还是占位能力
 
-### 9.2 应包含内容
+### 10.2 应包含内容
 
 - `Phase Gradient` 的作者可理解定义
 - `Beat Volume` 映射与展示
@@ -202,7 +302,7 @@
 - `Director Note Layer` 的固定抓取逻辑说明
 - `Memory Placeholder` 的当前窗口策略和扩展预留位
 
-### 9.3 关于三个关键模块的明确约束
+### 10.3 关于三个关键模块的明确约束
 
 #### `Light Cone Collapse`
 
@@ -222,7 +322,7 @@
 - 需要明确展示当前策略是“最近 5 个 accepted beats”
 - 必须为未来 header/recall/长期记忆留出自然扩展位置
 
-### 9.4 对应当前系统对象
+### 10.4 对应当前系统对象
 
 - `RouterProfile`
 - `Light Cone Collapse`
@@ -230,14 +330,14 @@
 - `Memory Placeholder`
 - 与 `Phase Gradient` / `Beat Volume` 有关的控制映射
 
-### 9.5 不应包含内容
+### 10.5 不应包含内容
 
 - 具体角色卡正文
 - 具体 scene prose
 - provider/runtime 配置
 - 手写 director note
 
-### 9.6 给 coding agent 的实现提示
+### 10.6 给 coding agent 的实现提示
 
 - `Light Cone` 和 `Director Note` 必须出现在同一 section 中，避免概念被拆散
 - `Director Note` 采用只读或解释型 UI，而非编辑型 UI
@@ -246,9 +346,9 @@
 
 ---
 
-## 10. Section 4：组装与校验
+## 11. Section 4：组装与校验
 
-### 10.1 目标
+### 11.1 目标
 
 这一页不是故事编辑页，而是当前 story package 的装配地图和完整性检查页。
 
@@ -259,7 +359,7 @@
 - 当前 package 是否已具备可运行条件
 - 某个模块如果未来升级，例如 memory，从哪里接进来
 
-### 10.2 应包含内容
+### 11.2 应包含内容
 
 - `WorldBase` 的进入路径
 - `SceneSpec` / `PhasePlan` 的消费关系
@@ -270,20 +370,20 @@
 - 当前 package 的运行前完整性检查
 - 缺 producer / 缺绑定 / 缺必要输入 的可视提示
 
-### 10.3 对应当前系统对象
+### 11.3 对应当前系统对象
 
 - `StoryPackage`
 - `PromptObject`
 - 各模块之间的依赖链
 - 运行前校验结果
 
-### 10.4 不应包含内容
+### 11.4 不应包含内容
 
 - 大量故事正文编辑
 - provider/runtime 配置
 - 与当前 package 无关的全局管理
 
-### 10.5 给 coding agent 的实现提示
+### 11.5 给 coding agent 的实现提示
 
 - 这一页更像“装配地图 + 校验台”，不是常规表单页
 - 它的价值在于把隐藏在代码里的绑定规则显式化
@@ -292,14 +392,14 @@
 
 ---
 
-## 11. 四个 section 的最短定义
+## 12. 四个 section 的最短定义
 
 - 世界与角色：定义内容资产
 - 故事结构：定义故事推进
 - 控制模块：定义控制系统
 - 组装与校验：定义接线关系与完整性
 
-## 12. 与当前实现的映射
+## 13. 与当前实现的映射
 
 当前系统里已经存在一批可直接映射到新 IA 的对象和模块：
 
@@ -310,7 +410,7 @@
 
 这意味着本次改版不是从零发明一套新概念，而是把现有 Spec 和实现里已经存在的对象边界，转译成更适合作者操作的页面结构。
 
-## 13. 对 coding agent 的统一约束
+## 14. 对 coding agent 的统一约束
 
 后续任何 coding plan 或实现，都应遵守以下约束：
 
@@ -320,21 +420,25 @@
 4. 不要把 `Director Note Layer` 做成作者自由输入框
 5. 不要把 `Memory Placeholder` 的“最近 5 个 accepted beats”策略硬编码到多个页面或多个模块
 6. 不要把角色、世界观或故事正文硬编码进 TypeScript 源码
-7. 如果实现改变了行为、对象边界、工作流或契约，必须同步更新 `vendor/LOGOS-SPEC/`
+7. 不要让页面组件直接读写磁盘路径或原始 YAML 文本
+8. 本地文件修改能力必须收口到受控服务层和白名单路径策略
+9. 如果实现改变了行为、对象边界、工作流或契约，必须同步更新 `vendor/LOGOS-SPEC/`
 
-## 14. 推荐的后续 coding plan 拆解方向
+## 15. 推荐的后续 coding plan 拆解方向
 
 为了方便后续 AI coding agent 执行，建议下一步 coding plan 按以下顺序拆解：
 
-1. 定义新的页面路由与导航骨架
-2. 为四个 section 建立只读/半只读的结构壳，先验证 IA
-3. 把现有 story package 数据映射到四个 section 的展示模型
-4. 再逐步增加编辑能力，优先从“世界与角色”“故事结构”开始
-5. 最后补“控制模块”“组装与校验”的解释型与校验型界面
+1. 建立受控的本地文件访问层，包括 repository、路径白名单、校验与原子写入
+2. 为 webapp 提供受控的 server entry，用于页面读取和保存 story package 数据
+3. 定义新的页面路由与导航骨架
+4. 为四个 section 建立只读/半只读的结构壳，先验证 IA 与字段归属
+5. 把现有 story package 数据映射到四个 section 的展示模型
+6. 再逐步增加编辑能力，优先从“世界与角色”“故事结构”开始
+7. 最后补“控制模块”“组装与校验”的解释型与校验型界面
 
 这样拆的好处是：先验证页面边界和对象归属，再进入复杂编辑，不容易让 AI coding agent 一上来就把所有逻辑搅在一起。
 
-## 15. 当前结论
+## 16. 当前结论
 
 本次改版的核心不是做一个更漂亮的工作台，而是把 LOGOS 当前已经存在的对象和控制逻辑，组织成一套作者真正能操作、AI coding agent 也能稳定实现的页面结构。
 
@@ -345,4 +449,5 @@
 - play/workbench 页面继续保留，provider setup 继续留在原位
 - `Director Note Layer` 不开放作者自定义
 - `Memory Placeholder` 必须明确保留升级空间
+- redesign 后的 webapp 将采用受控的仓库内本地文件读写方案
 - 这份设计稿将作为后续 coding plan 的起点
