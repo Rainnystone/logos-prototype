@@ -1,0 +1,94 @@
+<h2>UI 视觉方案全景对比 (v2)</h2>
+<p class="subtitle">基于 Tailwind CSS 的逐步迭代方案评估。请在浏览器中点击查看详情。</p>
+
+<div class="options" data-multiselect>
+  <!-- Option 1: Style C - Pure Linear -->
+  <div class="option" data-choice="linear-pure" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>方案 1: 极简专业 (Pure Linear)</h3>
+      <p>完全遵循 Linear 审美。使用 <code>slate-50</code> 背景与 <code>slate-200</code> 细边框。极致的文字排版与留白。</p>
+      <div style="margin-top:10px; height:4px; width:100%; background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%); border-radius:2px;"></div>
+    </div>
+  </div>
+
+  <!-- Option 2: Style D - Full Cyber/Bento -->
+  <div class="option" data-choice="cyber-full" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>方案 2: 全面赛博 (Full Cyber/Bento)</h3>
+      <p>深色调 <code>zinc-950</code>。利用 <code>backdrop-blur-xl</code> 和 <code>ring-1 ring-white/10</code> 实现悬浮感。网格背景与扫描线动效。</p>
+      <div style="margin-top:10px; height:4px; width:100%; background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%); border-radius:2px;"></div>
+    </div>
+  </div>
+
+  <!-- Option 3: Hybrid - Linear + Localized Cyber -->
+  <div class="option" data-choice="hybrid-logic" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>方案 3: 逻辑平衡 (Hybrid Logic)</h3>
+      <p><b>我的推荐。</b>整体保持 Linear 的清爽，但在 <code>StateInspector</code> 和 <code>Log</code> 区域采用赛博装饰，强化“操控”与“观测”的区分。</p>
+      <div style="margin-top:10px; height:4px; width:100%; background: linear-gradient(90deg, #e2e8f0 70%, #3b82f6 100%); border-radius:2px;"></div>
+    </div>
+  </div>
+
+  <!-- Option 4: Contrast - Linear + Bold Accents -->
+  <div class="option" data-choice="contrast-accent" onclick="toggleSelect(this)">
+    <div class="letter">4</div>
+    <div class="content">
+      <h3>方案 4: 撞色张力 (Linear Contrast)</h3>
+      <p>使用“深夜蓝” (<code>slate-900</code>) 配“霓虹琥珀” (<code>amber-400</code>)。在高对比度下通过 <code>accent-color</code> 强调叙事节奏的变化。</p>
+      <div style="margin-top:10px; height:4px; width:100%; background: linear-gradient(90deg, #0f172a 0%, #fbbf24 100%); border-radius:2px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">方案 3: 混合模式预览</div>
+    <div class="mockup-body" style="background:#f8fafc; padding:15px; min-height:200px; font-family:sans-serif;">
+      <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="margin:0 0 10px; color:#64748b; font-size:12px; letter-spacing:0.05em;">NARRATIVE FLOW</h4>
+        <p style="color:#1e293b; line-height:1.6;">文字生成区域保持极简，没有任何边框装饰，确保阅读沉浸感...</p>
+      </div>
+      <div style="margin-top:15px; background:#0f172a; border:1px solid #334155; border-radius:12px; padding:15px; color:#38bdf8; font-family:monospace; font-size:12px;">
+        <div>> SYSTEM_STATUS: STABLE</div>
+        <div style="color:#94a3b8;">> BEAT_INDEX: 04</div>
+        <div style="margin-top:10px; height:2px; width:100%; background:#1e293b;"><div style="width:65%; height:100%; background:#38bdf8;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">方案 4: 撞色模式预览</div>
+    <div class="mockup-body" style="background:#0f172a; padding:15px; min-height:200px; font-family:sans-serif;">
+      <div style="border-left:4px solid #fbbf24; background:rgba(251,191,36,0.05); padding:15px; margin-bottom:15px;">
+        <h4 style="margin:0 0 5px; color:#fbbf24; font-size:11px; text-transform:uppercase;">Critical Path</h4>
+        <p style="color:#cbd5e1; font-size:13px;">在高对比度下，关键的操作按钮和提示信息会变得极具张力。</p>
+      </div>
+      <button style="background:#fbbf24; color:#0f172a; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; font-size:12px;">EXECUTE COMMAND</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>技术实现路径 (Tailwind-First)</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>方案 3: 渐进式迭代</h4>
+      <ul>
+        <li>定义一组 <code>surface</code> 和 <code>panel</code> 的 Tailwind Class。</li>
+        <li>利用 <code>group-hover</code> 实现面板边缘的微光效果。</li>
+        <li>在 <code>tailwind.config.ts</code> 中扩展 <code>colors.logos.accent</code> 变量。</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>方案 4: 配色逻辑</h4>
+      <ul>
+        <li><b>主色 (Base):</b> <code>slate-950</code> (极深蓝灰)</li>
+        <li><b>强调色 (Accent):</b> <code>amber-400</code> (温暖琥珀) 或 <code>emerald-400</code> (生机绿)。</li>
+        <li><b>对比逻辑：</b>背景深、文字浅，动作点用极高饱和度的单一色彩。</li>
+      </ul>
+    </div>
+  </div>
+</div>
