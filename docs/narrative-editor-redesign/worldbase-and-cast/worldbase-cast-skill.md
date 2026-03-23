@@ -1,0 +1,291 @@
+# WorldBase Cast Skill
+
+## Document Status
+
+- Date: 2026-03-23
+- Status: active
+- Scope: first detailed section skill under the coordinator-first redesign
+- Global section map: [../section-map.md](../section-map.md)
+- Related page: [worldbase-cast-page.md](worldbase-cast-page.md)
+- Related bridge doc: [../authoring-runtime-bridge.md](../authoring-runtime-bridge.md)
+
+## 1. Purpose
+
+This document defines the approved boundary for `worldbase-cast-skill`.
+
+This skill is responsible for semantic interpretation and structured patch
+generation for the `WorldBase & Cast` section.
+
+It is not responsible for:
+
+- file writes
+- projection into final runtime files
+- deterministic validation
+- final save success state
+
+## 2. Section Role
+
+This skill supports the section that owns:
+
+- world base text blocks
+- hero
+- core cast
+- antagonists
+- ordinary supporting cast text
+- location pool text
+
+This section should be treated as a projected section.
+
+That means:
+
+- the skill should target section-owned authoring data
+- the bridge later projects runtime-compatible output
+- the skill should not treat `world-base.yaml` as the authoring source of truth
+
+## 3. Approved Responsibilities
+
+The skill may do the following:
+
+1. interpret author free text for the section
+2. normalize world-base text blocks
+3. propose structured updates for hero / core-cast / antagonist cards
+4. repair incomplete or inconsistent card content when the error is repairable
+5. generate concise left-rail summary content from full card data if needed
+6. preserve section boundaries while translating author intent into patch candidates
+
+## 4. Skill Must Not Do
+
+The skill must not:
+
+1. write files directly
+2. emit raw YAML as the only result
+3. bypass the bridge
+4. invent fields outside the approved section contract
+5. force unrelated cross-section edits
+6. decide final persistence success
+7. replace deterministic validation with model confidence
+
+## 5. Approved Input Areas
+
+The skill should expect inputs related to these page surfaces:
+
+- world base textarea
+- world rules textarea
+- tone / prose baseline textarea
+- hero summary selection and full-card edits
+- core-cast rail items
+- antagonist rail items
+- ordinary supporting cast textarea
+- location pool textarea
+
+It should also be able to consume:
+
+- current section draft state
+- current selected character identity
+- validation repair payloads returned by deterministic code
+
+## 6. Approved Output Shape
+
+The first legal skill output is a structured patch candidate.
+
+That patch candidate should be shaped for the coordinator + bridge pipeline, not
+for direct filesystem write.
+
+The output should, in substance, be able to describe:
+
+- which subsection changed
+- which character entry changed, if any
+- whether the change targets text blocks or structured card fields
+- what assumptions were made
+- whether the skill needs a human decision
+
+## 7. Relation To The Page
+
+The page and the skill have different jobs.
+
+### 7.1 Page Responsibilities
+
+The page is responsible for:
+
+- rendering the summary rails
+- selecting the active character
+- presenting the full editor
+- collecting button presses such as submit / reset
+- keeping local unsaved state visible
+
+### 7.2 Skill Responsibilities
+
+The skill is responsible for:
+
+- understanding author intent
+- turning natural-language author input into structured section updates
+- filling missing card detail when the request is clear enough
+- repairing section-scoped inconsistencies
+
+### 7.3 Important Boundary
+
+The page decides which character is selected.
+
+The skill does not choose the UI selection model.
+
+The page adds or removes card slots.
+
+The skill helps fill or normalize the contents of those slots.
+
+## 8. Approved V1 Behavior By Content Type
+
+### 8.1 World Text Blocks
+
+For:
+
+- world base setting
+- world rules / prohibitions / anomalies
+- genre tone and prose baseline
+
+the skill should:
+
+- preserve freeform author control
+- help normalize phrasing when asked
+- avoid collapsing these into over-structured micro-fields too early
+
+### 8.2 Hero
+
+The hero is unique.
+
+The skill should:
+
+- support one hero only
+- patch the hero card as a single entity
+- reject attempts to create multiple hero cards through silent inference
+
+### 8.3 Core Cast
+
+The skill should:
+
+- support repeated structured character entries
+- patch one or more core-cast entries when clearly requested
+- preserve existing entry identity when only details change
+
+### 8.4 Antagonists
+
+The skill should follow the same repeated-entry model as core cast.
+
+It may also support the optional antagonist-only field:
+
+- fatal weakness
+
+### 8.5 Ordinary Supporting Cast
+
+V1 should remain lightweight here.
+
+Ordinary supporting cast can remain a freeform section-owned text block.
+
+The skill may normalize or reorganize that text when asked, but it should not
+silently force all ordinary supporting cast into the same detailed structured
+card model as hero / core cast / antagonists.
+
+### 8.6 Location Pool
+
+Location pool / scene elements remain a freeform text block in V1.
+
+The skill may help organize or clarify it, but should not require a deeper
+schema before the section is saved.
+
+## 9. Approved Summary-Card Rule
+
+Left-rail character cards are summary cards.
+
+The skill may help derive summary content from the full structured card.
+
+Recommended summary content:
+
+- name
+- gender
+- personality
+
+The skill should not try to force the summary card to mirror every detailed
+field from the full editor.
+
+This applies to the hero as well.
+
+The hero still appears as a summary card on the left and opens in the right-side
+full editor when selected.
+
+## 10. Repair Expectations
+
+When deterministic validation returns a repairable issue, this skill may help
+repair:
+
+- missing required character fields
+- invalid or incomplete role-card structure
+- section-local inconsistencies in character data
+
+It should not freely repair:
+
+- unrelated sections
+- cross-file persistence contracts
+- bridge ownership issues
+- runtime projection contracts
+
+## 11. Sample Guidance For Coding Agents
+
+Coding agents should think of this skill as producing a patch like this in
+substance:
+
+```text
+targetSection: worldbase-cast
+targetSubsection: core-cast
+targetEntity: character-02
+changeType: update-card
+patch:
+  personality: ...
+  occupation: ...
+  behaviorBoundary: ...
+assumptions:
+  - ...
+needsHumanDecision: false
+```
+
+For freeform text updates, the same idea applies:
+
+```text
+targetSection: worldbase-cast
+targetSubsection: world-rules
+changeType: replace-text-block
+patch:
+  text: ...
+assumptions:
+  - ...
+needsHumanDecision: false
+```
+
+These are shape examples only.
+
+Do not treat them as the final persistence format.
+
+## 12. Coding Agent Rules
+
+When implementing or prompting this skill:
+
+1. keep it section-scoped
+2. keep it compatible with the coordinator contract
+3. keep it compatible with the deterministic bridge
+4. keep ordinary supporting cast lightweight in V1
+5. do not hardcode sample story prose into prompts or code
+6. do not let the skill become a file writer
+7. do not let the skill become a cross-section planner by default
+
+## 13. Relationship To Runtime
+
+This skill should not be coupled directly to current runtime prose layout.
+
+The correct ownership split is:
+
+- page gathers author inputs
+- skill interprets and patches section-owned data
+- bridge validates and persists
+- projection generates runtime-compatible output
+- runtime continues consuming the projected form
+
+That split is the main reason this skill should not directly author the final
+runtime world-base file.

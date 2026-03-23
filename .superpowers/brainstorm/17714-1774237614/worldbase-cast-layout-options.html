@@ -1,0 +1,87 @@
+<h2>WorldBase &amp; Cast Page</h2>
+<p class="subtitle">先定这一页的整体骨架。下面 3 个方向都遵守我们已经说定的混合式方案：世界信息用大文本框，主角 / 核心角色 / 反派用角色卡，普通配角和地点池保持文本输入。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. 长滚动单页（推荐）</div>
+        <div class="mockup-body">
+          <div class="label">World Layer</div>
+          <div class="mock-content" style="height:72px;margin-bottom:10px;">世界观基础设定</div>
+          <div class="mock-content" style="height:72px;margin-bottom:10px;">世界规则 / 禁令 / 异常性质</div>
+          <div class="mock-content" style="height:72px;margin-bottom:12px;">题材基调与文风基底</div>
+          <div class="label">Hero</div>
+          <div class="mock-content" style="height:88px;margin-bottom:12px;">主角角色卡（固定 1 张）</div>
+          <div class="label">Core Cast</div>
+          <div class="mock-content" style="height:64px;margin-bottom:8px;">核心角色卡 1</div>
+          <div class="mock-content" style="height:64px;margin-bottom:12px;">+ 新增核心角色</div>
+          <div class="label">Antagonists</div>
+          <div class="mock-content" style="height:64px;margin-bottom:8px;">反派角色卡 1</div>
+          <div class="mock-content" style="height:64px;margin-bottom:12px;">+ 新增反派角色</div>
+          <div class="label">Loose Blocks</div>
+          <div class="mock-content" style="height:72px;margin-bottom:10px;">普通配角（大文本框）</div>
+          <div class="mock-content" style="height:72px;">地点词池 / 场景元素</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>长滚动单页</h3>
+      <p>最直接，作者从上往下写。实现轻，和表单保存逻辑最容易对齐，也最适合后面接 coordinator 辅助。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. 双栏工作台</div>
+        <div class="mockup-body">
+          <div style="display:flex;gap:10px;">
+            <div style="flex:1;">
+              <div class="label">World Blocks</div>
+              <div class="mock-content" style="height:78px;margin-bottom:10px;">世界观</div>
+              <div class="mock-content" style="height:78px;margin-bottom:10px;">规则 / 禁令</div>
+              <div class="mock-content" style="height:78px;">文风基底</div>
+            </div>
+            <div style="flex:1;">
+              <div class="label">Character Stack</div>
+              <div class="mock-content" style="height:64px;margin-bottom:8px;">主角卡</div>
+              <div class="mock-content" style="height:64px;margin-bottom:8px;">核心角色卡</div>
+              <div class="mock-content" style="height:64px;margin-bottom:8px;">反派角色卡</div>
+              <div class="mock-content" style="height:64px;">普通配角 / 地点池</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>双栏工作台</h3>
+      <p>桌面端更紧凑，世界信息和角色同时可见。但手机和窄屏会更难处理，页面实现也会更重。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. 分段折叠页</div>
+        <div class="mockup-body">
+          <div class="mock-content" style="height:52px;margin-bottom:8px;">世界观与规则</div>
+          <div class="mock-content" style="height:52px;margin-bottom:8px;">主角</div>
+          <div class="mock-content" style="height:52px;margin-bottom:8px;">核心角色（可展开列表）</div>
+          <div class="mock-content" style="height:52px;margin-bottom:8px;">反派角色（可展开列表）</div>
+          <div class="mock-content" style="height:52px;margin-bottom:8px;">普通配角</div>
+          <div class="mock-content" style="height:52px;">地点词池</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>分段折叠页</h3>
+      <p>层次更清楚，长页面压力更小。但会多一层交互，作者来回展开收起时会慢一点。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我当前的推荐</h3>
+  <p>A 最稳。它最轻、最适合现在这个 webapp，也最容易把页面结构、skill 输出和 bridge 的保存路径对齐。</p>
+</div>

@@ -24,6 +24,7 @@
 - [x] 文件写回、校验、映射、reload 留在 deterministic code
 - [x] 当前旧的 page-first 文档与 page-specific plans 已迁入 `archive/`
 - [x] active 主索引已切换为 [master-record.md](master-record.md)
+- [x] section active 文档采用“每个 section 一个独立文件夹”的组织方式
 
 ## 当前阶段
 
@@ -33,7 +34,7 @@
 - [x] 建立 archive 规则，避免 coding agent 误读旧文档
 - [x] 创建 `coordinator-agent.md`
 - [x] 创建 `authoring-runtime-bridge.md`
-- [ ] 创建 `section-skills.md`
+- [x] 创建 `section-skills.md`
 
 当前阶段补充说明：
 
@@ -61,7 +62,8 @@
 - [x] 锁定 `cross-section-reconciler-skill`
 - [x] 锁定 `legacy-migration-skill`
 - [ ] 为每个 skill 写出职责边界与禁区
-- [ ] 说明 section skill 与 section page 的关系
+- [x] 为 `worldbase-cast-skill` 写出职责边界与禁区
+- [x] 说明 `worldbase-cast-skill` 与 `WorldBase & Cast` page 的关系
 
 ### A3. 收敛验证与写回边界
 
@@ -80,14 +82,17 @@
 - [x] 创建中文 TODO
 - [x] 在 README 中补 active 文档入口
 - [x] 在 master record 中补 active 文档索引
-- [ ] 后续每新增一个 active 文档，同步更新 README 与本账本
+- [x] 已为第一组 active section 文档同步更新 README 与本账本
+- [x] 创建全局 `section-map.md`
+- [x] 为 `WorldBase & Cast` 创建独立 section 文件夹
 
 ## 下一阶段候选
 
 ### Stage B：section skills 设计
 
-- [ ] 创建 `section-skills.md`
-- [ ] 为 `worldbase-cast-skill` 写 contract 草案
+- [x] 创建 `section-skills.md`
+- [x] 为 `worldbase-cast-skill` 写 contract 草案
+- [x] 将第一组 section 文档迁入独立文件夹
 - [ ] 为 `scene-phase-authoring-skill` 写 contract 草案
 - [ ] 为 `control-modules-skill` 写 contract 草案
 - [ ] 为 `package-wiring-validation-skill` 写 contract 草案
@@ -107,7 +112,14 @@
 ### Stage D：重新回到 section pages
 
 - [ ] 在 coordinator 架构稳定后，重新定义 page surfaces
-- [ ] 重新评估世界与角色页
+- [x] 重新评估世界与角色页
+- [x] 产出 `worldbase-and-cast/worldbase-cast-page.md`
+- [x] 产出 `worldbase-and-cast/worldbase-cast-skill.md`
+- [x] 锁定 `WorldBase & Cast` 的页面骨架
+- [x] 锁定“左侧摘要浏览 / 右上完整编辑 / 右下技术辅助”的布局
+- [x] 锁定主角单卡、核心角色横向卡带、反派横向卡带
+- [x] 锁定左侧人物缩略卡只显示“姓名 / 性别 / 性格”
+- [x] 锁定页面需要 `提交` 与 `重置` 动作
 - [ ] 重新评估故事结构页
 - [ ] 重新评估控制模块页
 - [ ] 重新评估组装与校验页

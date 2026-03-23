@@ -29,10 +29,19 @@ Current active redesign documents:
 - [master-record.md](master-record.md)
 - [coordinator-agent.md](coordinator-agent.md)
 - [authoring-runtime-bridge.md](authoring-runtime-bridge.md)
+- [section-skills.md](section-skills.md)
+- [section-map.md](section-map.md)
+- [worldbase-and-cast/worldbase-cast-page.md](worldbase-and-cast/worldbase-cast-page.md)
+- [worldbase-and-cast/worldbase-cast-skill.md](worldbase-and-cast/worldbase-cast-skill.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
 before attempting implementation planning.
+
+The first refreshed page + skill pair is now the `WorldBase & Cast` section.
+
+Section pages and their matching skills should now live inside per-section
+folders instead of remaining as loose top-level files.
 
 ## 2. Reset Of Active Direction
 
@@ -428,9 +437,12 @@ The next active redesign documents should be:
 1. `coordinator-agent.md`
 2. `authoring-runtime-bridge.md`
 3. `section-skills.md`
-4. `TODO.zh-CN.md`
-5. a future implementation-facing write-entry note if boundary detail grows
-6. only after that, refreshed section page drafts
+4. `section-map.md`
+5. `worldbase-and-cast/worldbase-cast-page.md`
+6. `worldbase-and-cast/worldbase-cast-skill.md`
+7. future section folders that follow the same pattern
+8. `TODO.zh-CN.md`
+9. a future implementation-facing write-entry note if boundary detail grows
 
 These follow-up documents should all refer back to this master record.
 

@@ -31,9 +31,28 @@ Current active follow-up documents:
 
 - `coordinator-agent.md`
 - `authoring-runtime-bridge.md`
+- `section-skills.md`
+- `section-map.md`
+- `worldbase-and-cast/worldbase-cast-page.md`
+- `worldbase-and-cast/worldbase-cast-skill.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.
+
+## Section Folder Rule
+
+Each section should now have its own folder.
+
+That folder should contain:
+
+- a section-level map file
+- the page doc
+- the matching skill doc
+- any approved section-specific reference images or notes
+
+The first adopted section folder is:
+
+- `worldbase-and-cast/`
 
 ## Archive
 
