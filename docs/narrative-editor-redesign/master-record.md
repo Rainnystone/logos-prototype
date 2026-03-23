@@ -76,6 +76,7 @@ The approved redesign shape is:
 - `4` section skills
 - `1` cross-section reconciliation skill
 - `1` legacy migration skill
+- `1` deterministic authoring runtime bridge
 - deterministic code-side validation, writeback, and reload
 
 This is intentionally lightweight.
@@ -86,6 +87,12 @@ It is not:
 - a DOM-driving UI bot
 - a prompt-only solution
 - a replacement for the existing runtime orchestrator
+
+Important clarification:
+
+- the bridge is infrastructure, not a skill
+- section skills interpret intent
+- the bridge validates, persists, projects, and reloads
 
 ## 5. Coordinator Agent
 
@@ -183,6 +190,42 @@ This is a hard architectural boundary.
 
 If an AI skill is allowed to do these things freely, the redesign becomes too
 fragile to maintain.
+
+### 7.1 Bridge Is Not A Skill
+
+The `authoring runtime bridge` should not be modeled as an additional LLM skill.
+
+It is a deterministic service layer that sits below:
+
+- coordinator routing
+- section skills
+- page save flows
+
+Its job is engineering control, not semantic interpretation.
+
+### 7.2 Current Webapp Gap
+
+The current webapp does not yet provide a coordinator-usable write path.
+
+Current state:
+
+- story package files can be read on the server
+- runtime config can be saved to browser `localStorage`
+- there are no section persistence API routes yet
+- there are no section persistence server actions yet
+- there is no shared server-side write entry for coordinator results
+
+This means the current redesign still has a real infrastructure gap:
+
+- coordinator and section skills can be designed now
+- but they cannot safely persist section changes until the webapp gains a server-side write interface
+
+### 7.3 Active Requirement
+
+Because of that gap, adapting the current webapp architecture for coordinator
+writeback is now an approved active requirement, not a future nice-to-have.
+
+Coding agents must treat this as part of the redesign foundation.
 
 ## 8. Coordinator Request Flow
 
@@ -317,6 +360,57 @@ Recommended high-level ownership split:
 - `src/authoring/`: coordinator and section-skill logic
 - `src/server/` or repository layer: file access, validation, writeback, reload
 
+The current app still needs explicit adaptation work in this area:
+
+- add server-side section persistence entrypoints
+- accept page saves and coordinator patch results through the same deterministic bridge
+- return reloaded package or section state after persistence
+
+### 12.1 Likely Existing Code Areas The Bridge Will Touch
+
+Based on the current codebase, coding agents should expect the bridge-related
+work to touch more than one layer of the existing webapp.
+
+The current likely touch list includes:
+
+- application entry surfaces under [`src/app/`](../../src/app)
+- package loading and catalog code under [`src/engine/story-loader.ts`](../../src/engine/story-loader.ts) and [`src/app/story-package-catalog.ts`](../../src/app/story-package-catalog.ts)
+- read-only package consumers such as [`src/app/page.tsx`](../../src/app/page.tsx), [`src/app/play/page.tsx`](../../src/app/play/page.tsx), and [`src/app/components/FixtureReferencePanel.tsx`](../../src/app/components/FixtureReferencePanel.tsx)
+- runtime contract types such as [`src/types/prompt-object.ts`](../../src/types/prompt-object.ts) and [`src/types/story-package.ts`](../../src/types/story-package.ts)
+- runtime consumers that still depend on current package shape, including [`src/engine/modules/prompt-assembler.ts`](../../src/engine/modules/prompt-assembler.ts) and [`src/engine/modules/director-note-layer.ts`](../../src/engine/modules/director-note-layer.ts)
+- package schema docs and tests such as [`src/story-packages/story-package.schema.md`](../../src/story-packages/story-package.schema.md), [`src/story-packages/__tests__/sample-scene.test.ts`](../../src/story-packages/__tests__/sample-scene.test.ts), and [`src/engine/__tests__/story-loader.test.ts`](../../src/engine/__tests__/story-loader.test.ts)
+
+Likely new code areas include:
+
+- a server-side persistence entry under `src/app/` or server-action equivalents
+- repository and projection code under `src/server/` or another clearly bounded server-side location
+- section-owned authoring schemas and tests under `src/types/` and `src/story-packages/`
+
+### 12.2 Coding Agent Search Rule
+
+The list above is a starting map, not an exhaustive file lock.
+
+Coding agents must not assume that only the files named in this document need
+to change.
+
+During implementation, a coding agent should actively search for:
+
+- all readers of `loadStoryPackage()`
+- all consumers of current `WorldBase`
+- all places where package state is displayed or summarized
+- all tests and fixtures that encode current package shape assumptions
+- all app surfaces that may need a server-side write entry to support bridge-based persistence
+
+If the bridge implementation reveals additional required edits outside the files
+named here, the coding agent should expand the touched set deliberately rather
+than forcing the design into an incomplete change.
+
+The intended rule is:
+
+- follow the architecture
+- start from the active docs
+- but keep searching until the real dependency surface is covered
+
 ## 13. Active Non-Goals
 
 The current redesign still does not aim to do the following right now:
@@ -335,7 +429,7 @@ The next active redesign documents should be:
 2. `authoring-runtime-bridge.md`
 3. `section-skills.md`
 4. `TODO.zh-CN.md`
-5. a future validation/writeback design note if needed
+5. a future implementation-facing write-entry note if boundary detail grows
 6. only after that, refreshed section page drafts
 
 These follow-up documents should all refer back to this master record.

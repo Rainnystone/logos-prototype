@@ -27,6 +27,19 @@ It exists because the coordinator-first redesign still needs a concrete way to:
 This is a shared infrastructure document.
 It is not owned by any single section page or section skill.
 
+## 1.1 Hard Boundary
+
+The bridge is not a skill.
+
+It is deterministic infrastructure.
+
+This means:
+
+- section skills interpret author intent
+- the bridge validates and persists the result
+- the bridge may call repository, projection, and reload services
+- the bridge must not use LLM reasoning as part of file write control
+
 ## 2. Why This Is A Separate Active Document
 
 The earlier page-first archive already surfaced a real architectural pattern:
@@ -74,6 +87,22 @@ The bridge therefore owns the path from:
 4. A save is not complete until round-trip reload succeeds.
 5. UI pages and section skills share the same persistence bridge.
 6. Runtime compatibility is preserved during transition; no prompt hardcoding shortcuts.
+
+## 4.1 Current Webapp Gap
+
+The current app still has a missing piece:
+
+- it can read story package files on the server
+- but it does not yet expose a coordinator-usable server-side write entry
+
+As of now:
+
+- there are no section persistence API route handlers
+- there are no section persistence server actions
+- there is no shared application entry for coordinator patch persistence
+
+So the bridge is not only a design idea.
+It also defines required adaptation work for the current webapp architecture.
 
 ## 5. Two Supported Persistence Patterns
 
@@ -149,6 +178,21 @@ The approved lifecycle is:
 8. Reload `StoryPackage`
 9. Return new section state and runtime impact summary
 
+## 6.1 Why Current Webapp Adaptation Is Required
+
+Without webapp-side adaptation, the coordinator stack would stop at:
+
+- intent understanding
+- patch candidate generation
+
+and would still be unable to:
+
+- write section-owned files
+- project runtime-compatible outputs
+- return reloaded state to the UI
+
+So adding server-side persistence entrypoints is a required redesign task.
+
 ## 7. Bridge Entry Sources
 
 The bridge should support these entry sources:
@@ -169,6 +213,22 @@ The bridge should support these entry sources:
 - repaired patch candidate is resubmitted
 
 All three flows should converge into the same deterministic bridge path.
+
+### 7.4 Required Entry Form
+
+For the current webapp, this implies a required new capability:
+
+- a shared server-side entry for section persistence
+
+That entry may later be implemented as:
+
+- route handlers
+- server actions
+- or a thin application service invoked by one of those
+
+But regardless of transport, coding agents should preserve one rule:
+
+- page save and coordinator save must converge before repository writeback
 
 ## 8. Shared Bridge Interfaces
 
@@ -199,6 +259,14 @@ Responsibilities:
 - read and write repo-owned story package files
 - apply validated changes
 - coordinate atomic write for all affected files
+
+### 8.3.1 Coding Agent Guidance
+
+Do not let each section page invent its own repository write path.
+
+Do not let coordinator code reach into the filesystem directly.
+
+Do not split page-save and coordinator-save into separate persistence stacks.
 
 ### 8.4 `RuntimeProjectionService`
 
@@ -349,6 +417,8 @@ Any future coding plan derived from this bridge document must preserve:
 3. no page-specific repository duplication
 4. no runtime prompt hardcoding as a fallback for bad projection design
 5. no save success state without reload verification
+6. no modeling of the bridge as an extra LLM skill
+7. no coordinator rollout without adding a server-side write entry to the current webapp
 
 ## 16. Follow-Up Work
 
