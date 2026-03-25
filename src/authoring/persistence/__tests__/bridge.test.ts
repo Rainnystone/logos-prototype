@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
+import * as reloadModule from '@/authoring/persistence/reload';
 import { loadStoryPackage } from '@/engine/story-loader';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -27,40 +28,57 @@ function prepareTestPackage(): void {
 }
 
 afterEach(() => {
+  vi.restoreAllMocks();
   resetTestPackage();
 });
 
+function buildPageStyleSaveRequest(mainCharacters: string) {
+  return {
+    requestId: 'request-page',
+    source: 'page' as const,
+    packageName: testPackageName,
+    sectionId: 'worldbase-cast' as const,
+    payload: {
+      uiFields: {
+        mainCharacters,
+      },
+    },
+  };
+}
+
+function buildCoordinatorStyleSaveRequest(mainCharacters: string) {
+  return {
+    requestId: 'request-coordinator',
+    source: 'coordinator' as const,
+    packageName: testPackageName,
+    sectionId: 'worldbase-cast' as const,
+    payload: {
+      patchCandidates: [
+        {
+          type: 'replace',
+          path: 'mainCharacters',
+          value: mainCharacters,
+        },
+      ],
+    },
+  };
+}
+
 describe('saveSectionDraft', () => {
-  it('routes page and coordinator saves through one deterministic pipeline', async () => {
+  it('routes page-style and coordinator-style adapters through one deterministic bridge', async () => {
     prepareTestPackage();
     const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
 
-    const pageResult = await saveSectionDraft({
-      requestId: 'request-page',
-      source: 'page',
-      packageName: testPackageName,
-      sectionId: 'worldbase-cast',
-      payload: {
-        uiFields: {
-          mainCharacters: 'page-main-character-update',
-        },
-      },
-    });
+    const pageStyleSave = (mainCharacters: string) => saveSectionDraft(buildPageStyleSaveRequest(mainCharacters));
+    const coordinatorStyleSave = (mainCharacters: string) =>
+      saveSectionDraft(buildCoordinatorStyleSaveRequest(mainCharacters));
+
+    const pageResult = await pageStyleSave('page-main-character-update');
 
     const pageWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const pageStoryPackage = await loadStoryPackage(testPackageName);
 
-    const coordinatorResult = await saveSectionDraft({
-      requestId: 'request-coordinator',
-      source: 'coordinator',
-      packageName: testPackageName,
-      sectionId: 'worldbase-cast',
-      payload: {
-        patchCandidates: [
-          { type: 'replace', path: 'mainCharacters', value: 'coordinator-main-character-update' },
-        ],
-      },
-    });
+    const coordinatorResult = await coordinatorStyleSave('coordinator-main-character-update');
 
     const coordinatorWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const coordinatorStoryPackage = await loadStoryPackage(testPackageName);
@@ -245,6 +263,21 @@ describe('saveSectionDraft', () => {
       },
     });
     expect(readFileSync(worldBasePath, 'utf8')).toContain('marker-warning-update');
+  });
+
+  it('restores the original world-base file when reload fails', async () => {
+    prepareTestPackage();
+    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const reloadSpy = vi.spyOn(reloadModule, 'reloadStoryPackage').mockRejectedValueOnce(
+      new Error('reload failed'),
+    );
+
+    const result = await saveSectionDraft(buildPageStyleSaveRequest('reload-failure-update'));
+
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+    expect(result.kind).toBe('save_failed');
+    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('returns a blocked dryRun result without changing files', async () => {

@@ -1,10 +1,6 @@
 import { type SaveRequest, type SaveResult } from '@/authoring/contracts';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
-import {
-  ensureStoryPackageExists,
-  extractWorldBaseDraftUpdate,
-  persistWorldBaseDraft,
-} from '@/authoring/persistence/repository';
+import { ensureStoryPackageExists, persistWorldBaseDraft, resolveStoryPackageRoot } from '@/authoring/persistence/repository';
 import {
   createSaveAppliedResult,
   createSaveAppliedWithWarningsResult,
@@ -12,6 +8,9 @@ import {
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
 import { reloadStoryPackage } from '@/authoring/persistence/reload';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import type { StoryPackage } from '@/types';
 
 const supportedSectionIds = new Set<SaveRequest['sectionId']>([
   'worldbase-cast',
@@ -107,6 +106,37 @@ function validateSaveRequest(request: SaveRequest): readonly string[] {
   return issues;
 }
 
+function extractWorldBaseMainCharactersDraft(request: SaveRequest): string | null {
+  const uiFields = request.payload.uiFields;
+  if (uiFields && typeof uiFields.mainCharacters === 'string') {
+    return uiFields.mainCharacters;
+  }
+
+  const patchCandidates = request.payload.patchCandidates ?? [];
+  const patchCandidate = patchCandidates.find((candidate) => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      return false;
+    }
+
+    const recordCandidate = candidate as Record<string, unknown>;
+    return (
+      recordCandidate.type === 'replace' &&
+      recordCandidate.path === 'mainCharacters' &&
+      typeof recordCandidate.value === 'string'
+    );
+  });
+
+  if (!patchCandidate || typeof patchCandidate !== 'object' || Array.isArray(patchCandidate)) {
+    return null;
+  }
+
+  return (patchCandidate as Record<string, unknown>).value as string;
+}
+
+function resolveWorldBasePath(packageName: string): string {
+  return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
+}
+
 export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> {
   const { request, issues: payloadIssues } = normalizeSaveRequest(input);
   const validationIssues = [...payloadIssues, ...validateSaveRequest(request)];
@@ -137,7 +167,8 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
     );
   }
 
-  if (extractWorldBaseDraftUpdate(request) === null) {
+  const nextMainCharacters = extractWorldBaseMainCharactersDraft(request);
+  if (nextMainCharacters === null) {
     return createSaveBlockedResult(
       {
         requestId: request.requestId,
@@ -165,8 +196,17 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
 
   try {
     await ensureStoryPackageExists(request.packageName);
-    const changedFiles = await persistWorldBaseDraft(request);
-    const reloadedSectionState = await reloadStoryPackage(request.packageName);
+    const worldBasePath = resolveWorldBasePath(request.packageName);
+    const originalWorldBaseContents = await readFile(worldBasePath, 'utf8');
+    const changedFiles = await persistWorldBaseDraft(request.packageName, nextMainCharacters);
+    let reloadedSectionState: StoryPackage;
+
+    try {
+      reloadedSectionState = await reloadStoryPackage(request.packageName);
+    } catch (reloadError) {
+      await writeFile(worldBasePath, originalWorldBaseContents, 'utf8');
+      throw reloadError;
+    }
 
     try {
       await authoringStatus.writeAuthoringStatus(request.packageName, {
