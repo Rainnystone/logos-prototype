@@ -63,9 +63,10 @@ The coordinator should follow these principles:
 1. Keep the LLM-facing surface narrow.
 2. Prefer section-scoped work over cross-section work.
 3. Only pass the minimum context needed for the current task.
-4. Treat validation failure as a normal loop, not an exception.
-5. Keep file access, serialization, and reload deterministic.
-6. Return structured outputs before any human-facing prose summary.
+4. Preserve human-authored input by default instead of rewriting it.
+5. Treat validation failure as a normal loop, not an exception.
+6. Keep file access, serialization, and reload deterministic.
+7. Return structured outputs before any human-facing prose summary.
 
 The intended mental model is:
 
@@ -78,6 +79,29 @@ not:
 - freeform co-writer
 - prompt-only automation layer
 - autonomous implementation agent
+
+### 3.1 Human Input Preservation Rule
+
+The coordinator exists to route and structure author input, not to silently
+rewrite the author's meaning.
+
+Default behavior:
+
+- preserve original author input
+- map it into approved fields
+- keep scope narrow
+- repair only when deterministic validation requires repair
+
+Default non-goals:
+
+- stylistic rewrite
+- tone rewrite
+- semantic expansion
+- semantic compression
+- changing story meaning to make data look cleaner
+
+If a save would require meaning-changing edits, the coordinator should stop and
+return a human decision point instead of guessing.
 
 ## 4. Lifecycle
 
@@ -157,10 +181,13 @@ type AuthorInputPayload = {
 
 Rules:
 
-- `rawText` is the original author intent
+- `rawText` is the original author intent and remains authoritative
 - `uiFields` is optional structured partial input from a page
 - `source` is required for traceability
 - the coordinator should not require both free text and UI fields every time
+- `normalizedText` is optional derived helper text, not a replacement for `rawText`
+- `normalizedText` must not silently override the meaning of `rawText`
+- if `rawText` and `normalizedText` conflict, prefer `rawText` and escalate if needed
 
 ### 6.2 `SectionId`
 
@@ -326,10 +353,12 @@ You must not:
 - emit raw YAML as source of truth
 - bypass deterministic validation
 - invent fields outside approved section contracts
+- silently rewrite human-authored meaning
 
 Return only a structured CoordinatorResult.
 If the request is ambiguous or requires a new domain decision, return needs_human_decision.
 If validation errors are supplied in repair mode, repair only the reported problems unless another change is required for consistency.
+Preserve author meaning by default and prefer narrow structural mapping over content rewrite.
 ```
 
 ### 9.2 Section Skill Prompt Skeleton
@@ -349,6 +378,7 @@ You must not:
 - write files
 - bypass validation
 - create new fields not present in the approved contract
+- silently rewrite author meaning to make the patch cleaner
 
 Return only a SectionPatchCandidate.
 ```
@@ -372,6 +402,7 @@ You must:
 You are repairing a previously rejected patch candidate.
 
 Use only:
+- the original raw author input when available
 - the original author intent summary
 - the last patch candidate
 - the supplied validation failures
@@ -379,6 +410,7 @@ Use only:
 
 Do not rewrite unrelated fields.
 Do not widen scope unless a reported error requires it.
+Do not change author meaning unless the request explicitly asks for that change.
 Return only a repaired SectionPatchCandidate.
 ```
 
@@ -422,6 +454,7 @@ type ValidationErrorItem = {
 
 ```ts
 type RepairContext = {
+  rawAuthorInput?: string;
   originalIntentSummary: string;
   lastPatchCandidate: SectionPatchCandidate[];
   validationFailure: ValidationFailurePayload;
@@ -437,6 +470,26 @@ The repair loop should follow these rules:
 3. Repair scope should remain as narrow as possible.
 4. Non-repairable failures skip retry and escalate immediately.
 5. If repair changes target sections unexpectedly, escalate unless cross-section mode is already active.
+
+### 10.4 Allowed Versus Disallowed Input Repair
+
+Allowed repair scope:
+
+- add missing required input fields when the intent is already explicit
+- fix formatting, ordering, and enum problems
+- fix broken references
+- restructure text into approved fields without changing meaning
+- add the smallest missing wrapper structure needed for a valid save
+
+Disallowed repair scope:
+
+- rewrite tone or style for polish
+- compress or expand meaning to make data cleaner
+- change character facts, world facts, or story intent without explicit author request
+- modify bridge behavior, schemas, or system code just to force a patch through
+
+If a valid save would require meaning-changing edits, the coordinator must stop
+and return `needs_human_decision`.
 
 ## 11. Validation Layers
 
@@ -541,6 +594,7 @@ Failures should be classified before they are surfaced.
 - conflicting author intent
 - two or more equally valid section interpretations
 - request implies a new contract field
+- a valid save would require changing author meaning
 
 ### 13.3 Infrastructure Failure
 
@@ -581,6 +635,7 @@ Any coding plan derived from this document must preserve these rules:
 4. Do not let the browser become the file authority.
 5. Do not collapse section boundaries just because user input is freeform.
 6. Do not treat archived page-first drafts as the current architecture.
+7. Do not modify bridge rules, schemas, or system code just to make one patch candidate pass validation.
 
 ## 16. Open Follow-Up Documents
 
