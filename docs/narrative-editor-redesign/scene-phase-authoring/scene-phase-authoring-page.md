@@ -54,6 +54,7 @@ This page currently does not include:
 The fixed scene block includes:
 
 - scene name
+- scene start / opening situation
 - main axis
 - end line
 - opening hook
@@ -70,7 +71,22 @@ Each phase may expose:
 - router hint
 - note
 
-### 3.3 Code-Generated Fields
+### 3.3 Selection-Based Control Fields
+
+`gradientType` and `routerHint` should not be treated as free text inputs in
+this page.
+
+Approved rule:
+
+- `gradientType` is selected from the approved gradient options already supported by runtime
+- `routerHint` is selected from the currently loaded route names in [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
+
+That means the upper-right control strip should use explicit pickers, chips,
+dropdowns, segmented controls, or other click-select patterns.
+
+Do not make the author type arbitrary gradient or router text in V1.
+
+### 3.4 Code-Generated Fields
 
 These should not be author-facing text inputs in this page:
 
@@ -85,7 +101,7 @@ Approved ownership:
 
 Do not use the coordinator for mechanical ID generation.
 
-### 3.4 Beat Count Rule In V1
+### 3.5 Beat Count Rule In V1
 
 Although future versions may expose custom beat counts, this page should treat
 beat count as fixed in V1.
@@ -95,6 +111,28 @@ Approved V1 behavior:
 - keep the current 4-beat assumption visible where helpful
 - do not expose beat count as a user-editable field yet
 - do not block future expansion in the layout
+
+### 3.6 Narrative Spine Rule
+
+This page should not present scene fields and phase fields as unrelated form
+islands.
+
+The effective narrative spine for this section is:
+
+1. scene start / opening situation
+2. main axis
+3. each phase goal
+4. end line
+
+The page should make that relationship legible:
+
+- scene start and main axis belong together in the scene block
+- each phase goal belongs to one phase card + one selected phase editor
+- end line remains the scene-level destination
+
+This matters because the current runtime actually carries `mainAxis`,
+`phaseGoal`, and `endLine` through to prompt assembly as core narrative fields,
+while `routerHint` and `gradientType` act as control handles around that spine.
 
 ## 4. Approved UX Layout
 
@@ -161,6 +199,7 @@ The rail should include:
 - one card per phase
 - one explicit add-phase card or button
 - a clear horizontal overflow affordance
+- a visible horizontal slider / scrub bar below the card rail for direct left-right dragging
 
 ### 4.5 Right Top: Selected Phase Editor
 
@@ -176,6 +215,12 @@ The control strip contains:
 - gradient type
 - router hint
 - beat count state
+
+For V1:
+
+- gradient type is a click-select control from approved gradient values
+- router hint is a click-select control backed by the currently loaded route list
+- neither field should appear as a freeform textarea or arbitrary text input
 
 This is the approved place to expose phase-local control choices without forcing
 the user to jump to the separate `控制模块 (Control Modules)` page.
@@ -219,6 +264,10 @@ Each phase card should show:
 - a short note excerpt
 
 The note excerpt should display real content, not only a status dot.
+
+The horizontal slider is a required part of this interaction pattern.
+
+Do not rely only on trackpad, wheel, or hidden overflow behavior.
 
 Do not place the full phase form inside the phase card.
 
@@ -289,6 +338,19 @@ Reuse the interaction grammar, not the literal copy:
 - selected card emphasis
 - summary-first browsing
 
+### 9.1.1 Current Runtime Reality
+
+Unlike `world-base.yaml`, the scene and phase data path is already field-driven.
+
+At runtime:
+
+- `scene.yaml`, `phase-plans.yaml`, and `router-lexicon.yaml` are loaded as files
+- then their validated fields are consumed separately by orchestrator, router,
+  and prompt assembly
+
+This means this page should be designed around structured field ownership, not
+around large prose block generation.
+
 ### 9.2 Current Workbench Tone Reference
 
 Relevant current references:
@@ -326,6 +388,10 @@ When building this page, coding agents should follow these rules:
 8. do not merge the full control-modules page into this one
 9. do not fall back to custom CSS when Tailwind utilities are sufficient
 10. do not hide note entirely in the phase summary card; show a short excerpt
+11. do not omit the visible horizontal slider below the phase rail
+12. do not make `gradientType` a free text field
+13. do not make `routerHint` a free text field
+14. do not present scene start, main axis, phase goals, and end line as unrelated inputs
 
 ## 11. Pending Pairing Note
 
@@ -338,3 +404,5 @@ When that skill document is written, it must align with this page on:
 - code-generated `phaseId` and `phaseIndex`
 - fixed V1 beat count
 - phase-local control strip behavior
+- selection-based `gradientType` and `routerHint`
+- the narrative spine relation between scene start, main axis, phase goals, and end line

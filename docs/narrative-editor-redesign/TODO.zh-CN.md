@@ -139,6 +139,8 @@
 - [x] 锁定 `phaseId` 与 `phaseIndex` 由代码生成
 - [x] 锁定 V1 维持固定 4 beat
 - [x] 锁定本页使用 TailwindCSS，而不是自定义普通 CSS
+- [x] 锁定 `gradientType` 与 `routerHint` 使用点选，不使用自由文本
+- [x] 锁定本页要显式表达“scene 起点 + mainAxis + 每个 phaseGoal + endLine”的叙事主干
 - [ ] 重新评估控制模块页
 - [ ] 重新评估组装与校验页
 
