@@ -45,6 +45,7 @@ Current active redesign documents:
 - [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
 - [package-wiring-validation/package-wiring-validation-page.md](package-wiring-validation/package-wiring-validation-page.md)
 - [package-wiring-validation/package-wiring-validation-skill.md](package-wiring-validation/package-wiring-validation-skill.md)
+- [acceptance-patch-todo.md](acceptance-patch-todo.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -99,7 +100,7 @@ The following assumptions remain approved:
 2. the current play/workbench page remains in the app
 3. provider/model/api key configuration stays where it is today
 4. `Memory Placeholder` still needs a future expansion slot
-5. `Director Note Layer` stays system-generated and is not author-editable
+5. `Director Note Layer` keeps a system-generated base layer; only additive author customization is approved
 6. the webapp needs controlled local file read/write for repo-owned story package files
 7. browser code must not directly access the filesystem
 8. runtime orchestration and authoring orchestration are separate concerns
@@ -430,7 +431,7 @@ Current approved rule for section pages:
 - `提交` and `重置` are page-level actions
 - they apply only to the current section page
 - they do not directly start the runtime loop
-- they should live in a stable page-level action bar rather than inside the coordinator block
+- they should live in a stable page-level action bar rather than inside the page-assist UI block
 
 Approved behavior:
 
@@ -442,7 +443,17 @@ Approved relation to the existing workbench:
 - runtime execution still starts from the existing opening-hook / `Start Round` flow
 - saving section-page edits and starting runtime execution are separate actions
 
-### 11.2 Saved-State Priority
+### 11.2 UI Naming Disambiguation
+
+To avoid overloading one term across system role and UI surfaces:
+
+- `coordinator` remains the system role and backend-facing semantic coordinator
+- the lower-right helper area on the first three section pages should be presented as a `页面助手`-style UI surface
+- the lower-right helper area on `组装与校验 (Package Wiring & Validation)` should be presented as a `全局诊断助手`-style UI surface
+
+Coding agents should keep these distinctions clear in implementation and user-facing copy.
+
+### 11.3 Saved-State Priority
 
 Current approved rule for authoring state:
 
@@ -520,6 +531,13 @@ For the current implementation phase, this matters a lot:
 - the bridge can stay lighter by rendering approved section inputs into the existing runtime blocks
 - the intended write target in v1 remains `world-base.yaml`
 - the coordinator still should not freely write that file; deterministic bridge formatting remains required
+
+Approved V1 supporting-cast render rule:
+
+- `npcCharacters` should stay lightweight
+- when the input is safely splittable, each recognized supporting cast entry should be rendered as one stable list item in the form `姓名：一句到两句描述`
+- if the input is too ambiguous to split safely, grouped fallback text is allowed
+- the bridge still owns the final deterministic formatting into `npcCharacters`
 
 ### 12.4 Likely Existing Code Areas The Bridge Will Touch
 

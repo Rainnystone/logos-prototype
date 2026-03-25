@@ -210,6 +210,10 @@ Important boundary:
   - `mainCharacters`
   - `npcCharacters`
   - `locationPatch`
+- for `npcCharacters`, the approved V1 render stays lightweight:
+  - one entry per recognized person
+  - stable shape: `姓名：一句到两句描述`
+  - grouped fallback text only when safe splitting is not possible
 
 This keeps the first implementation lighter while preserving deterministic control.
 
@@ -298,7 +302,12 @@ type SectionPersistenceRequest = {
     uiFields?: Record<string, unknown>;
     patchCandidates?: SectionPatchCandidate[];
   };
-  moduleScope?: string;
+  moduleScope?:
+    | 'light-cone'
+    | 'director-note-additions'
+    | 'auditor-question-set'
+    | 'beat-volume-definitions'
+    | 'router-profile-set';
   dryRun?: boolean;
 };
 ```
@@ -308,6 +317,9 @@ Recommended rule set:
 - page submit and coordinator-assisted submit both call the same server-side entry
 - the entry may accept either page-shaped input or coordinator patch candidates
 - the entry must normalize both into the same bridge path before validation and writeback
+- `moduleScope` is only required for hybrid multi-target section saves
+- `dryRun` is an internal pre-check mode only; it validates and prepares a result envelope without writing files or updating the latest saved state
+- user-facing pages should not expose `dryRun` as a normal author action
 - browser code must never write repo files directly
 - transport choice may vary later, but the persistence contract should stay singular
 
@@ -385,10 +397,7 @@ Approved V1 boundaries:
   - may write:
     - `router-lexicon.yaml`
     - `audit-questions.yaml`
-    - approved section-owned control-source files for:
-      - light cone customization
-      - director note additions
-      - beat volume definitions
+    - `control-modules.yaml`
   - must not directly rewrite:
     - `scene.yaml`
     - `phase-plans.yaml`
@@ -401,6 +410,27 @@ Approved V1 boundaries:
 Important rule:
 
 - if a future coding agent finds a need to cross these boundaries, that should be treated as a design decision, not as an implementation shortcut
+
+### 8.3.3 Approved `control-modules.yaml` Rule
+
+Current code does not yet provide separate package files for:
+
+- light cone customization
+- director note additive author content
+- beat volume definitions
+
+Approved V1 direction:
+
+- add one shared section-owned control source file:
+  - `control-modules.yaml`
+- keep the file package-local under the same story-package root
+- split the file internally into three top-level blocks:
+  - `lightConeCustomization`
+  - `directorNoteAdditions`
+  - `beatVolumeDefinitions`
+
+This keeps V1 lighter than three parallel authoring files while still giving
+deterministic code a stable place to read and write those controls.
 
 ### 8.4 `RuntimeProjectionService`
 
@@ -468,6 +498,7 @@ Recommended substance:
   - reload succeeded
   - current section receives reloaded state
   - unresolved non-local issues or warnings remain
+  - current page stays in place
   - result may point to `package-wiring-validation`
 
 - `save_blocked`
@@ -491,6 +522,7 @@ Minimum required result fields in substance:
 - `warnings`
 - `nextSuggestedAction`
 - `showInGlobalDiagnostics`
+- `showLocally`
 
 Important rule:
 
@@ -581,12 +613,14 @@ Recommended V1 page-level view states:
 - `saved`
   - current page refreshes from `reloadedSectionState`
   - clear unsaved markers
-  - show success summary in the lower-right coordinator block
+  - show success summary in the lower-right `页面助手` block
 
 - `saved_with_global_warnings`
   - current page refreshes from `reloadedSectionState`
   - local save succeeded
-  - also surface a concise pointer to the global diagnostics page
+  - keep the user on the current page
+  - surface a concise pointer to the global diagnostics page
+  - mark the result for `组装与校验 (Package Wiring & Validation)`
 
 - `infra_failure`
   - save did not complete safely
@@ -595,8 +629,21 @@ Recommended V1 page-level view states:
 
 Important boundary:
 
-- routine current-page issues should remain in the current page's lower-right coordinator area
+- routine current-page issues should remain in the current page's lower-right `页面助手` area
 - only unresolved cross-section or package-level issues should be promoted to `package-wiring-validation`
+
+Approved V1 result-promotion rule:
+
+- `save_applied`
+  - stays local
+  - does not need global diagnostics promotion
+- `save_applied_with_warnings`
+  - stays local and also appears in global diagnostics
+- `save_blocked`
+  - stays local unless the unresolved issue is already cross-section or package-scoped
+- `save_failed`
+  - stays local first
+  - may also appear in global diagnostics only when whole-package state becomes uncertain
 
 ## 12. File Ownership Model
 

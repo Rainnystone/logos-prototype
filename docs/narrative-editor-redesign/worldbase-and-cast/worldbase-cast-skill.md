@@ -235,17 +235,15 @@ The skill should:
 
 - split ordinary supporting cast into person-level entries when the author input makes that possible
 - preserve leftover ambiguous text instead of inventing missing facts
-- render each recognized person under a fixed small heading
-- use a stable paragraph order for each recognized person
+- keep each recognized person lightweight
+- prepare content for a stable bridge-owned render rule
 
 Recommended per-person output shape:
 
-1. name
-2. gender
-3. personality
-4. age
-5. occupation
-6. short paragraph summary
+1. one entry per recognized person
+2. stable shape: `姓名：一句到两句描述`
+3. optional parenthetical short qualifier only when the author already provided it
+4. no forced full card-style field expansion
 
 If the input is too ambiguous to split safely:
 

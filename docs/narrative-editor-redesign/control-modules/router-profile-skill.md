@@ -47,7 +47,8 @@ Related:
 
 - 面向 router profile 集合的模块级 patch candidate
 - 支持新增、更新、删除
-- 交由 bridge 写回现有路由文件，并刷新 `routerHint` 可选集合
+- 交由 bridge 写回现有路由文件，并在成功保存 + 重载后立即刷新 `routerHint` 可选集合
+- 如果某个 profile 仍被现有 `routerHint` 使用，删除应被阻止，而不是静默替换
 
 ## 6. Author Intent Rule
 

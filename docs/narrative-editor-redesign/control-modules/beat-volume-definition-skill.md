@@ -43,7 +43,7 @@ Related:
 
 - 面向 beat volume 定义的模块级 patch candidate
 - 至少覆盖正文节奏与选项表达两个子面向
-- 交给 bridge 后续注入 Director Note 构造链
+- 交给 bridge 写入 `control-modules.yaml`，再注入 Director Note 构造链
 
 ## 6. Author Intent Rule
 

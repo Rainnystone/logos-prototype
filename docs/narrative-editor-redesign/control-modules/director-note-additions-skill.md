@@ -43,7 +43,7 @@ Related:
 
 - 面向 Director Note 附加层的结构化 patch candidate
 - 只描述作者新增部分
-- 交给 bridge 后续并入 Director Note 构造路径
+- 交给 bridge 写入 `control-modules.yaml`，再并入 Director Note 构造路径
 
 ## 6. Author Intent Rule
 

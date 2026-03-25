@@ -47,6 +47,7 @@ Current active follow-up documents:
 - `control-modules/router-profile-skill.md`
 - `package-wiring-validation/package-wiring-validation-page.md`
 - `package-wiring-validation/package-wiring-validation-skill.md`
+- `acceptance-patch-todo.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.

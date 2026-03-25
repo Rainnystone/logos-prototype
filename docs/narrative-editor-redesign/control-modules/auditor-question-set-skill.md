@@ -49,6 +49,9 @@ Related:
 - 面向 `audit-questions` 结构的模块级 patch candidate
 - 支持问题新增、更新、删除与选择规则变更
 - 交由 bridge 写回现有审计文件并重新校验引用
+- 新增问题需要生成新的稳定编号
+- 编辑已有问题时应保留原有稳定编号
+- 删除问题时应触发确定逻辑的引用清理或阻断检查
 
 ## 6. Author Intent Rule
 

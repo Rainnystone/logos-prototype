@@ -79,7 +79,7 @@ The skill should expect inputs related to these page surfaces:
 - main axis
 - end line
 - opening hook
-- global note / sample purpose
+- `samplePurpose`
 - selected phase name
 - selected phase goal
 - selected phase end point
@@ -152,7 +152,7 @@ The skill may patch these phase-level fields:
 - phase end point
 - `gradientType`
 - `routerHint`
-- `notes`
+- `note`
 
 The skill must not own:
 
@@ -210,7 +210,7 @@ For:
 - main axis
 - end line
 - opening hook
-- global note / sample purpose
+- `samplePurpose`
 
 the skill should:
 
@@ -261,6 +261,12 @@ The skill should:
 ### 8.5 Router Hint
 
 `routerHint` is also a bounded control field.
+
+Approved V1 rule:
+
+- if a stored `routerHint` is no longer present in the loaded router-profile set, treat it as an invalid current selection
+- return a local invalid-selection issue that requires author reselection
+- do not silently remap it to a "closest" route
 
 The skill should:
 

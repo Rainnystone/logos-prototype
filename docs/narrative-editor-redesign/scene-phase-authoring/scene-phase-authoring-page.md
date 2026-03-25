@@ -38,7 +38,7 @@ This page currently includes:
 - a horizontal phase rail
 - one selected phase detailed editor
 - phase-local control choices that are tightly coupled to phase authoring
-- a lower-right coordinator block
+- a lower-right `页面助手` block
 
 This page currently does not include:
 
@@ -58,7 +58,7 @@ The fixed scene block includes:
 - main axis
 - end line
 - opening hook
-- global note / sample purpose
+- `samplePurpose`
 
 ### 3.2 Phase-Level Fields
 
@@ -173,7 +173,7 @@ Use a two-column page shell:
 The right column is split vertically:
 
 - upper panel: selected phase editor and phase-local controls
-- lower panel: coordinator block
+- lower panel: `页面助手` block
 
 This is an approved layout rule.
 
@@ -250,7 +250,7 @@ For V1:
 This is the approved place to expose phase-local control choices without forcing
 the user to jump to the separate `控制模块 (Control Modules)` page.
 
-### 4.6 Right Bottom: Coordinator Block
+### 4.6 Right Bottom: `页面助手` Block
 
 The lower-right block follows the same role as the previous page:
 
@@ -281,7 +281,7 @@ This page needs clear page-level actions:
 Recommended placement:
 
 - in the right-side column as a stable page-level action bar
-- aligned with the selected phase editor and the lower-right coordinator block
+- aligned with the selected phase editor and the lower-right `页面助手` block
 - easy to find without digging into any single phase card or left-side rail area
 
 They should remain easy to find and should not be buried inside a single phase
@@ -434,7 +434,7 @@ When building this page, coding agents should follow these rules:
 2. keep scene as one fixed top block
 3. keep phase as a horizontal summary rail
 4. keep selected phase editing in the upper-right panel
-5. keep coordinator in the lower-right panel
+5. keep `页面助手` in the lower-right panel
 6. do not expose `phaseId` as a raw author field
 7. do not expose `phaseIndex` as a raw author field
 8. do not merge the full control-modules page into this one
@@ -450,12 +450,11 @@ When building this page, coding agents should follow these rules:
 18. do treat phase-card summaries as display-only derived snippets
 19. do treat `routerHint` options as downstream data from the active router-profile set, not as page-owned definitions
 
-## 11. Pending Pairing Note
+## 11. Pairing Reminder
 
-This page document is approved ahead of the detailed
-`scene-phase-authoring-skill` document.
+The matching `scene-phase-authoring-skill` document is now active.
 
-When that skill document is written, it must align with this page on:
+Future coding agents should keep page and skill aligned on:
 
 - scene vs phase field ownership
 - code-generated `phaseId` and `phaseIndex`

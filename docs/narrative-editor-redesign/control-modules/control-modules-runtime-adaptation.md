@@ -123,7 +123,88 @@ Concretely, the current direction is:
 
 - `router profile` edits can continue to write the existing `router-lexicon.yaml`
 - `auditor question set` edits can continue to write the existing `audit-questions.yaml`
-- `light cone`, `director note additions`, and `beat volume definitions` should use a section-owned control source and deterministic downstream application
+- `light cone`, `director note additions`, and `beat volume definitions` should use one shared section-owned control source and deterministic downstream application
+
+### 5.1 Current File Reality
+
+As of the current codebase, there is no separate package file yet for:
+
+- light cone customization
+- director note additive author content
+- beat volume definitions
+
+Current story-package files already present are still limited to files such as:
+
+- `scene.yaml`
+- `phase-plans.yaml`
+- `router-lexicon.yaml`
+- `audit-questions.yaml`
+- `world-base.yaml`
+
+That means this section is the first place where redesign-era control data needs
+an explicitly approved new local control source.
+
+### 5.2 Approved Shared Control Source
+
+Approved V1 direction:
+
+- create one shared control source file:
+  - `control-modules.yaml`
+- keep it package-local under the same story-package root
+- use it only for:
+  - `lightConeCustomization`
+  - `directorNoteAdditions`
+  - `beatVolumeDefinitions`
+
+Why one file instead of three:
+
+- lighter implementation
+- easier authoring ownership
+- clearer read/write sequencing
+- less risk of three drifting mini-sources
+
+### 5.3 Approved `moduleScope` Values
+
+For this section's hybrid save path, `moduleScope` should be fixed to:
+
+- `light-cone`
+- `director-note-additions`
+- `auditor-question-set`
+- `beat-volume-definitions`
+- `router-profile-set`
+
+This is an internal persistence routing value.
+
+It is not a user-facing field.
+
+### 5.4 Approved `dryRun` Rule
+
+`dryRun` should be treated as an internal pre-check mode only.
+
+Approved V1 rule:
+
+- it may run validation and prepare diagnostics
+- it must not write files
+- it must not update latest saved state
+- it must not appear as a normal author-visible action in the page UI
+
+### 5.5 Approved Read / Write Order
+
+For `控制模块 (Control Modules)`, the approved order is:
+
+1. the page or coordinator prepares a module-scoped candidate
+2. the shared bridge receives that candidate with the matching `moduleScope`
+3. deterministic code routes the save target:
+   - `router-profile-set` -> `router-lexicon.yaml`
+   - `auditor-question-set` -> `audit-questions.yaml`
+   - `light-cone` / `director-note-additions` / `beat-volume-definitions` -> `control-modules.yaml`
+4. the package is reloaded
+5. runtime consumers read the updated sources:
+   - light cone request construction reads `lightConeCustomization` together with scene / phase state
+   - director note construction reads system-generated base + `directorNoteAdditions` + `beatVolumeDefinitions` + current router profile data
+   - prompt assembly then consumes the assembled control outputs, not the raw file directly
+
+This ordering should be written into future implementation plans rather than left implicit.
 
 ## 6. Module-By-Module Adaptation Impact
 
@@ -203,6 +284,10 @@ Important runtime note:
 
 - future tracking should rely on stable IDs and structure
 - it should not rely only on question text matching
+- editing one existing question should preserve its stable internal ID
+- deleting one question should remove only that question's ID
+- deterministic code should clean same-file safe references when possible
+- if deletion would leave unresolved broader references, the save should be blocked and the author asked to decide explicitly
 
 Impact estimate:
 
@@ -253,6 +338,8 @@ Required adaptation:
 - ensure downstream selectors read the updated route list
 - ensure `故事结构 (Scene & Phase Authoring)` consumes that updated router-profile set for its `routerHint` dropdown
 - treat the router-profile set as the upstream source for route selection, not as page-local static options
+- if a router profile is still referenced by existing `routerHint` selections, deterministic code should block deletion until those references are replaced
+- after a successful save + reload, downstream `routerHint` selectors should refresh immediately from the updated route set
 
 What this does **not** mean in V1:
 

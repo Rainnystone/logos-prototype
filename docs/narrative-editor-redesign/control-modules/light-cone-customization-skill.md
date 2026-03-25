@@ -49,7 +49,7 @@ Related:
 输出应是：
 
 - 只属于光锥模块的结构化 patch candidate
-- 面向 section-owned control source
+- 面向 `control-modules.yaml` 中的 `lightConeCustomization`
 - 交由 bridge 后续应用到 collapse 请求构造路径
 
 ## 6. Author Intent Rule

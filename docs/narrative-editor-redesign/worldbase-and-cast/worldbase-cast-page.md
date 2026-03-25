@@ -20,7 +20,7 @@ It is a downstream authoring surface that must fit:
 
 - the `coordinator`
 - the deterministic bridge
-- the approved direct write path into [`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml)
+- the approved bridge-owned direct-runtime write path into [`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml)
 
 This page should help the author do two things well:
 
@@ -61,6 +61,11 @@ These remain freeform textareas:
 - ordinary supporting cast
 - location pool / scene elements
 
+V1 note for ordinary supporting cast:
+
+- the page remains a freeform textarea
+- the saved output should still be normalized into a lightweight stable list rather than an unshaped raw dump
+
 ### 3.2 Structured Character Editing
 
 These are character-driven:
@@ -83,7 +88,7 @@ The page should use:
 
 - a soft, light main editing surface
 - a separate right-side detail area
-- a lower right technical assistance block
+- a lower right `页面助手` block
 
 The page should feel consistent with the current workbench direction shown in
 [`docs/assets/example.png`](../../assets/example.png):
@@ -121,11 +126,11 @@ Top:
 
 Bottom:
 
-- technical assist block
+- `页面助手` block
 
 This split is now an approved layout rule.
 
-Do not place the technical assist block above the selected character editor.
+Do not place the `页面助手` block above the selected character editor.
 
 ### 4.4 Page-Level Actions
 
@@ -138,13 +143,13 @@ At minimum, include:
 
 Recommended placement:
 
-- in the right-side column, aligned with the selected editor and technical assist
+- in the right-side column, aligned with the selected editor and `页面助手`
 - visible without forcing the user to search inside the left rail areas
 
 V1 recommendation:
 
 - place the action row in the right-side column as a stable page-level action bar
-- keep it between the selected editor and the coordinator block, or pin it as a sticky footer in the same right column
+- keep it between the selected editor and the `页面助手` block, or pin it as a sticky footer in the same right column
 
 Do not hide primary actions inside the left-side character rails.
 
@@ -259,9 +264,9 @@ Additional antagonist-only field remains allowed:
 
 Summary cards on the left do not need to display all of these.
 
-## 8. Technical Assist Block
+## 8. `页面助手` Block
 
-The lower right block is the technical assist area.
+The lower right block is the page-assist area.
 
 It should stay visually distinct and more technical than the main page surface.
 
@@ -308,7 +313,7 @@ Left Column (independent vertical scroll)
 Right Column
   Selected Character Editor
     Full character card fields
-  Technical Assist Block
+  页面助手 Block
     Coordinator assist
     Validation / conflict notices
     Save feedback
@@ -356,7 +361,7 @@ It means reusing the interaction grammar.
 
 ### 10.3 Existing Technical Side Reference
 
-For the lower right technical assist block, the closest references are:
+For the lower right `页面助手` block, the closest references are:
 
 - [`src/app/components/StateInspector.tsx`](../../../src/app/components/StateInspector.tsx)
 - [`src/app/components/PromptStatusPanel.tsx`](../../../src/app/components/PromptStatusPanel.tsx)
@@ -386,7 +391,7 @@ When building this page, coding agents should follow these rules:
 1. keep the page lightweight and authoring-focused
 2. do not turn the page into a generic admin dashboard
 3. do not replace the left summary rails with fully expanded multi-card editors
-4. do not place the technical assist block above the selected character editor
+4. do not place the `页面助手` block above the selected character editor
 5. do not remove the independent left-side scroll area
 6. do not hide page-level save/reset actions
 7. do not hardcode sample story text in the UI

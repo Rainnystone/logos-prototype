@@ -91,6 +91,21 @@ Related documents:
 - bridge 负责按模块目标分发写入
 - 任何一个小 skill 都不应该直接接触文件系统
 
+Approved shared persistence note:
+
+- `light-cone`
+- `director-note-additions`
+- `beat-volume-definitions`
+
+all land in one shared section-owned control source:
+
+- `control-modules.yaml`
+
+while:
+
+- `router-profile-set` continues to target `router-lexicon.yaml`
+- `auditor-question-set` continues to target `audit-questions.yaml`
+
 ## 7. Reading Order For Coding Agents
 
 实现这一组 skill 前，建议顺序阅读：

@@ -49,7 +49,7 @@ The skill may do the following:
 2. summarize whole-package state into stable left-panel status blocks
 3. organize unresolved issues by severity, scope, and repair destination
 4. prepare selected-item detail content for the right-top detail panel
-5. prepare global diagnostic guidance for the lower-right coordinator block
+5. prepare global diagnostic guidance for the lower-right `全局诊断助手` block
 6. preserve the distinction between section-local issues and cross-section or backend-level issues
 
 ## 4. Skill Must Not Do
@@ -80,6 +80,7 @@ It should also be able to consume:
 - backend round-trip reload result
 - shared section-persistence results, especially:
   - `save_applied_with_warnings`
+  - `save_blocked`
   - `save_failed`
 - per-section coordinator result summaries
 - bridge status summaries
@@ -99,7 +100,7 @@ The output should, in substance, be able to describe:
 - assembly flow node content
 - unresolved issue queue content
 - selected detail panel content
-- global coordinator summary and repair-order guidance
+- global diagnostics-helper summary and repair-order guidance
 
 ### 6.1 Approved V1 Output Families
 
@@ -110,7 +111,7 @@ The skill should organize its output into these groups:
 - `assemblyFlowViews`
 - `unresolvedIssueViews`
 - `selectedDetailView`
-- `globalCoordinatorView`
+- `globalDiagnosticsHelperView`
 
 The skill should not collapse all dashboard output into one undifferentiated blob.
 
@@ -213,7 +214,7 @@ This is explanation, not editing.
 
 ### 8.6 Global Coordinator Guidance
 
-The lower-right coordinator on this page should not behave like a field helper.
+The lower-right `全局诊断助手` on this page should not behave like a field helper.
 
 The skill should prepare content that focuses on:
 
@@ -244,3 +245,16 @@ It does not replace:
 - deterministic section save handling
 
 Instead, it sits after those steps and prepares their results for dashboard use.
+
+### 10.1 Approved Result Promotion Mapping
+
+This skill should interpret save results with the following bias:
+
+- `save_applied`
+  - do not promote as a main unresolved issue here
+- `save_applied_with_warnings`
+  - promote into this page's global diagnostics summary and issue queue
+- `save_blocked`
+  - only promote when the blocking issue is already cross-section or package-scoped
+- `save_failed`
+  - promote only when whole-package health or trust in current loaded state is affected

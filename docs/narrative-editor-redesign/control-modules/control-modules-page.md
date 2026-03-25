@@ -102,7 +102,7 @@ Visual references:
 
 - 左侧：主编辑结构面
 - 右上：当前选中模块的详细编辑区
-- 右下：coordinator
+- 右下：`页面助手`
 
 ### 5.1 左侧
 
@@ -130,7 +130,7 @@ Visual references:
 
 ### 5.3 右下
 
-右下延续前两页的 coordinator 区：
+右下延续前两页的 `页面助手` 区：
 
 - AI 整理
 - 字段缺失 / 冲突提示
@@ -154,12 +154,12 @@ Visual references:
 - `提交`
 - `重置`
 
-不要只依赖自动保存，也不要把这些动作藏进 coordinator 区。
+不要只依赖自动保存，也不要把这些动作藏进 `页面助手` 区。
 
 Approved placement:
 
 - use a stable page-level action bar in the right-side column
-- align it with the current module editor and the lower-right coordinator block
+- align it with the current module editor and the lower-right `页面助手` block
 - do not scatter these actions across the left-side module structure
 
 Approved behavior:
@@ -179,11 +179,22 @@ Important boundary:
 视觉方向继续沿用前两个 section page：
 
 - 浅色主编辑面
-- 深色 coordinator 技术辅助块
+- 深色 `页面助手` 技术辅助块
 - 信息密度高，但分区清楚
 - 有系统层级感，不做黑客终端式 UI
 
 本页适合“模块积木 + 结构标签”的表达，不适合做成普通设置列表。
+
+### 6.1 Auditor Editor Interaction Rule
+
+当右上当前编辑器切到 `Auditor Question` 模块时，页面必须额外满足：
+
+- 提供显式的 `添加问题` 按钮
+- 为每条问题提供显式的 `删除` 动作
+- 问题列表或问题编辑面应有独立纵向滚动能力
+- 要有可见的纵向滚动条或明确的滚动容器边界，不要只依赖页面整体滚动
+
+这是为了支持审计问题的结构化维护，而不是把全部问题压进一块长文本区。
 
 ## 7. Approved Module Card Rules
 
@@ -228,21 +239,21 @@ Important boundary:
 
 1. 左侧必须是控制结构面，不是简单 tabs 列表
 2. 右上必须是“当前选中模块”的详细编辑区
-3. 右下必须保留 coordinator
+3. 右下必须保留 `页面助手`
 4. 不要把 Auditor 画成 prompt stack 的一层
 5. 不要把 story 骨架字段混进这一页
 6. 不要把 5 个模块压平为一个无结构的 settings wall
 7. Router 相关模块在交互上应表现为 `故事结构` 页中 `routerHint`
    的上游来源，而不是同页并列随手填写的孤立字段
 
-## 11. Pending Pairing Note
+## 11. Pairing Reminder
 
-本页已先于 `control-modules` 的 skill family 落地。
+`control-modules` 的 skill family 现已存在。
 
-后续 skill 文档必须和本页保持一致，尤其要对齐：
+未来 coding agent 继续实现这一页时，仍需保证 page 与 skill family 对齐，尤其要对齐：
 
 - 5 个模块的边界
 - 替换式 / 附加式 / 结构化 的差异
 - Prompt 与 Audit 的真实关系
-- 左侧积木、右上编辑、右下 coordinator 的布局前提
+- 左侧积木、右上编辑、右下 `页面助手` 的布局前提
 - 每个左侧模块块都应当和一个明确的小 skill 对应

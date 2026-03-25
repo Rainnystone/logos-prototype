@@ -14,6 +14,7 @@
 2. 只有产生了实际文档、计划或实现产物，相关条目才可以标记为完成。
 3. 已冻结决策单独维护，不混进“待办项”里反复讨论。
 4. coding agent 默认应先读 [master-record.md](master-record.md) 与 [coordinator-agent.md](coordinator-agent.md)，再读本账本。
+5. 当前这轮验收补丁的收口清单见 [acceptance-patch-todo.md](acceptance-patch-todo.md)。
 
 ## 已冻结决策
 
@@ -30,6 +31,7 @@
 - [x] 当前旧的 page-first 文档与 page-specific plans 已迁入 `archive/`
 - [x] active 主索引已切换为 [master-record.md](master-record.md)
 - [x] section active 文档采用“每个 section 一个独立文件夹”的组织方式
+- [x] 页面右下角用户可见区域与系统角色 `coordinator` 需要分开命名
 
 ## 当前阶段
 
@@ -140,6 +142,10 @@
 - [x] 细化 coordinator 可调用的 server-side write entry 形式
 - [x] 为 `控制模块` 写出 section-local runtime adaptation 边界
 - [x] 锁定成功提交后默认恢复最近一次成功保存状态，而不是反复回到初始示例内容
+- [x] 锁定 `control-modules.yaml` 作为 `光锥 / Director Note 附加层 / Beat Volume` 的共享控制源
+- [x] 锁定 `moduleScope` 固定值与 `dryRun` 的内部语义
+- [x] 锁定 `control-modules` 的读写顺序与运行侧消费顺序
+- [x] 锁定四类保存结果在页面与全局诊断页之间的提升规则
 
 ### Stage D：重新回到 section pages
 
@@ -181,6 +187,7 @@
 - [x] 锁定右上当前模块编辑、右下 coordinator 的布局
 - [x] 锁定本页参考 Prompt Assembler 骨架，但不把 Auditor 伪装成 prompt layer
 - [x] 为控制模块页补充 skill family 与五个小 skill 文档
+- [x] 为审计问题编辑区补充添加 / 删除按钮与纵向滚动要求
 - [x] 重新评估组装与校验页
 - [x] 产出 `package-wiring-validation/package-wiring-validation-page.md`
 - [x] 产出 `package-wiring-validation/package-wiring-validation-skill.md`

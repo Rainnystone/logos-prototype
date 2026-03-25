@@ -192,6 +192,12 @@ Rules:
 - `normalizedText` must not silently override the meaning of `rawText`
 - if `rawText` and `normalizedText` conflict, prefer `rawText` and escalate if needed
 
+`dryRun` rule:
+
+- this is an internal application-side pre-check option
+- it should not be exposed as a normal user-visible page action
+- when enabled, it may validate and prepare diagnostics but must not update saved package state
+
 ### 6.2 `SectionId`
 
 Approved section identifiers:
@@ -238,6 +244,12 @@ In that case:
 - the application layer or section-local dispatcher chooses the matching module skill
 - each micro-skill remains module-scoped
 - micro-skills must not silently edit sibling modules
+
+UI naming clarification:
+
+- `coordinator` remains the system role in these docs
+- page-facing lower-right helper areas should use distinct UI labels such as `页面助手`
+- the diagnostics page should use a distinct UI label such as `全局诊断助手`
 
 The point of this pack is:
 
