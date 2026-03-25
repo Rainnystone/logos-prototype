@@ -1,4 +1,4 @@
-import { cpSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import YAML from 'yaml';
@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import * as reloadModule from '@/authoring/persistence/reload';
+import * as repositoryModule from '@/authoring/persistence/repository';
 import { loadStoryPackage } from '@/engine/story-loader';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -203,6 +204,29 @@ describe('saveSectionDraft', () => {
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
+  it('blocks malformed top-level request fields without throwing', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: null as unknown as string,
+      source: 'page',
+      packageName: 42 as unknown as string,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          mainCharacters: 'top-level-malformed-request',
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain('requestId must be a string.');
+      expect(result.blockingIssues).toContain('packageName must be a string.');
+    }
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
   it('blocks control-modules saves when moduleScope is missing', async () => {
     prepareTestPackage();
     const originalWorldBase = YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
@@ -275,6 +299,29 @@ describe('saveSectionDraft', () => {
     const result = await saveSectionDraft(buildPageStyleSaveRequest('reload-failure-update'));
 
     expect(reloadSpy).toHaveBeenCalledTimes(1);
+    expect(result.kind).toBe('save_failed');
+    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
+  it('restores the original world-base file when the write step throws after clobbering contents', async () => {
+    prepareTestPackage();
+    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const persistSpy = vi
+      .spyOn(repositoryModule, 'persistWorldBaseDraft')
+      .mockImplementationOnce(async () => {
+        const clobberedWorldBase = YAML.stringify({
+          ...YAML.parse(originalWorldBaseContents),
+          mainCharacters: 'clobbered-before-throw',
+        });
+
+        writeFileSync(worldBasePath, clobberedWorldBase, 'utf8');
+        throw new Error('write step failed');
+      });
+
+    const result = await saveSectionDraft(buildPageStyleSaveRequest('write-step-failure-update'));
+
+    expect(persistSpy).toHaveBeenCalledTimes(1);
     expect(result.kind).toBe('save_failed');
     expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();

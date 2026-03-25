@@ -16,6 +16,14 @@ import { reloadStoryPackage } from '@/authoring/persistence/reload';
 import type { StoryPackage } from '@/types';
 
 const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
+const supportedSaveSources = new Set<SaveRequest['source']>(['page', 'coordinator', 'repair']);
+const supportedModuleScopes = new Set<NonNullable<SaveRequest['moduleScope']>>([
+  'light-cone',
+  'director-note-additions',
+  'auditor-question-set',
+  'beat-volume-definitions',
+  'router-profile-set',
+]);
 
 const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([SECTION_IDS[0]]);
 
@@ -25,7 +33,36 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issues: readonly string[] } {
   const issues: string[] = [];
-  const rawPayload = input.payload as unknown;
+  const rawInput = isPlainObject(input) ? input : ({} as Record<string, unknown>);
+  const requestId =
+    typeof rawInput.requestId === 'string'
+      ? rawInput.requestId
+      : (issues.push('requestId must be a string.'), '');
+  const packageName =
+    typeof rawInput.packageName === 'string'
+      ? rawInput.packageName
+      : (issues.push('packageName must be a string.'), '');
+  const sectionId =
+    typeof rawInput.sectionId === 'string'
+      ? (rawInput.sectionId as SaveRequest['sectionId'])
+      : (issues.push('sectionId must be a string.'), '' as SaveRequest['sectionId']);
+  const source =
+    typeof rawInput.source === 'string'
+      ? (rawInput.source as SaveRequest['source'])
+      : (issues.push('source must be a string.'), 'page');
+  const moduleScope =
+    rawInput.moduleScope === undefined
+      ? undefined
+      : typeof rawInput.moduleScope === 'string'
+        ? (rawInput.moduleScope as NonNullable<SaveRequest['moduleScope']>)
+        : (issues.push('moduleScope must be a string when provided.'), undefined);
+  const dryRun =
+    rawInput.dryRun === undefined
+      ? false
+      : typeof rawInput.dryRun === 'boolean'
+        ? rawInput.dryRun
+        : (issues.push('dryRun must be a boolean when provided.'), false);
+  const rawPayload = rawInput.payload as unknown;
   const payload: {
     uiFields?: Record<string, unknown>;
     patchCandidates?: readonly Record<string, unknown>[];
@@ -71,7 +108,12 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
 
   return {
     request: {
-      ...input,
+      requestId,
+      packageName,
+      sectionId,
+      source,
+      ...(moduleScope ? { moduleScope } : {}),
+      ...(dryRun ? { dryRun } : {}),
       payload: payload as SaveRequest['payload'],
     },
     issues,
@@ -83,6 +125,14 @@ function validateSaveRequest(request: SaveRequest): readonly string[] {
 
   if (!supportedSectionIds.has(request.sectionId)) {
     issues.push(`Unsupported section "${request.sectionId}".`);
+  }
+
+  if (!supportedSaveSources.has(request.source)) {
+    issues.push(`Unsupported save source "${request.source}".`);
+  }
+
+  if (request.moduleScope && !supportedModuleScopes.has(request.moduleScope)) {
+    issues.push(`Unsupported moduleScope "${request.moduleScope}".`);
   }
 
   if (request.moduleScope && request.sectionId !== 'control-modules') {
@@ -211,14 +261,15 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
   try {
     await ensureStoryPackageExists(request.packageName);
     const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
-    const changedFiles = await persistWorldBaseDraft(request.packageName, nextMainCharacters);
+    let changedFiles: readonly string[];
     let reloadedSectionState: StoryPackage;
 
     try {
+      changedFiles = await persistWorldBaseDraft(request.packageName, nextMainCharacters);
       reloadedSectionState = await reloadStoryPackage(request.packageName);
-    } catch (reloadError) {
+    } catch (writeOrReloadError) {
       await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);
-      throw reloadError;
+      throw writeOrReloadError;
     }
 
     try {
