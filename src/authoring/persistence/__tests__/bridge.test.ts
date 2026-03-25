@@ -110,6 +110,11 @@ describe('saveSectionDraft', () => {
   it('returns a blocked save when no deterministic worldbase content is provided', async () => {
     prepareTestPackage();
     const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
+      mainCharacters: string;
+      npcCharacters: string;
+      locationPatch: string;
+    };
 
     const result = await saveSectionDraft({
       requestId: 'request-blocked',
@@ -127,7 +132,7 @@ describe('saveSectionDraft', () => {
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain('No deterministic world-base update was provided.');
     }
-    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
@@ -139,6 +144,7 @@ describe('saveSectionDraft', () => {
       source: 'page',
       packageName: testPackageName,
       sectionId: 'scene-phase-authoring',
+      moduleScope: 'light-cone',
       payload: {
         uiFields: {
           mainCharacters: 'scene-phase-placeholder',
@@ -149,11 +155,45 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'Deterministic write path for "scene-phase-authoring" is not available in Task 1.',
+        'moduleScope is only valid for control-modules saves.',
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
-    expect(readFileSync(worldBasePath, 'utf8')).toContain('角色设定与行为边界');
+    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toMatchObject({
+      mainCharacters: expect.any(String),
+      npcCharacters: expect.any(String),
+      locationPatch: expect.any(String),
+    });
+  });
+
+  it('blocks control-modules saves when moduleScope is missing', async () => {
+    prepareTestPackage();
+    const originalWorldBase = YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
+      mainCharacters: string;
+      npcCharacters: string;
+      locationPatch: string;
+    };
+
+    const result = await saveSectionDraft({
+      requestId: 'request-control-modules-missing-scope',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'control-modules',
+      payload: {
+        uiFields: {
+          mainCharacters: 'control-modules-placeholder',
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain(
+        'moduleScope is required for control-modules saves.',
+      );
+    }
+    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('keeps a successful save distinct when the authoring status marker write fails', async () => {
@@ -178,6 +218,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_applied_with_warnings');
     if (result.kind === 'save_applied_with_warnings') {
       expect(result.warnings).toContain('Authoring status marker write failed: marker write failed');
+      expect(result.runtimeImpactSummary.changedFiles).toEqual(['world-base.yaml']);
     }
     expect(await loadStoryPackage(testPackageName)).toMatchObject({
       worldBase: {
@@ -185,5 +226,35 @@ describe('saveSectionDraft', () => {
       },
     });
     expect(readFileSync(worldBasePath, 'utf8')).toContain('marker-warning-update');
+  });
+
+  it('returns a blocked dryRun result without changing files', async () => {
+    prepareTestPackage();
+    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
+      mainCharacters: string;
+      npcCharacters: string;
+      locationPatch: string;
+    };
+
+    const result = await saveSectionDraft({
+      requestId: 'request-dry-run',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      dryRun: true,
+      payload: {
+        uiFields: {
+          mainCharacters: 'dry-run-placeholder',
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain('dryRun completed without writing files.');
+    }
+    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 });

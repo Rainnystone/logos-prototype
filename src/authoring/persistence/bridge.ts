@@ -7,6 +7,7 @@ import {
 } from '@/authoring/persistence/repository';
 import {
   createSaveAppliedResult,
+  createSaveAppliedWithWarningsResult,
   createSaveBlockedResult,
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
@@ -46,6 +47,10 @@ function validateSaveRequest(request: SaveRequest): readonly string[] {
 
   if (request.moduleScope && request.sectionId !== 'control-modules') {
     issues.push('moduleScope is only valid for control-modules saves.');
+  }
+
+  if (request.sectionId === 'control-modules' && !request.moduleScope) {
+    issues.push('moduleScope is required for control-modules saves.');
   }
 
   if (!request.requestId.trim()) {
@@ -102,12 +107,8 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
     );
   }
 
-  try {
-    await ensureStoryPackageExists(request.packageName);
-    const changedFiles = await persistWorldBaseDraft(request);
-    const reloadedSectionState = await reloadStoryPackage(request.packageName);
-
-    const appliedBase = createSaveAppliedResult(
+  if (request.dryRun) {
+    return createSaveBlockedResult(
       {
         requestId: request.requestId,
         packageName: request.packageName,
@@ -115,9 +116,14 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showLocally: true,
         showInGlobalDiagnostics: false,
       },
-      reloadedSectionState,
-      [...changedFiles, 'authoring-state.json'],
+      ['dryRun completed without writing files.'],
     );
+  }
+
+  try {
+    await ensureStoryPackageExists(request.packageName);
+    const changedFiles = await persistWorldBaseDraft(request);
+    const reloadedSectionState = await reloadStoryPackage(request.packageName);
 
     try {
       await authoringStatus.writeAuthoringStatus(request.packageName, {
@@ -127,17 +133,33 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         lastEditedSection: request.sectionId,
       });
 
-      return appliedBase;
+      return createSaveAppliedResult(
+        {
+          requestId: request.requestId,
+          packageName: request.packageName,
+          sectionId: request.sectionId,
+          showLocally: true,
+          showInGlobalDiagnostics: false,
+        },
+        reloadedSectionState,
+        [...changedFiles, 'authoring-state.json'],
+      );
     } catch (markerError) {
       const markerMessage =
         markerError instanceof Error ? markerError.message : String(markerError);
 
-      return {
-        ...appliedBase,
-        kind: 'save_applied_with_warnings',
-        warnings: [`Authoring status marker write failed: ${markerMessage}`],
-        showInGlobalDiagnostics: true,
-      };
+      return createSaveAppliedWithWarningsResult(
+        {
+          requestId: request.requestId,
+          packageName: request.packageName,
+          sectionId: request.sectionId,
+          showLocally: true,
+          showInGlobalDiagnostics: true,
+        },
+        reloadedSectionState,
+        [`Authoring status marker write failed: ${markerMessage}`],
+        changedFiles,
+      );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
