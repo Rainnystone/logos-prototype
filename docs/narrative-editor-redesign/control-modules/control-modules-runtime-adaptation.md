@@ -257,6 +257,34 @@ Impact estimate:
 
 - medium
 
+### 6.6 Prompt Assembler Coupling
+
+Current reality:
+
+- prompt assembly already has a fixed four-layer output structure
+- not every control-module item maps to its own visible prompt layer
+- some control-module items feed prompt assembly directly, while others stay in a parallel control chain
+
+Required adaptation understanding:
+
+- light cone customization ultimately affects `PromptObject.narrative.alpha` and `PromptObject.narrative.beta`
+- director note customization ultimately affects `PromptObject.directorNote.beatConstraints` and `PromptObject.directorNote.optionConstraints`
+- beat volume definitions affect how `directorNote.volume` is interpreted and described downstream
+- router profiles affect `currentRouter` and `verbLexicon`, which then enter `PromptObject.directorNote`
+- auditor question customization does **not** become a prompt layer; it stays a parallel audit control path
+
+Important page-design consequence:
+
+- the future `控制模块` page may reference prompt-assembler layering as a visual skeleton
+- but it must not falsely present every control item as a direct prompt layer
+- especially, auditor customization should remain visibly parallel to prompt-layer controls
+
+What must not happen:
+
+- do not imply that audit questions belong inside the prompt assembler's four-layer stack
+- do not imply that router profiles are themselves a standalone prompt layer
+- do not imply that beat volume definitions create a fifth prompt layer
+
 ## 7. Existing System Areas That Will Be Touched
 
 This section is expected to affect four kinds of system areas:

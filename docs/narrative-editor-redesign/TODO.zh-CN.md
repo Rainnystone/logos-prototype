@@ -91,6 +91,7 @@
 - [ ] 明确 page save / coordinator save 共享的服务端入口协议
 - [x] 为 `控制模块 (Control Modules)` 建立 section-local runtime adaptation 文档
 - [x] 锁定这份文档不并入全局 `bridge`
+- [x] 明确 `Prompt Assembler` 对 `控制模块` 页面设计与运行接线的影响
 
 ### A4. 建立 redesign 账本与阅读路径
 
@@ -156,7 +157,11 @@
 - [x] 为故事结构页补充对应 skill 文档
 - [x] 先收敛 `控制模块` 的 runtime adaptation 边界
 - [x] 补充 `控制模块` 与 `故事结构` 之间的 router-profile 依赖关系
-- [ ] 重新评估控制模块页
+- [x] 重新评估控制模块页
+- [x] 产出 `control-modules/control-modules-page.md`
+- [x] 锁定左侧 `Layer 3 / Layer 4 / Parallel Audit` 的积木结构
+- [x] 锁定右上当前模块编辑、右下 coordinator 的布局
+- [x] 锁定本页参考 Prompt Assembler 骨架，但不把 Auditor 伪装成 prompt layer
 - [ ] 重新评估组装与校验页
 
 ## 暂缓项

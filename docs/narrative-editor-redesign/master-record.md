@@ -36,6 +36,7 @@ Current active redesign documents:
 - [scene-phase-authoring/scene-phase-authoring-page.md](scene-phase-authoring/scene-phase-authoring-page.md)
 - [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
 - [control-modules/control-modules-runtime-adaptation.md](control-modules/control-modules-runtime-adaptation.md)
+- [control-modules/control-modules-page.md](control-modules/control-modules-page.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
