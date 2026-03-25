@@ -211,7 +211,7 @@ Visual references:
 
 ## 11. Pending Pairing Note
 
-本页已先于 `control-modules-skill` 落地。
+本页已先于 `control-modules` 的 skill family 落地。
 
 后续 skill 文档必须和本页保持一致，尤其要对齐：
 
@@ -219,3 +219,4 @@ Visual references:
 - 替换式 / 附加式 / 结构化 的差异
 - Prompt 与 Audit 的真实关系
 - 左侧积木、右上编辑、右下 coordinator 的布局前提
+- 每个左侧模块块都应当和一个明确的小 skill 对应

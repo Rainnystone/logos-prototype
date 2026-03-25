@@ -37,6 +37,12 @@ Current active redesign documents:
 - [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
 - [control-modules/control-modules-runtime-adaptation.md](control-modules/control-modules-runtime-adaptation.md)
 - [control-modules/control-modules-page.md](control-modules/control-modules-page.md)
+- [control-modules/control-modules-skill.md](control-modules/control-modules-skill.md)
+- [control-modules/light-cone-customization-skill.md](control-modules/light-cone-customization-skill.md)
+- [control-modules/director-note-additions-skill.md](control-modules/director-note-additions-skill.md)
+- [control-modules/auditor-question-set-skill.md](control-modules/auditor-question-set-skill.md)
+- [control-modules/beat-volume-definition-skill.md](control-modules/beat-volume-definition-skill.md)
+- [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -93,7 +99,7 @@ The following assumptions remain approved:
 The approved redesign shape is:
 
 - `1` coordinator agent: `coordinator`
-- `4` section skills
+- `4` section skill families
 - `1` cross-section reconciliation skill
 - `1` legacy migration skill
 - `1` deterministic authoring runtime bridge
@@ -178,16 +184,17 @@ Coding agents should not turn the coordinator into a silent rewriting layer.
 
 ## 6. Skill Inventory
 
-### 6.1 Required Section Skills
+### 6.1 Required Section Skills / Families
 
 The approved minimum skill set is:
 
 1. `worldbase-cast-skill`
 2. `scene-phase-authoring-skill`
-3. `control-modules-skill`
+3. `control-modules` skill family
 4. `package-wiring-validation-skill`
 
-Each section skill is responsible only for its own section-owned authoring model.
+Each section skill family or single section skill is responsible only for its own
+section-owned authoring model.
 
 Current approved detail level:
 
@@ -198,8 +205,15 @@ Current approved detail level:
 - `scene-phase-authoring-skill` is now defined as a field-orchestration skill
 - it protects the section narrative spine while returning structured scene and phase patches
 - it does not generate `phaseId` or `phaseIndex`
-- `control-modules` now starts from a section-local runtime adaptation document
-- that document exists because this section touches several control chains and should not bloat the global bridge
+- `control-modules` is now defined as a section-local skill family, not one oversized skill
+- it currently splits into:
+  - `light-cone-customization-skill`
+  - `director-note-additions-skill`
+  - `auditor-question-set-skill`
+  - `beat-volume-definition-skill`
+  - `router-profile-skill`
+- this split exists because the five modules have different runtime targets and different edit modes
+- this section also depends on the bridge's `hybrid multi-target` persistence mode
 
 ### 6.2 Required Cross-Cutting Skills
 

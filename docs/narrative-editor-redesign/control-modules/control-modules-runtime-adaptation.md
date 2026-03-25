@@ -102,8 +102,9 @@ This section should **not** be treated as a simple direct-runtime section.
 
 Recommended V1 decision:
 
-- treat `control-modules` as the first clearly section-owned control source
-- let deterministic code project or apply that source into the runtime-facing consumers
+- treat `control-modules` as the first clearly hybrid multi-target section
+- let deterministic code route each approved module group to its correct runtime-facing consumer
+- keep one shared page save / coordinator save path, but allow section-internal fan-out by module target
 
 Reason:
 
@@ -117,6 +118,12 @@ This section therefore differs from:
 - `scene-phase-authoring`
 
 which can stay closer to current runtime files.
+
+Concretely, the current direction is:
+
+- `router profile` edits can continue to write the existing `router-lexicon.yaml`
+- `auditor question set` edits can continue to write the existing `audit-questions.yaml`
+- `light cone`, `director note additions`, and `beat volume definitions` should use a section-owned control source and deterministic downstream application
 
 ## 6. Module-By-Module Adaptation Impact
 
@@ -322,7 +329,9 @@ Current recommendation:
 
 Likely bridge consequence:
 
-- this section will need a section-owned source plus deterministic downstream application to multiple runtime consumers
+- this section will use the bridge's hybrid multi-target mode
+- one section save may update more than one approved target
+- the bridge must remain the only place where that fan-out is applied
 
 That is a real extension in usage, but not a reason to collapse this document
 back into the bridge.
@@ -340,15 +349,42 @@ rules:
 6. do not assume the bridge document alone is enough to implement this section
 7. do inspect nearby runtime consumers beyond the files named in this document
 
+## 10. Recommended Skill Decomposition
+
+This section should not be implemented as one oversized skill.
+
+Approved direction:
+
+- one section-local skill family
+- five narrow module skills
+
+The approved module skill split is:
+
+1. `light-cone-customization-skill`
+2. `director-note-additions-skill`
+3. `auditor-question-set-skill`
+4. `beat-volume-definition-skill`
+5. `router-profile-skill`
+
+Reason:
+
+- these five modules have different runtime targets
+- they also have different authoring boundaries
+- one large skill would make it too easy to blur replacement, additive, and structured-edit modes
+
+The page may still feel unified to the author, but coding agents should treat the
+skill layer as five bounded workers rather than one all-knowing control writer.
+
 ## 10. Recommended Next Documents
 
 After this document, the recommended order remains:
 
 1. `control-modules-page.md`
 2. `control-modules-skill.md`
+3. the five module skill docs
 
 Reason:
 
 - runtime adaptation should define the system boundary first
 - page should then define the author-facing surface
-- skill should finally define how coordinator interprets that surface
+- skill family and module skill docs should finally define how coordinator interprets that surface

@@ -95,11 +95,19 @@
 
 - [control-modules/control-modules-runtime-adaptation.md](control-modules/control-modules-runtime-adaptation.md)
 - [control-modules/control-modules-page.md](control-modules/control-modules-page.md)
+- [control-modules/control-modules-skill.md](control-modules/control-modules-skill.md)
+- [control-modules/light-cone-customization-skill.md](control-modules/light-cone-customization-skill.md)
+- [control-modules/director-note-additions-skill.md](control-modules/director-note-additions-skill.md)
+- [control-modules/auditor-question-set-skill.md](control-modules/auditor-question-set-skill.md)
+- [control-modules/beat-volume-definition-skill.md](control-modules/beat-volume-definition-skill.md)
+- [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
 - [control-modules/control-modules UIUX 草图.png](control-modules/control-modules%20UIUX%20%E8%8D%89%E5%9B%BE.png)
 
 当前结论：
 
 - 该 section 现在已经有 runtime adaptation 文档和 page 文档
+- 该 section 的 skill 层已拆成五个窄边界的小 skill，而不是一个大 skill
+- 该 section 通过 bridge 的 `hybrid multi-target` 模式接入现有系统
 - 页面结构参考 Prompt Assembler 的骨架，但不照抄
 - 左侧是 `Layer 3 / Layer 4 / Parallel Audit` 的积木结构
 - 右上是当前模块详细编辑区，右下是 coordinator

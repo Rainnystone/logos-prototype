@@ -59,7 +59,7 @@
 
 ### A2. 收敛 skill inventory
 
-- [x] 锁定 4 个 section skills
+- [x] 锁定 4 个 section skills / skill families
 - [x] 锁定 `cross-section-reconciler-skill`
 - [x] 锁定 `legacy-migration-skill`
 - [ ] 为每个 skill 写出职责边界与禁区
@@ -74,7 +74,12 @@
 - [x] 锁定 `gradientType` 与 `routerHint` 作为选择项进入 skill，而不是自由文本
 - [x] 锁定 `phaseId` 与 `phaseIndex` 继续由代码生成
 - [x] 锁定 `故事结构` 页的 `routerHint` 选项来自有效 router-profile 集合，而不是页面本地定义
-- [ ] 为 `control-modules-skill` 写出职责边界与禁区
+- [x] 为 `control-modules` skill family 写出总边界与调用方式
+- [x] 为 `light-cone-customization-skill` 写出职责边界与禁区
+- [x] 为 `director-note-additions-skill` 写出职责边界与禁区
+- [x] 为 `auditor-question-set-skill` 写出职责边界与禁区
+- [x] 为 `beat-volume-definition-skill` 写出职责边界与禁区
+- [x] 为 `router-profile-skill` 写出职责边界与禁区
 
 ### A3. 收敛验证与写回边界
 
@@ -87,11 +92,13 @@
 - [x] 明确现有 webapp 仍缺 server-side section write entry
 - [x] 明确 repair 应优先修输入，不应为了过校验去改系统规则
 - [x] 细化 direct-runtime section 与 projected section 的适用边界
+- [x] 为 bridge 补充 `hybrid multi-target section` 模式
 - [x] 锁定 `worldbase-cast` v1 先直接写 `world-base.yaml`
 - [ ] 明确 page save / coordinator save 共享的服务端入口协议
 - [x] 为 `控制模块 (Control Modules)` 建立 section-local runtime adaptation 文档
 - [x] 锁定这份文档不并入全局 `bridge`
 - [x] 明确 `Prompt Assembler` 对 `控制模块` 页面设计与运行接线的影响
+- [x] 锁定 `控制模块` 通过 hybrid multi-target 模式接入 bridge
 
 ### A4. 建立 redesign 账本与阅读路径
 
@@ -112,7 +119,8 @@
 - [x] 将 `worldbase-cast-skill` 细化到可执行的 V1 规则
 - [x] 将第一组 section 文档迁入独立文件夹
 - [x] 为 `scene-phase-authoring-skill` 写 contract 草案
-- [ ] 为 `control-modules-skill` 写 contract 草案
+- [x] 为 `control-modules` skill family 写 contract 草案
+- [x] 为五个 `control-modules` 小 skill 写 contract 草案
 - [ ] 为 `package-wiring-validation-skill` 写 contract 草案
 - [ ] 为 `cross-section-reconciler-skill` 写 contract 草案
 - [ ] 为 `legacy-migration-skill` 写 contract 草案
@@ -162,6 +170,7 @@
 - [x] 锁定左侧 `Layer 3 / Layer 4 / Parallel Audit` 的积木结构
 - [x] 锁定右上当前模块编辑、右下 coordinator 的布局
 - [x] 锁定本页参考 Prompt Assembler 骨架，但不把 Auditor 伪装成 prompt layer
+- [x] 为控制模块页补充 skill family 与五个小 skill 文档
 - [ ] 重新评估组装与校验页
 
 ## 暂缓项

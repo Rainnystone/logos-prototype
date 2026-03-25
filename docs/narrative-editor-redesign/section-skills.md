@@ -29,15 +29,25 @@ Current active detailed section skill documents are:
 
 1. [worldbase-and-cast/worldbase-cast-skill.md](worldbase-and-cast/worldbase-cast-skill.md)
 2. [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
+3. [control-modules/control-modules-skill.md](control-modules/control-modules-skill.md)
+4. [control-modules/light-cone-customization-skill.md](control-modules/light-cone-customization-skill.md)
+5. [control-modules/director-note-additions-skill.md](control-modules/director-note-additions-skill.md)
+6. [control-modules/auditor-question-set-skill.md](control-modules/auditor-question-set-skill.md)
+7. [control-modules/beat-volume-definition-skill.md](control-modules/beat-volume-definition-skill.md)
+8. [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
+
+Important current rule:
+
+- `control-modules` is now a section-local skill family
+- coding agents should not collapse it back into one oversized control skill
 
 ## Pending Detailed Section Skill Docs
 
 These still need dedicated active docs:
 
-1. `control-modules-skill` for `控制模块 (Control Modules)`
-2. `package-wiring-validation-skill` for `组装与校验 (Package Wiring & Validation)`
-3. `cross-section-reconciler-skill`
-4. `legacy-migration-skill`
+1. `package-wiring-validation-skill` for `组装与校验 (Package Wiring & Validation)`
+2. `cross-section-reconciler-skill`
+3. `legacy-migration-skill`
 
 ## Coding Agent Rule
 

@@ -39,6 +39,12 @@ Current active follow-up documents:
 - `scene-phase-authoring/scene-phase-authoring-skill.md`
 - `control-modules/control-modules-runtime-adaptation.md`
 - `control-modules/control-modules-page.md`
+- `control-modules/control-modules-skill.md`
+- `control-modules/light-cone-customization-skill.md`
+- `control-modules/director-note-additions-skill.md`
+- `control-modules/auditor-question-set-skill.md`
+- `control-modules/beat-volume-definition-skill.md`
+- `control-modules/router-profile-skill.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.

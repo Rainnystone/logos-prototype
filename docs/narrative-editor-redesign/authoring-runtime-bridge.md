@@ -104,9 +104,9 @@ As of now:
 So the bridge is not only a design idea.
 It also defines required adaptation work for the current webapp architecture.
 
-## 5. Two Supported Persistence Patterns
+## 5. Three Supported Persistence Patterns
 
-The bridge should support two section persistence patterns.
+The bridge should support three section persistence patterns.
 
 This is the most important conclusion carried forward from the archive and
 adapted for the new coordinator-first architecture.
@@ -153,7 +153,27 @@ This mode means:
 - runtime files remain engine inputs until the runtime contract evolves
 - projection is mandatory before reload
 
-### 5.3 Why Both Modes Must Exist
+### 5.3 Hybrid Multi-Target Section
+
+Definition:
+
+- the section owns several module groups with different runtime destinations
+- some module groups can write existing runtime files directly
+- some module groups need a section-owned source file and deterministic downstream application
+- one page save still enters through one shared bridge, but the bridge fans out by approved module target
+
+Typical fit:
+
+- `control-modules`
+
+This mode means:
+
+- the section still has one authoring surface
+- the bridge applies module-scoped persistence rules internally
+- coding agents must not let one skill write unrelated target files directly
+- reload still remains mandatory after all affected targets are updated
+
+### 5.4 Why All Three Modes Must Exist
 
 If the redesign forces every section into direct-runtime mode:
 
@@ -165,9 +185,14 @@ If the redesign forces every section into projected mode:
 - the system becomes heavier than necessary
 - some sections will gain needless duplication
 
-So the bridge should intentionally support both modes.
+If the redesign ignores hybrid multi-target sections:
 
-### 5.4 Approved V1 Decision For `worldbase-cast`
+- sections like `control-modules` will either become artificially heavy
+- or their skills will start leaking file-write logic
+
+So the bridge should intentionally support all three modes.
+
+### 5.5 Approved V1 Decision For `worldbase-cast`
 
 For the current redesign phase, `worldbase-cast` should use direct-runtime mode,
 not projected mode.
@@ -199,9 +224,10 @@ The approved lifecycle is:
 5. Apply patch to section-owned state
 6. If section is direct-runtime, render runtime file updates deterministically
 7. If section is projected, regenerate runtime-compatible outputs
-8. Atomically write all affected files
-9. Reload `StoryPackage`
-10. Return new section state and runtime impact summary
+8. If section is hybrid multi-target, apply each approved module group to its mapped targets deterministically
+9. Atomically write all affected files
+10. Reload `StoryPackage`
+11. Return new section state and runtime impact summary
 
 ## 6.1 Why Current Webapp Adaptation Is Required
 

@@ -39,7 +39,7 @@ Its responsibilities are:
 
 - detect the target section or sections
 - build the minimum context pack needed for interpretation
-- invoke one section skill or one cross-section skill
+- invoke one section skill, one section-local micro-skill, or one cross-section skill
 - collect a structured patch candidate
 - send that candidate into deterministic validation
 - coordinate repair retries when validation fails
@@ -110,7 +110,7 @@ The approved coordinator lifecycle is:
 1. Receive invocation
 2. Detect scope
 3. Build context pack
-4. Invoke section skill or cross-section skill
+4. Invoke section skill, section-local micro-skill, or cross-section skill
 5. Receive structured patch candidate
 6. Run deterministic validation
 7. If valid, persist and reload
@@ -217,6 +217,24 @@ type CoordinatorContextPack = {
   runtimeImpactHints: RuntimeImpactHints;
 };
 ```
+
+### 6.4 Section-Local Skill Families
+
+Some sections may expose one matching section skill.
+
+Some sections may expose one section surface but several bounded micro-skills
+under that surface.
+
+Current approved example:
+
+- `control-modules`
+
+In that case:
+
+- the coordinator still routes by section first
+- the application layer or section-local dispatcher chooses the matching module skill
+- each micro-skill remains module-scoped
+- micro-skills must not silently edit sibling modules
 
 The point of this pack is:
 
