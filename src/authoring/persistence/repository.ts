@@ -16,6 +16,10 @@ function resolveWorldBasePath(packageName: string): string {
   return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export async function ensureStoryPackageExists(packageName: string): Promise<string> {
   const packageRoot = resolveStoryPackageRoot(packageName);
 
@@ -29,13 +33,26 @@ export async function ensureStoryPackageExists(packageName: string): Promise<str
 }
 
 function getNextMainCharacters(request: SaveRequest): string | null {
-  const uiFieldValue = request.payload.uiFields?.mainCharacters;
-  if (typeof uiFieldValue === 'string') {
-    return uiFieldValue;
+  const rawPayload = request.payload as unknown;
+  if (!isPlainObject(rawPayload)) {
+    return null;
   }
 
-  const patchCandidate = request.payload.patchCandidates?.find((candidate) => {
-    return candidate.type === 'replace' && candidate.path === 'mainCharacters';
+  if (isPlainObject(rawPayload.uiFields) && typeof rawPayload.uiFields.mainCharacters === 'string') {
+    return rawPayload.uiFields.mainCharacters;
+  }
+
+  const patchCandidates = Array.isArray(rawPayload.patchCandidates) ? rawPayload.patchCandidates : [];
+  const patchCandidate = patchCandidates.find((candidate) => {
+    if (!isPlainObject(candidate)) {
+      return false;
+    }
+
+    return (
+      candidate.type === 'replace' &&
+      candidate.path === 'mainCharacters' &&
+      typeof candidate.value === 'string'
+    );
   });
 
   if (patchCandidate && typeof patchCandidate.value === 'string') {

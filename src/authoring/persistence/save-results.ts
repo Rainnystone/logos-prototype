@@ -38,8 +38,6 @@ export function createSaveAppliedResult(
     kind: 'save_applied',
     reloadedSectionState,
     runtimeImpactSummary: createRuntimeImpactSummary(changedFiles),
-    showLocally: true,
-    showInGlobalDiagnostics: false,
   };
 }
 
@@ -55,8 +53,6 @@ export function createSaveAppliedWithWarningsResult(
     reloadedSectionState,
     runtimeImpactSummary: createRuntimeImpactSummary(changedFiles),
     warnings: [...warnings],
-    showLocally: true,
-    showInGlobalDiagnostics: true,
   };
 }
 
@@ -70,8 +66,6 @@ export function createSaveBlockedResult(
     kind: 'save_blocked',
     blockingIssues: [...blockingIssues],
     warnings: [...warnings],
-    showLocally: true,
-    showInGlobalDiagnostics: false,
   };
 }
 
@@ -85,8 +79,6 @@ export function createSaveFailedResult(
     kind: 'save_failed',
     errorMessage,
     warnings: [...warnings],
-    showLocally: true,
-    showInGlobalDiagnostics: true,
   };
 }
 

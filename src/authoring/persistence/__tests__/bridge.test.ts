@@ -144,7 +144,6 @@ describe('saveSectionDraft', () => {
       source: 'page',
       packageName: testPackageName,
       sectionId: 'scene-phase-authoring',
-      moduleScope: 'light-cone',
       payload: {
         uiFields: {
           mainCharacters: 'scene-phase-placeholder',
@@ -155,7 +154,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'moduleScope is only valid for control-modules saves.',
+        'Deterministic write path for "scene-phase-authoring" is not available in Task 1.',
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
@@ -164,6 +163,26 @@ describe('saveSectionDraft', () => {
       npcCharacters: expect.any(String),
       locationPatch: expect.any(String),
     });
+  });
+
+  it('blocks malformed payload shapes without throwing', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-malformed-payload',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        patchCandidates: 'not-an-array' as unknown as readonly never[],
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain('patchCandidates must be an array when provided.');
+    }
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('blocks control-modules saves when moduleScope is missing', async () => {
