@@ -338,6 +338,22 @@ type InfraFailureResult = {
 };
 ```
 
+### 7.5 Relation To Final Page Save State
+
+`CoordinatorResult` is not the same thing as the final page-visible save state.
+
+Approved rule:
+
+- `patch_ready` means the coordinator has produced a candidate that may enter the shared save path
+- the final page-visible result is produced only after the shared server-side persistence entry runs validation, writeback, and reload
+- pages should therefore render a persistence result, not raw patch candidates, as their final submit outcome
+
+This keeps three layers separate:
+
+1. coordinator interpretation
+2. deterministic save handling
+3. page-visible final state
+
 ## 8. Patch Candidate Contract
 
 The coordinator should not emit a full replacement blob unless the section
@@ -597,6 +613,28 @@ Responsibilities:
 - schema validation
 - reference validation
 - section-local consistency checks
+
+### 12.3.1 Shared Server-Side Save Entry
+
+The coordinator should not call repository and reload services ad hoc.
+
+Recommended application-level path:
+
+- one shared server-side section-persistence entry
+- the same entry should be used for:
+  - page submit
+  - coordinator-assisted submit
+  - repair submit
+
+The coordinator's job ends at structured patch preparation.
+
+The application-layer save entry then owns:
+
+- validation
+- repository writeback
+- runtime projection when needed
+- round-trip reload
+- final page-visible save result
 
 ### 12.4 `StoryPackageRepository`
 

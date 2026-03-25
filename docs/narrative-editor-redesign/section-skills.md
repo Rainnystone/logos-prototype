@@ -44,14 +44,14 @@ Important current rule:
 
 ## Pending Detailed Section Skill Docs
 
-These still need dedicated active docs:
-
-1. `legacy-migration-skill`
+There are currently no additional active section skill docs pending.
 
 Additional current rule:
 
 - cross-section reconciliation no longer exists as a separate skill
 - it is now part of the coordinator contract
+- `legacy-migration-skill` is not an active redesign skill
+- old sample packages may remain as initial showcase data, but migration and archive management are app-level concerns, not current section-skill work
 
 ## Coding Agent Rule
 

@@ -281,6 +281,44 @@ But regardless of transport, coding agents should preserve one rule:
 
 - page save and coordinator save must converge before repository writeback
 
+### 7.5 Approved Shared Server-Side Entry
+
+The redesign should converge on one shared application entry for section
+persistence.
+
+Recommended shape in substance:
+
+```ts
+type SectionPersistenceRequest = {
+  requestId: string;
+  packageName: string;
+  sectionId: SectionId;
+  source: 'page' | 'coordinator' | 'repair';
+  payload: {
+    uiFields?: Record<string, unknown>;
+    patchCandidates?: SectionPatchCandidate[];
+  };
+  moduleScope?: string;
+  dryRun?: boolean;
+};
+```
+
+Recommended rule set:
+
+- page submit and coordinator-assisted submit both call the same server-side entry
+- the entry may accept either page-shaped input or coordinator patch candidates
+- the entry must normalize both into the same bridge path before validation and writeback
+- browser code must never write repo files directly
+- transport choice may vary later, but the persistence contract should stay singular
+
+Recommended naming direction:
+
+- `persistSectionChange`
+- or another equally narrow application-level name that clearly means:
+  - one section-scoped save request
+  - one shared server-side path
+  - one deterministic bridge behind it
+
 ## 8. Shared Bridge Interfaces
 
 The bridge should expose narrow deterministic interfaces.
@@ -319,6 +357,51 @@ Do not let coordinator code reach into the filesystem directly.
 
 Do not split page-save and coordinator-save into separate persistence stacks.
 
+### 8.3.2 Approved Section Writeback Boundaries
+
+The repository layer should preserve explicit write ownership by section.
+
+Approved V1 boundaries:
+
+- `worldbase-cast`
+  - may write:
+    - `world-base.yaml`
+  - must not write:
+    - `scene.yaml`
+    - `phase-plans.yaml`
+    - `router-lexicon.yaml`
+    - `audit-questions.yaml`
+
+- `scene-phase-authoring`
+  - may write:
+    - `scene.yaml`
+    - `phase-plans.yaml`
+  - must not write:
+    - `world-base.yaml`
+    - `router-lexicon.yaml`
+    - `audit-questions.yaml`
+
+- `control-modules`
+  - may write:
+    - `router-lexicon.yaml`
+    - `audit-questions.yaml`
+    - approved section-owned control-source files for:
+      - light cone customization
+      - director note additions
+      - beat volume definitions
+  - must not directly rewrite:
+    - `scene.yaml`
+    - `phase-plans.yaml`
+    - `world-base.yaml`
+
+- `package-wiring-validation`
+  - does not own authoring writes
+  - may trigger re-check or refresh flows only
+
+Important rule:
+
+- if a future coding agent finds a need to cross these boundaries, that should be treated as a design decision, not as an implementation shortcut
+
 ### 8.4 `RuntimeProjectionService`
 
 Responsibilities:
@@ -347,6 +430,72 @@ A write should be considered successful only when all of the following are true:
 5. the application received the reloaded state
 
 Anything less is not a successful save.
+
+### 9.1 Saved-State Result Rule
+
+For the current redesign, a successful submit has one more required effect:
+
+- the application should treat the reloaded post-write state as the new default authoring state for that package
+- initial sample package content should only appear as first-use showcase content when no newer successful saved state exists
+- a successful submit should therefore change what the next package open shows by default
+- unsaved draft auto-retention is out of scope for the current redesign and should not be implied by this rule
+
+### 9.2 Round-Trip Reload Result Protocol
+
+The bridge should return a stable post-save result envelope after every save
+attempt.
+
+Recommended result families:
+
+```ts
+type SectionPersistenceResult =
+  | SaveAppliedResult
+  | SaveAppliedWithWarningsResult
+  | SaveBlockedResult
+  | SaveFailedResult;
+```
+
+Recommended substance:
+
+- `save_applied`
+  - write succeeded
+  - reload succeeded
+  - current section receives reloaded state
+  - package default saved state is updated
+
+- `save_applied_with_warnings`
+  - write succeeded
+  - reload succeeded
+  - current section receives reloaded state
+  - unresolved non-local issues or warnings remain
+  - result may point to `package-wiring-validation`
+
+- `save_blocked`
+  - no write happened
+  - blocking validation issues or human-decision issues remain
+  - current page should keep unsaved state visible
+
+- `save_failed`
+  - deterministic infrastructure failed during write or reload
+  - current page should preserve the last successful saved state as the safe fallback
+
+Minimum required result fields in substance:
+
+- `requestId`
+- `packageName`
+- `sectionId`
+- `status`
+- `reloadedSectionState` when save succeeded
+- `runtimeImpactSummary`
+- `blockingIssues`
+- `warnings`
+- `nextSuggestedAction`
+- `showInGlobalDiagnostics`
+
+Important rule:
+
+- there should be no "success" result that lacks a successful reload
+- there should be no "save blocked" result that silently wrote partial files
 
 ## 10. Validation Layers Inside The Bridge
 
@@ -407,6 +556,47 @@ This distinction matters because:
 
 - coordinator failures go back into skill or human decision flow
 - bridge failures stay in deterministic infrastructure handling
+
+### 11.4 UI Result Consumption Rule
+
+The UI should not consume raw coordinator patch results as if they were final
+save state.
+
+Approved rule:
+
+- the coordinator may return `patch_ready`
+- the shared server-side entry then runs validation, writeback, and reload
+- the UI should render the resulting `SectionPersistenceResult`, not the raw patch candidate
+
+Recommended V1 page-level view states:
+
+- `ready_to_submit`
+  - coordinator or page has produced a valid local candidate
+  - no save has happened yet
+
+- `local_blocked`
+  - current page has blocking issues
+  - stay on current page and explain locally
+
+- `saved`
+  - current page refreshes from `reloadedSectionState`
+  - clear unsaved markers
+  - show success summary in the lower-right coordinator block
+
+- `saved_with_global_warnings`
+  - current page refreshes from `reloadedSectionState`
+  - local save succeeded
+  - also surface a concise pointer to the global diagnostics page
+
+- `infra_failure`
+  - save did not complete safely
+  - keep or restore the last successful saved state
+  - show deterministic failure summary locally
+
+Important boundary:
+
+- routine current-page issues should remain in the current page's lower-right coordinator area
+- only unresolved cross-section or package-level issues should be promoted to `package-wiring-validation`
 
 ## 12. File Ownership Model
 

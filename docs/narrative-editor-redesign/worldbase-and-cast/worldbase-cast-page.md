@@ -143,9 +143,22 @@ Recommended placement:
 
 V1 recommendation:
 
-- place the action row below the technical assist block or as a sticky footer in the right column
+- place the action row in the right-side column as a stable page-level action bar
+- keep it between the selected editor and the coordinator block, or pin it as a sticky footer in the same right column
 
 Do not hide primary actions inside the left-side character rails.
+
+Approved behavior:
+
+- `提交` applies only to this section page
+- it sends the current page's unsaved changes into the existing save / validate / reload path
+- `重置` applies only to this section page
+- it discards only this page's unsaved changes and returns to the latest successful saved state, or the currently loaded state if no newer save exists
+
+Important boundary:
+
+- these actions do not start the runtime loop
+- to observe runtime effects, the user returns to the existing workbench flow and starts from the opening-hook / `Start Round` step
 
 ## 5. Approved Character Browsing Pattern
 

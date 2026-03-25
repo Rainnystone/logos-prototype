@@ -156,6 +156,24 @@ Visual references:
 
 不要只依赖自动保存，也不要把这些动作藏进 coordinator 区。
 
+Approved placement:
+
+- use a stable page-level action bar in the right-side column
+- align it with the current module editor and the lower-right coordinator block
+- do not scatter these actions across the left-side module structure
+
+Approved behavior:
+
+- `提交` applies only to this section page
+- it sends the current page's unsaved changes into the existing save / validate / reload path
+- `重置` applies only to this section page
+- it discards only this page's unsaved changes and returns to the latest successful saved state, or the currently loaded state if no newer save exists
+
+Important boundary:
+
+- these actions do not start the runtime loop
+- to observe runtime effects, the user returns to the existing workbench flow and starts from the opening-hook / `Start Round` step
+
 ## 6. Approved Visual Direction
 
 视觉方向继续沿用前两个 section page：

@@ -19,11 +19,14 @@
 
 - [x] redesign 当前切换为 `coordinator-first`
 - [x] active coordinator 名称固定为 `coordinator`
-- [x] 架构采用 `1 coordinator + 4 section skills / skill families + legacy-migration-skill`
+- [x] 架构采用 `1 coordinator + 4 section skills / skill families`
 - [x] 跨 section 协调已降级为 `coordinator` 的内建规则，而不是独立 skill
 - [x] `authoring runtime bridge` 明确定义为 deterministic 基础设施，而不是 skill
 - [x] 文件写回、校验、映射、reload 留在 deterministic code
 - [x] coordinator 默认不改作者原意，只做结构化搬运与最小修复
+- [x] `legacy-migration-skill` 不再作为 active redesign skill 保留
+- [x] 作者一旦提交成功，之后默认看到的是最新保存状态，而不是反复回到初始示例内容
+- [x] 草稿自动保留不在当前 redesign 范围，已移入根目录 `roadmap.md`
 - [x] 当前旧的 page-first 文档与 page-specific plans 已迁入 `archive/`
 - [x] active 主索引已切换为 [master-record.md](master-record.md)
 - [x] section active 文档采用“每个 section 一个独立文件夹”的组织方式
@@ -61,9 +64,9 @@
 ### A2. 收敛 skill inventory
 
 - [x] 锁定 4 个 section skills / skill families
-- [x] 锁定 `legacy-migration-skill`
+- [x] 取消 `legacy-migration-skill` 作为 active redesign skill
 - [x] 锁定跨 section 协调作为 `coordinator` 的内建规则
-- [ ] 为每个 skill 写出职责边界与禁区
+- [x] 为每个 skill 写出职责边界与禁区
 - [x] 为 `worldbase-cast-skill` 写出职责边界与禁区
 - [x] 说明 `worldbase-cast-skill` 与 `WorldBase & Cast` page 的关系
 - [x] 锁定 `worldbase-cast-skill` 的固定目标映射与块顺序
@@ -96,7 +99,7 @@
 - [x] 细化 direct-runtime section 与 projected section 的适用边界
 - [x] 为 bridge 补充 `hybrid multi-target section` 模式
 - [x] 锁定 `worldbase-cast` v1 先直接写 `world-base.yaml`
-- [ ] 明确 page save / coordinator save 共享的服务端入口协议
+- [x] 明确 page save / coordinator save 共享的服务端入口协议
 - [x] 为 `控制模块 (Control Modules)` 建立 section-local runtime adaptation 文档
 - [x] 锁定这份文档不并入全局 `bridge`
 - [x] 明确 `Prompt Assembler` 对 `控制模块` 页面设计与运行接线的影响
@@ -125,18 +128,18 @@
 - [x] 为 `control-modules` skill family 写 contract 草案
 - [x] 为五个 `control-modules` 小 skill 写 contract 草案
 - [x] 为 `package-wiring-validation-skill` 写 contract 草案
-- [ ] 为 `legacy-migration-skill` 写 contract 草案
 
 ### Stage C：validation / writeback 设计
 
 - [x] 创建 `authoring-runtime-bridge.md`
 - [x] 在 active 文档中记录当前 webapp 写入口缺口
-- [ ] 细化 repository 写回边界
+- [x] 细化 repository 写回边界
 - [x] 细化 `worldbase-cast` 的轻量 runtime 渲染策略
-- [ ] 细化 round-trip reload 结果协议
-- [ ] 细化 UI 如何接收 coordinator 结果
-- [ ] 细化 coordinator 可调用的 server-side write entry 形式
+- [x] 细化 round-trip reload 结果协议
+- [x] 细化 UI 如何接收 coordinator 结果
+- [x] 细化 coordinator 可调用的 server-side write entry 形式
 - [x] 为 `控制模块` 写出 section-local runtime adaptation 边界
+- [x] 锁定成功提交后默认恢复最近一次成功保存状态，而不是反复回到初始示例内容
 
 ### Stage D：重新回到 section pages
 
@@ -145,7 +148,7 @@
   - `故事结构 (Scene & Phase Authoring)`
   - `控制模块 (Control Modules)`
   - `组装与校验 (Package Wiring & Validation)`
-- [ ] 在 coordinator 架构稳定后，重新定义 page surfaces
+- [x] 在 coordinator 架构稳定后，重新定义 page surfaces
 - [x] 重新评估世界与角色页
 - [x] 产出 `worldbase-and-cast/worldbase-cast-page.md`
 - [x] 产出 `worldbase-and-cast/worldbase-cast-skill.md`
@@ -154,6 +157,11 @@
 - [x] 锁定主角单卡、核心角色横向卡带、反派横向卡带
 - [x] 锁定左侧人物缩略卡只显示“姓名 / 性别 / 性格”
 - [x] 锁定页面需要 `提交` 与 `重置` 动作
+- [x] 锁定三大编辑页统一使用页面级 `提交 / 重置` 动作条
+- [x] 锁定 `提交 / 重置` 只作用于当前页面
+- [x] 锁定 `提交` 进入保存 / 校验 / 回读通路，而不是直接启动 runtime
+- [x] 锁定 `重置` 只撤回当前页未保存改动，恢复到最近成功保存状态或当前加载状态
+- [x] 锁定真正运行仍回到现有 opening hook / `Start Round` 流程
 - [x] 重新评估故事结构页
 - [x] 产出 `scene-phase-authoring/scene-phase-authoring-page.md`
 - [x] 锁定 `故事结构 (Scene & Phase Authoring)` 的页面骨架

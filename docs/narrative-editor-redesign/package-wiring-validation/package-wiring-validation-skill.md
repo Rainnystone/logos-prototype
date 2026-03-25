@@ -78,6 +78,9 @@ The skill should expect inputs related to these dashboard surfaces:
 It should also be able to consume:
 
 - backend round-trip reload result
+- shared section-persistence results, especially:
+  - `save_applied_with_warnings`
+  - `save_failed`
 - per-section coordinator result summaries
 - bridge status summaries
 - validation repair payloads that remain unresolved after local handling

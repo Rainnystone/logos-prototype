@@ -111,7 +111,6 @@ The approved redesign shape is:
 - `1` coordinator agent: `coordinator`
 - `4` section skills / skill families
 - `1` built-in cross-section reconciliation policy inside `coordinator`
-- `1` legacy migration skill
 - `1` deterministic authoring runtime bridge
 - deterministic code-side validation, writeback, and reload
 
@@ -234,7 +233,6 @@ Current approved detail level:
 The approved cross-cutting additions are:
 
 1. coordinator-owned cross-section reconciliation policy
-2. `legacy-migration-skill`
 
 Approved rule:
 
@@ -242,6 +240,8 @@ Approved rule:
 - it should remain a narrow coordinator-owned policy
 - it may split one explicit multi-section request into several section-scoped tasks
 - it must escalate instead of guessing when multiple interpretations are possible
+- old sample packages are not an active migration track in this redesign
+- archive handling and future package-management actions belong to app-level product work, not to a dedicated active migration skill
 
 ### 6.3 Skill Boundary Rule
 
@@ -311,7 +311,7 @@ Coding agents must treat this as part of the redesign foundation.
 
 The approved request flow is:
 
-`Author Intent` -> `Router Controller` -> `Section Skill or Cross-Section Skill` -> `Structured Patch Candidate` -> `Deterministic Validation` -> `Repair Loop or Persist` -> `Writeback` -> `Reload Aggregate` -> `UI Result`
+`Author Intent` -> `coordinator` -> `Section Skill or Section-Local Micro-Skill` -> `Structured Patch Candidate` -> `Deterministic Validation` -> `Repair Loop or Persist` -> `Writeback` -> `Reload Aggregate` -> `UI Result`
 
 ### 8.1 Meaning Of This Flow
 
@@ -423,6 +423,34 @@ They are now expected to become surfaces that:
 - display validation failures
 - reflect the saved state after reload
 
+### 11.1 Page-Level Actions
+
+Current approved rule for section pages:
+
+- `提交` and `重置` are page-level actions
+- they apply only to the current section page
+- they do not directly start the runtime loop
+- they should live in a stable page-level action bar rather than inside the coordinator block
+
+Approved behavior:
+
+- `提交` sends the current page's unsaved changes into the save / validate / reload path
+- `重置` discards only the current page's unsaved changes and returns to the latest successful saved state, or the currently loaded state if no newer save exists
+
+Approved relation to the existing workbench:
+
+- runtime execution still starts from the existing opening-hook / `Start Round` flow
+- saving section-page edits and starting runtime execution are separate actions
+
+### 11.2 Saved-State Priority
+
+Current approved rule for authoring state:
+
+- once a section-page submit succeeds, the newly saved result becomes the default state shown the next time that package is opened
+- initial sample content should only serve as first-use showcase content
+- initial sample content must not repeatedly override a human author's latest successful saved state
+- draft auto-retention without submit is not part of the current redesign scope
+
 ## 12. Relation To Existing App Architecture
 
 The coordinator-first redesign should fit the already approved local file access direction:
@@ -446,8 +474,42 @@ The current app still needs explicit adaptation work in this area:
 - add server-side section persistence entrypoints
 - accept page saves and coordinator patch results through the same deterministic bridge
 - return reloaded package or section state after persistence
+- keep the post-submit reloaded state as the next default authoring state for that package
 
-### 12.1 Current `world-base.yaml` Reality
+### 12.1 Shared Save Entry Rule
+
+The redesign now assumes one shared server-side save path for:
+
+- page submit
+- coordinator-assisted submit
+- repair submit
+
+This is an application-side entry inside the editor webapp.
+
+It is not:
+
+- a separate LLM-facing path
+- a runtime-generation API
+- a second save stack owned only by coordinator
+
+### 12.2 Final UI Result Rule
+
+The UI should not treat raw coordinator patch output as the final save result.
+
+The final user-visible result should be produced only after:
+
+1. validation
+2. writeback
+3. reload
+
+That result should tell the current page whether the submit:
+
+- succeeded
+- succeeded with remaining global warnings
+- was blocked before write
+- failed during write or reload
+
+### 12.3 Current `world-base.yaml` Reality
 
 The current runtime reads [`src/story-packages/sample-scene/world-base.yaml`](../../src/story-packages/sample-scene/world-base.yaml)
 coarsely, not as deeply structured per-character data.
@@ -459,7 +521,7 @@ For the current implementation phase, this matters a lot:
 - the intended write target in v1 remains `world-base.yaml`
 - the coordinator still should not freely write that file; deterministic bridge formatting remains required
 
-### 12.2 Likely Existing Code Areas The Bridge Will Touch
+### 12.4 Likely Existing Code Areas The Bridge Will Touch
 
 Based on the current codebase, coding agents should expect the bridge-related
 work to touch more than one layer of the existing webapp.
@@ -479,7 +541,7 @@ Likely new code areas include:
 - repository and rendering/projection code under `src/server/` or another clearly bounded server-side location
 - section-owned authoring schemas and tests under `src/types/` and `src/story-packages/`
 
-### 12.3 Coding Agent Search Rule
+### 12.5 Coding Agent Search Rule
 
 The list above is a starting map, not an exhaustive file lock.
 

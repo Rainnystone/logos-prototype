@@ -280,11 +280,24 @@ This page needs clear page-level actions:
 
 Recommended placement:
 
-- attached to the left editing surface near the phase rail footer
-- or as a stable action row aligned with the main editing area
+- in the right-side column as a stable page-level action bar
+- aligned with the selected phase editor and the lower-right coordinator block
+- easy to find without digging into any single phase card or left-side rail area
 
 They should remain easy to find and should not be buried inside a single phase
 card.
+
+Approved behavior:
+
+- `提交` applies only to this section page
+- it sends the current page's unsaved changes into the existing save / validate / reload path
+- `重置` applies only to this section page
+- it discards only this page's unsaved changes and returns to the latest successful saved state, or the currently loaded state if no newer save exists
+
+Important boundary:
+
+- these actions do not start the runtime loop
+- to observe runtime effects, the user returns to the existing workbench flow and starts from the opening-hook / `Start Round` step
 
 ## 5. Approved Summary Card Pattern
 
