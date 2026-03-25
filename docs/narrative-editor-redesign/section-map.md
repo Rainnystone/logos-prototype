@@ -66,11 +66,13 @@
 
 作用：
 
-- 承载 `故事结构 (Scene & Phase Authoring)` 这一页的 active 文档
+- 承载 `故事结构 (Scene & Phase Authoring)` 这一页和对应 skill 的 active 文档
 
 当前文件：
 
 - [scene-phase-authoring/scene-phase-authoring-page.md](scene-phase-authoring/scene-phase-authoring-page.md)
+- [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
+- [scene-phase-authoring/scene-phase UIUX参考图.png](scene-phase-authoring/scene-phase%20UIUX%E5%8F%82%E8%80%83%E5%9B%BE.png)
 
 当前结论：
 
@@ -80,6 +82,8 @@
 - 右下是 coordinator
 - phase 的梯度等强相关控制项内嵌在右上，而不是整页跳去控制模块
 - V1 保持 4 beat，不开放自定义 beat 数
+- `gradientType` 与 `routerHint` 都是选择项，而不是自由文本
+- `phaseId` 与 `phaseIndex` 继续由代码生成
 
 ## 推荐阅读顺序
 

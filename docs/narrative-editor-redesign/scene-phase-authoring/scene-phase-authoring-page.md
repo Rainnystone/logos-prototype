@@ -78,11 +78,15 @@ this page.
 
 Approved rule:
 
-- `gradientType` is selected from the approved gradient options already supported by runtime
-- `routerHint` is selected from the currently loaded route names in [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
+- `gradientType` is selected from the runtime-approved gradient value set
+- `routerHint` is selected from the active story package's currently loaded route names, for example from [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
 
-That means the upper-right control strip should use explicit pickers, chips,
-dropdowns, segmented controls, or other click-select patterns.
+That means:
+
+- `routerHint` should use a dropdown menu backed by the currently loaded route list
+- `gradientType` should use an explicit bounded selector such as dropdown or segmented control
+- `routerHint` is author-selected but code-populated; the author never types arbitrary router text
+- `gradientType` is author-selected but code-bounded; do not hardcode a second competing option list in the page
 
 Do not make the author type arbitrary gradient or router text in V1.
 
@@ -101,6 +105,16 @@ Approved ownership:
 
 Do not use the coordinator for mechanical ID generation.
 
+Additional stability rules:
+
+- `phaseId` is code-owned
+- generate `phaseId` once when a phase is created
+- persist that `phaseId` with the phase entry
+- do not regenerate `phaseId` on rename, reorder, or normal text edits
+- `phaseIndex` is code-owned and derived from current phase order
+- recompute `phaseIndex` whenever phases are added, removed, or reordered
+- do not treat either field as an author-editable input
+
 ### 3.5 Beat Count Rule In V1
 
 Although future versions may expose custom beat counts, this page should treat
@@ -111,6 +125,10 @@ Approved V1 behavior:
 - keep the current 4-beat assumption visible where helpful
 - do not expose beat count as a user-editable field yet
 - do not block future expansion in the layout
+- `beatCount` remains code-owned and fixed at `4` in V1
+- the page may show a read-only beat count state
+- neither the author nor the coordinator sets `beatCount` in V1
+- any beat labels or beat slots shown in the page should be derived from that fixed count
 
 ### 3.6 Narrative Spine Rule
 
@@ -218,9 +236,10 @@ The control strip contains:
 
 For V1:
 
-- gradient type is a click-select control from approved gradient values
-- router hint is a click-select control backed by the currently loaded route list
+- gradient type is a bounded selector from approved gradient values
+- router hint is a dropdown backed by the active story package's currently loaded route list
 - neither field should appear as a freeform textarea or arbitrary text input
+- if a stored router value is no longer in the loaded route list, show it as stale or invalid and require reselection
 
 This is the approved place to expose phase-local control choices without forcing
 the user to jump to the separate `控制模块 (Control Modules)` page.
@@ -264,6 +283,10 @@ Each phase card should show:
 - a short note excerpt
 
 The note excerpt should display real content, not only a status dot.
+
+The summary card uses display-only snippets derived from existing phase fields.
+
+It does not introduce extra stored author fields for summaries or excerpts.
 
 The horizontal slider is a required part of this interaction pattern.
 
@@ -392,6 +415,10 @@ When building this page, coding agents should follow these rules:
 12. do not make `gradientType` a free text field
 13. do not make `routerHint` a free text field
 14. do not present scene start, main axis, phase goals, and end line as unrelated inputs
+15. do not regenerate `phaseId` on rename, reorder, or normal edits
+16. do recompute `phaseIndex` from current order after add/remove/reorder
+17. do treat `beatCount` as code-owned fixed `4` in V1
+18. do treat phase-card summaries as display-only derived snippets
 
 ## 11. Pending Pairing Note
 

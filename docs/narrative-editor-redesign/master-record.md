@@ -34,6 +34,7 @@ Current active redesign documents:
 - [worldbase-and-cast/worldbase-cast-page.md](worldbase-and-cast/worldbase-cast-page.md)
 - [worldbase-and-cast/worldbase-cast-skill.md](worldbase-and-cast/worldbase-cast-skill.md)
 - [scene-phase-authoring/scene-phase-authoring-page.md](scene-phase-authoring/scene-phase-authoring-page.md)
+- [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -192,6 +193,9 @@ Current approved detail level:
 - it prepares content for [`world-base.yaml`](../../src/story-packages/sample-scene/world-base.yaml)
 - it does not free-write the file
 - it relies on deterministic bridge formatting for final block rendering
+- `scene-phase-authoring-skill` is now defined as a field-orchestration skill
+- it protects the section narrative spine while returning structured scene and phase patches
+- it does not generate `phaseId` or `phaseIndex`
 
 ### 6.2 Required Cross-Cutting Skills
 

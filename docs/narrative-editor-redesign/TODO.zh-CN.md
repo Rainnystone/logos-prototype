@@ -67,6 +67,12 @@
 - [x] 说明 `worldbase-cast-skill` 与 `WorldBase & Cast` page 的关系
 - [x] 锁定 `worldbase-cast-skill` 的固定目标映射与块顺序
 - [x] 锁定普通配角的轻量切分与统一分段规则
+- [x] 为 `scene-phase-authoring-skill` 写出职责边界与禁区
+- [x] 说明 `scene-phase-authoring-skill` 与 `Scene & Phase Authoring` page 的关系
+- [x] 锁定 `scene-phase-authoring-skill` 的字段编排定位
+- [x] 锁定本 skill 保护 `scene start + mainAxis + phaseGoal + endLine` 的叙事主干
+- [x] 锁定 `gradientType` 与 `routerHint` 作为选择项进入 skill，而不是自由文本
+- [x] 锁定 `phaseId` 与 `phaseIndex` 继续由代码生成
 
 ### A3. 收敛验证与写回边界
 
@@ -99,7 +105,7 @@
 - [x] 为 `worldbase-cast-skill` 写 contract 草案
 - [x] 将 `worldbase-cast-skill` 细化到可执行的 V1 规则
 - [x] 将第一组 section 文档迁入独立文件夹
-- [ ] 为 `scene-phase-authoring-skill` 写 contract 草案
+- [x] 为 `scene-phase-authoring-skill` 写 contract 草案
 - [ ] 为 `control-modules-skill` 写 contract 草案
 - [ ] 为 `package-wiring-validation-skill` 写 contract 草案
 - [ ] 为 `cross-section-reconciler-skill` 写 contract 草案
@@ -141,6 +147,7 @@
 - [x] 锁定本页使用 TailwindCSS，而不是自定义普通 CSS
 - [x] 锁定 `gradientType` 与 `routerHint` 使用点选，不使用自由文本
 - [x] 锁定本页要显式表达“scene 起点 + mainAxis + 每个 phaseGoal + endLine”的叙事主干
+- [x] 为故事结构页补充对应 skill 文档
 - [ ] 重新评估控制模块页
 - [ ] 重新评估组装与校验页
 

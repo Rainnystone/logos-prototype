@@ -25,19 +25,19 @@ Read this file after:
 
 ## Active Section Skill Docs
 
-The first active detailed section skill document is:
+Current active detailed section skill documents are:
 
 1. [worldbase-and-cast/worldbase-cast-skill.md](worldbase-and-cast/worldbase-cast-skill.md)
+2. [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
 
 ## Pending Detailed Section Skill Docs
 
 These still need dedicated active docs:
 
-1. `scene-phase-authoring-skill` for `故事结构 (Scene & Phase Authoring)`
-2. `control-modules-skill` for `控制模块 (Control Modules)`
-3. `package-wiring-validation-skill` for `组装与校验 (Package Wiring & Validation)`
-4. `cross-section-reconciler-skill`
-5. `legacy-migration-skill`
+1. `control-modules-skill` for `控制模块 (Control Modules)`
+2. `package-wiring-validation-skill` for `组装与校验 (Package Wiring & Validation)`
+3. `cross-section-reconciler-skill`
+4. `legacy-migration-skill`
 
 ## Coding Agent Rule
 

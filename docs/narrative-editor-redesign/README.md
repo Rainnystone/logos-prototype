@@ -36,6 +36,7 @@ Current active follow-up documents:
 - `worldbase-and-cast/worldbase-cast-page.md`
 - `worldbase-and-cast/worldbase-cast-skill.md`
 - `scene-phase-authoring/scene-phase-authoring-page.md`
+- `scene-phase-authoring/scene-phase-authoring-skill.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.
@@ -50,9 +51,10 @@ That folder should contain:
 - the matching skill doc
 - any approved section-specific reference images or notes
 
-The first adopted section folder is:
+Adopted section folders are:
 
 - `worldbase-and-cast/`
+- `scene-phase-authoring/`
 
 ## Archive
 
