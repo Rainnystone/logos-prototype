@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 import { parseWithSchema } from '@/lib/validation';
 import { SECTION_IDS } from '@/authoring/contracts';
+import { loadStoryPackage } from '@/engine/story-loader';
+import type { StoryPackage } from '@/types';
 
 const AuthoringSectionIdSchema = z.enum(SECTION_IDS);
 
@@ -18,6 +20,12 @@ export const AuthoringStateSchema = z
   .strict();
 
 export type AuthoringState = z.infer<typeof AuthoringStateSchema>;
+export type AuthoringStateSource = 'initial-sample' | 'latest-saved';
+
+export interface AuthoringStateLoadResult {
+  readonly source: AuthoringStateSource;
+  readonly state: StoryPackage;
+}
 
 export function resolvePackageRoot(packageName: string): string {
   return path.resolve(process.cwd(), 'src/story-packages', packageName);
@@ -47,4 +55,18 @@ export async function writeAuthoringState(
   const filePath = resolveAuthoringStatePath(packageName);
   const serialized = `${JSON.stringify(state, null, 2)}\n`;
   await writeFile(filePath, serialized, 'utf8');
+}
+
+export async function loadAuthoringState(
+  packageName: string,
+): Promise<AuthoringStateLoadResult> {
+  const [state, authoringState] = await Promise.all([
+    loadStoryPackage(packageName),
+    readAuthoringState(packageName),
+  ]);
+
+  return {
+    source: authoringState?.hasSuccessfulSave ? 'latest-saved' : 'initial-sample',
+    state,
+  };
 }

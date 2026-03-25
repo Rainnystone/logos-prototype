@@ -11,8 +11,8 @@ export default async function HomePage() {
           <p className="panel-eyebrow">Project and Sample Layer</p>
           <h1>LOGOS Sample Dashboard</h1>
           <p>
-            Confirm the active scene package, inspect its narrative axis and end line, then enter
-            the workbench to run the beat loop with live state feedback.
+            Confirm the active scene package, inspect its narrative axis and end line, then open
+            the editor or the runtime workbench.
           </p>
         </div>
       </section>

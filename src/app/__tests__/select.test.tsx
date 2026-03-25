@@ -36,6 +36,15 @@ describe('StoryPackageSelector', () => {
     );
   });
 
+  it('links the selected package to the authoring editor', () => {
+    render(<StoryPackageSelector packages={[readyEntry]} />);
+
+    expect(screen.getByRole('link', { name: 'Open Editor' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene',
+    );
+  });
+
   it('shows an error state when a story package fails to load', () => {
     render(
       <StoryPackageSelector

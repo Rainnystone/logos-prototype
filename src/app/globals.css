@@ -172,10 +172,13 @@ ul {
 
 .selector-card__actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   justify-content: flex-end;
 }
 
 .primary-link,
+.secondary-link,
 .panel-actions button,
 .free-text-panel button,
 .section-toggle button,
@@ -190,6 +193,12 @@ ul {
   border-radius: 0.9rem;
   background: linear-gradient(135deg, #7c4e2f 0%, #355f76 100%);
   color: #fffaf2;
+}
+
+.secondary-link {
+  border: 1px solid rgba(31, 26, 21, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #1f1a15;
 }
 
 .scene-overview {
@@ -519,6 +528,86 @@ ul {
   padding: 0 1.35rem 1.35rem;
 }
 
+.edit-page {
+  gap: 1rem;
+}
+
+.edit-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem;
+}
+
+.edit-hero__meta {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 12rem;
+  justify-items: end;
+}
+
+.edit-hero__meta span {
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(31, 26, 21, 0.06);
+}
+
+.edit-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr) minmax(14rem, 18rem);
+  gap: 1rem;
+}
+
+.edit-tabs {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.edit-tab {
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(31, 26, 21, 0.12);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.edit-tab--active {
+  background: rgba(124, 78, 47, 0.12);
+  border-color: rgba(124, 78, 47, 0.3);
+}
+
+.edit-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 1rem 1.15rem;
+}
+
+.edit-surface,
+.edit-helper-panel {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.15rem;
+}
+
+.edit-surface__facts,
+.edit-helper-panel__facts {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.edit-surface__facts dt,
+.edit-helper-panel__facts dt {
+  margin-bottom: 0.2rem;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(31, 26, 21, 0.6);
+}
+
 .generation-workspace-panel__body {
   display: grid;
   gap: 0.85rem;
@@ -675,6 +764,20 @@ ul {
 
   .play-column--feedback {
     order: -1;
+  }
+}
+
+@media (max-width: 960px) {
+  .edit-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-hero {
+    flex-direction: column;
+  }
+
+  .edit-hero__meta {
+    justify-items: start;
   }
 }
 

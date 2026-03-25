@@ -29,6 +29,12 @@ export function StoryPackageSelector({ packages }: StoryPackageSelectorProps) {
               <div className="selector-card__actions">
                 <Link
                   className="primary-link"
+                  href={`/edit?storyPackage=${encodeURIComponent(entry.packageName)}`}
+                >
+                  Open Editor
+                </Link>
+                <Link
+                  className="secondary-link"
                   href={`/play?storyPackage=${encodeURIComponent(entry.packageName)}`}
                 >
                   {`Open ${entry.sceneName}`}
