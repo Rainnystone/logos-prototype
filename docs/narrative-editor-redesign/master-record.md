@@ -43,6 +43,8 @@ Current active redesign documents:
 - [control-modules/auditor-question-set-skill.md](control-modules/auditor-question-set-skill.md)
 - [control-modules/beat-volume-definition-skill.md](control-modules/beat-volume-definition-skill.md)
 - [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
+- [package-wiring-validation/package-wiring-validation-page.md](package-wiring-validation/package-wiring-validation-page.md)
+- [package-wiring-validation/package-wiring-validation-skill.md](package-wiring-validation/package-wiring-validation-skill.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -59,6 +61,14 @@ Approved section names for UI and design docs:
 
 Section pages and their matching skills should now live inside per-section
 folders instead of remaining as loose top-level files.
+
+Current note for `组装与校验 (Package Wiring & Validation)`:
+
+- this section is currently dashboard-first
+- it is not a fourth content authoring page
+- its page doc is active
+- its matching skill is now defined as a diagnostics interpretation skill
+- backend assembly and validation remain deterministic infrastructure
 
 ## 2. Reset Of Active Direction
 
@@ -99,8 +109,8 @@ The following assumptions remain approved:
 The approved redesign shape is:
 
 - `1` coordinator agent: `coordinator`
-- `4` section skill families
-- `1` cross-section reconciliation skill
+- `4` section skills / skill families
+- `1` built-in cross-section reconciliation policy inside `coordinator`
 - `1` legacy migration skill
 - `1` deterministic authoring runtime bridge
 - deterministic code-side validation, writeback, and reload
@@ -118,6 +128,7 @@ Important clarification:
 
 - the bridge is infrastructure, not a skill
 - section skills interpret intent
+- cross-section reconciliation stays inside `coordinator`
 - the bridge validates, persists, projects, and reloads
 
 ## 5. Coordinator Agent
@@ -214,13 +225,23 @@ Current approved detail level:
   - `router-profile-skill`
 - this split exists because the five modules have different runtime targets and different edit modes
 - this section also depends on the bridge's `hybrid multi-target` persistence mode
+- `package-wiring-validation-skill` is now defined as a diagnostics interpretation skill
+- it consumes backend assembly and validation results
+- it should highlight unresolved or cross-section issues, not routine local noise
 
 ### 6.2 Required Cross-Cutting Skills
 
-The approved cross-cutting skill set is:
+The approved cross-cutting additions are:
 
-1. `cross-section-reconciler-skill`
+1. coordinator-owned cross-section reconciliation policy
 2. `legacy-migration-skill`
+
+Approved rule:
+
+- cross-section handling should not become a separate free-routing skill
+- it should remain a narrow coordinator-owned policy
+- it may split one explicit multi-section request into several section-scoped tasks
+- it must escalate instead of guessing when multiple interpretations are possible
 
 ### 6.3 Skill Boundary Rule
 

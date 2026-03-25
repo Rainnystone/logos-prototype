@@ -35,6 +35,7 @@ Current active detailed section skill documents are:
 6. [control-modules/auditor-question-set-skill.md](control-modules/auditor-question-set-skill.md)
 7. [control-modules/beat-volume-definition-skill.md](control-modules/beat-volume-definition-skill.md)
 8. [control-modules/router-profile-skill.md](control-modules/router-profile-skill.md)
+9. [package-wiring-validation/package-wiring-validation-skill.md](package-wiring-validation/package-wiring-validation-skill.md)
 
 Important current rule:
 
@@ -45,9 +46,12 @@ Important current rule:
 
 These still need dedicated active docs:
 
-1. `package-wiring-validation-skill` for `组装与校验 (Package Wiring & Validation)`
-2. `cross-section-reconciler-skill`
-3. `legacy-migration-skill`
+1. `legacy-migration-skill`
+
+Additional current rule:
+
+- cross-section reconciliation no longer exists as a separate skill
+- it is now part of the coordinator contract
 
 ## Coding Agent Rule
 

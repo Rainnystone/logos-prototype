@@ -259,6 +259,16 @@ The lower-right block follows the same role as the previous page:
 - save state
 - compact page snapshot
 
+This block should be treated as the primary place for handling and explaining
+most issues tied to the author's current scene or phase edits.
+
+That includes:
+
+- field gaps
+- local conflicts
+- invalid current selections
+- save-state changes
+
 Do not move this block above the selected phase editor.
 
 ### 4.7 Page Actions

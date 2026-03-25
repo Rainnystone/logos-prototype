@@ -45,6 +45,8 @@ Current active follow-up documents:
 - `control-modules/auditor-question-set-skill.md`
 - `control-modules/beat-volume-definition-skill.md`
 - `control-modules/router-profile-skill.md`
+- `package-wiring-validation/package-wiring-validation-page.md`
+- `package-wiring-validation/package-wiring-validation-skill.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.
@@ -64,6 +66,7 @@ Adopted section folders are:
 - `worldbase-and-cast/`
 - `scene-phase-authoring/`
 - `control-modules/`
+- `package-wiring-validation/`
 
 ## Archive
 

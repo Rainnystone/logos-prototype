@@ -19,7 +19,8 @@
 
 - [x] redesign 当前切换为 `coordinator-first`
 - [x] active coordinator 名称固定为 `coordinator`
-- [x] 架构采用 `1 coordinator + 4 section skills + cross-section-reconciler-skill + legacy-migration-skill`
+- [x] 架构采用 `1 coordinator + 4 section skills / skill families + legacy-migration-skill`
+- [x] 跨 section 协调已降级为 `coordinator` 的内建规则，而不是独立 skill
 - [x] `authoring runtime bridge` 明确定义为 deterministic 基础设施，而不是 skill
 - [x] 文件写回、校验、映射、reload 留在 deterministic code
 - [x] coordinator 默认不改作者原意，只做结构化搬运与最小修复
@@ -60,8 +61,8 @@
 ### A2. 收敛 skill inventory
 
 - [x] 锁定 4 个 section skills / skill families
-- [x] 锁定 `cross-section-reconciler-skill`
 - [x] 锁定 `legacy-migration-skill`
+- [x] 锁定跨 section 协调作为 `coordinator` 的内建规则
 - [ ] 为每个 skill 写出职责边界与禁区
 - [x] 为 `worldbase-cast-skill` 写出职责边界与禁区
 - [x] 说明 `worldbase-cast-skill` 与 `WorldBase & Cast` page 的关系
@@ -80,6 +81,7 @@
 - [x] 为 `auditor-question-set-skill` 写出职责边界与禁区
 - [x] 为 `beat-volume-definition-skill` 写出职责边界与禁区
 - [x] 为 `router-profile-skill` 写出职责边界与禁区
+- [x] 为 `package-wiring-validation-skill` 写出职责边界与禁区
 
 ### A3. 收敛验证与写回边界
 
@@ -109,6 +111,7 @@
 - [x] 创建全局 `section-map.md`
 - [x] 为 `WorldBase & Cast` 创建独立 section 文件夹
 - [x] 为 `Control Modules` 创建独立 section 文件夹
+- [x] 为 `Package Wiring & Validation` 创建独立 section 文件夹
 
 ## 下一阶段候选
 
@@ -121,8 +124,7 @@
 - [x] 为 `scene-phase-authoring-skill` 写 contract 草案
 - [x] 为 `control-modules` skill family 写 contract 草案
 - [x] 为五个 `control-modules` 小 skill 写 contract 草案
-- [ ] 为 `package-wiring-validation-skill` 写 contract 草案
-- [ ] 为 `cross-section-reconciler-skill` 写 contract 草案
+- [x] 为 `package-wiring-validation-skill` 写 contract 草案
 - [ ] 为 `legacy-migration-skill` 写 contract 草案
 
 ### Stage C：validation / writeback 设计
@@ -171,7 +173,13 @@
 - [x] 锁定右上当前模块编辑、右下 coordinator 的布局
 - [x] 锁定本页参考 Prompt Assembler 骨架，但不把 Auditor 伪装成 prompt layer
 - [x] 为控制模块页补充 skill family 与五个小 skill 文档
-- [ ] 重新评估组装与校验页
+- [x] 重新评估组装与校验页
+- [x] 产出 `package-wiring-validation/package-wiring-validation-page.md`
+- [x] 产出 `package-wiring-validation/package-wiring-validation-skill.md`
+- [x] 锁定本页为全局诊断仪表盘，而不是第四个内容编辑页
+- [x] 锁定“左侧总览 / 右上详情 / 右下 coordinator”的布局
+- [x] 锁定后台自动组装与校验，本页只展示结果与引导修复
+- [x] 锁定本页的 skill 为诊断解释器，而不是修复器
 
 ## 暂缓项
 

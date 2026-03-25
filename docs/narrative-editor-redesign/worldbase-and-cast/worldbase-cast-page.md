@@ -261,6 +261,16 @@ Recommended contents:
 
 This block is for system help and confidence-building.
 
+It should also be treated as the default place for handling and explaining most
+issues raised by the author's current edits on this page.
+
+That includes:
+
+- field gaps
+- local conflicts
+- save-state changes
+- current-page summary and guidance
+
 It is not the place for the full character editor.
 
 ## 9. Sample Wireframe Guidance

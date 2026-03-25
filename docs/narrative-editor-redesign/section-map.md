@@ -119,6 +119,29 @@
   - Router Profile 结构化新增/编辑
 - 该 section 不负责 scene / phase 的故事骨架编辑
 
+### 4. `package-wiring-validation/`
+
+作用：
+
+- 承载 `组装与校验 (Package Wiring & Validation)` 这一页的 active 文档
+- 作为整个 package 的全局诊断仪表盘设计入口
+
+当前文件：
+
+- [package-wiring-validation/package-wiring-validation-page.md](package-wiring-validation/package-wiring-validation-page.md)
+- [package-wiring-validation/package-wiring-validation-skill.md](package-wiring-validation/package-wiring-validation-skill.md)
+- [package-wiring-validation/组装与校验 UIUX 参考图.png](package-wiring-validation/%E7%BB%84%E8%A3%85%E4%B8%8E%E6%A0%A1%E9%AA%8C%20UIUX%20%E5%8F%82%E8%80%83%E5%9B%BE.png)
+
+当前结论：
+
+- 该 section 当前是 dashboard-first，而不是第四个内容编辑页
+- 真正的组装与校验由后台自动完成，本页只展示结果与引导修复
+- 该 section 的 skill 当前被定义为诊断解释器，而不是修复器
+- 左侧是总览、section 健康状态、装配链路和问题队列
+- 右上是当前选中问题或节点的详情说明
+- 右下是全局诊断解释型 coordinator
+- 本页的主要动作应是查看、跳转修复和重新检查，而不是直接重写前三页内容
+
 ## 推荐阅读顺序
 
 当 coding agent 要进入某个 section 时，推荐顺序是：

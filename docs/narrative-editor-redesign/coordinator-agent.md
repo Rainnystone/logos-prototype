@@ -39,7 +39,8 @@ Its responsibilities are:
 
 - detect the target section or sections
 - build the minimum context pack needed for interpretation
-- invoke one section skill, one section-local micro-skill, or one cross-section skill
+- invoke one section skill or one section-local micro-skill
+- apply built-in cross-section reconciliation only when the author intent clearly spans multiple sections
 - collect a structured patch candidate
 - send that candidate into deterministic validation
 - coordinate repair retries when validation fails
@@ -91,6 +92,7 @@ Default behavior:
 - map it into approved fields
 - keep scope narrow
 - repair only when deterministic validation requires repair
+- keep autonomous repair inside approved input and validation boundaries
 
 Default non-goals:
 
@@ -110,12 +112,13 @@ The approved coordinator lifecycle is:
 1. Receive invocation
 2. Detect scope
 3. Build context pack
-4. Invoke section skill, section-local micro-skill, or cross-section skill
-5. Receive structured patch candidate
-6. Run deterministic validation
-7. If valid, persist and reload
-8. If invalid and repairable, run repair loop
-9. If still invalid or non-repairable, return escalation
+4. Invoke section skill or section-local micro-skill
+5. If the request clearly spans multiple sections, split it with coordinator-owned cross-section reconciliation rules and dispatch narrow section work
+6. Receive structured patch candidate
+7. Run deterministic validation
+8. If valid, persist and reload
+9. If invalid and repairable, run repair loop
+10. If still invalid or non-repairable, return escalation
 
 ## 5. Invocation Modes
 
@@ -162,7 +165,7 @@ type CoordinatorInvocation = {
   currentFormState?: Record<string, unknown>;
   repairContext?: RepairContext;
   options?: {
-    allowCrossSection?: boolean;
+    allowMultiSectionRouting?: boolean;
     dryRun?: boolean;
   };
 };
@@ -241,6 +244,27 @@ The point of this pack is:
 - keep token usage small
 - prevent unrelated section drift
 - make repair deterministic
+
+### 6.5 Built-In Cross-Section Reconciliation Rule
+
+Cross-section reconciliation is part of the coordinator.
+
+It is not a separate skill.
+
+Approved use:
+
+- one author request clearly and explicitly targets more than one section
+- the affected section boundaries are still unambiguous
+- the coordinator can split the request into narrow section-scoped work without changing author meaning
+
+Disallowed use:
+
+- guessing cross-section intent from vague text
+- widening one local request into multi-section edits
+- using cross-section routing to silently rewrite author meaning
+
+If multiple cross-section interpretations are equally plausible, the coordinator
+must stop and return a human decision point.
 
 ## 7. Output Contract
 
@@ -362,7 +386,8 @@ Your job is to route author intent into section-scoped structured patch candidat
 
 You may:
 - detect target sections
-- select one section skill or the cross-section skill
+- select one section skill or one section-local micro-skill
+- split one request into multiple section-scoped tasks only when the cross-section intent is explicit and unambiguous
 - return structured patch candidate results
 - coordinate repair retries using validation errors
 
@@ -401,17 +426,16 @@ You must not:
 Return only a SectionPatchCandidate.
 ```
 
-### 9.3 Cross-Section Skill Prompt Skeleton
+### 9.3 Cross-Section Reconciliation Policy Skeleton
 
 ```text
-You are the LOGOS cross-section reconciler skill.
+When one request clearly spans multiple sections:
 
-Your job is to split or align changes that genuinely affect multiple sections.
-
-You must:
 - keep section boundaries explicit
-- return multiple section patch candidates when needed
+- split the request into narrow section-scoped tasks
+- preserve original author meaning
 - stop and escalate if the change has multiple equally valid interpretations
+- do not invent cross-section edits that were not explicitly asked for
 ```
 
 ### 9.4 Repair Prompt Skeleton
@@ -487,7 +511,7 @@ The repair loop should follow these rules:
 2. Repair uses the same skill that produced the failed candidate.
 3. Repair scope should remain as narrow as possible.
 4. Non-repairable failures skip retry and escalate immediately.
-5. If repair changes target sections unexpectedly, escalate unless cross-section mode is already active.
+5. If repair changes target sections unexpectedly, escalate unless multi-section routing is already active and the original cross-section intent was explicit.
 
 ### 10.4 Allowed Versus Disallowed Input Repair
 

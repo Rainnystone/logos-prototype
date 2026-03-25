@@ -1,0 +1,385 @@
+<style>
+  .pw-shell {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .pw-surface {
+    background: linear-gradient(180deg, #f8f2e8 0%, #f5efe5 100%);
+    border: 1px solid #e3d7c6;
+    border-radius: 28px;
+    padding: 18px;
+    box-shadow: 0 18px 50px rgba(25, 20, 14, 0.08);
+  }
+
+  .pw-panel {
+    background: rgba(255, 251, 245, 0.92);
+    border: 1px solid #e8dcc8;
+    border-radius: 24px;
+    padding: 16px;
+    margin-top: 14px;
+  }
+
+  .pw-label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #9b8a72;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .pw-title {
+    font-size: 2.3rem;
+    line-height: 1;
+    color: #2a2219;
+    margin: 2px 0 8px;
+    font-weight: 800;
+  }
+
+  .pw-subtitle {
+    color: #6b5c4d;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .pw-status-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .pw-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    background: #efe5d6;
+    color: #7b664b;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pw-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #d17d2d;
+  }
+
+  .pw-section-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .pw-card {
+    border-radius: 20px;
+    border: 1px solid #e5d7c3;
+    background: #fffaf3;
+    padding: 14px;
+  }
+
+  .pw-card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #2f261c;
+  }
+
+  .pw-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #6d5c4a;
+    line-height: 1.55;
+  }
+
+  .pw-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: #efe8da;
+    color: #7f694e;
+  }
+
+  .pw-flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    align-items: center;
+  }
+
+  .pw-node {
+    border-radius: 18px;
+    padding: 14px 12px;
+    min-height: 104px;
+    border: 1px solid #deceb7;
+    background: linear-gradient(180deg, #fffdf8, #f9f1e6);
+  }
+
+  .pw-node h5 {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    color: #30261d;
+  }
+
+  .pw-node p {
+    margin: 0;
+    color: #6d5c4a;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .pw-arrow {
+    text-align: center;
+    color: #c7a97b;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .pw-issue-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .pw-issue {
+    border-radius: 18px;
+    border: 1px solid #ead8c2;
+    background: #fffaf5;
+    padding: 13px 14px;
+  }
+
+  .pw-issue strong {
+    display: block;
+    color: #30261d;
+    margin-bottom: 6px;
+    font-size: 0.92rem;
+  }
+
+  .pw-issue span {
+    color: #6f5e4e;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .pw-right {
+    display: grid;
+    gap: 18px;
+  }
+
+  .pw-detail {
+    background: linear-gradient(180deg, #f8f2e8 0%, #f5efe5 100%);
+    border: 1px solid #e3d7c6;
+    border-radius: 28px;
+    padding: 18px;
+    box-shadow: 0 18px 50px rgba(25, 20, 14, 0.08);
+  }
+
+  .pw-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .pw-detail-box {
+    border-radius: 18px;
+    border: 1px solid #e3d4bf;
+    background: #fffaf3;
+    padding: 14px;
+  }
+
+  .pw-detail-box h5 {
+    margin: 0 0 8px;
+    color: #30261d;
+    font-size: 0.9rem;
+  }
+
+  .pw-detail-box p {
+    margin: 0;
+    color: #6d5d4a;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .pw-coordinator {
+    background: linear-gradient(180deg, #132847 0%, #0f2138 100%);
+    border: 1px solid rgba(111, 151, 214, 0.18);
+    color: #edf4ff;
+    border-radius: 26px;
+    padding: 18px;
+    box-shadow: 0 18px 44px rgba(8, 16, 29, 0.35);
+  }
+
+  .pw-coordinator .pw-label {
+    color: #8ca6cf;
+  }
+
+  .pw-coordinator h3 {
+    margin: 0 0 12px;
+    font-size: 1.75rem;
+    color: #ffffff;
+  }
+
+  .pw-coordinator ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .pw-coordinator li {
+    border-top: 1px solid rgba(160, 186, 224, 0.18);
+    padding-top: 10px;
+    color: #d8e5f9;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+</style>
+
+<h2>组装与校验 (Package Wiring & Validation)</h2>
+<p class="subtitle">
+  这不是第四个内容编辑页，而是全局诊断仪表盘。左边看整包状态和装配链路，右边看当前问题详情与修复引导。
+</p>
+
+<div class="pw-shell">
+  <section class="pw-surface">
+    <div class="pw-label">Global Diagnostic Surface</div>
+    <div class="pw-title">Package Health Dashboard</div>
+    <p class="pw-subtitle">
+      目标是把前三个 section 的结果收拢成一套可运行的 package 状态视图，帮助作者看清哪里已经接好、哪里还断着。
+    </p>
+
+    <div class="pw-panel">
+      <div class="pw-label">Overall Status</div>
+      <div class="pw-status-row">
+        <div class="pw-card">
+          <h4>当前状态</h4>
+          <p>部分通过。可读回，但仍有 2 个阻塞项影响完整运行。</p>
+          <span class="pw-badge">Needs Repair</span>
+        </div>
+        <div class="pw-card">
+          <h4>阻塞项</h4>
+          <p>2 个问题会直接影响 route / audit / reload 闭环。</p>
+          <span class="pw-badge">Blocking</span>
+        </div>
+        <div class="pw-card">
+          <h4>提示项</h4>
+          <p>3 个提醒项不阻塞保存，但会影响控制精度。</p>
+          <span class="pw-badge">Warnings</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pw-panel">
+      <div class="pw-label">Section Health</div>
+      <div class="pw-section-grid">
+        <div class="pw-card">
+          <h4>世界与角色</h4>
+          <p>角色信息已完整，世界块通过基础检查。</p>
+          <span class="pw-badge">Ready</span>
+        </div>
+        <div class="pw-card">
+          <h4>故事结构</h4>
+          <p>Phase 骨架可用，但 router 选择依赖上游 profile 更新。</p>
+          <span class="pw-badge">Linked Warning</span>
+        </div>
+        <div class="pw-card">
+          <h4>控制模块</h4>
+          <p>Router 与 Auditor 可落地，光锥与节奏定义仍待接入运行链。</p>
+          <span class="pw-badge">Partial</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pw-panel">
+      <div class="pw-label">Assembly Flow</div>
+      <div class="pw-flow">
+        <div class="pw-node">
+          <h5>Section Outputs</h5>
+          <p>前三页交出结构化结果，并带上局部校验状态。</p>
+        </div>
+        <div class="pw-arrow">→</div>
+        <div class="pw-node">
+          <h5>Bridge Fan-Out</h5>
+          <p>按模块决定写入现有文件，还是进入控制源再下游应用。</p>
+        </div>
+        <div class="pw-arrow">→</div>
+        <div class="pw-node">
+          <h5>Package Reload</h5>
+          <p>重新读取 story package，确认整包没有断链。</p>
+        </div>
+        <div class="pw-arrow">→</div>
+        <div class="pw-node">
+          <h5>Runtime Health</h5>
+          <p>把可运行性、缺口、影响范围统一回显给作者。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pw-panel">
+      <div class="pw-label">Issue Queue</div>
+      <div class="pw-issue-list">
+        <div class="pw-issue">
+          <strong>阻塞项：Router Profile 变更后，故事结构页的下拉源尚未刷新</strong>
+          <span>影响范围：Phase routing 选择与 reload 后一致性。</span>
+        </div>
+        <div class="pw-issue">
+          <strong>阻塞项：Light Cone 自定义已保存，但当前运行链尚未消费</strong>
+          <span>影响范围：边界收束逻辑仍使用旧入口。</span>
+        </div>
+        <div class="pw-issue">
+          <strong>提醒项：Beat Volume 定义已修改，但导演层用词还未同步</strong>
+          <span>影响范围：节奏说明与作者定义可能不一致。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="pw-right">
+    <section class="pw-detail">
+      <div class="pw-label">Selected Diagnostic Detail</div>
+      <div class="pw-title" style="font-size:1.9rem;">Router 下拉源未刷新</div>
+      <p class="pw-subtitle">
+        这里展示当前选中的问题、链路节点或 section 状态。重点不是编辑内容，而是说明问题来自哪里、影响哪里、应该回哪一页修。
+      </p>
+
+      <div class="pw-detail-grid" style="margin-top:14px;">
+        <div class="pw-detail-box">
+          <h5>问题来源</h5>
+          <p>控制模块新增了 Router Profile，但故事结构页当前仍在消费旧的有效选项集合。</p>
+        </div>
+        <div class="pw-detail-box">
+          <h5>影响范围</h5>
+          <p>Phase 的 routerHint 无法看到新 profile，局部保存和整包状态会出现不一致。</p>
+        </div>
+        <div class="pw-detail-box">
+          <h5>建议修复入口</h5>
+          <p>回到「控制模块」检查 Router Profile 写入，再确认故事结构页下拉是否刷新。</p>
+        </div>
+        <div class="pw-detail-box">
+          <h5>状态类型</h5>
+          <p>阻塞项。整包仍可读回，但这一段交互链还没有闭环。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pw-coordinator">
+      <div class="pw-label">Coordinator</div>
+      <h3>Technical Assist</h3>
+      <ul>
+        <li>当前最大的问题不在内容本身，而在 section 之间的接线没有完全闭环。</li>
+        <li>优先修「控制模块 → 故事结构」这条链，再回来看整包状态是否转绿。</li>
+        <li>本页负责全局诊断，不接管前三页的内容编辑。</li>
+        <li>这里的结果来自后台自动检查，不需要作者手动重做一遍保存逻辑。</li>
+      </ul>
+    </section>
+  </aside>
+</div>
