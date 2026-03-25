@@ -586,6 +586,57 @@ ul {
   padding: 1rem 1.15rem;
 }
 
+.worldbase-cast {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem;
+}
+
+.worldbase-cast__layout {
+  display: grid;
+  grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.worldbase-cast__rail {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.worldbase-cast__summary {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(31, 26, 21, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.62);
+  text-align: left;
+}
+
+.worldbase-cast__summary-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(31, 26, 21, 0.65);
+}
+
+.worldbase-cast__summary-preview {
+  font-size: 0.92rem;
+  color: rgba(31, 26, 21, 0.84);
+}
+
+.worldbase-cast__editor {
+  display: grid;
+  gap: 0.95rem;
+  padding: 0.2rem 0 0;
+}
+
+.form-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .edit-surface,
 .edit-helper-panel {
   display: grid;
@@ -769,6 +820,10 @@ ul {
 
 @media (max-width: 960px) {
   .edit-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .worldbase-cast__layout {
     grid-template-columns: 1fr;
   }
 

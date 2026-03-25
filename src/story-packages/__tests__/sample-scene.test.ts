@@ -173,6 +173,9 @@ describe('sample-scene story package', () => {
     );
 
     expect(worldBase.mainCharacters.length).toBeGreaterThan(0);
+    expect(worldBase.npcCharacters).toContain('竹田启司：');
+    expect(worldBase.npcCharacters).toContain('末真和子：');
+    expect(worldBase.npcCharacters).toContain('新刻敬：');
     expect(worldBase.locationPatch.length).toBeGreaterThan(0);
   });
 

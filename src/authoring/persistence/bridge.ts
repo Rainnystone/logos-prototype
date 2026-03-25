@@ -13,6 +13,7 @@ import {
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
 import { reloadStoryPackage } from '@/authoring/persistence/reload';
+import { renderWorldBase, type WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import type { StoryPackage } from '@/types';
 
 const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
@@ -72,7 +73,12 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
     issues.push('payload must be an object.');
     return {
       request: {
-        ...input,
+        requestId,
+        packageName,
+        sectionId,
+        source,
+        ...(moduleScope ? { moduleScope } : {}),
+        ...(dryRun ? { dryRun } : {}),
         payload,
       },
       issues,
@@ -181,6 +187,34 @@ function extractWorldBaseMainCharactersDraft(request: SaveRequest): string | nul
   return (patchCandidate as Record<string, unknown>).value as string;
 }
 
+function isStringField(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function extractWorldBaseCastDraft(
+  request: SaveRequest,
+): Partial<WorldBaseCastDraft> | null {
+  const uiFields = request.payload.uiFields;
+
+  if (!uiFields) {
+    return null;
+  }
+
+  const mainCharacters = isStringField(uiFields.mainCharacters) ? uiFields.mainCharacters : undefined;
+  const npcCharacters = isStringField(uiFields.npcCharacters) ? uiFields.npcCharacters : undefined;
+  const locationPatch = isStringField(uiFields.locationPatch) ? uiFields.locationPatch : undefined;
+
+  if (mainCharacters === undefined && npcCharacters === undefined && locationPatch === undefined) {
+    return null;
+  }
+
+  return {
+    ...(mainCharacters !== undefined ? { mainCharacters } : {}),
+    ...(npcCharacters !== undefined ? { npcCharacters } : {}),
+    ...(locationPatch !== undefined ? { locationPatch } : {}),
+  };
+}
+
 export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> {
   const { request, issues: payloadIssues } = normalizeSaveRequest(input);
   const validationIssues = [...payloadIssues, ...validateSaveRequest(request)];
@@ -212,7 +246,9 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
   }
 
   const nextMainCharacters = extractWorldBaseMainCharactersDraft(request);
-  if (nextMainCharacters === null) {
+  const nextWorldBaseDraft = extractWorldBaseCastDraft(request);
+
+  if (nextMainCharacters === null && nextWorldBaseDraft === null) {
     return createSaveBlockedResult(
       {
         requestId: request.requestId,
@@ -260,12 +296,21 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
 
   try {
     await ensureStoryPackageExists(request.packageName);
+    const currentStoryPackage = await reloadStoryPackage(request.packageName);
     const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
     let changedFiles: readonly string[];
     let reloadedSectionState: StoryPackage;
 
     try {
-      changedFiles = await persistWorldBaseDraft(request.packageName, nextMainCharacters);
+      const nextWorldBase =
+        nextWorldBaseDraft !== null
+          ? renderWorldBase(currentStoryPackage.worldBase, nextWorldBaseDraft)
+          : {
+              ...currentStoryPackage.worldBase,
+              mainCharacters: nextMainCharacters ?? currentStoryPackage.worldBase.mainCharacters,
+            };
+
+      changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase);
       reloadedSectionState = await reloadStoryPackage(request.packageName);
     } catch (writeOrReloadError) {
       await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);

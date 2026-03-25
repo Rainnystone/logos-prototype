@@ -26,6 +26,7 @@ function prepareTestPackage(): void {
   cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
     recursive: true,
   });
+  rmSync(authoringStatusPath, { force: true });
 }
 
 afterEach(() => {
@@ -93,6 +94,40 @@ describe('saveSectionDraft', () => {
     expect(coordinatorStoryPackage.worldBase.mainCharacters).toBe(
       'coordinator-main-character-update',
     );
+  });
+
+  it('renders worldbase-cast draft fields into normalized runtime blocks', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-worldbase-draft',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          mainCharacters: '  世界基础\n\n主角雾间凪  ',
+          npcCharacters: ' 竹田启司：稳重的男友\n- 末真和子：敏锐的线索人\n新刻敬：正义感强 ',
+          locationPatch: '  2年C班教室  ',
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    if (result.kind === 'save_applied') {
+      expect(result.runtimeImpactSummary.changedFiles).toEqual([
+        'world-base.yaml',
+        'authoring-state.json',
+      ]);
+    }
+
+    const loaded = await loadStoryPackage(testPackageName);
+
+    expect(loaded.worldBase.mainCharacters).toBe('世界基础\n\n主角雾间凪');
+    expect(loaded.worldBase.npcCharacters).toBe(
+      '竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强',
+    );
+    expect(loaded.worldBase.locationPatch).toBe('2年C班教室');
   });
 
   it('writes the authoring status marker after a successful save', async () => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { type SectionId } from '@/authoring/contracts';
@@ -7,6 +8,8 @@ import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-s
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
 import { SectionTabs } from '@/app/edit/shared/SectionTabs';
+import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
+import type { WorldBase } from '@/types';
 
 const SECTION_SUMMARIES: Record<
   SectionId,
@@ -70,6 +73,75 @@ export function EditWorkbench({
 }: EditWorkbenchProps) {
   const activeSectionSummary = SECTION_SUMMARIES[activeSection];
   const sceneName = initialState.state.sceneSpec.sceneName;
+  const [draftWorldBase, setDraftWorldBase] = useState<WorldBase>(initialState.state.worldBase);
+  const [savedWorldBase, setSavedWorldBase] = useState<WorldBase>(initialState.state.worldBase);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setDraftWorldBase(initialState.state.worldBase);
+    setSavedWorldBase(initialState.state.worldBase);
+    setSaveStatus(null);
+    setIsSaving(false);
+  }, [initialState.state.worldBase, packageName]);
+
+  async function handleWorldBaseCastSubmit() {
+    setIsSaving(true);
+    setSaveStatus(null);
+
+    try {
+      const response = await fetch(
+        `/api/authoring/packages/${encodeURIComponent(packageName)}/sections/worldbase-cast`,
+        {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: `worldbase-cast-${Date.now()}`,
+            source: 'page',
+            payload: {
+              uiFields: draftWorldBase,
+            },
+          }),
+        },
+      );
+
+      const result = (await response.json()) as {
+        readonly kind?: string;
+        readonly reloadedSectionState?: { readonly worldBase?: WorldBase };
+        readonly blockingIssues?: readonly string[];
+        readonly errorMessage?: string;
+      };
+
+      if (
+        response.ok &&
+        (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
+        result.reloadedSectionState?.worldBase
+      ) {
+        setDraftWorldBase(result.reloadedSectionState.worldBase);
+        setSavedWorldBase(result.reloadedSectionState.worldBase);
+        setSaveStatus('Saved and normalized.');
+        return;
+      }
+
+      if (result.kind === 'save_blocked' && result.blockingIssues) {
+        setSaveStatus(result.blockingIssues.join(' '));
+        return;
+      }
+
+      setSaveStatus(result.errorMessage ?? 'Save failed.');
+    } catch {
+      setSaveStatus('Save failed.');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleWorldBaseCastReset() {
+    setDraftWorldBase(savedWorldBase);
+    setSaveStatus('Reverted to the latest saved state.');
+  }
 
   return (
     <main className="workspace-page edit-page">
@@ -93,26 +165,38 @@ export function EditWorkbench({
 
       <section className="edit-layout">
         <SectionTabs packageName={packageName} activeSection={activeSection} />
-        <SectionSurface sectionId={activeSection}>
-          <dl className="edit-surface__facts">
-            <div>
-              <dt>Package name</dt>
-              <dd>{packageName}</dd>
-            </div>
-            <div>
-              <dt>Scene name</dt>
-              <dd>{sceneName}</dd>
-            </div>
-            <div>
-              <dt>State source</dt>
-              <dd>{initialState.source}</dd>
-            </div>
-            <div>
-              <dt>Section</dt>
-              <dd>{activeSectionSummary.title}</dd>
-            </div>
-          </dl>
-        </SectionSurface>
+        {activeSection === 'worldbase-cast' ? (
+          <WorldBaseCastSection
+            packageName={packageName}
+            value={draftWorldBase}
+            onChange={setDraftWorldBase}
+            onSubmit={handleWorldBaseCastSubmit}
+            onReset={handleWorldBaseCastReset}
+            statusMessage={saveStatus ?? undefined}
+            isSaving={isSaving}
+          />
+        ) : (
+          <SectionSurface sectionId={activeSection}>
+            <dl className="edit-surface__facts">
+              <div>
+                <dt>Package name</dt>
+                <dd>{packageName}</dd>
+              </div>
+              <div>
+                <dt>Scene name</dt>
+                <dd>{sceneName}</dd>
+              </div>
+              <div>
+                <dt>State source</dt>
+                <dd>{initialState.source}</dd>
+              </div>
+              <div>
+                <dt>Section</dt>
+                <dd>{activeSectionSummary.title}</dd>
+              </div>
+            </dl>
+          </SectionSurface>
+        )}
         <PageHelperPanel
           packageName={packageName}
           initialState={initialState}
