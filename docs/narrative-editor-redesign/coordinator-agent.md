@@ -569,6 +569,7 @@ Responsibilities:
 
 Responsibilities:
 
+- render coarse runtime-target blocks when a section writes directly into an existing runtime file
 - regenerate runtime-compatible files from section-owned authoring data
 - preserve compatibility with existing runtime contracts
 

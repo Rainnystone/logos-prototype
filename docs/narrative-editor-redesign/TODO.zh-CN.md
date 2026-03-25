@@ -22,6 +22,7 @@
 - [x] 架构采用 `1 coordinator + 4 section skills + cross-section-reconciler-skill + legacy-migration-skill`
 - [x] `authoring runtime bridge` 明确定义为 deterministic 基础设施，而不是 skill
 - [x] 文件写回、校验、映射、reload 留在 deterministic code
+- [x] coordinator 默认不改作者原意，只做结构化搬运与最小修复
 - [x] 当前旧的 page-first 文档与 page-specific plans 已迁入 `archive/`
 - [x] active 主索引已切换为 [master-record.md](master-record.md)
 - [x] section active 文档采用“每个 section 一个独立文件夹”的组织方式
@@ -74,7 +75,9 @@
 - [x] 明确 active bridge 文档承接 archive 中已有的本地写回经验
 - [x] 明确 bridge 不是 skill，而是 deterministic service layer
 - [x] 明确现有 webapp 仍缺 server-side section write entry
-- [ ] 细化 direct-backed section 与 projected section 的适用边界
+- [x] 明确 repair 应优先修输入，不应为了过校验去改系统规则
+- [x] 细化 direct-runtime section 与 projected section 的适用边界
+- [x] 锁定 `worldbase-cast` v1 先直接写 `world-base.yaml`
 - [ ] 明确 page save / coordinator save 共享的服务端入口协议
 
 ### A4. 建立 redesign 账本与阅读路径
@@ -104,7 +107,7 @@
 - [x] 创建 `authoring-runtime-bridge.md`
 - [x] 在 active 文档中记录当前 webapp 写入口缺口
 - [ ] 细化 repository 写回边界
-- [ ] 细化 runtime projection 策略
+- [x] 细化 `worldbase-cast` 的轻量 runtime 渲染策略
 - [ ] 细化 round-trip reload 结果协议
 - [ ] 细化 UI 如何接收 coordinator 结果
 - [ ] 细化 coordinator 可调用的 server-side write entry 形式

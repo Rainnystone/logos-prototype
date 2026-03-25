@@ -20,7 +20,7 @@ It is a downstream authoring surface that must fit:
 
 - the `router-controller` coordinator
 - the deterministic bridge
-- the future section-owned authoring source for this section
+- the approved direct write path into [`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml)
 
 This page should help the author do two things well:
 
@@ -346,15 +346,15 @@ runtime-specific content into this page.
 The current read-only world base reference is
 [`src/app/components/FixtureReferencePanel.tsx`](../../../src/app/components/FixtureReferencePanel.tsx).
 
-This matters because the current runtime still consumes projected world-base
+This matters because the current runtime still consumes coarse `world-base`
 content.
 
 The new page must not directly edit that read-only display contract.
 
 Instead:
 
-- the page edits section-owned authoring data
-- the bridge later projects runtime-compatible world-base output
+- the page edits structured section input
+- the bridge later renders runtime-compatible `world-base.yaml` output
 
 ## 11. Coding Agent Build Rules
 

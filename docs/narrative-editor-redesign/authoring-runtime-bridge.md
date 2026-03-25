@@ -20,7 +20,7 @@ It exists because the coordinator-first redesign still needs a concrete way to:
 
 - read current section data
 - validate patch candidates
-- write section-owned data safely
+- write runtime-target or section-owned data safely
 - regenerate runtime-compatible files when necessary
 - reload the final `StoryPackage` aggregate
 
@@ -111,26 +111,29 @@ The bridge should support two section persistence patterns.
 This is the most important conclusion carried forward from the archive and
 adapted for the new coordinator-first architecture.
 
-### 5.1 Direct-Backed Section
+### 5.1 Direct-Runtime Section
 
 Definition:
 
-- the section-owned authoring model maps closely enough to existing runtime files
-- the bridge can validate and write those runtime files directly
+- the section save target is an existing runtime file
+- the bridge validates structured input, then writes that runtime file directly
+- a deterministic formatter may still be used when the runtime file is coarse-grained
 
 Typical fit:
 
-- a section whose stable authoring contract already resembles current runtime schemas
+- a section whose approved page/skill inputs can be rendered straight into the current runtime file without adding a separate authoring source file
 
-Example candidate:
+Example candidates:
 
 - `scene-phase-authoring`
+- `worldbase-cast` v1
 
 This mode means:
 
 - no separate projection file is required
-- section patch operations can be applied directly to canonical runtime YAML files
+- the bridge may use a small deterministic renderer before writing the canonical runtime YAML file
 - reload still remains mandatory
+- current runtime contracts stay unchanged
 
 ### 5.2 Projected Section
 
@@ -142,7 +145,7 @@ Definition:
 
 Typical fit:
 
-- `worldbase-cast`
+- a future section whose authoring source genuinely needs to live outside current runtime files
 
 This mode means:
 
@@ -152,7 +155,7 @@ This mode means:
 
 ### 5.3 Why Both Modes Must Exist
 
-If the redesign forces every section into direct-backed mode:
+If the redesign forces every section into direct-runtime mode:
 
 - some sections will inherit bad runtime-era shapes
 - authoring UX will stay too constrained
@@ -164,6 +167,27 @@ If the redesign forces every section into projected mode:
 
 So the bridge should intentionally support both modes.
 
+### 5.4 Approved V1 Decision For `worldbase-cast`
+
+For the current redesign phase, `worldbase-cast` should use direct-runtime mode,
+not projected mode.
+
+Reason:
+
+- the current runtime reads [`world-base.yaml`](../../src/story-packages/sample-scene/world-base.yaml) as a few coarse text blocks
+- that makes a light deterministic renderer practical
+- introducing a separate authoring source file right now would add weight without enough payoff
+
+Important boundary:
+
+- this does **not** mean the coordinator freely writes `world-base.yaml`
+- it means the bridge owns a fixed rendering rule from approved page/skill inputs into:
+  - `mainCharacters`
+  - `npcCharacters`
+  - `locationPatch`
+
+This keeps the first implementation lighter while preserving deterministic control.
+
 ## 6. Recommended Bridge Lifecycle
 
 The approved lifecycle is:
@@ -173,10 +197,11 @@ The approved lifecycle is:
 3. Normalize into section patch operations
 4. Run deterministic validation
 5. Apply patch to section-owned state
-6. If section is projected, regenerate runtime-compatible outputs
-7. Atomically write all affected files
-8. Reload `StoryPackage`
-9. Return new section state and runtime impact summary
+6. If section is direct-runtime, render runtime file updates deterministically
+7. If section is projected, regenerate runtime-compatible outputs
+8. Atomically write all affected files
+9. Reload `StoryPackage`
+10. Return new section state and runtime impact summary
 
 ## 6.1 Why Current Webapp Adaptation Is Required
 
@@ -187,8 +212,8 @@ Without webapp-side adaptation, the coordinator stack would stop at:
 
 and would still be unable to:
 
-- write section-owned files
-- project runtime-compatible outputs
+- write runtime-target files
+- render or project runtime-compatible outputs
 - return reloaded state to the UI
 
 So adding server-side persistence entrypoints is a required redesign task.
@@ -272,6 +297,7 @@ Do not split page-save and coordinator-save into separate persistence stacks.
 
 Responsibilities:
 
+- render runtime-compatible blocks for coarse direct-runtime sections
 - regenerate runtime-compatible files for projected sections
 - keep current runtime contracts loadable
 - avoid prompt hardcoding shortcuts
@@ -290,7 +316,7 @@ A write should be considered successful only when all of the following are true:
 
 1. patch candidate passed validation
 2. all affected files were written atomically
-3. projected runtime files were regenerated if required
+3. runtime-target files were rendered or projected if required
 4. `loadStoryPackage(packageName)` succeeded
 5. the application received the reloaded state
 
@@ -366,8 +392,8 @@ These are files owned by redesign-era authoring surfaces.
 
 Examples:
 
-- future `worldbase-cast` authoring source
-- future section-local richer models
+- a future projected section authoring source
+- future section-local richer models that should not directly edit runtime files
 
 ### 12.2 Runtime-Compatible Files
 
@@ -403,7 +429,7 @@ This keeps page design and skill design aligned.
 Before starting the first active section page and section skill pair, the team
 should assume:
 
-1. every section must declare whether it is `direct-backed` or `projected`
+1. every section must declare whether it is `direct-runtime` or `projected`
 2. every section skill must emit operations that the bridge can validate
 3. every section page must save through the same bridge path
 4. no section may invent its own ad hoc writeback flow
@@ -415,7 +441,7 @@ Any future coding plan derived from this bridge document must preserve:
 1. no browser filesystem authority
 2. no direct file writes from coordinator code
 3. no page-specific repository duplication
-4. no runtime prompt hardcoding as a fallback for bad projection design
+4. no runtime prompt hardcoding as a fallback for bad rendering or projection design
 5. no save success state without reload verification
 6. no modeling of the bridge as an extra LLM skill
 7. no coordinator rollout without adding a server-side write entry to the current webapp

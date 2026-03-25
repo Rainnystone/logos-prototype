@@ -152,6 +152,19 @@ not:
 - general writing assistant
 - prompt magician
 
+### 5.5 Coordinator Preservation Rule
+
+The coordinator should preserve human-authored meaning by default.
+
+In practice, this means:
+
+- map author input into approved fields
+- keep repair narrow
+- fix input-side problems before considering anything broader
+- stop and escalate if a valid save would require changing author meaning
+
+Coding agents should not turn the coordinator into a silent rewriting layer.
+
 ## 6. Skill Inventory
 
 ### 6.1 Required Section Skills
@@ -249,6 +262,7 @@ The approved request flow is:
 - the first legal output from a skill is a structured patch candidate
 - only validated patches may be written
 - successful writes must be followed by reload and aggregation
+- repair should prefer input-side fixes over system-side changes
 
 ## 9. Coordinator Prompt Contract
 
@@ -375,7 +389,19 @@ The current app still needs explicit adaptation work in this area:
 - accept page saves and coordinator patch results through the same deterministic bridge
 - return reloaded package or section state after persistence
 
-### 12.1 Likely Existing Code Areas The Bridge Will Touch
+### 12.1 Current `world-base.yaml` Reality
+
+The current runtime reads [`src/story-packages/sample-scene/world-base.yaml`](../../src/story-packages/sample-scene/world-base.yaml)
+coarsely, not as deeply structured per-character data.
+
+For the current implementation phase, this matters a lot:
+
+- `worldbase-cast` does not need a heavy separate authoring source file yet
+- the bridge can stay lighter by rendering approved section inputs into the existing runtime blocks
+- the intended write target in v1 remains `world-base.yaml`
+- the coordinator still should not freely write that file; deterministic bridge formatting remains required
+
+### 12.2 Likely Existing Code Areas The Bridge Will Touch
 
 Based on the current codebase, coding agents should expect the bridge-related
 work to touch more than one layer of the existing webapp.
@@ -392,10 +418,10 @@ The current likely touch list includes:
 Likely new code areas include:
 
 - a server-side persistence entry under `src/app/` or server-action equivalents
-- repository and projection code under `src/server/` or another clearly bounded server-side location
+- repository and rendering/projection code under `src/server/` or another clearly bounded server-side location
 - section-owned authoring schemas and tests under `src/types/` and `src/story-packages/`
 
-### 12.2 Coding Agent Search Rule
+### 12.3 Coding Agent Search Rule
 
 The list above is a starting map, not an exhaustive file lock.
 

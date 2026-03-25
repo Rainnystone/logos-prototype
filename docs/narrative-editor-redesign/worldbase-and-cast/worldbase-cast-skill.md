@@ -19,7 +19,7 @@ generation for the `WorldBase & Cast` section.
 It is not responsible for:
 
 - file writes
-- projection into final runtime files
+- final rendering into runtime files
 - deterministic validation
 - final save success state
 
@@ -34,13 +34,13 @@ This skill supports the section that owns:
 - ordinary supporting cast text
 - location pool text
 
-This section should be treated as a projected section.
+This section should be treated as a direct-runtime section in V1.
 
 That means:
 
-- the skill should target section-owned authoring data
-- the bridge later projects runtime-compatible output
-- the skill should not treat `world-base.yaml` as the authoring source of truth
+- the page and skill can use richer structured inputs than the current runtime file exposes
+- the bridge later renders runtime-compatible output directly into [`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml)
+- the skill should not free-write `world-base.yaml`; deterministic bridge formatting still owns that step
 
 ## 3. Approved Responsibilities
 
@@ -226,6 +226,7 @@ It should not freely repair:
 - cross-file persistence contracts
 - bridge ownership issues
 - runtime projection contracts
+- runtime rendering rules inside the bridge
 
 ## 11. Sample Guidance For Coding Agents
 
@@ -284,8 +285,8 @@ The correct ownership split is:
 - page gathers author inputs
 - skill interprets and patches section-owned data
 - bridge validates and persists
-- projection generates runtime-compatible output
-- runtime continues consuming the projected form
+- bridge rendering generates runtime-compatible output
+- runtime continues consuming the rendered form
 
 That split is the main reason this skill should not directly author the final
 runtime world-base file.
