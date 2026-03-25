@@ -37,6 +37,7 @@ Current active follow-up documents:
 - `worldbase-and-cast/worldbase-cast-skill.md`
 - `scene-phase-authoring/scene-phase-authoring-page.md`
 - `scene-phase-authoring/scene-phase-authoring-skill.md`
+- `control-modules/control-modules-runtime-adaptation.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.
@@ -55,6 +56,7 @@ Adopted section folders are:
 
 - `worldbase-and-cast/`
 - `scene-phase-authoring/`
+- `control-modules/`
 
 ## Archive
 

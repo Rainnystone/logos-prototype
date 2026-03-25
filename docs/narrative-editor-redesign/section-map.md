@@ -85,6 +85,28 @@
 - `gradientType` 与 `routerHint` 都是选择项，而不是自由文本
 - `phaseId` 与 `phaseIndex` 继续由代码生成
 
+### 3. `control-modules/`
+
+作用：
+
+- 承载 `控制模块 (Control Modules)` 这一组 active 文档
+
+当前文件：
+
+- [control-modules/control-modules-runtime-adaptation.md](control-modules/control-modules-runtime-adaptation.md)
+
+当前结论：
+
+- 这是该 section 的第一份 active 文档
+- 这一页暂不从 page 开始，而是先从系统适配边界开始
+- 该 section 负责：
+  - 光锥坍缩替换式自定义
+  - Director Note Layer 附加式自定义
+  - Auditor Question 结构化自定义
+  - Beat Volume 低中高定义
+  - Router Profile 结构化新增/编辑
+- 该 section 不负责 scene / phase 的故事骨架编辑
+
 ## 推荐阅读顺序
 
 当 coding agent 要进入某个 section 时，推荐顺序是：

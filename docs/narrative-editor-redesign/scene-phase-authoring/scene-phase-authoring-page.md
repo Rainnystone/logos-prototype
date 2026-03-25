@@ -79,14 +79,20 @@ this page.
 Approved rule:
 
 - `gradientType` is selected from the runtime-approved gradient value set
-- `routerHint` is selected from the active story package's currently loaded route names, for example from [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
+- `routerHint` is selected from the active story package's effective router-profile set, for example from the route names currently loaded from [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
 
 That means:
 
-- `routerHint` should use a dropdown menu backed by the currently loaded route list
+- `routerHint` should use a dropdown menu backed by the currently effective route list
 - `gradientType` should use an explicit bounded selector such as dropdown or segmented control
 - `routerHint` is author-selected but code-populated; the author never types arbitrary router text
 - `gradientType` is author-selected but code-bounded; do not hardcode a second competing option list in the page
+
+Cross-section dependency note:
+
+- this page does not own router profile definitions
+- future router-profile create/edit belongs to `控制模块 (Control Modules)`
+- this page only consumes the active router-profile set after that section has defined it
 
 Do not make the author type arbitrary gradient or router text in V1.
 
@@ -237,7 +243,7 @@ The control strip contains:
 For V1:
 
 - gradient type is a bounded selector from approved gradient values
-- router hint is a dropdown backed by the active story package's currently loaded route list
+- router hint is a dropdown backed by the active story package's currently effective router-profile set
 - neither field should appear as a freeform textarea or arbitrary text input
 - if a stored router value is no longer in the loaded route list, show it as stale or invalid and require reselection
 
@@ -419,6 +425,7 @@ When building this page, coding agents should follow these rules:
 16. do recompute `phaseIndex` from current order after add/remove/reorder
 17. do treat `beatCount` as code-owned fixed `4` in V1
 18. do treat phase-card summaries as display-only derived snippets
+19. do treat `routerHint` options as downstream data from the active router-profile set, not as page-owned definitions
 
 ## 11. Pending Pairing Note
 

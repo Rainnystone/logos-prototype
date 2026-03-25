@@ -73,6 +73,8 @@
 - [x] 锁定本 skill 保护 `scene start + mainAxis + phaseGoal + endLine` 的叙事主干
 - [x] 锁定 `gradientType` 与 `routerHint` 作为选择项进入 skill，而不是自由文本
 - [x] 锁定 `phaseId` 与 `phaseIndex` 继续由代码生成
+- [x] 锁定 `故事结构` 页的 `routerHint` 选项来自有效 router-profile 集合，而不是页面本地定义
+- [ ] 为 `control-modules-skill` 写出职责边界与禁区
 
 ### A3. 收敛验证与写回边界
 
@@ -87,6 +89,8 @@
 - [x] 细化 direct-runtime section 与 projected section 的适用边界
 - [x] 锁定 `worldbase-cast` v1 先直接写 `world-base.yaml`
 - [ ] 明确 page save / coordinator save 共享的服务端入口协议
+- [x] 为 `控制模块 (Control Modules)` 建立 section-local runtime adaptation 文档
+- [x] 锁定这份文档不并入全局 `bridge`
 
 ### A4. 建立 redesign 账本与阅读路径
 
@@ -96,6 +100,7 @@
 - [x] 已为第一组 active section 文档同步更新 README 与本账本
 - [x] 创建全局 `section-map.md`
 - [x] 为 `WorldBase & Cast` 创建独立 section 文件夹
+- [x] 为 `Control Modules` 创建独立 section 文件夹
 
 ## 下一阶段候选
 
@@ -120,6 +125,7 @@
 - [ ] 细化 round-trip reload 结果协议
 - [ ] 细化 UI 如何接收 coordinator 结果
 - [ ] 细化 coordinator 可调用的 server-side write entry 形式
+- [x] 为 `控制模块` 写出 section-local runtime adaptation 边界
 
 ### Stage D：重新回到 section pages
 
@@ -148,6 +154,8 @@
 - [x] 锁定 `gradientType` 与 `routerHint` 使用点选，不使用自由文本
 - [x] 锁定本页要显式表达“scene 起点 + mainAxis + 每个 phaseGoal + endLine”的叙事主干
 - [x] 为故事结构页补充对应 skill 文档
+- [x] 先收敛 `控制模块` 的 runtime adaptation 边界
+- [x] 补充 `控制模块` 与 `故事结构` 之间的 router-profile 依赖关系
 - [ ] 重新评估控制模块页
 - [ ] 重新评估组装与校验页
 

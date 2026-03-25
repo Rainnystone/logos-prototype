@@ -35,6 +35,7 @@ Current active redesign documents:
 - [worldbase-and-cast/worldbase-cast-skill.md](worldbase-and-cast/worldbase-cast-skill.md)
 - [scene-phase-authoring/scene-phase-authoring-page.md](scene-phase-authoring/scene-phase-authoring-page.md)
 - [scene-phase-authoring/scene-phase-authoring-skill.md](scene-phase-authoring/scene-phase-authoring-skill.md)
+- [control-modules/control-modules-runtime-adaptation.md](control-modules/control-modules-runtime-adaptation.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 Coding agents should start from this file, then read the coordinator agent design
@@ -196,6 +197,8 @@ Current approved detail level:
 - `scene-phase-authoring-skill` is now defined as a field-orchestration skill
 - it protects the section narrative spine while returning structured scene and phase patches
 - it does not generate `phaseId` or `phaseIndex`
+- `control-modules` now starts from a section-local runtime adaptation document
+- that document exists because this section touches several control chains and should not bloat the global bridge
 
 ### 6.2 Required Cross-Cutting Skills
 

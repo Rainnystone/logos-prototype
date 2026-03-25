@@ -93,8 +93,14 @@ It should also be able to consume:
 - current section draft state
 - current selected phase identity from the page
 - current allowed gradient options
-- current available route names from the active story package's loaded route list, for example from [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
+- current available route names from the active story package's effective router-profile set, for example from [`router-lexicon.yaml`](../../../src/story-packages/sample-scene/router-lexicon.yaml)
 - validation repair payloads returned by deterministic code
+
+Cross-section dependency note:
+
+- this skill consumes router-profile outputs
+- it does not define or edit router profiles itself
+- router-profile create/edit belongs to `控制模块 (Control Modules)`
 
 ## 6. Approved Output Shape
 
@@ -261,7 +267,7 @@ The skill should:
 - accept the selected route name from the page dropdown
 - preserve it accurately in the patch
 - never treat it as open prose
-- never invent a router name outside the currently loaded route list
+- never invent a router name outside the currently effective router-profile set
 
 ### 8.6 Note
 
