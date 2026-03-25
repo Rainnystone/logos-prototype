@@ -131,7 +131,14 @@
 - [x] 锁定主角单卡、核心角色横向卡带、反派横向卡带
 - [x] 锁定左侧人物缩略卡只显示“姓名 / 性别 / 性格”
 - [x] 锁定页面需要 `提交` 与 `重置` 动作
-- [ ] 重新评估故事结构页
+- [x] 重新评估故事结构页
+- [x] 产出 `scene-phase-authoring/scene-phase-authoring-page.md`
+- [x] 锁定 `故事结构 (Scene & Phase Authoring)` 的页面骨架
+- [x] 锁定“左上 scene / 左下 phase 卡带 / 右上 phase 编辑 / 右下 coordinator”的布局
+- [x] 锁定 phase 卡片显示 note 摘要
+- [x] 锁定 `phaseId` 与 `phaseIndex` 由代码生成
+- [x] 锁定 V1 维持固定 4 beat
+- [x] 锁定本页使用 TailwindCSS，而不是自定义普通 CSS
 - [ ] 重新评估控制模块页
 - [ ] 重新评估组装与校验页
 

@@ -35,6 +35,7 @@ Current active follow-up documents:
 - `section-map.md`
 - `worldbase-and-cast/worldbase-cast-page.md`
 - `worldbase-and-cast/worldbase-cast-skill.md`
+- `scene-phase-authoring/scene-phase-authoring-page.md`
 - `TODO.zh-CN.md`
 
 Do not treat archived section drafts or archived plans as active implementation guidance.

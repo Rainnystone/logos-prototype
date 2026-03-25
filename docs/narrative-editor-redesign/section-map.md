@@ -62,6 +62,25 @@
 - 核心角色和反派角色使用横向窄卡片卡带
 - 页面右上是完整编辑区，右下是技术辅助块
 
+### 2. `scene-phase-authoring/`
+
+作用：
+
+- 承载 `故事结构 (Scene & Phase Authoring)` 这一页的 active 文档
+
+当前文件：
+
+- [scene-phase-authoring/scene-phase-authoring-page.md](scene-phase-authoring/scene-phase-authoring-page.md)
+
+当前结论：
+
+- 左上是固定 scene 配置块
+- 左下是 phase 横向窄卡片卡带
+- 右上是当前 phase 的详细编辑区
+- 右下是 coordinator
+- phase 的梯度等强相关控制项内嵌在右上，而不是整页跳去控制模块
+- V1 保持 4 beat，不开放自定义 beat 数
+
 ## 推荐阅读顺序
 
 当 coding agent 要进入某个 section 时，推荐顺序是：
