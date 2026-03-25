@@ -11,10 +11,6 @@ export function resolveStoryPackageRoot(packageName: string): string {
   return resolvePackageRoot(packageName);
 }
 
-function resolveWorldBasePath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
-}
-
 export async function ensureStoryPackageExists(packageName: string): Promise<string> {
   const packageRoot = resolveStoryPackageRoot(packageName);
 
@@ -25,6 +21,15 @@ export async function ensureStoryPackageExists(packageName: string): Promise<str
   }
 
   return packageRoot;
+}
+
+function resolveWorldBasePath(packageName: string): string {
+  return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
+}
+
+export async function readWorldBaseDraftContents(packageName: string): Promise<string> {
+  const worldBasePath = resolveWorldBasePath(packageName);
+  return readFile(worldBasePath, 'utf8');
 }
 
 export async function persistWorldBaseDraft(
@@ -46,4 +51,12 @@ export async function persistWorldBaseDraft(
   await writeFile(worldBasePath, `${YAML.stringify(nextWorldBase)}`, 'utf8');
 
   return ['world-base.yaml'];
+}
+
+export async function restoreWorldBaseDraft(
+  packageName: string,
+  originalContents: string,
+): Promise<void> {
+  const worldBasePath = resolveWorldBasePath(packageName);
+  await writeFile(worldBasePath, originalContents, 'utf8');
 }

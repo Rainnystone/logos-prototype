@@ -4,16 +4,9 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import { parseWithSchema } from '@/lib/validation';
-import type { SectionId } from '@/authoring/contracts';
+import { SECTION_IDS } from '@/authoring/contracts';
 
-const authoringSectionIds = [
-  'worldbase-cast',
-  'scene-phase-authoring',
-  'control-modules',
-  'package-wiring-validation',
-] as const satisfies readonly SectionId[];
-
-const AuthoringSectionIdSchema = z.enum(authoringSectionIds);
+const AuthoringSectionIdSchema = z.enum(SECTION_IDS);
 
 export const AuthoringStateSchema = z
   .object({

@@ -1,10 +1,12 @@
 import type { StoryPackage } from '@/types';
 
-export type SectionId =
-  | 'worldbase-cast'
-  | 'scene-phase-authoring'
-  | 'control-modules'
-  | 'package-wiring-validation';
+export const SECTION_IDS = [
+  'worldbase-cast',
+  'scene-phase-authoring',
+  'control-modules',
+  'package-wiring-validation',
+] as const;
+export type SectionId = (typeof SECTION_IDS)[number];
 
 export type SaveSource = 'page' | 'coordinator' | 'repair';
 

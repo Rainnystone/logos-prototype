@@ -1,6 +1,11 @@
-import { type SaveRequest, type SaveResult } from '@/authoring/contracts';
+import { SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/contracts';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
-import { ensureStoryPackageExists, persistWorldBaseDraft, resolveStoryPackageRoot } from '@/authoring/persistence/repository';
+import {
+  ensureStoryPackageExists,
+  persistWorldBaseDraft,
+  readWorldBaseDraftContents,
+  restoreWorldBaseDraft,
+} from '@/authoring/persistence/repository';
 import {
   createSaveAppliedResult,
   createSaveAppliedWithWarningsResult,
@@ -8,18 +13,11 @@ import {
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
 import { reloadStoryPackage } from '@/authoring/persistence/reload';
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import type { StoryPackage } from '@/types';
 
-const supportedSectionIds = new Set<SaveRequest['sectionId']>([
-  'worldbase-cast',
-  'scene-phase-authoring',
-  'control-modules',
-  'package-wiring-validation',
-]);
+const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
 
-const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>(['worldbase-cast']);
+const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([SECTION_IDS[0]]);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -133,10 +131,6 @@ function extractWorldBaseMainCharactersDraft(request: SaveRequest): string | nul
   return (patchCandidate as Record<string, unknown>).value as string;
 }
 
-function resolveWorldBasePath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
-}
-
 export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> {
   const { request, issues: payloadIssues } = normalizeSaveRequest(input);
   const validationIssues = [...payloadIssues, ...validateSaveRequest(request)];
@@ -182,29 +176,48 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
   }
 
   if (request.dryRun) {
-    return createSaveBlockedResult(
-      {
-        requestId: request.requestId,
-        packageName: request.packageName,
-        sectionId: request.sectionId,
-        showLocally: true,
-        showInGlobalDiagnostics: false,
-      },
-      ['dryRun completed without writing files.'],
-    );
+    try {
+      await ensureStoryPackageExists(request.packageName);
+      const reloadedSectionState = await reloadStoryPackage(request.packageName);
+
+      return createSaveAppliedWithWarningsResult(
+        {
+          requestId: request.requestId,
+          packageName: request.packageName,
+          sectionId: request.sectionId,
+          showLocally: true,
+          showInGlobalDiagnostics: false,
+        },
+        reloadedSectionState,
+        ['dryRun completed without writing files.'],
+        [],
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      return createSaveFailedResult(
+        {
+          requestId: request.requestId,
+          packageName: request.packageName,
+          sectionId: request.sectionId,
+          showLocally: true,
+          showInGlobalDiagnostics: true,
+        },
+        message,
+      );
+    }
   }
 
   try {
     await ensureStoryPackageExists(request.packageName);
-    const worldBasePath = resolveWorldBasePath(request.packageName);
-    const originalWorldBaseContents = await readFile(worldBasePath, 'utf8');
+    const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
     const changedFiles = await persistWorldBaseDraft(request.packageName, nextMainCharacters);
     let reloadedSectionState: StoryPackage;
 
     try {
       reloadedSectionState = await reloadStoryPackage(request.packageName);
     } catch (reloadError) {
-      await writeFile(worldBasePath, originalWorldBaseContents, 'utf8');
+      await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);
       throw reloadError;
     }
 

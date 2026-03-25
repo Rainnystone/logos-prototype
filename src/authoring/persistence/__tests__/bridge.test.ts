@@ -280,7 +280,7 @@ describe('saveSectionDraft', () => {
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
-  it('returns a blocked dryRun result without changing files', async () => {
+  it('returns a warning-style dryRun result without changing files', async () => {
     prepareTestPackage();
     const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
@@ -302,9 +302,10 @@ describe('saveSectionDraft', () => {
       },
     });
 
-    expect(result.kind).toBe('save_blocked');
-    if (result.kind === 'save_blocked') {
-      expect(result.blockingIssues).toContain('dryRun completed without writing files.');
+    expect(result.kind).toBe('save_applied_with_warnings');
+    if (result.kind === 'save_applied_with_warnings') {
+      expect(result.warnings).toContain('dryRun completed without writing files.');
+      expect(result.runtimeImpactSummary.changedFiles).toEqual([]);
     }
     expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
