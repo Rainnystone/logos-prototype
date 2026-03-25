@@ -18,7 +18,7 @@ section.
 This page is not the architectural starting point of the redesign.
 It is a downstream authoring surface that must fit:
 
-- the `router-controller` coordinator
+- the `coordinator`
 - the deterministic bridge
 - the approved direct write path into [`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml)
 

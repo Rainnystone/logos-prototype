@@ -35,11 +35,18 @@
 
 ## 当前 Section 文件夹
 
+当前已批准的 4 个 section 正式名称：
+
+1. `世界与角色 (WorldBase & Cast)`
+2. `故事结构 (Scene & Phase Authoring)`
+3. `控制模块 (Control Modules)`
+4. `组装与校验 (Package Wiring & Validation)`
+
 ### 1. `worldbase-and-cast/`
 
 作用：
 
-- 承载 `WorldBase & Cast` 这一页和对应 skill 的 active 文档
+- 承载 `世界与角色 (WorldBase & Cast)` 这一页和对应 skill 的 active 文档
 
 当前文件：
 
@@ -76,4 +83,3 @@
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
 如果某个 section 的组织方式发生变化，也要优先更新这里，避免 coding agent 读到旧路径。
-

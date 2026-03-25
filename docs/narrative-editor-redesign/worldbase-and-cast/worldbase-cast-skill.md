@@ -99,6 +99,41 @@ The output should, in substance, be able to describe:
 - what assumptions were made
 - whether the skill needs a human decision
 
+### 6.1 Approved V1 Target Mapping
+
+In V1, this skill should aim at a fixed runtime target shape in
+[`world-base.yaml`](../../../src/story-packages/sample-scene/world-base.yaml).
+
+The approved mapping is:
+
+- `mainCharacters`
+  - world base setting
+  - world rules / prohibitions / anomalous properties
+  - genre tone and prose baseline
+  - hero
+  - core cast
+  - antagonists
+- `npcCharacters`
+  - ordinary supporting cast
+- `locationPatch`
+  - location pool / scene elements
+
+This means the skill should organize content for those three runtime targets,
+but it should still return structured patch data rather than directly writing the
+file.
+
+### 6.2 Approved V1 Block Order
+
+For `mainCharacters`, the block order should be fixed:
+
+1. world header block
+2. hero block
+3. core cast blocks
+4. antagonist blocks
+
+Coding agents should treat this order as part of the approved behavior, not as a
+stylistic preference.
+
 ## 7. Relation To The Page
 
 The page and the skill have different jobs.
@@ -148,6 +183,13 @@ the skill should:
 - help normalize phrasing when asked
 - avoid collapsing these into over-structured micro-fields too early
 
+For V1 rendering, these three textareas should be merged into one fixed
+`world header block` before the hero block:
+
+1. world base setting
+2. world rules / prohibitions / anomalous properties
+3. genre tone and prose baseline
+
 ### 8.2 Hero
 
 The hero is unique.
@@ -178,11 +220,38 @@ It may also support the optional antagonist-only field:
 
 V1 should remain lightweight here.
 
-Ordinary supporting cast can remain a freeform section-owned text block.
+Ordinary supporting cast can remain a freeform section input.
 
 The skill may normalize or reorganize that text when asked, but it should not
 silently force all ordinary supporting cast into the same detailed structured
 card model as hero / core cast / antagonists.
+
+### 8.5.1 Ordinary Supporting Cast Normalization Rule
+
+Although the page stays lightweight, the saved output should not remain a raw
+unshaped text dump.
+
+The skill should:
+
+- split ordinary supporting cast into person-level entries when the author input makes that possible
+- preserve leftover ambiguous text instead of inventing missing facts
+- render each recognized person under a fixed small heading
+- use a stable paragraph order for each recognized person
+
+Recommended per-person output shape:
+
+1. name
+2. gender
+3. personality
+4. age
+5. occupation
+6. short paragraph summary
+
+If the input is too ambiguous to split safely:
+
+- keep it as a grouped fallback block
+- do not fabricate extra characters
+- do not guess missing relationships as facts
 
 ### 8.6 Location Pool
 
@@ -191,7 +260,26 @@ Location pool / scene elements remain a freeform text block in V1.
 The skill may help organize or clarify it, but should not require a deeper
 schema before the section is saved.
 
-## 9. Approved Summary-Card Rule
+## 9. Approved Runtime Rendering Intent
+
+This skill is designed around one practical fact:
+
+- the current runtime does not read per-character structured objects from `world-base.yaml`
+- it reads a few larger text blocks
+
+So the skill should optimize for:
+
+- stable block composition
+- stable order
+- stable labels
+
+not for:
+
+- preserving raw textarea shape at all costs
+- inventing a hidden second authoring source
+- free-writing final prose without fixed structure
+
+## 10. Approved Summary-Card Rule
 
 Left-rail character cards are summary cards.
 
@@ -211,7 +299,7 @@ This applies to the hero as well.
 The hero still appears as a summary card on the left and opens in the right-side
 full editor when selected.
 
-## 10. Repair Expectations
+## 11. Repair Expectations
 
 When deterministic validation returns a repairable issue, this skill may help
 repair:
@@ -228,7 +316,7 @@ It should not freely repair:
 - runtime projection contracts
 - runtime rendering rules inside the bridge
 
-## 11. Sample Guidance For Coding Agents
+## 12. Sample Guidance For Coding Agents
 
 Coding agents should think of this skill as producing a patch like this in
 substance:
@@ -264,7 +352,16 @@ These are shape examples only.
 
 Do not treat them as the final persistence format.
 
-## 12. Coding Agent Rules
+### 12.1 Additional V1 Rendering Guidance
+
+Coding agents should assume:
+
+- the skill prepares content for `mainCharacters`, `npcCharacters`, and `locationPatch`
+- the bridge applies the final deterministic formatting
+- the skill may restructure author input into the approved block order
+- the skill must not silently change meaning while doing that restructuring
+
+## 13. Coding Agent Rules
 
 When implementing or prompting this skill:
 
@@ -275,8 +372,11 @@ When implementing or prompting this skill:
 5. do not hardcode sample story prose into prompts or code
 6. do not let the skill become a file writer
 7. do not let the skill become a cross-section planner by default
+8. do not let the skill output arbitrary prose order for `mainCharacters`
+9. do not leave ordinary supporting cast as an unstable raw dump when the input can be safely split
+10. do not fabricate missing character facts just to complete a nicer block
 
-## 13. Relationship To Runtime
+## 14. Relationship To Runtime
 
 This skill should not be coupled directly to current runtime prose layout.
 

@@ -5,7 +5,7 @@
 - Date: 2026-03-23
 - Status: active draft
 - Parent: [master-record.md](master-record.md)
-- Scope: `router-controller` coordinator only
+- Scope: `coordinator` only
 
 ## 1. Purpose
 
@@ -29,11 +29,11 @@ handed off to deterministic persistence code.
 
 Approved coordinator name:
 
-- `router-controller`
+- `coordinator`
 
 ### 2.2 Role
 
-`router-controller` is a lightweight semantic router and repair-loop controller.
+`coordinator` is a lightweight semantic router and repair-loop controller.
 
 Its responsibilities are:
 
@@ -47,7 +47,7 @@ Its responsibilities are:
 
 ### 2.3 Non-Responsibilities
 
-`router-controller` must not:
+`coordinator` must not:
 
 - write files directly
 - emit YAML as the system source of truth
@@ -338,7 +338,7 @@ The coordinator and skills should use contract-first prompts.
 ### 9.1 Coordinator System Prompt Skeleton
 
 ```text
-You are the LOGOS router-controller coordinator.
+You are the LOGOS coordinator.
 
 Your job is to route author intent into section-scoped structured patch candidates.
 

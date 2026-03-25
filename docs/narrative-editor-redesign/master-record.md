@@ -38,7 +38,14 @@ Current active redesign documents:
 Coding agents should start from this file, then read the coordinator agent design
 before attempting implementation planning.
 
-The first refreshed page + skill pair is now the `WorldBase & Cast` section.
+The first refreshed page + skill pair is now the `世界与角色 (WorldBase & Cast)` section.
+
+Approved section names for UI and design docs:
+
+1. `世界与角色 (WorldBase & Cast)`
+2. `故事结构 (Scene & Phase Authoring)`
+3. `控制模块 (Control Modules)`
+4. `组装与校验 (Package Wiring & Validation)`
 
 Section pages and their matching skills should now live inside per-section
 folders instead of remaining as loose top-level files.
@@ -81,7 +88,7 @@ The following assumptions remain approved:
 
 The approved redesign shape is:
 
-- `1` coordinator agent: `router-controller`
+- `1` coordinator agent: `coordinator`
 - `4` section skills
 - `1` cross-section reconciliation skill
 - `1` legacy migration skill
@@ -109,7 +116,7 @@ Important clarification:
 
 Approved coordinator name:
 
-- `router-controller`
+- `coordinator`
 
 ### 5.2 Coordinator Role
 
@@ -177,6 +184,13 @@ The approved minimum skill set is:
 4. `package-wiring-validation-skill`
 
 Each section skill is responsible only for its own section-owned authoring model.
+
+Current approved detail level:
+
+- `worldbase-cast-skill` is now defined as a fixed-target skill
+- it prepares content for [`world-base.yaml`](../../src/story-packages/sample-scene/world-base.yaml)
+- it does not free-write the file
+- it relies on deterministic bridge formatting for final block rendering
 
 ### 6.2 Required Cross-Cutting Skills
 

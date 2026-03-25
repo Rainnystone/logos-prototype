@@ -16,7 +16,7 @@ The redesign is now `coordinator-first`, not `page-first`.
 
 This means the current design priority is:
 
-- define the `router-controller` coordinator agent
+- define the `coordinator` agent
 - define the section skill inventory around that coordinator
 - define the validation, repair, writeback, and reload flow
 - only then revisit section pages as downstream surfaces
@@ -45,7 +45,6 @@ Each section should now have its own folder.
 
 That folder should contain:
 
-- a section-level map file
 - the page doc
 - the matching skill doc
 - any approved section-specific reference images or notes

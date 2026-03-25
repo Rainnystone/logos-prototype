@@ -56,7 +56,7 @@ used by:
 
 - all section pages
 - all section skills
-- the `router-controller`
+- the `coordinator`
 - the repository and validation layer
 
 So this topic should live in its own active document rather than being folded

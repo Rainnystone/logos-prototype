@@ -18,7 +18,7 @@
 ## 已冻结决策
 
 - [x] redesign 当前切换为 `coordinator-first`
-- [x] active coordinator 名称固定为 `router-controller`
+- [x] active coordinator 名称固定为 `coordinator`
 - [x] 架构采用 `1 coordinator + 4 section skills + cross-section-reconciler-skill + legacy-migration-skill`
 - [x] `authoring runtime bridge` 明确定义为 deterministic 基础设施，而不是 skill
 - [x] 文件写回、校验、映射、reload 留在 deterministic code
@@ -65,6 +65,8 @@
 - [ ] 为每个 skill 写出职责边界与禁区
 - [x] 为 `worldbase-cast-skill` 写出职责边界与禁区
 - [x] 说明 `worldbase-cast-skill` 与 `WorldBase & Cast` page 的关系
+- [x] 锁定 `worldbase-cast-skill` 的固定目标映射与块顺序
+- [x] 锁定普通配角的轻量切分与统一分段规则
 
 ### A3. 收敛验证与写回边界
 
@@ -95,6 +97,7 @@
 
 - [x] 创建 `section-skills.md`
 - [x] 为 `worldbase-cast-skill` 写 contract 草案
+- [x] 将 `worldbase-cast-skill` 细化到可执行的 V1 规则
 - [x] 将第一组 section 文档迁入独立文件夹
 - [ ] 为 `scene-phase-authoring-skill` 写 contract 草案
 - [ ] 为 `control-modules-skill` 写 contract 草案
@@ -114,6 +117,11 @@
 
 ### Stage D：重新回到 section pages
 
+- [x] 锁定 4 个 section 的正式名称：
+  - `世界与角色 (WorldBase & Cast)`
+  - `故事结构 (Scene & Phase Authoring)`
+  - `控制模块 (Control Modules)`
+  - `组装与校验 (Package Wiring & Validation)`
 - [ ] 在 coordinator 架构稳定后，重新定义 page surfaces
 - [x] 重新评估世界与角色页
 - [x] 产出 `worldbase-and-cast/worldbase-cast-page.md`
