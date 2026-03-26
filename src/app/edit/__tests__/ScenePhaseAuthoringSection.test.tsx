@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -19,7 +19,6 @@ describe('ScenePhaseAuthoringSection', () => {
         packageName="sample-scene"
         value={draft}
         routerOptions={['Investigation', 'Counterplay']}
-        helperPanel={<div>Helper marker</div>}
         onChange={onChange}
         onSubmit={onSubmit}
         onReset={onReset}
@@ -27,13 +26,12 @@ describe('ScenePhaseAuthoringSection', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Scene & Phase Authoring' })).toBeInTheDocument();
+    expect(screen.queryByText('Helper marker')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Scene phase workspace' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Scene Name' })).toHaveValue('Signal Room');
     expect(screen.getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Gradient Type' })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Phase rail slider' })).toBeInTheDocument();
-
-    const detailColumn = screen.getByLabelText('Scene Phase Detail Column');
-    expect(within(detailColumn).getByText('Helper marker')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Counterplay Lock' }));
     expect(screen.getByRole('textbox', { name: 'Phase Goal' })).toHaveValue(

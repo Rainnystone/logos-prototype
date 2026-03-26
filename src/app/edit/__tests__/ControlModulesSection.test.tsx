@@ -26,6 +26,8 @@ describe('ControlModulesSection', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Control Modules' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Control stack column' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Module editor column' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Light Cone Collapse' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Boundary Guidance' })).toBeInTheDocument();
 

@@ -83,6 +83,8 @@ describe('WorldBaseCastSection', () => {
       />,
     );
 
+    expect(screen.getByRole('region', { name: 'WorldBase workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Character editor column' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'WorldBase & Cast' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'World Base Setting' })).toHaveValue('World base');
     expect(screen.getByRole('button', { name: /Hero One/ })).toBeInTheDocument();

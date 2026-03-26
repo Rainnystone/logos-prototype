@@ -308,8 +308,11 @@ export function WorldBaseCastSection({
         <p className="panel-note">{packageName}</p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.9fr)]">
-        <div className="max-h-[72vh] space-y-6 overflow-y-auto pr-2">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]">
+        <section
+          aria-label="WorldBase workspace"
+          className="max-h-[72vh] space-y-6 overflow-y-auto pr-2"
+        >
           <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
             <div className="mb-4">
               <p className="panel-eyebrow">World Base</p>
@@ -399,9 +402,9 @@ export function WorldBaseCastSection({
               </label>
             </div>
           </section>
-        </div>
+        </section>
 
-        <section className="space-y-4">
+        <section aria-label="Character editor column" className="space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>

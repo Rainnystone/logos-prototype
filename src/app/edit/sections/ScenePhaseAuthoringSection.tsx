@@ -177,7 +177,11 @@ export function ScenePhaseAuthoringSection({
         <p className="panel-note">{packageName}</p>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(21rem,0.94fr)]">
+      <div
+        role="region"
+        aria-label="Scene phase workspace"
+        className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(21rem,0.94fr)]"
+      >
         <div className="max-h-[72vh] space-y-6 overflow-y-auto pr-2">
           <section className="rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
             <div className="mb-4">

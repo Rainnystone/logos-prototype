@@ -369,8 +369,12 @@ export function ControlModulesSection({
         <p className="panel-note">{packageName}</p>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_1fr]">
-        <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)]">
+        <section
+          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+          role="region"
+          aria-label="Control stack column"
+        >
           <div className="mb-4">
             <p className="panel-eyebrow">Control Stack</p>
             <h3 className="text-xl font-semibold text-slate-900">Layered Modules</h3>
@@ -410,11 +414,11 @@ export function ControlModulesSection({
           </div>
         </section>
 
-        <section className="space-y-4">
+        <section className="space-y-4" role="region" aria-label="Module editor column">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <p className="panel-eyebrow">Selected Module Editor</p>
+                <p className="panel-eyebrow">Module Editor Column</p>
                 <h3 className="text-xl font-semibold text-slate-900">{activeModule.label}</h3>
                 <p className="panel-note">{activeModule.description}</p>
               </div>

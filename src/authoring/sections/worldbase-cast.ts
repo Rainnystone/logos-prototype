@@ -282,9 +282,9 @@ function parseLegacyCharacterBlock(
   index: number,
 ): WorldBaseCharacterDraft {
   const lines = normalizeBlock(body).split('\n');
-  let capabilityBoundaryLines: string[] = [];
-  let behaviorBoundaryLines: string[] = [];
-  let fatalWeaknessLines: string[] = [];
+  const capabilityBoundaryLines: string[] = [];
+  const behaviorBoundaryLines: string[] = [];
+  const fatalWeaknessLines: string[] = [];
   let currentSection: 'capability' | 'behavior' | 'fatalWeakness' | null = null;
   const name = extractHeadingName(heading);
   let identityRole = '';

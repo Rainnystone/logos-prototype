@@ -40,7 +40,7 @@ export function PackageWiringValidationSection({
   }, [diagnostics.defaultDetailKey, diagnostics.detailViews, selectedDetailKey]);
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
+    <section className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,0.95fr)]">
       <div className="panel space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -58,7 +58,10 @@ export function PackageWiringValidationSection({
           </div>
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+        <section
+          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+          aria-label="Package overview column"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="panel-eyebrow">Overall Status</p>
@@ -160,8 +163,8 @@ export function PackageWiringValidationSection({
         </section>
       </div>
 
-      <section className="space-y-6">
-        <div className="panel">
+      <section className="space-y-6 xl:sticky xl:top-6" aria-label="Selected diagnostics detail">
+        <div className="panel h-full">
           <p className="panel-eyebrow">Selected Detail</p>
           <h3 className="text-2xl font-semibold text-slate-900">
             {selectedDetail?.title ?? diagnostics.overallStatusView.title}
