@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-import { type ModuleScope, type SectionId } from '@/authoring/contracts';
+import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
 import { ControlModulesSection } from '@/app/edit/sections/ControlModulesSection';
+import { PackageWiringValidationSection } from '@/app/edit/sections/PackageWiringValidationSection';
 import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthoringSection';
 import { SectionTabs } from '@/app/edit/shared/SectionTabs';
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
@@ -20,6 +22,10 @@ import {
   getRouterOptions,
   type ScenePhaseAuthoringDraft,
 } from '@/authoring/sections/scene-phase-authoring';
+import {
+  buildPackageDiagnostics,
+  type PackageDiagnostics,
+} from '@/authoring/sections/package-diagnostics';
 import type { WorldBase } from '@/types';
 
 const SECTION_SUMMARIES: Record<
@@ -82,8 +88,11 @@ export function EditWorkbench({
   activeSection,
   initialState,
 }: EditWorkbenchProps) {
-  const activeSectionSummary = SECTION_SUMMARIES[activeSection];
-  const sceneName = initialState.state.sceneSpec.sceneName;
+  const [currentState, setCurrentState] = useState(initialState.state);
+  const [currentSource, setCurrentSource] = useState(initialState.source);
+  const [recentSaveResults, setRecentSaveResults] = useState<SaveResult[]>([]);
+  const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
+  const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
   const [draftWorldBase, setDraftWorldBase] = useState<WorldBase>(initialState.state.worldBase);
   const [savedWorldBase, setSavedWorldBase] = useState<WorldBase>(initialState.state.worldBase);
   const [worldBaseSaveStatus, setWorldBaseSaveStatus] = useState<string | null>(null);
@@ -104,10 +113,27 @@ export function EditWorkbench({
   );
   const [controlModulesSaveStatus, setControlModulesSaveStatus] = useState<string | null>(null);
   const [isControlModulesSaving, setIsControlModulesSaving] = useState(false);
-  const routerOptions = getRouterOptions(initialState.state.routerProfiles);
-  const phaseIds = initialState.state.phasePlans.map((phase) => phase.phaseId);
+  const activeSectionSummary = SECTION_SUMMARIES[activeSection];
+  const sceneName = currentState.sceneSpec.sceneName;
+  const routerOptions = getRouterOptions(currentState.routerProfiles);
+  const phaseIds = currentState.phasePlans.map((phase) => phase.phaseId);
+  const localDiagnostics = useMemo(
+    () =>
+      buildPackageDiagnostics({
+        packageName,
+        source: currentSource,
+        storyPackage: currentState,
+        recentSaveResults,
+      }),
+    [currentSource, currentState, packageName, recentSaveResults],
+  );
+  const diagnostics = remoteDiagnostics ?? localDiagnostics;
 
   useEffect(() => {
+    setCurrentState(initialState.state);
+    setCurrentSource(initialState.source);
+    setRecentSaveResults([]);
+    setRemoteDiagnostics(null);
     setDraftWorldBase(initialState.state.worldBase);
     setSavedWorldBase(initialState.state.worldBase);
     setWorldBaseSaveStatus(null);
@@ -122,7 +148,41 @@ export function EditWorkbench({
     setSavedControlModules(nextControlModulesDraft);
     setControlModulesSaveStatus(null);
     setIsControlModulesSaving(false);
-  }, [initialState.state, packageName]);
+  }, [initialState.source, initialState.state, packageName]);
+
+  function rememberSaveResult(result: SaveResult) {
+    setRecentSaveResults((currentResults) => {
+      const nextResults = currentResults.filter(
+        (existingResult) => existingResult.sectionId !== result.sectionId,
+      );
+
+      if (!result.showInGlobalDiagnostics) {
+        return nextResults;
+      }
+
+      return [result, ...nextResults].slice(0, 10);
+    });
+    setRemoteDiagnostics(null);
+  }
+
+  async function handleDiagnosticsRefresh() {
+    setIsDiagnosticsRefreshing(true);
+
+    try {
+      const response = await fetch(
+        `/api/authoring/packages/${encodeURIComponent(packageName)}/diagnostics`,
+      );
+
+      if (!response.ok) {
+        return;
+      }
+
+      const result = (await response.json()) as PackageDiagnostics;
+      setRemoteDiagnostics(result);
+    } finally {
+      setIsDiagnosticsRefreshing(false);
+    }
+  }
 
   async function handleWorldBaseCastSubmit() {
     setIsWorldBaseSaving(true);
@@ -146,18 +206,16 @@ export function EditWorkbench({
         },
       );
 
-      const result = (await response.json()) as {
-        readonly kind?: string;
-        readonly reloadedSectionState?: { readonly worldBase?: WorldBase };
-        readonly blockingIssues?: readonly string[];
-        readonly errorMessage?: string;
-      };
+      const result = (await response.json()) as SaveResult;
+      rememberSaveResult(result);
 
       if (
         response.ok &&
         (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
         result.reloadedSectionState?.worldBase
       ) {
+        setCurrentState(result.reloadedSectionState);
+        setCurrentSource('latest-saved');
         setDraftWorldBase(result.reloadedSectionState.worldBase);
         setSavedWorldBase(result.reloadedSectionState.worldBase);
         setWorldBaseSaveStatus('Saved and normalized.');
@@ -169,7 +227,7 @@ export function EditWorkbench({
         return;
       }
 
-      setWorldBaseSaveStatus(result.errorMessage ?? 'Save failed.');
+      setWorldBaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
     } catch {
       setWorldBaseSaveStatus('Save failed.');
     } finally {
@@ -204,18 +262,16 @@ export function EditWorkbench({
         },
       );
 
-      const result = (await response.json()) as {
-        readonly kind?: string;
-        readonly reloadedSectionState?: EditWorkbenchProps['initialState']['state'];
-        readonly blockingIssues?: readonly string[];
-        readonly errorMessage?: string;
-      };
+      const result = (await response.json()) as SaveResult;
+      rememberSaveResult(result);
 
       if (
         response.ok &&
         (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
         result.reloadedSectionState
       ) {
+        setCurrentState(result.reloadedSectionState);
+        setCurrentSource('latest-saved');
         const nextDraft = createScenePhaseAuthoringDraft(result.reloadedSectionState);
         setDraftScenePhase(nextDraft);
         setSavedScenePhase(nextDraft);
@@ -228,7 +284,7 @@ export function EditWorkbench({
         return;
       }
 
-      setScenePhaseSaveStatus(result.errorMessage ?? 'Save failed.');
+      setScenePhaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
     } catch {
       setScenePhaseSaveStatus('Save failed.');
     } finally {
@@ -264,18 +320,16 @@ export function EditWorkbench({
         },
       );
 
-      const result = (await response.json()) as {
-        readonly kind?: string;
-        readonly reloadedSectionState?: EditWorkbenchProps['initialState']['state'];
-        readonly blockingIssues?: readonly string[];
-        readonly errorMessage?: string;
-      };
+      const result = (await response.json()) as SaveResult;
+      rememberSaveResult(result);
 
       if (
         response.ok &&
         (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
         result.reloadedSectionState
       ) {
+        setCurrentState(result.reloadedSectionState);
+        setCurrentSource('latest-saved');
         const nextDraft = createControlModulesDraft(result.reloadedSectionState);
         setDraftControlModules(nextDraft);
         setSavedControlModules(nextDraft);
@@ -288,7 +342,7 @@ export function EditWorkbench({
         return;
       }
 
-      setControlModulesSaveStatus(result.errorMessage ?? 'Save failed.');
+      setControlModulesSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
     } catch {
       setControlModulesSaveStatus('Save failed.');
     } finally {
@@ -353,6 +407,13 @@ export function EditWorkbench({
             statusMessage={controlModulesSaveStatus ?? undefined}
             isSaving={isControlModulesSaving}
           />
+        ) : activeSection === 'package-wiring-validation' ? (
+          <PackageWiringValidationSection
+            packageName={packageName}
+            diagnostics={diagnostics}
+            onRefresh={handleDiagnosticsRefresh}
+            isRefreshing={isDiagnosticsRefreshing}
+          />
         ) : (
           <SectionSurface sectionId={activeSection}>
             <dl className="edit-surface__facts">
@@ -377,8 +438,14 @@ export function EditWorkbench({
         )}
         <PageHelperPanel
           packageName={packageName}
-          initialState={initialState}
+          initialState={{
+            source: currentSource,
+            state: currentState,
+          }}
           activeSectionLabel={activeSectionSummary.title}
+          {...(activeSection === 'package-wiring-validation'
+            ? { diagnosticsHelperView: diagnostics.globalDiagnosticsHelperView }
+            : {})}
         />
       </section>
     </main>
