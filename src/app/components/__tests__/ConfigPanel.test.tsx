@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -22,12 +22,10 @@ describe('ConfigPanel', () => {
   it('includes provider preset options', () => {
     render(<ConfigPanel onSave={vi.fn()} />);
 
-    const provider = screen.getByLabelText('Provider');
     expect(screen.getByRole('option', { name: 'Anthropic' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'MiniMax' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'OpenAI' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Custom Provider' })).toBeInTheDocument();
-    expect(provider).toBeInTheDocument();
   });
 
   it('shows an editable base URL field when custom preset is selected', async () => {
@@ -70,7 +68,7 @@ describe('ConfigPanel', () => {
     });
   });
 
-  it('renders runtime usage in the same panel as runtime config', () => {
+  it('renders runtime usage labels in the panel', () => {
     render(
       <ConfigPanel
         diagnostics={{
@@ -92,25 +90,22 @@ describe('ConfigPanel', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Runtime Usage' })).toBeInTheDocument();
-    expect(screen.getByText('Latest observed call: Route')).toBeInTheDocument();
+    expect(screen.getByText('Runtime Usage')).toBeInTheDocument();
+    expect(screen.getByText(/Latest: Route/)).toBeInTheDocument();
     expect(screen.getByText('72 tokens')).toBeInTheDocument();
-    expect(screen.getAllByText('Not reported').length).toBeGreaterThan(0);
   });
 
-  it('keeps runtime usage visible while delegating provider inputs to the shared form', async () => {
+  it('shows provider inputs alongside runtime usage', async () => {
     const user = userEvent.setup();
 
     render(<ConfigPanel onSave={vi.fn()} diagnostics={createEmptyWorkbenchDiagnostics()} />);
 
-    const configSection = screen.getByRole('heading', { name: 'Provider Setup' }).closest('section');
-    expect(configSection).not.toBeNull();
-    expect(within(configSection as HTMLElement).getByLabelText('Provider')).toBeInTheDocument();
-    expect(within(configSection as HTMLElement).getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Provider')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
 
     expect(screen.getByLabelText('Base URL')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Runtime Usage' })).toBeInTheDocument();
+    expect(screen.getByText('Runtime Usage')).toBeInTheDocument();
   });
 });

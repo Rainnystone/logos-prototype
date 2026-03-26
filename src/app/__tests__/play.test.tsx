@@ -333,6 +333,9 @@ describe('PlayWorkbench', () => {
     await user.click(screen.getByRole('button', { name: 'Show Fixture Reference' }));
     expect(screen.getByText('Fixture Reference')).toBeInTheDocument();
     expect(screen.getByText(storyPackageFixture.worldBase.locationPatch)).toBeInTheDocument();
+
+    const providerSetupButton = screen.getByRole('button', { name: /Provider Setup/i });
+    await user.click(providerSetupButton);
     expect(screen.getByText('88 tokens')).toBeInTheDocument();
 
     await startRound(user);
@@ -342,7 +345,7 @@ describe('PlayWorkbench', () => {
     expect(await screen.findByText('232 tokens')).toBeInTheDocument();
     expect(await screen.findByText('86 tokens')).toBeInTheDocument();
     expect(await screen.findByText('112 tokens')).toBeInTheDocument();
-    expect(screen.getAllByText('Latest observed call: Route').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Latest: Route/).length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: 'Hide Fixture Reference' }));
     expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();

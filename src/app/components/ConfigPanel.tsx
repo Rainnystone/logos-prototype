@@ -51,41 +51,33 @@ export function ConfigPanel({
   diagnostics,
 }: ConfigPanelProps) {
   return (
-    <section className="bg-white border-2 border-black rounded-none shadow-brutal p-5 font-mono">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <p className="text-[10px] tracking-widest uppercase text-black/50 mb-1">Runtime Config</p>
-          <h2 className="text-lg font-bold text-black tracking-tight uppercase">Provider Setup</h2>
-        </div>
-        <p className="text-xs text-black/40">Stored in localStorage only.</p>
-      </div>
-      <div className="mb-6">
+    <div className="font-mono">
+      <div className="mb-4">
         <RuntimeConfigForm initialConfig={initialConfig} onSave={onSave} />
       </div>
 
-      <section className="pt-4 border-t-2 border-black">
-        <div className="mb-4">
-          <h3 className="text-sm font-bold text-black uppercase">Runtime Usage</h3>
-          <p className="text-xs text-black/50">
+      <section className="pt-3 border-t border-black/20">
+        <div className="mb-3">
+          <h3 className="text-xs font-bold text-black uppercase">Runtime Usage</h3>
+          <p className="text-[10px] text-black/50">
             {diagnostics?.latestOperation
-              ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
-              : 'Awaiting first adapter call.'}
+              ? `Latest: ${formatOperationLabel(diagnostics.latestOperation)}`
+              : 'Awaiting first call.'}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {DIAGNOSTIC_ORDER.map((operation) => {
             const usage = diagnostics?.usage[operation] ?? null;
 
             return (
-              <article key={operation} className="p-3 border-2 border-black rounded-none bg-[#f5f5f5] flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-wider text-black/50">{formatOperationLabel(operation)}</span>
-                <strong className="text-sm text-black">{formatUsageHeadline(usage)}</strong>
-                <p className="text-xs text-black/40">{formatUsageBreakdown(usage)}</p>
+              <article key={operation} className="p-2 border border-black/30 rounded-none bg-[#f5f5f5] flex flex-col gap-0.5">
+                <span className="text-[9px] uppercase tracking-wider text-black/50">{formatOperationLabel(operation)}</span>
+                <strong className="text-xs text-black">{formatUsageHeadline(usage)}</strong>
               </article>
             );
           })}
         </div>
       </section>
-    </section>
+    </div>
   );
 }

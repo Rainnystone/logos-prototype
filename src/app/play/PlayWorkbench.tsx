@@ -6,6 +6,7 @@ import { loadAdapterConfig } from '@/app/runtime-config';
 import { AuthorControlPanel } from '@/app/components/AuthorControlPanel';
 import { BeatDisplay } from '@/app/components/BeatDisplay';
 import { BeatHistory, type BeatHistoryEntry } from '@/app/components/BeatHistory';
+import { CollapsiblePanel } from '@/app/components/CollapsiblePanel';
 import { ConfigPanel } from '@/app/components/ConfigPanel';
 import { FixtureReferencePanel } from '@/app/components/FixtureReferencePanel';
 import { PlayerInput } from '@/app/components/PlayerInput';
@@ -276,31 +277,51 @@ export function PlayWorkbench({
       ) : null}
 
       <section className="play-grid">
-        <div className="play-column">
-          <PromptStatusPanel state={currentState} diagnostics={diagnostics} />
-          <ConfigPanel
-            initialConfig={adapterConfig}
-            diagnostics={diagnostics}
-            onSave={setAdapterConfig}
-          />
+        <div className="play-column play-column--sidebar">
+          <CollapsiblePanel title="Provider Setup" eyebrow="Runtime Config" defaultOpen={!adapterConfig}>
+            <div className="p-4">
+              <ConfigPanel
+                initialConfig={adapterConfig}
+                diagnostics={diagnostics}
+                onSave={setAdapterConfig}
+              />
+            </div>
+          </CollapsiblePanel>
+          <CollapsiblePanel title="Prompt Status" eyebrow="Prompt Assembly">
+            <div className="p-4">
+              <PromptStatusPanel state={currentState} diagnostics={diagnostics} />
+            </div>
+          </CollapsiblePanel>
         </div>
 
         <div className="play-column">
           <section className="bg-white border-2 border-black rounded-none shadow-brutal overflow-hidden flex flex-col font-mono">
-            <div className="p-5 border-b-2 border-black flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+            <div className="px-5 py-4 border-b-2 border-black flex items-center justify-between gap-2">
               <div>
-                <p className="text-[10px] tracking-widest uppercase text-black/50 mb-1">Generation Workspace</p>
-                <h2 className="text-lg font-bold text-black tracking-tight uppercase">{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
+                <p className="text-[10px] tracking-widest uppercase text-black/50 mb-0.5">Generation Workspace</p>
+                <h2 className="text-base font-bold text-black tracking-tight uppercase">{currentPhasePlan ? `Phase ${currentPhasePlan.phaseIndex}` : 'Scene'}</h2>
               </div>
-              <p className="text-xs text-black/40 max-w-sm md:text-right">{readyMessage}</p>
+              <div className="flex items-center gap-3">
+                {roundStarted ? (
+                  <>
+                    <span className="px-2 py-1 border border-black bg-[#f5f5f5] text-[10px] uppercase font-bold">
+                      {status === 'accepted' || status === 'force-accepted' ? 'Live' : 'Processing'}
+                    </span>
+                    <span className="px-2 py-1 border border-black bg-[#f5f5f5] text-[10px] uppercase font-bold">
+                      Beat {currentState?.sceneState.currentBeatIndexInPhase ?? '-'}
+                    </span>
+                  </>
+                ) : null}
+              </div>
+              <p className="text-xs text-black/40 max-w-xs text-right">{readyMessage}</p>
             </div>
             {!roundStarted ? (
-              <section className="p-5 m-5 border-2 border-dashed border-black rounded-none bg-[#f5f5f5] flex flex-col gap-4">
+              <section className="p-5 m-4 border-2 border-dashed border-black rounded-none bg-[#f5f5f5] flex flex-col gap-3">
                 <p className="text-sm text-black/60">
                   Start the round with the scene opening hook before accepting player actions.
                 </p>
-                <blockquote className="pl-4 py-2 border-l-4 border-black bg-white rounded-none">
-                  <p className="font-mono text-black italic">{openingHookInput}</p>
+                <blockquote className="pl-4 py-2 border-l-4 border-black bg-white rounded-none max-h-40 overflow-y-auto">
+                  <p className="font-mono text-black italic text-sm">{openingHookInput}</p>
                 </blockquote>
                 <button
                   className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase"
@@ -311,30 +332,7 @@ export function PlayWorkbench({
                   Start Round
                 </button>
               </section>
-            ) : (
-              <div className="p-5 flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#f5f5f5] border-2 border-black rounded-none p-3">
-                    <span className="block text-[10px] uppercase text-black/50 mb-1">Round State</span>
-                    <strong className="text-black">
-                      {status === 'accepted' || status === 'force-accepted' ? 'Live' : 'Processing'}
-                    </strong>
-                  </div>
-                  <div className="bg-[#f5f5f5] border-2 border-black rounded-none p-3">
-                    <span className="block text-[10px] uppercase text-black/50 mb-1">Current Beat</span>
-                    <strong className="text-black">
-                      {currentState
-                        ? `Beat ${currentState.sceneState.currentBeatIndexInPhase}`
-                        : 'Pending'}
-                    </strong>
-                  </div>
-                </div>
-                <p className="text-sm text-black/50 mt-2">
-                  Opening hook has been dispatched. New options will replace the fixed four slots
-                  after each accepted beat.
-                </p>
-              </div>
-            )}
+            ) : null}
           </section>
           <BeatDisplay
             status={status}
@@ -352,7 +350,6 @@ export function PlayWorkbench({
               onSubmit={handleSubmit}
             />
           </BeatDisplay>
-          <BeatHistory entries={beatHistory} />
         </div>
 
         <div className="play-column play-column--feedback">
@@ -371,6 +368,11 @@ export function PlayWorkbench({
               <p>Initializing Scene...</p>
             </aside>
           )}
+          <CollapsiblePanel title="Beat History" eyebrow="Accepted Beats" defaultOpen>
+            <div className="max-h-96 overflow-y-auto">
+              <BeatHistory entries={beatHistory} />
+            </div>
+          </CollapsiblePanel>
         </div>
       </section>
     </main>
