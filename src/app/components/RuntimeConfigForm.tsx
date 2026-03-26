@@ -267,7 +267,7 @@ export function RuntimeConfigForm({
         ) : (
           <div className="grid gap-1">
             <span className="text-sm font-medium text-black uppercase">Base URL</span>
-            <p className="px-3 py-2 border-2 border-black/30 rounded-none bg-[#f5f5f5] font-mono text-sm text-black/60">
+            <p className="px-3 py-2 border-2 border-black/30 rounded-none bg-[#f5f5f5] font-mono text-xs text-black/60 truncate" title={activePreset.baseUrl}>
               {activePreset.baseUrl}
             </p>
           </div>

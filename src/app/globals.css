@@ -488,7 +488,7 @@ ul {
 .play-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(14rem, 20rem) minmax(0, 2fr) minmax(18rem, 26rem);
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 2fr) minmax(18rem, 26rem);
 }
 
 .play-column {
