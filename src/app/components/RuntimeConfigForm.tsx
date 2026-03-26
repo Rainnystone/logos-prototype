@@ -4,14 +4,14 @@ import { useEffect, useState, type ReactNode } from 'react';
 
 import {
   buildAdapterConfig,
-  getDefaultBaseUrl,
+  detectPresetFromConfig,
+  getPresetById,
   loadAdapterConfig,
+  PROVIDER_PRESETS,
   saveAdapterConfig,
+  type PresetId,
 } from '@/app/runtime-config';
-import type {
-  AdapterConfig,
-  ProviderType,
-} from '@/engine/api-adapter/providers/provider-interface';
+import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 
 interface RuntimeConfigFormProps {
   readonly initialConfig?: AdapterConfig | null;
@@ -20,7 +20,7 @@ interface RuntimeConfigFormProps {
 }
 
 interface RuntimeConfigFormState {
-  readonly provider: ProviderType;
+  readonly presetId: PresetId;
   readonly apiKey: string;
   readonly model: string;
   readonly baseUrl: string;
@@ -28,19 +28,21 @@ interface RuntimeConfigFormState {
 
 function getInitialFormState(config: AdapterConfig | null | undefined): RuntimeConfigFormState {
   if (config) {
+    const presetId = detectPresetFromConfig(config);
     return {
-      provider: config.provider,
+      presetId,
       apiKey: config.providerConfig.apiKey,
       model: config.providerConfig.model,
       baseUrl: config.providerConfig.baseUrl,
     };
   }
 
+  const defaultPreset = PROVIDER_PRESETS[0]!;
   return {
-    provider: 'anthropic',
+    presetId: defaultPreset.id,
     apiKey: '',
-    model: '',
-    baseUrl: getDefaultBaseUrl('anthropic'),
+    model: defaultPreset.defaultModel,
+    baseUrl: defaultPreset.baseUrl,
   };
 }
 
@@ -64,6 +66,20 @@ export function RuntimeConfigForm({
     setFormState(getInitialFormState(storedConfig));
   }, [initialConfig]);
 
+  const activePreset = getPresetById(formState.presetId);
+  const isCustom = formState.presetId === 'custom';
+
+  function handlePresetChange(nextPresetId: PresetId) {
+    setStatusMessage(null);
+    const preset = getPresetById(nextPresetId);
+    setFormState((currentState) => ({
+      ...currentState,
+      presetId: nextPresetId,
+      baseUrl: preset.baseUrl,
+      model: preset.defaultModel || currentState.model,
+    }));
+  }
+
   function updateField<Key extends keyof RuntimeConfigFormState>(
     key: Key,
     value: RuntimeConfigFormState[Key],
@@ -75,22 +91,9 @@ export function RuntimeConfigForm({
     }));
   }
 
-  function handleProviderChange(provider: ProviderType) {
-    setStatusMessage(null);
-    setFormState((currentState) => ({
-      ...currentState,
-      provider,
-      baseUrl:
-        currentState.baseUrl === getDefaultBaseUrl(currentState.provider) ||
-        currentState.baseUrl.trim().length === 0
-          ? getDefaultBaseUrl(provider)
-          : currentState.baseUrl,
-    }));
-  }
-
   function handleSave() {
     const config = buildAdapterConfig(
-      formState.provider,
+      activePreset.providerType,
       formState.apiKey.trim(),
       formState.model.trim(),
       formState.baseUrl.trim(),
@@ -104,7 +107,7 @@ export function RuntimeConfigForm({
   const isSaveDisabled =
     formState.apiKey.trim().length === 0 ||
     formState.model.trim().length === 0 ||
-    (formState.provider === 'openai-compatible' && formState.baseUrl.trim().length === 0);
+    (isCustom && formState.baseUrl.trim().length === 0);
 
   const inputClass =
     'w-full px-3 py-2 border-2 border-black rounded-none bg-white focus:ring-2 focus:ring-[#00ff00] focus:outline-none font-mono';
@@ -117,11 +120,14 @@ export function RuntimeConfigForm({
           <select
             className={inputClass}
             aria-label="Provider"
-            value={formState.provider}
-            onChange={(event) => handleProviderChange(event.currentTarget.value as ProviderType)}
+            value={formState.presetId}
+            onChange={(event) => handlePresetChange(event.currentTarget.value as PresetId)}
           >
-            <option value="anthropic">Anthropic</option>
-            <option value="openai-compatible">OpenAI Compatible</option>
+            {PROVIDER_PRESETS.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="grid gap-1">
@@ -136,15 +142,30 @@ export function RuntimeConfigForm({
         </label>
         <label className="grid gap-1">
           <span className="text-sm font-medium text-black uppercase">Model</span>
-          <input
-            className={inputClass}
-            aria-label="Model"
-            type="text"
-            value={formState.model}
-            onChange={(event) => updateField('model', event.currentTarget.value)}
-          />
+          {activePreset.models.length > 0 ? (
+            <select
+              className={inputClass}
+              aria-label="Model"
+              value={formState.model}
+              onChange={(event) => updateField('model', event.currentTarget.value)}
+            >
+              {activePreset.models.map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              className={inputClass}
+              aria-label="Model"
+              type="text"
+              value={formState.model}
+              onChange={(event) => updateField('model', event.currentTarget.value)}
+            />
+          )}
         </label>
-        {formState.provider === 'openai-compatible' ? (
+        {isCustom ? (
           <label className="grid gap-1">
             <span className="text-sm font-medium text-black uppercase">Base URL</span>
             <input
@@ -155,7 +176,14 @@ export function RuntimeConfigForm({
               onChange={(event) => updateField('baseUrl', event.currentTarget.value)}
             />
           </label>
-        ) : null}
+        ) : (
+          <div className="grid gap-1">
+            <span className="text-sm font-medium text-black uppercase">Base URL</span>
+            <p className="px-3 py-2 border-2 border-black/30 rounded-none bg-[#f5f5f5] font-mono text-sm text-black/60">
+              {activePreset.baseUrl}
+            </p>
+          </div>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <button

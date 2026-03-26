@@ -19,22 +19,24 @@ describe('ConfigPanel', () => {
     expect(screen.getByLabelText('Model')).toBeInTheDocument();
   });
 
-  it('includes anthropic and openai-compatible provider options', () => {
+  it('includes provider preset options', () => {
     render(<ConfigPanel onSave={vi.fn()} />);
 
     const provider = screen.getByLabelText('Provider');
     expect(screen.getByRole('option', { name: 'Anthropic' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'OpenAI Compatible' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'MiniMax' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'OpenAI' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Custom Provider' })).toBeInTheDocument();
     expect(provider).toBeInTheDocument();
   });
 
-  it('shows the base URL field when openai-compatible is selected', async () => {
+  it('shows an editable base URL field when custom preset is selected', async () => {
     const user = userEvent.setup();
     render(<ConfigPanel onSave={vi.fn()} />);
 
     expect(screen.queryByLabelText('Base URL')).not.toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText('Provider'), 'openai-compatible');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
 
     expect(screen.getByLabelText('Base URL')).toBeInTheDocument();
   });
@@ -44,7 +46,6 @@ describe('ConfigPanel', () => {
     render(<ConfigPanel onSave={vi.fn()} />);
 
     await user.type(screen.getByLabelText('API Key'), 'local-key');
-    await user.type(screen.getByLabelText('Model'), 'claude-test');
     await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
 
     expect(localStorage.getItem(ADAPTER_CONFIG_STORAGE_KEY)).toContain('local-key');
@@ -57,7 +58,6 @@ describe('ConfigPanel', () => {
     render(<ConfigPanel onSave={onSave} />);
 
     await user.type(screen.getByLabelText('API Key'), 'runtime-key');
-    await user.type(screen.getByLabelText('Model'), 'claude-workbench');
     await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
 
     expect(onSave).toHaveBeenCalledWith({
@@ -65,7 +65,7 @@ describe('ConfigPanel', () => {
       providerConfig: {
         apiKey: 'runtime-key',
         baseUrl: 'https://api.anthropic.com',
-        model: 'claude-workbench',
+        model: 'claude-sonnet-4-20250514',
       },
     });
   });
@@ -108,7 +108,7 @@ describe('ConfigPanel', () => {
     expect(within(configSection as HTMLElement).getByLabelText('Provider')).toBeInTheDocument();
     expect(within(configSection as HTMLElement).getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText('Provider'), 'openai-compatible');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
 
     expect(screen.getByLabelText('Base URL')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Runtime Usage' })).toBeInTheDocument();

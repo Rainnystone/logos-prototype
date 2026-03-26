@@ -6,6 +6,66 @@ import type {
 
 export const ADAPTER_CONFIG_STORAGE_KEY = 'logos-adapter-config';
 
+export type PresetId = 'anthropic' | 'minimax' | 'openai' | 'custom';
+
+export interface ProviderPreset {
+  readonly id: PresetId;
+  readonly label: string;
+  readonly providerType: ProviderType;
+  readonly baseUrl: string;
+  readonly models: readonly string[];
+  readonly defaultModel: string;
+}
+
+export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
+  {
+    id: 'anthropic',
+    label: 'Anthropic',
+    providerType: 'anthropic',
+    baseUrl: 'https://api.anthropic.com',
+    models: ['claude-sonnet-4-20250514', 'claude-haiku-4-20250414'],
+    defaultModel: 'claude-sonnet-4-20250514',
+  },
+  {
+    id: 'minimax',
+    label: 'MiniMax',
+    providerType: 'anthropic',
+    baseUrl: 'https://api.minimaxi.com/anthropic',
+    models: ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.5-highspeed', 'MiniMax-M2.1', 'MiniMax-M2.1-highspeed'],
+    defaultModel: 'MiniMax-M2.7',
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI',
+    providerType: 'openai-compatible',
+    baseUrl: 'https://api.openai.com/v1',
+    models: ['gpt-4o', 'gpt-4o-mini', 'o3-mini'],
+    defaultModel: 'gpt-4o',
+  },
+  {
+    id: 'custom',
+    label: 'Custom Provider',
+    providerType: 'openai-compatible',
+    baseUrl: '',
+    models: [],
+    defaultModel: '',
+  },
+] as const;
+
+export function getPresetById(id: PresetId): ProviderPreset {
+  return PROVIDER_PRESETS.find((preset) => preset.id === id) ?? PROVIDER_PRESETS[PROVIDER_PRESETS.length - 1]!;
+}
+
+export function detectPresetFromConfig(config: AdapterConfig): PresetId {
+  const baseUrl = config.providerConfig.baseUrl;
+  for (const preset of PROVIDER_PRESETS) {
+    if (preset.id !== 'custom' && preset.baseUrl === baseUrl) {
+      return preset.id;
+    }
+  }
+  return 'custom';
+}
+
 const DEFAULT_BASE_URLS: Readonly<Record<ProviderType, string>> = {
   anthropic: 'https://api.anthropic.com',
   'openai-compatible': 'https://api.openai.com/v1',

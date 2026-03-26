@@ -269,7 +269,7 @@ describe('PlayWorkbench', () => {
     const { unmount } = render(<RuntimeConfigForm onSave={() => {}} />);
 
     await user.type(screen.getByLabelText('API Key'), 'shared-runtime-key');
-    await user.type(screen.getByLabelText('Model'), 'shared-runtime-model');
+    await user.selectOptions(screen.getByLabelText('Model'), 'claude-haiku-4-20250414');
     await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
 
     unmount();
@@ -285,7 +285,7 @@ describe('PlayWorkbench', () => {
     expect(await screen.findByText('Configured provider')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByLabelText('API Key')).toHaveValue('shared-runtime-key');
-      expect(screen.getByLabelText('Model')).toHaveValue('shared-runtime-model');
+      expect(screen.getByLabelText('Model')).toHaveValue('claude-haiku-4-20250414');
     });
   });
 
