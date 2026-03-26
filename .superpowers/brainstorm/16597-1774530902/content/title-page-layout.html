@@ -1,0 +1,183 @@
+<style>
+.tp-wrap {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
+  background: #FDFDFD;
+  background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+  background-size: 24px 24px;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+.tp-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+  max-width: 960px;
+  width: 100%;
+}
+/* Left: Wordmark */
+.tp-left {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.tp-logo {
+  font-size: 4.5rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #000;
+  line-height: 1;
+  margin: 0;
+}
+.tp-fullname {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.365em;
+  text-transform: uppercase;
+  color: #000;
+  margin: 12px 0 0;
+  line-height: 1.4;
+  /* width matches LOGOS above */
+}
+.tp-proto {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #999;
+  margin: 8px 0 0;
+}
+/* Right: Config card */
+.tp-right {
+  flex: 1;
+  max-width: 400px;
+}
+.tp-card {
+  background: #fff;
+  border: 3px solid #000;
+  box-shadow: 6px 6px 0 #000;
+  padding: 24px;
+}
+.tp-card-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #33FF00;
+  margin: 0 0 4px;
+}
+.tp-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #000;
+  margin: 0 0 16px;
+}
+.tp-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f0f0f0;
+  border: 2px solid #000;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  color: #000;
+}
+.tp-note {
+  font-size: 0.6rem;
+  color: #999;
+  letter-spacing: 0.06em;
+  margin: 0 0 16px;
+}
+.tp-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tp-btn {
+  border: 3px solid #000;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  text-decoration: none;
+}
+.tp-btn-primary { background: #33FF00; color: #000; }
+.tp-btn-ghost { background: transparent; color: #000; }
+</style>
+
+<h2>Title Page — Neue Brutalism · 亮色方案</h2>
+<p class="subtitle">左右布局 · 大量留白 · 居中对齐 · 点击选择</p>
+
+<div class="options">
+  <div class="option" data-choice="light-title" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>亮色 Title Page</h3>
+      <p>白底 · 点阵网格 · 黑边框硬阴影 · 终端绿标签</p>
+      <div class="tp-wrap" style="margin-top:16px;">
+        <div class="tp-inner">
+          <div class="tp-left">
+            <div class="tp-logo">LOGOS</div>
+            <div class="tp-fullname">Linguistic Oriented<br/>Game Orchestration<br/>Studio</div>
+            <div class="tp-proto">Prototype</div>
+          </div>
+          <div class="tp-right">
+            <div class="tp-card">
+              <div class="tp-card-label">Runtime Config</div>
+              <div class="tp-card-title">Provider Setup</div>
+              <input class="tp-input" placeholder="API Key" />
+              <input class="tp-input" placeholder="Model" />
+              <div class="tp-note">Stored in localStorage only.</div>
+              <div class="tp-actions">
+                <a class="tp-btn tp-btn-primary">PLAY</a>
+                <a class="tp-btn tp-btn-ghost">EDITOR</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="dark-title" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>暗色 Title Page</h3>
+      <p>黑底 · 点阵网格 · 白边框 · 终端绿阴影</p>
+      <div class="tp-wrap" style="margin-top:16px;background:#0a0a0a;background-image:radial-gradient(circle,#222 1px,transparent 1px);background-size:24px 24px;">
+        <div class="tp-inner">
+          <div class="tp-left">
+            <div class="tp-logo" style="color:#f0f0f0;">LOGOS</div>
+            <div class="tp-fullname" style="color:#f0f0f0;">Linguistic Oriented<br/>Game Orchestration<br/>Studio</div>
+            <div class="tp-proto" style="color:#555;">Prototype</div>
+          </div>
+          <div class="tp-right">
+            <div class="tp-card" style="background:#111;border-color:#f0f0f0;box-shadow:6px 6px 0 #33FF00;">
+              <div class="tp-card-label">Runtime Config</div>
+              <div class="tp-card-title" style="color:#f0f0f0;">Provider Setup</div>
+              <input class="tp-input" style="background:#1a1a1a;border-color:#f0f0f0;color:#f0f0f0;" placeholder="API Key" />
+              <input class="tp-input" style="background:#1a1a1a;border-color:#f0f0f0;color:#f0f0f0;" placeholder="Model" />
+              <div class="tp-note">Stored in localStorage only.</div>
+              <div class="tp-actions">
+                <a class="tp-btn tp-btn-primary" style="border-color:#33FF00;box-shadow:4px 4px 0 #33FF00;">PLAY</a>
+                <a class="tp-btn tp-btn-ghost" style="color:#f0f0f0;border-color:#f0f0f0;box-shadow:4px 4px 0 #f0f0f0;">EDITOR</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
