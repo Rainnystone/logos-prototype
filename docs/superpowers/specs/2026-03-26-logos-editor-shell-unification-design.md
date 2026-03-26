@@ -101,6 +101,15 @@ Helper requirements:
 - Preserve the distinction between page-local helper content and package-wide diagnostics content
 - Do not let helper placement reintroduce a third outer column
 
+Minimum helper content contract:
+
+- On normal authoring pages, always keep package name, state source, and active section visible
+- If a page has a current save/status message, show it in compact form rather than dropping it
+- If coordinator guidance exists, show a short compact summary rather than a full-height block
+- `Scene & Phase Authoring` follows the same compact helper contract as the other normal pages
+- On `Package Wiring Validation`, keep the global diagnostics summary visible and show only a
+  compact repair-order preview; deeper diagnostics detail remains in the main page content
+
 ### 5.4 Main Workspace Expansion
 
 The shell must reclaim space from the removed left navigation rail and the reduced helper region.
