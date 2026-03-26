@@ -16,14 +16,14 @@ interface SectionTabsProps {
 
 export function SectionTabs({ packageName, activeSection }: SectionTabsProps) {
   return (
-    <nav className="panel edit-tabs" aria-label="Editor sections">
+    <nav className="edit-top-tabs" aria-label="Editor sections">
       {SECTION_IDS.map((sectionId) => {
         const isActive = sectionId === activeSection;
 
         return (
           <Link
             key={sectionId}
-            className={isActive ? 'edit-tab edit-tab--active' : 'edit-tab'}
+            className={isActive ? 'edit-top-tab edit-top-tab--active' : 'edit-top-tab'}
             href={`/edit?storyPackage=${encodeURIComponent(packageName)}&section=${sectionId}`}
             aria-current={isActive ? 'page' : undefined}
           >

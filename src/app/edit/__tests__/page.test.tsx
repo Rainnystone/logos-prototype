@@ -74,7 +74,8 @@ describe('EditPage', () => {
     render(element);
 
     expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene');
-    expect(screen.getByRole('heading', { name: 'LOGOS Authoring Editor' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Control Modules' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=control-modules',

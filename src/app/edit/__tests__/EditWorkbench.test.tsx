@@ -22,7 +22,8 @@ describe('EditWorkbench', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'LOGOS Authoring Editor' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Control Modules' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=control-modules',
@@ -188,10 +189,12 @@ describe('EditWorkbench', () => {
       />,
     );
 
+    const editShell = container.querySelector('.edit-shell');
+    expect(editShell).not.toBeNull();
+    expect(container.querySelector('.edit-hero')).toBeNull();
     const editLayout = container.querySelector('.edit-layout');
     expect(editLayout).not.toBeNull();
-    expect(editLayout?.children).toHaveLength(2);
-    expect(screen.getByLabelText('Scene Phase Detail Column')).toBeInTheDocument();
+    expect(editLayout).not.toHaveAttribute('style');
     expect(screen.getByText('Shell status')).toBeInTheDocument();
   });
 });

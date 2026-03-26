@@ -20,12 +20,12 @@ export function PageHelperPanel({
 }: PageHelperPanelProps) {
   if (diagnosticsHelperView) {
     return (
-      <aside className="panel edit-helper-panel edit-helper-panel--technical">
-        <p className="panel-eyebrow">Global Diagnostics Helper</p>
+      <aside className="edit-helper-panel edit-helper-panel--compact" aria-label="Page helper">
+        <p className="panel-eyebrow">Diagnostics helper</p>
         <h2>Repair Guidance</h2>
         <p>{diagnosticsHelperView.summary}</p>
-        <ul className="mt-4 space-y-2 text-sm text-slate-200">
-          {diagnosticsHelperView.repairOrder.map((step) => (
+        <ul className="mt-3 space-y-2 text-sm">
+          {diagnosticsHelperView.repairOrder.slice(0, 2).map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ul>
@@ -34,8 +34,8 @@ export function PageHelperPanel({
   }
 
   return (
-    <aside className="panel edit-helper-panel edit-helper-panel--technical">
-      <p className="panel-eyebrow">Page Helper</p>
+    <aside className="edit-helper-panel edit-helper-panel--compact" aria-label="Page helper">
+      <p className="panel-eyebrow">Page helper</p>
       <h2>Shell status</h2>
       <dl className="edit-helper-panel__facts">
         <div>
@@ -52,15 +52,15 @@ export function PageHelperPanel({
         </div>
       </dl>
       {localStatusMessage ? (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
-          <p className="panel-eyebrow">Current Section Status</p>
-          <p className="text-sm text-slate-100">{localStatusMessage}</p>
+        <div className="edit-helper-panel__note">
+          <p className="panel-eyebrow">Current section</p>
+          <p className="text-sm">{localStatusMessage}</p>
         </div>
       ) : null}
       {coordinatorSummary ? (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
-          <p className="panel-eyebrow">Page Helper Guidance</p>
-          <p className="text-sm text-slate-100">{coordinatorSummary}</p>
+        <div className="edit-helper-panel__note">
+          <p className="panel-eyebrow">Guidance</p>
+          <p className="text-sm">{coordinatorSummary}</p>
         </div>
       ) : null}
     </aside>

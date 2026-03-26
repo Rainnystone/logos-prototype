@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, ReactNode } from 'react';
+import type { ChangeEvent } from 'react';
 
 import {
   GRADIENT_OPTIONS,
@@ -17,7 +17,6 @@ interface ScenePhaseAuthoringSectionProps {
   readonly packageName: string;
   readonly value: ScenePhaseAuthoringDraft;
   readonly routerOptions: readonly string[];
-  readonly helperPanel?: ReactNode;
   readonly onChange: (nextValue: ScenePhaseAuthoringDraft) => void;
   readonly onSubmit: () => void;
   readonly onReset: () => void;
@@ -42,7 +41,6 @@ export function ScenePhaseAuthoringSection({
   packageName,
   value,
   routerOptions,
-  helperPanel,
   onChange,
   onSubmit,
   onReset,
@@ -445,8 +443,6 @@ export function ScenePhaseAuthoringSection({
               </button>
             </div>
           </div>
-
-          {helperPanel ? <div>{helperPanel}</div> : null}
         </section>
       </div>
     </section>

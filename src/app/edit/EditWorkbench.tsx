@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
@@ -149,7 +148,6 @@ export function EditWorkbench({
           ? controlModulesSaveStatus
           : null;
   const activeCoordinatorSummary = coordinatorSummaries[activeSection] ?? null;
-  const embedHelperInSection = activeSection === 'scene-phase-authoring';
 
   const pageHelperPanel = (
     <PageHelperPanel
@@ -569,33 +567,29 @@ export function EditWorkbench({
 
   return (
     <main className="workspace-page edit-page">
-      <section className="panel edit-hero">
-        <div>
-          <p className="panel-eyebrow">Authoring Editor</p>
-          <h1>LOGOS Authoring Editor</h1>
-          <p>
-            Reopen the latest saved package state when it exists, then move across the four
-            authoring surfaces from one shell.
-          </p>
+      <section className="panel edit-shell">
+        <div className="edit-shell__bar">
+          <div className="edit-shell__identity">
+            <p className="panel-eyebrow">Unified Editor Shell</p>
+            <h1>LOGOS Narrative Editor</h1>
+            <p>
+              Move across the four authoring pages from one compact shell while keeping page-level
+              save and reset actions local to the active page.
+            </p>
+          </div>
+          {pageHelperPanel}
         </div>
-        <div className="edit-hero__meta">
+        <div className="edit-shell__meta">
           <span>{packageName}</span>
           <span>{sceneName}</span>
           <span>{initialState.source}</span>
         </div>
+        <SectionTabs packageName={packageName} activeSection={activeSection} />
       </section>
 
       <PageActionBar packageName={packageName} />
 
-      <section
-        className="edit-layout"
-        style={
-          embedHelperInSection
-            ? { gridTemplateColumns: 'minmax(12rem, 16rem) minmax(0, 1fr)' }
-            : undefined
-        }
-      >
-        <SectionTabs packageName={packageName} activeSection={activeSection} />
+      <section className="edit-layout">
         {activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
             packageName={packageName}
@@ -611,7 +605,6 @@ export function EditWorkbench({
             packageName={packageName}
             value={draftScenePhase}
             routerOptions={routerOptions}
-            helperPanel={pageHelperPanel}
             onChange={setDraftScenePhase}
             onSubmit={handleScenePhaseSubmit}
             onReset={handleScenePhaseReset}
@@ -661,7 +654,6 @@ export function EditWorkbench({
             </dl>
           </SectionSurface>
         )}
-        {!embedHelperInSection ? pageHelperPanel : null}
       </section>
     </main>
   );
