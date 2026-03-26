@@ -166,6 +166,8 @@ Approved behavior:
 
 - `提交` applies only to this section page
 - it sends the current page's unsaved changes into the existing save / validate / reload path
+- for `控制模块`, the action bar saves the currently selected module only
+- that module-scoped save still uses the same page-level save path and still counts as this section's save action
 - `重置` applies only to this section page
 - it discards only this page's unsaved changes and returns to the latest successful saved state, or the currently loaded state if no newer save exists
 

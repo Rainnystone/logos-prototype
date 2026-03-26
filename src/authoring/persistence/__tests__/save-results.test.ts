@@ -25,6 +25,32 @@ const storyPackageFixture = {
       phaseOverrides: {},
     },
   },
+  controlModules: {
+    sceneId: 'scene-placeholder',
+    lightConeCustomization: {
+      boundaryGuidance: 'boundary',
+      convergenceGuidance: 'convergence',
+      phaseSettlementGuidance: 'settlement',
+    },
+    directorNoteAdditions: {
+      beatConstraintsAdditions: 'beat additions',
+      optionConstraintsAdditions: 'option additions',
+    },
+    beatVolumeDefinitions: {
+      Low: {
+        beatConstraints: 'low beat',
+        optionFormatting: 'low option',
+      },
+      Med: {
+        beatConstraints: 'med beat',
+        optionFormatting: 'med option',
+      },
+      High: {
+        beatConstraints: 'high beat',
+        optionFormatting: 'high option',
+      },
+    },
+  },
   worldBase: {
     mainCharacters: 'placeholder',
     npcCharacters: 'placeholder',

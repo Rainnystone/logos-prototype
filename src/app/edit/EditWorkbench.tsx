@@ -3,13 +3,18 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { type SectionId } from '@/authoring/contracts';
+import { type ModuleScope, type SectionId } from '@/authoring/contracts';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
+import { ControlModulesSection } from '@/app/edit/sections/ControlModulesSection';
 import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthoringSection';
 import { SectionTabs } from '@/app/edit/shared/SectionTabs';
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
+import {
+  createControlModulesDraft,
+  type ControlModulesDraft,
+} from '@/authoring/sections/control-modules';
 import {
   createScenePhaseAuthoringDraft,
   getRouterOptions,
@@ -91,7 +96,16 @@ export function EditWorkbench({
   );
   const [scenePhaseSaveStatus, setScenePhaseSaveStatus] = useState<string | null>(null);
   const [isScenePhaseSaving, setIsScenePhaseSaving] = useState(false);
+  const [draftControlModules, setDraftControlModules] = useState<ControlModulesDraft>(
+    createControlModulesDraft(initialState.state),
+  );
+  const [savedControlModules, setSavedControlModules] = useState<ControlModulesDraft>(
+    createControlModulesDraft(initialState.state),
+  );
+  const [controlModulesSaveStatus, setControlModulesSaveStatus] = useState<string | null>(null);
+  const [isControlModulesSaving, setIsControlModulesSaving] = useState(false);
   const routerOptions = getRouterOptions(initialState.state.routerProfiles);
+  const phaseIds = initialState.state.phasePlans.map((phase) => phase.phaseId);
 
   useEffect(() => {
     setDraftWorldBase(initialState.state.worldBase);
@@ -103,6 +117,11 @@ export function EditWorkbench({
     setSavedScenePhase(nextScenePhaseDraft);
     setScenePhaseSaveStatus(null);
     setIsScenePhaseSaving(false);
+    const nextControlModulesDraft = createControlModulesDraft(initialState.state);
+    setDraftControlModules(nextControlModulesDraft);
+    setSavedControlModules(nextControlModulesDraft);
+    setControlModulesSaveStatus(null);
+    setIsControlModulesSaving(false);
   }, [initialState.state, packageName]);
 
   async function handleWorldBaseCastSubmit() {
@@ -222,6 +241,61 @@ export function EditWorkbench({
     setScenePhaseSaveStatus('Reverted to the latest saved state.');
   }
 
+  async function handleControlModulesSubmit(moduleScope: ModuleScope) {
+    setIsControlModulesSaving(true);
+    setControlModulesSaveStatus(null);
+
+    try {
+      const response = await fetch(
+        `/api/authoring/packages/${encodeURIComponent(packageName)}/sections/control-modules`,
+        {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: `control-modules-${moduleScope}-${Date.now()}`,
+            source: 'page',
+            moduleScope,
+            payload: {
+              uiFields: draftControlModules,
+            },
+          }),
+        },
+      );
+
+      const result = (await response.json()) as {
+        readonly kind?: string;
+        readonly reloadedSectionState?: EditWorkbenchProps['initialState']['state'];
+        readonly blockingIssues?: readonly string[];
+        readonly errorMessage?: string;
+      };
+
+      if (
+        response.ok &&
+        (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
+        result.reloadedSectionState
+      ) {
+        const nextDraft = createControlModulesDraft(result.reloadedSectionState);
+        setDraftControlModules(nextDraft);
+        setSavedControlModules(nextDraft);
+        setControlModulesSaveStatus('Saved the active control module.');
+        return;
+      }
+
+      if (result.kind === 'save_blocked' && result.blockingIssues) {
+        setControlModulesSaveStatus(result.blockingIssues.join(' '));
+        return;
+      }
+
+      setControlModulesSaveStatus(result.errorMessage ?? 'Save failed.');
+    } catch {
+      setControlModulesSaveStatus('Save failed.');
+    } finally {
+      setIsControlModulesSaving(false);
+    }
+  }
+
   return (
     <main className="workspace-page edit-page">
       <section className="panel edit-hero">
@@ -264,6 +338,20 @@ export function EditWorkbench({
             onReset={handleScenePhaseReset}
             statusMessage={scenePhaseSaveStatus ?? undefined}
             isSaving={isScenePhaseSaving}
+          />
+        ) : activeSection === 'control-modules' ? (
+          <ControlModulesSection
+            packageName={packageName}
+            phaseIds={phaseIds}
+            value={draftControlModules}
+            onChange={setDraftControlModules}
+            onSubmit={handleControlModulesSubmit}
+            onReset={() => {
+              setDraftControlModules(savedControlModules);
+              setControlModulesSaveStatus('Reverted to the latest saved state.');
+            }}
+            statusMessage={controlModulesSaveStatus ?? undefined}
+            isSaving={isControlModulesSaving}
           />
         ) : (
           <SectionSurface sectionId={activeSection}>

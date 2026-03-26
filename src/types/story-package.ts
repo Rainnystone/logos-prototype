@@ -52,6 +52,51 @@ export const RouterLexiconFileSchema = z
   .strict();
 export type RouterLexiconFile = z.infer<typeof RouterLexiconFileSchema>;
 
+export const LightConeCustomizationSchema = z
+  .object({
+    boundaryGuidance: z.string(),
+    convergenceGuidance: z.string(),
+    phaseSettlementGuidance: z.string(),
+  })
+  .strict();
+export type LightConeCustomization = z.infer<typeof LightConeCustomizationSchema>;
+
+export const DirectorNoteAdditionsSchema = z
+  .object({
+    beatConstraintsAdditions: z.string(),
+    optionConstraintsAdditions: z.string(),
+  })
+  .strict();
+export type DirectorNoteAdditions = z.infer<typeof DirectorNoteAdditionsSchema>;
+
+export const BeatVolumeDefinitionSchema = z
+  .object({
+    beatConstraints: z.string(),
+    optionFormatting: z.string(),
+  })
+  .strict();
+export type BeatVolumeDefinition = z.infer<typeof BeatVolumeDefinitionSchema>;
+
+export const BeatVolumeDefinitionsSchema = z
+  .object({
+    Low: BeatVolumeDefinitionSchema,
+    Med: BeatVolumeDefinitionSchema,
+    High: BeatVolumeDefinitionSchema,
+  })
+  .strict();
+export type BeatVolumeDefinitions = z.infer<typeof BeatVolumeDefinitionsSchema>;
+
+export const ControlModulesSchema = z
+  .object({
+    sceneId: z.string(),
+    source: z.string().optional(),
+    lightConeCustomization: LightConeCustomizationSchema,
+    directorNoteAdditions: DirectorNoteAdditionsSchema,
+    beatVolumeDefinitions: BeatVolumeDefinitionsSchema,
+  })
+  .strict();
+export type ControlModules = z.infer<typeof ControlModulesSchema>;
+
 /** Story package wrapper for reference state snapshots. */
 export const StateSnapshotFixtureSchema = StateSnapshotSchema.extend({
   snapshotId: z.string(),
@@ -76,6 +121,7 @@ export const StoryPackageSchema = z
     phasePlans: z.array(PhasePlanSchema).min(1),
     routerProfiles: z.array(RouterProfileSchema).min(1),
     auditQuestionSet: AuditQuestionSetSchema,
+    controlModules: ControlModulesSchema,
     worldBase: WorldBaseSchema,
   })
   .strict();

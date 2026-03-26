@@ -146,4 +146,40 @@ describe('Director Note Layer', () => {
     expect(frozenRoundState.currentRouter).toBe(baseRoundState.currentRouter);
     expect(frozenRoundState.verbLexicon).toEqual(baseRoundState.verbLexicon);
   });
+
+  it('uses control-module volume definitions and additive guidance when provided', () => {
+    const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase, {
+      directorNoteAdditions: {
+        beatConstraintsAdditions: 'Never let the scene drift into spectacle beyond a containable campus incident.',
+        optionConstraintsAdditions: 'Keep every option grounded in immediate physical action.',
+      },
+      beatVolumeDefinitions: {
+        Low: {
+          beatConstraints: 'Use accelerated time and broad framing.',
+          optionFormatting: 'Use short macro-level options.',
+        },
+        Med: {
+          beatConstraints: 'Use direct real-time pacing with firm causal links.',
+          optionFormatting: 'Use balanced action options with clear real-time wording.',
+        },
+        High: {
+          beatConstraints: 'Use pressure-heavy close focus and tactile sensory detail.',
+          optionFormatting: 'Use high-immediacy tactical options with sharper physical wording.',
+        },
+      },
+    });
+
+    expect(directorNote.beatConstraints).toContain(
+      'Use direct real-time pacing with firm causal links.',
+    );
+    expect(directorNote.beatConstraints).toContain(
+      'Never let the scene drift into spectacle beyond a containable campus incident.',
+    );
+    expect(directorNote.optionConstraints).toContain(
+      'Use balanced action options with clear real-time wording.',
+    );
+    expect(directorNote.optionConstraints).toContain(
+      'Keep every option grounded in immediate physical action.',
+    );
+  });
 });

@@ -22,6 +22,32 @@ const loadAuthoringState = vi.fn(async () => ({
         phaseOverrides: {},
       },
     },
+    controlModules: {
+      sceneId: 'scene-signal-room',
+      lightConeCustomization: {
+        boundaryGuidance: 'boundary',
+        convergenceGuidance: 'convergence',
+        phaseSettlementGuidance: 'settlement',
+      },
+      directorNoteAdditions: {
+        beatConstraintsAdditions: 'beat additions',
+        optionConstraintsAdditions: 'option additions',
+      },
+      beatVolumeDefinitions: {
+        Low: {
+          beatConstraints: 'low beat',
+          optionFormatting: 'low option',
+        },
+        Med: {
+          beatConstraints: 'med beat',
+          optionFormatting: 'med option',
+        },
+        High: {
+          beatConstraints: 'high beat',
+          optionFormatting: 'high option',
+        },
+      },
+    },
     worldBase: {
       mainCharacters: 'An operator who keeps a calm surface under pressure.',
       npcCharacters: 'A nearby witness who should stay outside the real danger.',

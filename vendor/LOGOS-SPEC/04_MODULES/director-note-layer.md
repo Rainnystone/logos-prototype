@@ -14,7 +14,7 @@ reading_context:
   - 02_DOMAIN/glossary.md
   - 03_ORCHESTRATION/runtime-loop.md
 status: v1-complete
-last_updated: 2026-03-19
+last_updated: 2026-03-26
 ---
 
 # Director Note Layer
@@ -64,6 +64,12 @@ last_updated: 2026-03-19
 这些输入的共同特点，是它们都描述“模型这轮必须优先服从什么”。它不需要重新读取完整世界观，也不需要重新解释历史窗口。
 
 需要特别强调的是：当前版本允许 `RoundState` 继续保存 runtime router 与 verb lexicon，供编排层、Prompt Assembler 与状态检查使用；但 `Director Note Layer` 不再把它们直接重写成正文/选项的硬锁约束。
+
+在 `branch/narrative-editor` 当前实现中，Director Note Layer 已支持读取 story
+package 的 `control-modules.yaml`。系统仍然先生成基础 director note，再叠加作者
+提供的 `directorNoteAdditions`，同时用 `beatVolumeDefinitions` 重定义
+`Low / Med / High` 三档的正文与选项表达口径。作者输入是附加层，不替换系统收集到
+的当前轮控制事实。
 
 ## 输出
 

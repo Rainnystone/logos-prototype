@@ -1,6 +1,8 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import { parseWithSchema } from '@/lib/validation';
 import {
+  type BeatVolumeDefinitions,
+  type ControlModules,
   DirectorNoteSchema,
   type DirectorNote,
   type RoundState,
@@ -20,6 +22,16 @@ const VOLUME_OPTION_FORMATTING: Readonly<Record<Volume, string>> = {
   Med: 'standard action wording with clear real-time affordances',
   High: 'micro-sensory action wording with compressed physical time and heightened immediacy',
 };
+
+type DirectorNoteControlOverrides = Pick<
+  ControlModules,
+  'directorNoteAdditions' | 'beatVolumeDefinitions'
+>;
+
+function normalizeOptionalText(value: string | undefined): string | null {
+  const normalized = value?.trim() ?? '';
+  return normalized.length > 0 ? normalized : null;
+}
 
 function buildCanonGrounding(): string {
   return [
@@ -48,9 +60,35 @@ function buildParagraphDiscipline(): string {
   ].join(' ');
 }
 
-function buildBeatConstraints(roundState: RoundState, sceneState: SceneState): string {
+function resolveBeatConstraintText(
+  volume: Volume,
+  beatVolumeDefinitions?: BeatVolumeDefinitions,
+): string {
+  return beatVolumeDefinitions?.[volume].beatConstraints ?? VOLUME_BEAT_CONSTRAINTS[volume];
+}
+
+function resolveOptionFormattingText(
+  volume: Volume,
+  beatVolumeDefinitions?: BeatVolumeDefinitions,
+): string {
+  return beatVolumeDefinitions?.[volume].optionFormatting ?? VOLUME_OPTION_FORMATTING[volume];
+}
+
+function appendAuthorAddition(base: string, addition: string | undefined): string {
+  const normalizedAddition = normalizeOptionalText(addition);
+  return normalizedAddition ? `${base} Author addition: ${normalizedAddition}` : base;
+}
+
+function buildBeatConstraints(
+  roundState: RoundState,
+  sceneState: SceneState,
+  controlOverrides?: DirectorNoteControlOverrides,
+): string {
   return [
-    `Volume discipline (${roundState.currentVolume}): ${VOLUME_BEAT_CONSTRAINTS[roundState.currentVolume]}`,
+    `Volume discipline (${roundState.currentVolume}): ${resolveBeatConstraintText(
+      roundState.currentVolume,
+      controlOverrides?.beatVolumeDefinitions,
+    )}`,
     `Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (${roundState.phaseGoal}) without skipping ahead to later-phase outcomes or violating active red lines.`,
     `Generated prose must stay within Alpha boundary (${sceneState.alpha}) and Beta boundary (${sceneState.beta}).`,
     buildParagraphDiscipline(),
@@ -78,6 +116,7 @@ export function buildOptionConstraints(
   roundState: RoundState,
   sceneState: SceneState,
   characterProfile: string,
+  controlOverrides?: DirectorNoteControlOverrides,
 ): string {
   const resolvedCharacterProfile = resolveCharacterProfile(characterProfile);
 
@@ -85,7 +124,7 @@ export function buildOptionConstraints(
     'Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation.',
     `Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ${resolvedCharacterProfile}. ${buildCanonGrounding()} Verify the action remains psychologically plausible and compliant with Alpha (${sceneState.alpha}) / Beta (${sceneState.beta}) boundaries.`,
     `Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (${roundState.phaseGoal}) without jumping to later-phase resolutions or violating active red lines.`,
-    `Step 3 - Volume Formatting: Format each option at ${roundState.currentVolume} grain using ${VOLUME_OPTION_FORMATTING[roundState.currentVolume]}.`,
+    `Step 3 - Volume Formatting: Format each option at ${roundState.currentVolume} grain using ${resolveOptionFormattingText(roundState.currentVolume, controlOverrides?.beatVolumeDefinitions)}.`,
     resolveDirectorConstraints(roundState.directorConstraints),
   ].join(' ');
 }
@@ -99,13 +138,25 @@ export function buildDirectorNote(
   roundState: RoundState,
   sceneState: SceneState,
   worldBase: WorldBase,
+  controlOverrides?: DirectorNoteControlOverrides,
 ): DirectorNote {
   const directorNote = parseWithSchema(
     DirectorNoteSchema,
     {
       volume: roundState.currentVolume,
-      beatConstraints: buildBeatConstraints(roundState, sceneState),
-      optionConstraints: buildOptionConstraints(roundState, sceneState, worldBase.mainCharacters),
+      beatConstraints: appendAuthorAddition(
+        buildBeatConstraints(roundState, sceneState, controlOverrides),
+        controlOverrides?.directorNoteAdditions.beatConstraintsAdditions,
+      ),
+      optionConstraints: appendAuthorAddition(
+        buildOptionConstraints(
+          roundState,
+          sceneState,
+          worldBase.mainCharacters,
+          controlOverrides,
+        ),
+        controlOverrides?.directorNoteAdditions.optionConstraintsAdditions,
+      ),
     },
     'directorNote',
   );

@@ -15,6 +15,7 @@ const sourcePackageName = 'sample-scene';
 const testPackageName = '__authoring-bridge-test__';
 const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
 const worldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
+const controlModulesPath = path.resolve(testPackagePath, 'control-modules.yaml');
 const authoringStatusPath = path.resolve(testPackagePath, 'authoring-state.json');
 
 function resetTestPackage(): void {
@@ -270,6 +271,98 @@ describe('saveSectionDraft', () => {
       expect(result.reloadedSectionState.phasePlans[0]?.phaseId).toBe('phase-02-hunt');
       expect(result.reloadedSectionState.phasePlans[0]?.phaseIndex).toBe(1);
       expect(result.reloadedSectionState.phasePlans[0]?.phaseName).toBe('走廊追踪');
+    }
+  });
+
+  it('writes light-cone updates into control-modules.yaml through the shared bridge', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-light-cone',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'control-modules',
+      moduleScope: 'light-cone',
+      payload: {
+        uiFields: {
+          controlModules: {
+            sceneId: 'sample-yanshang-live-room',
+            lightConeCustomization: {
+              boundaryGuidance: 'Keep the player state as the apex.',
+              convergenceGuidance: 'Collapse harder near the end line.',
+              phaseSettlementGuidance: 'Only re-evaluate after settled phases.',
+            },
+            directorNoteAdditions: {
+              beatConstraintsAdditions: 'Keep the current beat grounded.',
+              optionConstraintsAdditions: 'Keep the options materially distinct.',
+            },
+            beatVolumeDefinitions: {
+              Low: {
+                beatConstraints: 'Use summary framing.',
+                optionFormatting: 'Use broad options.',
+              },
+              Med: {
+                beatConstraints: 'Use standard pacing.',
+                optionFormatting: 'Use direct options.',
+              },
+              High: {
+                beatConstraints: 'Use dense tactile pacing.',
+                optionFormatting: 'Use sharp tactical options.',
+              },
+            },
+          },
+          routerProfiles: [],
+          auditQuestionSet: {
+            sceneId: 'sample-yanshang-live-room',
+            globalQuestions: [],
+            controlQuestions: [],
+            selectionPolicy: {
+              default: [],
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    expect(readFileSync(controlModulesPath, 'utf8')).toContain('Collapse harder near the end line.');
+    if (result.kind === 'save_applied') {
+      expect(result.runtimeImpactSummary.changedFiles).toEqual(
+        expect.arrayContaining(['control-modules.yaml', 'authoring-state.json']),
+      );
+      expect(result.reloadedSectionState.controlModules.lightConeCustomization.convergenceGuidance).toBe(
+        'Collapse harder near the end line.',
+      );
+    }
+  });
+
+  it('blocks deleting a router profile that is still referenced by scene-phase data', async () => {
+    prepareTestPackage();
+
+    const currentPackage = await loadStoryPackage(testPackageName);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-router-delete-blocked',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'control-modules',
+      moduleScope: 'router-profile-set',
+      payload: {
+        uiFields: {
+          controlModules: currentPackage.controlModules,
+          routerProfiles: currentPackage.routerProfiles.filter(
+            (profile) => profile.routerName !== '悬疑/探案',
+          ),
+          auditQuestionSet: currentPackage.auditQuestionSet,
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain(
+        'Router profile "悬疑/探案" is still referenced by one or more phase router hints.',
+      );
     }
   });
 

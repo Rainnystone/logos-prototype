@@ -127,28 +127,33 @@ Concretely, the current direction is:
 
 ### 5.1 Current File Reality
 
-As of the current codebase, there is no separate package file yet for:
+The current codebase now includes one shared package-local control source:
+
+- `control-modules.yaml`
+
+That file carries:
 
 - light cone customization
 - director note additive author content
 - beat volume definitions
 
-Current story-package files already present are still limited to files such as:
+Current story-package files already present therefore include:
 
 - `scene.yaml`
 - `phase-plans.yaml`
 - `router-lexicon.yaml`
 - `audit-questions.yaml`
 - `world-base.yaml`
+- `control-modules.yaml`
 
-That means this section is the first place where redesign-era control data needs
-an explicitly approved new local control source.
+This confirms the approved redesign direction: one shared local control source
+for the three control areas that were previously only implicit in runtime code.
 
 ### 5.2 Approved Shared Control Source
 
 Approved V1 direction:
 
-- create one shared control source file:
+- keep one shared control source file:
   - `control-modules.yaml`
 - keep it package-local under the same story-package root
 - use it only for:
@@ -204,7 +209,8 @@ For `控制模块 (Control Modules)`, the approved order is:
    - director note construction reads system-generated base + `directorNoteAdditions` + `beatVolumeDefinitions` + current router profile data
    - prompt assembly then consumes the assembled control outputs, not the raw file directly
 
-This ordering should be written into future implementation plans rather than left implicit.
+This ordering is now the implemented path and should stay explicit in future
+implementation plans rather than being rediscovered later.
 
 ## 6. Module-By-Module Adaptation Impact
 

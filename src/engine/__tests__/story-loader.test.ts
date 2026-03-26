@@ -27,6 +27,9 @@ describe('story loader', () => {
 
     expect(storyPackage.sceneSpec.sceneId).toBe(scene.sceneId);
     expect(storyPackage.phasePlans.length).toBeGreaterThan(0);
+    expect(storyPackage.controlModules.lightConeCustomization.boundaryGuidance.length).toBeGreaterThan(
+      0,
+    );
     expect(Object.isFrozen(storyPackage)).toBe(true);
   });
 

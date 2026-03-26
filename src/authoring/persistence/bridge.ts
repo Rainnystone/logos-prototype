@@ -2,11 +2,20 @@ import { SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/cont
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import {
   ensureStoryPackageExists,
+  persistAuditQuestionSetDraft,
+  persistControlModulesDraft,
+  persistRouterProfilesDraft,
   persistScenePhaseDraft,
   persistWorldBaseDraft,
+  readAuditQuestionsDraftContents,
+  readControlModulesDraftContents,
   readPhasePlansDraftContents,
+  readRouterLexiconDraftContents,
   readSceneDraftContents,
   readWorldBaseDraftContents,
+  restoreAuditQuestionSetDraft,
+  restoreControlModulesDraft,
+  restoreRouterLexiconDraft,
   restoreScenePhaseDraft,
   restoreWorldBaseDraft,
 } from '@/authoring/persistence/repository';
@@ -17,6 +26,12 @@ import {
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
 import { reloadStoryPackage } from '@/authoring/persistence/reload';
+import {
+  createControlModulesDraft,
+  renderControlModulesSave,
+  validateControlModulesDraft,
+  type ControlModulesDraft,
+} from '@/authoring/sections/control-modules';
 import {
   renderScenePhaseAuthoring,
   validateScenePhaseAuthoringDraft,
@@ -38,10 +53,19 @@ const supportedModuleScopes = new Set<NonNullable<SaveRequest['moduleScope']>>([
 const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([
   SECTION_IDS[0],
   SECTION_IDS[1],
+  SECTION_IDS[2],
 ]);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+function hasAppendArray(value: unknown): value is { append: unknown[] } {
+  return isPlainObject(value) && Array.isArray(value.append);
 }
 
 function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issues: readonly string[] } {
@@ -270,6 +294,139 @@ function extractScenePhaseAuthoringDraft(
   };
 }
 
+function extractControlModulesDraft(request: SaveRequest): ControlModulesDraft | null {
+  const uiFields = request.payload.uiFields;
+
+  if (!uiFields) {
+    return null;
+  }
+
+  const controlModules = uiFields.controlModules;
+  const routerProfiles = uiFields.routerProfiles;
+  const auditQuestionSet = uiFields.auditQuestionSet;
+
+  if (!isPlainObject(controlModules) || !Array.isArray(routerProfiles) || !isPlainObject(auditQuestionSet)) {
+    return null;
+  }
+
+  const lightConeCustomization = isPlainObject(controlModules.lightConeCustomization)
+    ? controlModules.lightConeCustomization
+    : {};
+  const directorNoteAdditions = isPlainObject(controlModules.directorNoteAdditions)
+    ? controlModules.directorNoteAdditions
+    : {};
+  const beatVolumeDefinitions = isPlainObject(controlModules.beatVolumeDefinitions)
+    ? controlModules.beatVolumeDefinitions
+    : {};
+
+  const toVolumeEntry = (value: unknown) => {
+    const record = isPlainObject(value) ? value : {};
+    return {
+      beatConstraints: isStringField(record.beatConstraints) ? record.beatConstraints : '',
+      optionFormatting: isStringField(record.optionFormatting) ? record.optionFormatting : '',
+    };
+  };
+
+  const normalizedRouterProfiles = routerProfiles
+    .filter((profile) => isPlainObject(profile))
+    .map((profile) => ({
+      routerName: isStringField(profile.routerName) ? profile.routerName : '',
+      routerSemanticCore: isStringField(profile.routerSemanticCore) ? profile.routerSemanticCore : '',
+      verbLexicon: Array.isArray(profile.verbLexicon)
+        ? profile.verbLexicon.filter((value): value is string => isStringField(value))
+        : [],
+    }));
+
+  const toQuestion = (value: unknown) => {
+    const record = isPlainObject(value) ? value : {};
+    return {
+      id: isStringField(record.id) ? record.id : '',
+      question: isStringField(record.question) ? record.question : '',
+      expected: typeof record.expected === 'boolean' ? record.expected : true,
+      blocking: typeof record.blocking === 'boolean' ? record.blocking : false,
+      ...(isStringField(record.rationale) ? { rationale: record.rationale } : {}),
+    };
+  };
+
+  const phaseSpecificQuestions = isPlainObject(auditQuestionSet.phaseSpecificQuestions)
+    ? Object.fromEntries(
+        Object.entries(auditQuestionSet.phaseSpecificQuestions)
+          .filter((entry) => isUnknownArray(entry[1]))
+          .map(([phaseId, questions]) => [
+            phaseId,
+            (questions as unknown[]).map((question) => toQuestion(question)),
+          ]),
+      )
+    : undefined;
+
+  const phaseOverrides = isPlainObject(auditQuestionSet.selectionPolicy)
+    && isPlainObject(auditQuestionSet.selectionPolicy.phaseOverrides)
+      ? Object.fromEntries(
+          Object.entries(auditQuestionSet.selectionPolicy.phaseOverrides)
+            .filter((entry) => hasAppendArray(entry[1]))
+            .map(([phaseId, override]) => [
+              phaseId,
+              {
+                append: (override as { append: unknown[] }).append.filter(
+                  (id): id is string => isStringField(id),
+                ),
+              },
+            ]),
+        )
+      : undefined;
+
+  return {
+    controlModules: {
+      sceneId: isStringField(controlModules.sceneId) ? controlModules.sceneId : '',
+      ...(isStringField(controlModules.source) ? { source: controlModules.source } : {}),
+      lightConeCustomization: {
+        boundaryGuidance: isStringField(lightConeCustomization.boundaryGuidance)
+          ? lightConeCustomization.boundaryGuidance
+          : '',
+        convergenceGuidance: isStringField(lightConeCustomization.convergenceGuidance)
+          ? lightConeCustomization.convergenceGuidance
+          : '',
+        phaseSettlementGuidance: isStringField(lightConeCustomization.phaseSettlementGuidance)
+          ? lightConeCustomization.phaseSettlementGuidance
+          : '',
+      },
+      directorNoteAdditions: {
+        beatConstraintsAdditions: isStringField(directorNoteAdditions.beatConstraintsAdditions)
+          ? directorNoteAdditions.beatConstraintsAdditions
+          : '',
+        optionConstraintsAdditions: isStringField(directorNoteAdditions.optionConstraintsAdditions)
+          ? directorNoteAdditions.optionConstraintsAdditions
+          : '',
+      },
+      beatVolumeDefinitions: {
+        Low: toVolumeEntry(beatVolumeDefinitions.Low),
+        Med: toVolumeEntry(beatVolumeDefinitions.Med),
+        High: toVolumeEntry(beatVolumeDefinitions.High),
+      },
+    },
+    routerProfiles: normalizedRouterProfiles,
+    auditQuestionSet: {
+      sceneId: isStringField(auditQuestionSet.sceneId) ? auditQuestionSet.sceneId : '',
+      ...(isStringField(auditQuestionSet.source) ? { source: auditQuestionSet.source } : {}),
+      globalQuestions: Array.isArray(auditQuestionSet.globalQuestions)
+        ? auditQuestionSet.globalQuestions.map((question) => toQuestion(question))
+        : [],
+      controlQuestions: Array.isArray(auditQuestionSet.controlQuestions)
+        ? auditQuestionSet.controlQuestions.map((question) => toQuestion(question))
+        : [],
+      ...(phaseSpecificQuestions ? { phaseSpecificQuestions } : {}),
+      selectionPolicy: {
+        default:
+          isPlainObject(auditQuestionSet.selectionPolicy) &&
+          Array.isArray(auditQuestionSet.selectionPolicy.default)
+            ? auditQuestionSet.selectionPolicy.default.filter((id): id is string => isStringField(id))
+            : [],
+        ...(phaseOverrides && Object.keys(phaseOverrides).length > 0 ? { phaseOverrides } : {}),
+      },
+    },
+  };
+}
+
 export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> {
   const { request, issues: payloadIssues } = normalizeSaveRequest(input);
   const validationIssues = [...payloadIssues, ...validateSaveRequest(request)];
@@ -303,6 +460,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
   const nextMainCharacters = extractWorldBaseMainCharactersDraft(request);
   const nextWorldBaseDraft = extractWorldBaseCastDraft(request);
   const nextScenePhaseDraft = extractScenePhaseAuthoringDraft(request);
+  const nextControlModulesDraft = extractControlModulesDraft(request);
 
   if (
     request.sectionId === 'worldbase-cast' &&
@@ -331,6 +489,19 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showInGlobalDiagnostics: false,
       },
       ['No deterministic scene-phase update was provided.'],
+    );
+  }
+
+  if (request.sectionId === 'control-modules' && nextControlModulesDraft === null) {
+    return createSaveBlockedResult(
+      {
+        requestId: request.requestId,
+        packageName: request.packageName,
+        sectionId: request.sectionId,
+        showLocally: true,
+        showInGlobalDiagnostics: false,
+      },
+      ['No deterministic control-modules update was provided.'],
     );
   }
 
@@ -392,7 +563,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
           await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);
           throw writeOrReloadError;
         }
-      } else {
+      } else if (request.sectionId === 'scene-phase-authoring') {
         const originalSceneContents = await readSceneDraftContents(request.packageName);
         const originalPhasePlansContents = await readPhasePlansDraftContents(request.packageName);
         const routerOptions = currentStoryPackage.routerProfiles.map((profile) => profile.routerName);
@@ -425,6 +596,81 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
             originalSceneContents,
             originalPhasePlansContents,
           );
+          throw writeOrReloadError;
+        }
+      } else {
+        const moduleScope = request.moduleScope!;
+        const controlIssues = validateControlModulesDraft(
+          currentStoryPackage,
+          nextControlModulesDraft!,
+          moduleScope,
+        );
+
+        if (controlIssues.length > 0) {
+          return createSaveBlockedResult(
+            {
+              requestId: request.requestId,
+              packageName: request.packageName,
+              sectionId: request.sectionId,
+              showLocally: true,
+              showInGlobalDiagnostics: false,
+            },
+            controlIssues,
+          );
+        }
+
+        try {
+          const renderedControlModules = renderControlModulesSave(
+            currentStoryPackage,
+            nextControlModulesDraft ?? createControlModulesDraft(currentStoryPackage),
+            moduleScope,
+          );
+
+          if (moduleScope === 'router-profile-set') {
+            const originalRouterLexiconContents = await readRouterLexiconDraftContents(request.packageName);
+
+            try {
+              changedFiles = await persistRouterProfilesDraft(
+                request.packageName,
+                renderedControlModules.routerProfiles ?? currentStoryPackage.routerProfiles,
+              );
+              reloadedSectionState = await reloadStoryPackage(request.packageName);
+            } catch (writeOrReloadError) {
+              await restoreRouterLexiconDraft(request.packageName, originalRouterLexiconContents);
+              throw writeOrReloadError;
+            }
+          } else if (moduleScope === 'auditor-question-set') {
+            const originalAuditQuestionsContents = await readAuditQuestionsDraftContents(
+              request.packageName,
+            );
+
+            try {
+              changedFiles = await persistAuditQuestionSetDraft(
+                request.packageName,
+                renderedControlModules.auditQuestionSet ?? currentStoryPackage.auditQuestionSet,
+              );
+              reloadedSectionState = await reloadStoryPackage(request.packageName);
+            } catch (writeOrReloadError) {
+              await restoreAuditQuestionSetDraft(request.packageName, originalAuditQuestionsContents);
+              throw writeOrReloadError;
+            }
+          } else {
+            const originalControlModulesContents = await readControlModulesDraftContents(
+              request.packageName,
+            );
+
+            try {
+              changedFiles = await persistControlModulesDraft(
+                request.packageName,
+                renderedControlModules.controlModules ?? currentStoryPackage.controlModules,
+              );
+              reloadedSectionState = await reloadStoryPackage(request.packageName);
+            } catch (writeOrReloadError) {
+              await restoreControlModulesDraft(request.packageName, originalControlModulesContents);
+              throw writeOrReloadError;
+            }
+          }
+        } catch (writeOrReloadError) {
           throw writeOrReloadError;
         }
       }

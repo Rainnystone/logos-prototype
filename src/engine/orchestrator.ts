@@ -180,7 +180,10 @@ function buildRoundState(
 }
 
 export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
-  const lightConeCollapse = createLightConeCollapse(config.adapter);
+  const lightConeCollapse = createLightConeCollapse(
+    config.adapter,
+    config.storyPackage.controlModules.lightConeCustomization,
+  );
   const narrativeRouter = createNarrativeRouter(config.adapter);
   let currentState: StateSnapshot | null = null;
   let sceneComplete = false;
@@ -296,6 +299,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         initialRoundState,
         initialSceneState,
         config.storyPackage.worldBase,
+        config.storyPackage.controlModules,
       );
 
       acceptedHistory = [];
@@ -367,6 +371,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         roundState,
         stateBeforeBeat.sceneState,
         config.storyPackage.worldBase,
+        config.storyPackage.controlModules,
       );
       const attemptOutcome = await generateAcceptedBeat(
         phasePlan,

@@ -1,0 +1,39 @@
+sceneId: sample-yanshang-live-room
+source: story-source/control-modules.md
+lightConeCustomization:
+  boundaryGuidance: >-
+    Keep the current player state as the light-cone apex and the current end
+    line as the far convergence target.
+  convergenceGuidance: >-
+    Let the cone remain wide early, then narrow more sharply as the route closes
+    in on the signal source.
+  phaseSettlementGuidance: >-
+    Re-evaluate the boundaries only after each phase settlement is complete; do
+    not collapse the space beat by beat.
+directorNoteAdditions:
+  beatConstraintsAdditions: >-
+    Keep every beat local, physical, and explainable as a contained campus
+    incident.
+  optionConstraintsAdditions: >-
+    Options should keep tactical contrast without drifting into overt
+    supernatural spectacle.
+beatVolumeDefinitions:
+  Low:
+    beatConstraints: >-
+      Use summary framing, compressed time, and broad causal movement instead
+      of dense step-by-step detail.
+    optionFormatting: >-
+      Offer broad-strokes actions with macro-level framing and light wording.
+  Med:
+    beatConstraints: >-
+      Keep standard real-time pacing with clear causal links and readable action
+      density.
+    optionFormatting: >-
+      Offer balanced real-time actions with direct, readable phrasing.
+  High:
+    beatConstraints: >-
+      Use slow-motion pressure, sensory density, and tighter physical focus
+      while keeping the causal chain clear.
+    optionFormatting: >-
+      Offer high-immediacy actions with sharper physical detail and constrained
+      tactical language.

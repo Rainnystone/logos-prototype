@@ -18,7 +18,7 @@ reading_context:
   - 02_DOMAIN/glossary.md
   - 03_ORCHESTRATION/runtime-loop.md
 status: v1-complete
-last_updated: 2026-03-20
+last_updated: 2026-03-26
 ---
 
 # Prompt Assembler
@@ -83,6 +83,11 @@ Prompt Assembler 当前最小输入包括：
 Prompt Assembler 的上游是 `WorldBase`、`Light Cone Collapse`、`Phase Gradient`、`Narrative Router` 和 `Director Note Layer`；在 retry 时，它还会接收由 Orchestrator 提供的 `generationControl`；下游是 API 适配器。它不应向上游反推控制条件，也不应向下游泄露未经整理的局部模块内部结构。
 
 在当前架构里，它既是边界，也是一种纪律：所有对模型的正式输入都必须从这里出发。
+
+在 `branch/narrative-editor` 当前实现中，Prompt Assembler 仍然只消费已经组装好的
+控制结果。即使 `control-modules.yaml` 已成为 story package 的一部分，Prompt
+Assembler 也不直接读取这份文件；光锥自定义先被 collapse 路径吸收，Director
+Note 与 volume 定义先被导演层吸收，然后 Prompt Assembler 只接最终成品。
 
 ## 不负责什么
 

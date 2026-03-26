@@ -21,7 +21,7 @@ reading_context:
   - 02_DOMAIN/state-model.md
   - 04_MODULES/phase-consequence-settlement.md
 status: v1-complete
-last_updated: 2026-03-20
+last_updated: 2026-03-26
 ---
 
 # Light Cone Collapse
@@ -67,6 +67,11 @@ last_updated: 2026-03-20
 在 Phase 运行期间，边界保持稳定，不随每个 Beat 波动。只有当本阶段的 Beat 全部完成并完成状态结算后，系统才允许这个模块重算边界。这里的“重算”不是指数值缩放，而是以玩家上一阶段造成的真实后果为新坐标，重新看向 `End Line`，并在“仍然必须收束到终点线”的约束下推演下一阶段还能允许的激进极与消极极。这样设计的目的，是让玩家在一个 Phase 内拥有足够清晰的局部行动空间，而不是每走一步边界都重写一次；同时也让 Phase 结束成为真正的因果反馈时点，而不仅仅是计数器归零时点。
 
 在实现层面，Phase 结束时的边界重推演通过 API Adapter Lite 的 `collapse` 模式完成。Orchestrator 先组装 `PhaseConsequencePacket` 并触发 `Phase Consequence Settlement`，得到 `PhaseConsequenceResult.phaseConsequences[]`；随后再将这些后果与当前边界、主轴和终点线打包为 `CollapsePacket`，经 API Adapter 调用 LLM 进行语义推演，最终得到 `CollapseResult`（含新的 `Alpha/Beta` 与推演说明）。这一步是 LLM 调用而非代码规则计算，因为边界推演的本质是"基于因果后果重新评估可达叙事空间"，这需要语义理解能力。详细契约见 `05_CONTRACTS/phase-consequence-packet-schema.yaml` 与 `05_CONTRACTS/collapse-packet-schema.yaml`。
+
+在 `branch/narrative-editor` 当前实现中，模块已额外支持从 story package 的
+`control-modules.yaml` 读取 `lightConeCustomization`。这些作者级自定义不会跳过
+原有的 collapse 调用，也不会直接写入 `Alpha/Beta`；它们只会作为边界重推演时的
+附加指导输入，与 `mainAxis`、`endLine` 和阶段结算结果一起进入 collapse 请求。
 
 ## 与其他模块的关系
 

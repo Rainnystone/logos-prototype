@@ -71,6 +71,36 @@ export const storyPackageFixture: StoryPackage = {
       default: ['global-1', 'control-1'],
     },
   },
+  controlModules: {
+    sceneId: 'scene-signal-room',
+    source: 'fixtures/control-modules',
+    lightConeCustomization: {
+      boundaryGuidance:
+        'Keep the current player state as the apex and the far end line in view.',
+      convergenceGuidance:
+        'Narrow the cone after each settled phase instead of shrinking every beat.',
+      phaseSettlementGuidance:
+        'Only recalculate the cone after phase settlement completes and consequences are known.',
+    },
+    directorNoteAdditions: {
+      beatConstraintsAdditions: 'Keep beats local, physical, and easy to trace.',
+      optionConstraintsAdditions: 'Keep options tactically distinct without overt spectacle.',
+    },
+    beatVolumeDefinitions: {
+      Low: {
+        beatConstraints: 'Use summary framing and broad causal movement.',
+        optionFormatting: 'Offer broad actions with light wording.',
+      },
+      Med: {
+        beatConstraints: 'Keep standard pacing with clear causal links.',
+        optionFormatting: 'Offer balanced actions with direct phrasing.',
+      },
+      High: {
+        beatConstraints: 'Use tighter physical focus and higher sensory density.',
+        optionFormatting: 'Offer sharper, higher-immediacy actions.',
+      },
+    },
+  },
   worldBase: {
     mainCharacters: 'An operator who keeps a calm surface under pressure.',
     npcCharacters: 'A nearby witness who should stay outside the real danger.',

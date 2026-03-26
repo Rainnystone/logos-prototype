@@ -7,6 +7,7 @@ import { deepFreeze } from '@/lib/deep-freeze';
 import { parseWithSchema } from '@/lib/validation';
 import { AuditQuestionSetSchema, WorldBaseSchema } from '@/types';
 import {
+  ControlModulesSchema,
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
   SceneSpecSchema,
@@ -67,6 +68,11 @@ export async function loadStoryPackage(packageName: string): Promise<StoryPackag
     (data) => parseWithSchema(WorldBaseSchema, data, 'worldBase'),
     'world base',
   );
+  const controlModules = await loadAndValidate(
+    path.resolve(packageRoot, 'control-modules.yaml'),
+    (data) => parseWithSchema(ControlModulesSchema, data, 'controlModules'),
+    'control modules',
+  );
 
   return deepFreeze(
     parseWithSchema(
@@ -76,6 +82,7 @@ export async function loadStoryPackage(packageName: string): Promise<StoryPackag
         phasePlans: phasePlansFile.phasePlans,
         routerProfiles: routerLexiconFile.routers,
         auditQuestionSet,
+        controlModules,
         worldBase,
       },
       'storyPackage',

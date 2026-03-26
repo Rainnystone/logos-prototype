@@ -105,6 +105,33 @@ export const storyPackageFixture: StoryPackage = deepFreeze({
     },
   ],
   auditQuestionSet: auditQuestionSetFixture,
+  controlModules: {
+    sceneId: 'scene-fixture',
+    source: 'fixture-control-source',
+    lightConeCustomization: {
+      boundaryGuidance: 'treat the current player state as the light-cone apex',
+      convergenceGuidance: 'narrow the cone after each settled phase',
+      phaseSettlementGuidance: 're-evaluate only after phase settlement completes',
+    },
+    directorNoteAdditions: {
+      beatConstraintsAdditions: 'keep the beat local and concrete',
+      optionConstraintsAdditions: 'keep the options tactically distinct',
+    },
+    beatVolumeDefinitions: {
+      Low: {
+        beatConstraints: 'low-volume beat constraints',
+        optionFormatting: 'low-volume option formatting',
+      },
+      Med: {
+        beatConstraints: 'medium-volume beat constraints',
+        optionFormatting: 'medium-volume option formatting',
+      },
+      High: {
+        beatConstraints: 'high-volume beat constraints',
+        optionFormatting: 'high-volume option formatting',
+      },
+    },
+  },
   worldBase: {
     mainCharacters: 'main-characters',
     npcCharacters: 'npc-characters',

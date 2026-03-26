@@ -89,6 +89,27 @@ describe('Light Cone Collapse', () => {
     });
   });
 
+  it('appends control-module light cone guidance before initial inference', async () => {
+    const { adapter, collapse } = createRecordingAdapter({
+      alpha: 'alpha',
+      beta: 'beta',
+      inferenceTrace: 'trace',
+    });
+
+    await createLightConeCollapse(adapter, {
+      boundaryGuidance: 'Keep the current player state as the apex.',
+      convergenceGuidance: 'Narrow the cone more sharply near the end line.',
+      phaseSettlementGuidance: 'Only re-evaluate after each settled phase.',
+    }).inferInitialBoundaries(sceneSpec);
+
+    expect(collapse).toHaveBeenCalledWith({
+      context: {
+        mainAxis: expect.stringContaining('Keep the current player state as the apex.'),
+        endLine: expect.stringContaining('Narrow the cone more sharply near the end line.'),
+      },
+    });
+  });
+
   it('throws when initial inference receives an invalid SceneSpec', async () => {
     const { adapter } = createRecordingAdapter({
       alpha: 'alpha',
