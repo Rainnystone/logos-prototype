@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
 import type { CoordinatorRunResult } from '@/authoring/coordinator/dispatch';
+import type { AuthoringState } from '@/authoring/persistence/package-state';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
@@ -46,8 +47,8 @@ const SECTION_SUMMARIES: Record<
     description: 'Shape the shared world description, named cast, and fixed location details.',
   },
   'scene-phase-authoring': {
-    eyebrow: 'Scene & Phase Authoring',
-    title: 'Scene & Phase Authoring',
+    eyebrow: 'SCENE & PHASE',
+    title: 'SCENE & PHASE',
     description: 'Adjust the scene spine and phase progression before the beat loop runs.',
   },
   'control-modules': {
@@ -66,6 +67,50 @@ interface EditWorkbenchProps {
   readonly packageName: string;
   readonly activeSection: SectionId;
   readonly initialState: AuthoringStateLoadResult;
+}
+
+type EditableSectionId = Exclude<SectionId, 'package-wiring-validation'>;
+type PendingSectionReviews = NonNullable<AuthoringState['pendingSectionReviews']>;
+
+const SECTION_REVIEW_DEPENDENCIES: Record<EditableSectionId, readonly EditableSectionId[]> = {
+  'worldbase-cast': ['scene-phase-authoring', 'control-modules'],
+  'scene-phase-authoring': ['control-modules'],
+  'control-modules': [],
+};
+
+function advancePendingSectionReviews(
+  currentReviews: PendingSectionReviews | undefined,
+  editedSection: EditableSectionId,
+): PendingSectionReviews | undefined {
+  const nextReviews = {
+    ...(currentReviews ?? {}),
+  };
+
+  delete nextReviews[editedSection];
+
+  for (const dependentSection of SECTION_REVIEW_DEPENDENCIES[editedSection]) {
+    const sources = new Set(nextReviews[dependentSection] ?? []);
+    sources.add(editedSection);
+    nextReviews[dependentSection] = Array.from(sources);
+  }
+
+  const populatedEntries = Object.entries(nextReviews).filter((entry) => {
+    const [, sources] = entry;
+    return Array.isArray(sources) && sources.length > 0;
+  });
+
+  if (populatedEntries.length === 0) {
+    return undefined;
+  }
+
+  return Object.fromEntries(populatedEntries) as PendingSectionReviews;
+}
+
+function didPersistAuthoringState(result: SaveResult): boolean {
+  return (
+    (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
+    result.runtimeImpactSummary.changedFiles.includes('authoring-state.json')
+  );
 }
 
 function SectionSurface({
@@ -94,6 +139,7 @@ export function EditWorkbench({
 }: EditWorkbenchProps) {
   const [currentState, setCurrentState] = useState(initialState.state);
   const [currentSource, setCurrentSource] = useState(initialState.source);
+  const [currentAuthoringState, setCurrentAuthoringState] = useState(initialState.authoringState ?? null);
   const [recentSaveResults, setRecentSaveResults] = useState<SaveResult[]>([]);
   const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
   const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
@@ -134,9 +180,10 @@ export function EditWorkbench({
         packageName,
         source: currentSource,
         storyPackage: currentState,
+        authoringState: currentAuthoringState,
         recentSaveResults,
       }),
-    [currentSource, currentState, packageName, recentSaveResults],
+    [currentAuthoringState, currentSource, currentState, packageName, recentSaveResults],
   );
   const diagnostics = remoteDiagnostics ?? localDiagnostics;
   const activeLocalStatusMessage =
@@ -170,6 +217,7 @@ export function EditWorkbench({
   useEffect(() => {
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
+    setCurrentAuthoringState(initialState.authoringState ?? null);
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
     setCoordinatorSummaries({});
@@ -188,7 +236,7 @@ export function EditWorkbench({
     setSavedControlModules(nextControlModulesDraft);
     setControlModulesSaveStatus(null);
     setIsControlModulesSaving(false);
-  }, [initialState.source, initialState.state, packageName]);
+  }, [initialState.authoringState, initialState.source, initialState.state, packageName]);
 
   function rememberSaveResult(result: SaveResult) {
     setRecentSaveResults((currentResults) => {
@@ -209,6 +257,25 @@ export function EditWorkbench({
     setCoordinatorSummaries((currentSummaries) => ({
       ...currentSummaries,
       [sectionId]: summary,
+    }));
+  }
+
+  function rememberSuccessfulAuthoringSave(sectionId: EditableSectionId) {
+    setCurrentAuthoringState((currentAuthoringStatus) => ({
+      hasSuccessfulSave: true,
+      lastSavedAt: new Date().toISOString(),
+      lastEditedSection: sectionId,
+      ...(currentAuthoringStatus?.lastSavedRequestId
+        ? { lastSavedRequestId: currentAuthoringStatus.lastSavedRequestId }
+        : {}),
+      ...(advancePendingSectionReviews(currentAuthoringStatus?.pendingSectionReviews, sectionId)
+        ? {
+            pendingSectionReviews: advancePendingSectionReviews(
+              currentAuthoringStatus?.pendingSectionReviews,
+              sectionId,
+            ),
+          }
+        : {}),
     }));
   }
 
@@ -301,6 +368,9 @@ export function EditWorkbench({
       ) {
         setCurrentState(result.reloadedSectionState);
         setCurrentSource('latest-saved');
+        if (didPersistAuthoringState(result)) {
+          rememberSuccessfulAuthoringSave('worldbase-cast');
+        }
         const nextDraft = createWorldBaseCastDraft(result.reloadedSectionState.worldBase);
         setDraftWorldBase(nextDraft);
         setSavedWorldBase(nextDraft);
@@ -322,6 +392,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('worldbase-cast');
+          }
           const nextDraft = createWorldBaseCastDraft(
             coordinatorResult.saveResult.reloadedSectionState.worldBase,
           );
@@ -345,6 +418,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('worldbase-cast');
+          }
           const nextDraft = createWorldBaseCastDraft(
             coordinatorResult.saveResult.reloadedSectionState.worldBase,
           );
@@ -398,6 +474,9 @@ export function EditWorkbench({
       ) {
         setCurrentState(result.reloadedSectionState);
         setCurrentSource('latest-saved');
+        if (didPersistAuthoringState(result)) {
+          rememberSuccessfulAuthoringSave('scene-phase-authoring');
+        }
         const nextDraft = createScenePhaseAuthoringDraft(result.reloadedSectionState);
         setDraftScenePhase(nextDraft);
         setSavedScenePhase(nextDraft);
@@ -419,6 +498,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('scene-phase-authoring');
+          }
           const nextDraft = createScenePhaseAuthoringDraft(
             coordinatorResult.saveResult.reloadedSectionState,
           );
@@ -442,6 +524,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('scene-phase-authoring');
+          }
           const nextDraft = createScenePhaseAuthoringDraft(
             coordinatorResult.saveResult.reloadedSectionState,
           );
@@ -496,6 +581,9 @@ export function EditWorkbench({
       ) {
         setCurrentState(result.reloadedSectionState);
         setCurrentSource('latest-saved');
+        if (didPersistAuthoringState(result)) {
+          rememberSuccessfulAuthoringSave('control-modules');
+        }
         const nextDraft = createControlModulesDraft(result.reloadedSectionState);
         setDraftControlModules(nextDraft);
         setSavedControlModules(nextDraft);
@@ -522,6 +610,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('control-modules');
+          }
           const nextDraft = createControlModulesDraft(
             coordinatorResult.saveResult.reloadedSectionState,
           );
@@ -550,6 +641,9 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
+          if (didPersistAuthoringState(coordinatorResult.saveResult)) {
+            rememberSuccessfulAuthoringSave('control-modules');
+          }
           const nextDraft = createControlModulesDraft(
             coordinatorResult.saveResult.reloadedSectionState,
           );

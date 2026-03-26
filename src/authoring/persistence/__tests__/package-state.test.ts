@@ -97,4 +97,28 @@ describe('loadAuthoringState', () => {
     expect(rawContents).toContain('"hasSuccessfulSave": true');
     expect(rawContents).not.toContain('lastSavedRequestId');
   });
+
+  it('round-trips pending section review flags through the authoring marker', async () => {
+    prepareTestPackage();
+
+    await writeAuthoringState(
+      testPackageName,
+      {
+        hasSuccessfulSave: true,
+        lastSavedAt: '2026-03-25T14:30:00.000Z',
+        lastEditedSection: 'worldbase-cast',
+        pendingSectionReviews: {
+          'scene-phase-authoring': ['worldbase-cast'],
+          'control-modules': ['worldbase-cast', 'scene-phase-authoring'],
+        },
+      } as never,
+    );
+
+    const result = await loadAuthoringState(testPackageName);
+
+    expect(result.authoringState?.pendingSectionReviews).toEqual({
+      'scene-phase-authoring': ['worldbase-cast'],
+      'control-modules': ['worldbase-cast', 'scene-phase-authoring'],
+    });
+  });
 });

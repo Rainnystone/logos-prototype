@@ -9,6 +9,20 @@ import { loadStoryPackage } from '@/engine/story-loader';
 import type { StoryPackage } from '@/types';
 
 const AuthoringSectionIdSchema = z.enum(SECTION_IDS);
+const ReviewableSectionIdSchema = z.enum([
+  'worldbase-cast',
+  'scene-phase-authoring',
+  'control-modules',
+]);
+
+const PendingSectionReviewsSchema = z
+  .object({
+    'worldbase-cast': z.array(ReviewableSectionIdSchema).optional(),
+    'scene-phase-authoring': z.array(ReviewableSectionIdSchema).optional(),
+    'control-modules': z.array(ReviewableSectionIdSchema).optional(),
+  })
+  .partial()
+  .strict();
 
 export const AuthoringStateSchema = z
   .object({
@@ -16,6 +30,7 @@ export const AuthoringStateSchema = z
     lastSavedAt: z.string().optional(),
     lastSavedRequestId: z.string().optional(),
     lastEditedSection: AuthoringSectionIdSchema.optional(),
+    pendingSectionReviews: PendingSectionReviewsSchema.optional(),
   })
   .strict();
 
@@ -25,6 +40,7 @@ export type AuthoringStateSource = 'initial-sample' | 'latest-saved';
 export interface AuthoringStateLoadResult {
   readonly source: AuthoringStateSource;
   readonly state: StoryPackage;
+  readonly authoringState?: AuthoringState | null;
 }
 
 export function resolvePackageRoot(packageName: string): string {
@@ -68,5 +84,6 @@ export async function loadAuthoringState(
   return {
     source: authoringState?.hasSuccessfulSave ? 'latest-saved' : 'initial-sample',
     state,
+    authoringState,
   };
 }

@@ -158,10 +158,11 @@ export function renderScenePhaseAuthoring(
   phasePlans: PhasePlan[];
 } {
   const nextSceneSpec: SceneSpec = {
-    ...current.sceneSpec,
+    sceneId: current.sceneSpec.sceneId,
     sceneName: normalizeText(draft.sceneSpec.sceneName),
     mainAxis: normalizeText(draft.sceneSpec.mainAxis),
     endLine: normalizeText(draft.sceneSpec.endLine),
+    ...(current.sceneSpec.source ? { source: current.sceneSpec.source } : {}),
     ...(normalizeOptionalText(draft.sceneSpec.openingSituation)
       ? { openingSituation: normalizeOptionalText(draft.sceneSpec.openingSituation) }
       : {}),

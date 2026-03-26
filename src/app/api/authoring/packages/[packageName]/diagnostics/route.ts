@@ -15,6 +15,7 @@ export async function GET(
     packageName: params.packageName,
     source: state.source,
     storyPackage: state.state,
+    authoringState: state.authoringState ?? null,
     recentSaveResults: [],
   });
 

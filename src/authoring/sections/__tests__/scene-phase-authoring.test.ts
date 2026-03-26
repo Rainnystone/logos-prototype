@@ -121,4 +121,17 @@ describe('scene-phase-authoring', () => {
       'Phase "Signal Trace" uses an unavailable router selection "Ghost Route".',
     ]);
   });
+
+  it('removes cleared optional scene fields instead of preserving stale source text', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
+    draft.sceneSpec.openingSituation = '';
+    draft.sceneSpec.openingHook = '';
+    draft.sceneSpec.samplePurpose = '';
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec).not.toHaveProperty('openingSituation');
+    expect(output.sceneSpec).not.toHaveProperty('openingHook');
+    expect(output.sceneSpec).not.toHaveProperty('samplePurpose');
+  });
 });

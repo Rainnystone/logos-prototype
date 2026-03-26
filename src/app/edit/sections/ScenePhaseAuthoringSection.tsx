@@ -9,6 +9,7 @@ import {
   type ScenePhaseAuthoringDraft,
   type ScenePhasePlanDraft,
 } from '@/authoring/sections/scene-phase-authoring';
+import { useMatchedHeight } from '@/app/edit/shared/useMatchedHeight';
 
 type SceneField = keyof ScenePhaseAuthoringDraft['sceneSpec'];
 type PhaseField = keyof ScenePhasePlanDraft;
@@ -23,18 +24,8 @@ interface ScenePhaseAuthoringSectionProps {
   readonly isSaving?: boolean;
 }
 
-function summarizePhase(phase: ScenePhasePlanDraft): string {
-  const value = phase.phaseGoal.trim() || phase.notes?.trim() || '';
-  return value.length > 72 ? `${value.slice(0, 69)}...` : value;
-}
-
 function summarizeRouterHint(phase: ScenePhasePlanDraft): string {
   return phase.routerHint?.trim() || 'No router selected.';
-}
-
-function summarizeNote(phase: ScenePhasePlanDraft): string {
-  const value = phase.notes?.trim() || '';
-  return value.length > 88 ? `${value.slice(0, 85)}...` : value;
 }
 
 export function ScenePhaseAuthoringSection({
@@ -48,10 +39,12 @@ export function ScenePhaseAuthoringSection({
 }: ScenePhaseAuthoringSectionProps) {
   const [selectedPhaseIndex, setSelectedPhaseIndex] = useState(0);
   const phaseRailRef = useRef<HTMLDivElement | null>(null);
+  const detailColumnRef = useRef<HTMLElement | null>(null);
   const [phaseRailProgress, setPhaseRailProgress] = useState(0);
   const [phaseRailScrollable, setPhaseRailScrollable] = useState(false);
 
   const selectedPhase = value.phasePlans[selectedPhaseIndex];
+  const matchedSceneFrameStyle = useMatchedHeight(detailColumnRef);
 
   useEffect(() => {
     setSelectedPhaseIndex((currentIndex) => {
@@ -169,7 +162,7 @@ export function ScenePhaseAuthoringSection({
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <p className="panel-eyebrow">Section Slice</p>
-          <h2>Scene &amp; Phase Authoring</h2>
+          <h2>SCENE &amp; PHASE</h2>
           <p className="panel-note">
             Field-based editing for one scene frame, one phase rail, and one focused phase editor.
           </p>
@@ -179,91 +172,120 @@ export function ScenePhaseAuthoringSection({
 
       <section
         aria-label="Phase rail section"
-        className="mt-6 rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+        className="mx-auto mt-6 w-full max-w-[88rem] overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
       >
-        <div className="mb-4">
+        <div className="border-b-2 border-black px-5 pb-4 pt-5">
           <div>
             <p className="panel-eyebrow">Phase Rail</p>
-            <h3 className="text-xl font-semibold text-slate-900">Phase Cards</h3>
+            <h3 className="text-2xl font-bold uppercase tracking-tight text-black">Phase Cards</h3>
           </div>
         </div>
-        <div
-          ref={phaseRailRef}
-          className="overflow-x-auto pb-3"
-          aria-label="Phase rail scrollbar"
-          onScroll={syncPhaseRailState}
-        >
-          <div className="flex min-w-max gap-3">
-            {value.phasePlans.map((phase, index) => {
-              const isSelected = index === selectedPhaseIndex;
-              const buttonLabel = phase.phaseName || `Phase ${index + 1}`;
-              return (
-                <button
-                  key={phase.phaseId ?? `${buttonLabel}-${index}`}
-                  type="button"
-                  aria-label={buttonLabel}
-                  className={`w-60 shrink-0 rounded-[1.4rem] border p-4 text-left transition ${
-                    isSelected
-                      ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
-                      : 'border-[#eadfce] bg-[#fffdf8] text-slate-900 hover:border-[#cdb391]'
-                  }`}
-                  onClick={() => setSelectedPhaseIndex(index)}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <strong className="text-sm">{buttonLabel}</strong>
-                    <span className="rounded-full bg-black/5 px-2 py-1 text-[10px] uppercase tracking-[0.12em] opacity-70">
-                      {phase.gradientType}
-                    </span>
-                  </div>
-                  <p className={`mt-3 text-sm ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
-                    {summarizePhase(phase)}
-                  </p>
-                  <p className={`mt-3 text-xs ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
-                    {summarizeRouterHint(phase)}
-                  </p>
-                  {phase.notes ? (
-                    <p className={`mt-3 text-xs ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {summarizeNote(phase)}
+        <div className="space-y-4 bg-[#f5f5f5] px-5 py-5">
+          <div
+            ref={phaseRailRef}
+            className="overflow-x-auto"
+            aria-label="Phase rail scrollbar"
+            onScroll={syncPhaseRailState}
+          >
+            <div className="flex min-w-max gap-4">
+              {value.phasePlans.map((phase, index) => {
+                const isSelected = index === selectedPhaseIndex;
+                const buttonLabel = phase.phaseName || `Phase ${index + 1}`;
+                return (
+                  <button
+                    key={phase.phaseId ?? `${buttonLabel}-${index}`}
+                    type="button"
+                    aria-label={buttonLabel}
+                    className={`w-[18rem] shrink-0 rounded-none border-2 p-4 text-left transition-colors ${
+                      isSelected
+                        ? 'border-black bg-black text-white shadow-brutal'
+                        : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
+                    }`}
+                    onClick={() => setSelectedPhaseIndex(index)}
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b-2 border-inherit pb-2 opacity-80">
+                      <strong className="text-sm tracking-tight uppercase">{`PHASE ${index + 1}`}</strong>
+                      <span
+                        className={`text-[10px] uppercase tracking-[0.08em] ${
+                          isSelected ? 'text-[#00ff00]' : 'text-black/50'
+                        }`}
+                      >
+                        {phase.gradientType}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-base font-semibold leading-relaxed ${
+                        isSelected ? 'text-white' : 'text-black'
+                      }`}
+                    >
+                      {buttonLabel}
                     </p>
-                  ) : null}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              aria-label="Add Phase"
-              className="flex w-40 shrink-0 items-center justify-center rounded-[1.4rem] border border-dashed border-[#d7c2a3] bg-[#fffdf8] px-5 py-6 text-left text-sm font-semibold text-[#8a6e4c] transition hover:border-[#b89264]"
-              onClick={handleAddPhase}
-            >
-              + Add Phase
-            </button>
+                    <p
+                      className={`mt-3 text-sm leading-relaxed ${
+                        isSelected ? 'text-white/90' : 'text-black'
+                      }`}
+                    >
+                      {phase.phaseGoal}
+                    </p>
+                    <p
+                      className={`mt-3 text-xs leading-relaxed ${
+                        isSelected ? 'text-white/60' : 'text-black/60'
+                      }`}
+                    >
+                      <span className="mb-0.5 block font-semibold uppercase">Router Hint:</span>
+                      {summarizeRouterHint(phase)}
+                    </p>
+                    {phase.notes ? (
+                      <p
+                        className={`mt-2 text-xs leading-relaxed italic ${
+                          isSelected ? 'text-white/45' : 'text-black/45'
+                        }`}
+                      >
+                        {phase.notes}
+                      </p>
+                    ) : null}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                aria-label="Add Phase"
+                className="flex w-[18rem] shrink-0 items-center justify-center rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold uppercase tracking-[0.05em] text-black transition hover:bg-[#e5e5e5]"
+                onClick={handleAddPhase}
+              >
+                + Add Phase
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="mt-4 flex items-center gap-3">
-          <span className="panel-eyebrow whitespace-nowrap">Rail Slider</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={phaseRailProgress}
-            aria-label="Phase rail slider"
-            disabled={!phaseRailScrollable}
-            onChange={handlePhaseRailSliderChange}
-            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#d8c8b3] accent-[#8a6e4c] disabled:cursor-default disabled:opacity-50"
-          />
+          <div className="flex items-center gap-3">
+            <span className="panel-eyebrow whitespace-nowrap text-black">Rail Slider</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={phaseRailProgress}
+              aria-label="Phase rail slider"
+              disabled={!phaseRailScrollable}
+              onChange={handlePhaseRailSliderChange}
+              className="h-2 w-full cursor-pointer appearance-none rounded-none border border-black bg-white accent-black disabled:cursor-default disabled:opacity-50"
+            />
+          </div>
         </div>
       </section>
 
       <div
         role="region"
         aria-label="Scene phase workspace"
-        className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(21rem,0.94fr)]"
+        className="mx-auto mt-6 grid w-full max-w-[88rem] items-stretch gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(19.5rem,0.82fr)]"
       >
-        <div className="max-h-[72vh] space-y-6 overflow-y-auto pr-2">
+        <div
+          style={matchedSceneFrameStyle}
+          className="min-w-0 min-h-[calc(100vh-21rem)] space-y-6 overflow-y-auto pr-2"
+        >
           <section
             aria-label="Scene frame section"
-            className="rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+            className="min-h-full rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
           >
             <div className="mb-4">
               <p className="panel-eyebrow">Scene</p>
@@ -327,7 +349,7 @@ export function ScenePhaseAuthoringSection({
           </section>
         </div>
 
-        <section aria-label="Scene Phase Detail Column" className="space-y-4">
+        <section ref={detailColumnRef} aria-label="Scene Phase Detail Column" className="min-w-0 space-y-4">
           <div className="rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf8] p-5 shadow-[0_12px_30px_rgba(31,26,21,0.06)]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -340,10 +362,10 @@ export function ScenePhaseAuthoringSection({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-[#f2eadc] px-3 py-1 text-xs font-medium text-[#8a6e4c]">
+                <span className="secondary-link pointer-events-none">
                   Current Phase
                 </span>
-                <span className="rounded-full bg-[#f2eadc] px-3 py-1 text-xs font-medium text-[#8a6e4c]">
+                <span className="secondary-link pointer-events-none">
                   4 Beats
                 </span>
                 <button

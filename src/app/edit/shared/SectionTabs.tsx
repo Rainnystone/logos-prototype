@@ -4,7 +4,7 @@ import { SECTION_IDS, type SectionId } from '@/authoring/contracts';
 
 const SECTION_LABELS: Record<SectionId, string> = {
   'worldbase-cast': 'WorldBase & Cast',
-  'scene-phase-authoring': 'Scene & Phase Authoring',
+  'scene-phase-authoring': 'SCENE & PHASE',
   'control-modules': 'Control Modules',
   'package-wiring-validation': 'Package Wiring Validation',
 };

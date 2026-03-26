@@ -19,7 +19,6 @@ import {
   ControlModulesSchema,
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
-  SceneSpecSchema,
   type PhasePlansFile,
   type RouterLexiconFile,
 } from '@/types/story-package';
@@ -118,21 +117,13 @@ export async function persistScenePhaseDraft(
   const scenePath = resolveScenePath(packageName);
   const phasePlansPath = resolvePhasePlansPath(packageName);
 
-  const currentSceneSpec = parseWithSchema(
-    SceneSpecSchema,
-    YAML.parse(await readFile(scenePath, 'utf8')) as unknown,
-    'sceneSpec',
-  ) as SceneSpec;
   const currentPhasePlansFile = parseWithSchema(
     PhasePlansFileSchema,
     YAML.parse(await readFile(phasePlansPath, 'utf8')) as unknown,
     'phasePlans',
   ) as PhasePlansFile;
 
-  const mergedSceneSpec: SceneSpec = {
-    ...currentSceneSpec,
-    ...nextSceneSpec,
-  };
+  const mergedSceneSpec: SceneSpec = { ...nextSceneSpec };
   const mergedPhasePlansFile: PhasePlansFile = {
     ...currentPhasePlansFile,
     sceneId: mergedSceneSpec.sceneId,

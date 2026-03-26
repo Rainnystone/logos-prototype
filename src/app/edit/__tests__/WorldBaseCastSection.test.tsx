@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
 import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
@@ -67,7 +67,37 @@ const draftValue: WorldBaseCastDraft = {
 };
 
 describe('WorldBaseCastSection', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders world blocks plus character rails and a detailed editor', async () => {
+    class ResizeObserverMock {
+      private readonly callback: ResizeObserverCallback;
+
+      constructor(callback: ResizeObserverCallback) {
+        this.callback = callback;
+      }
+
+      observe(target: Element) {
+        this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver);
+      }
+
+      disconnect() {}
+      unobserve() {}
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
+      this: HTMLElement,
+    ) {
+      if (this.getAttribute('aria-label') === 'Character editor column') {
+        return DOMRect.fromRect({ width: 420, height: 960 });
+      }
+
+      return DOMRect.fromRect({ width: 420, height: 320 });
+    });
+
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     const onReset = vi.fn();
@@ -83,7 +113,17 @@ describe('WorldBaseCastSection', () => {
       />,
     );
 
-    expect(screen.getByRole('region', { name: 'WorldBase workspace' })).toBeInTheDocument();
+    const workspaceRegion = screen.getByRole('region', { name: 'WorldBase workspace' });
+    expect(workspaceRegion).toBeInTheDocument();
+    expect(workspaceRegion.parentElement?.className).toContain('items-stretch');
+    expect(workspaceRegion.className).toContain('min-h-[calc(100vh-16rem)]');
+    expect(workspaceRegion.className).toContain('overflow-y-auto');
+    await waitFor(() => {
+      expect(workspaceRegion).toHaveStyle({ height: '960px' });
+    });
+    expect(screen.getByRole('heading', { name: 'World Blocks' }).closest('section')?.className).not.toContain(
+      'min-h-full',
+    );
     expect(screen.getByRole('region', { name: 'Character editor column' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'WorldBase & Cast' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'World Base Setting' })).toHaveValue('World base');

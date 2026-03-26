@@ -15,6 +15,7 @@ const sourcePackageName = 'sample-scene';
 const testPackageName = '__authoring-bridge-test__';
 const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
 const worldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
+const scenePath = path.resolve(testPackagePath, 'scene.yaml');
 const controlModulesPath = path.resolve(testPackagePath, 'control-modules.yaml');
 const authoringStatusPath = path.resolve(testPackagePath, 'authoring-state.json');
 
@@ -330,6 +331,173 @@ describe('saveSectionDraft', () => {
       expect(result.reloadedSectionState.phasePlans[0]?.phaseIndex).toBe(1);
       expect(result.reloadedSectionState.phasePlans[0]?.phaseName).toBe('走廊追踪');
     }
+  });
+
+  it('marks dependent sections for review after a worldbase save', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft(buildPageStyleSaveRequest('worldbase-review-flag'));
+
+    expect(result.kind).toBe('save_applied');
+
+    const status = YAML.parse(readFileSync(authoringStatusPath, 'utf8')) as {
+      pendingSectionReviews?: Record<string, string[]>;
+    };
+
+    expect(status.pendingSectionReviews).toEqual({
+      'scene-phase-authoring': ['worldbase-cast'],
+      'control-modules': ['worldbase-cast'],
+    });
+  });
+
+  it('keeps control-modules pending after scene-phase saves and clears the scene review flag', async () => {
+    prepareTestPackage();
+
+    await saveSectionDraft(buildPageStyleSaveRequest('worldbase-review-flag'));
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-review-flags',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            mainAxis: '先追踪信号，再拆掉直播链路，最后回归表面日常。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            samplePurpose: '',
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const status = YAML.parse(readFileSync(authoringStatusPath, 'utf8')) as {
+      pendingSectionReviews?: Record<string, string[]>;
+    };
+
+    expect(status.pendingSectionReviews).toEqual({
+      'control-modules': ['worldbase-cast', 'scene-phase-authoring'],
+    });
+  });
+
+  it('removes cleared optional scene fields from scene.yaml after a scene-phase save', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-clear-optionals',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            mainAxis: '先追踪信号，再拆掉直播链路，最后回归表面日常。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            samplePurpose: '',
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const savedScene = YAML.parse(readFileSync(scenePath, 'utf8')) as Record<string, unknown>;
+
+    expect(savedScene.sceneName).toBe('炎上直播间·改');
+    expect(savedScene).not.toHaveProperty('openingSituation');
+    expect(savedScene).not.toHaveProperty('openingHook');
+    expect(savedScene).not.toHaveProperty('samplePurpose');
+  });
+
+  it('clears the control-modules review flag after a control-modules save', async () => {
+    prepareTestPackage();
+
+    await saveSectionDraft(buildPageStyleSaveRequest('worldbase-review-flag'));
+
+    await saveSectionDraft({
+      requestId: 'request-scene-phase-review-flags',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            mainAxis: '先追踪信号，再拆掉直播链路，最后回归表面日常。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            samplePurpose: '',
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    const currentPackage = await loadStoryPackage(testPackageName);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-clear-control-review-flags',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'control-modules',
+      moduleScope: 'light-cone',
+      payload: {
+        uiFields: {
+          controlModules: currentPackage.controlModules,
+          routerProfiles: currentPackage.routerProfiles,
+          auditQuestionSet: currentPackage.auditQuestionSet,
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const status = YAML.parse(readFileSync(authoringStatusPath, 'utf8')) as {
+      pendingSectionReviews?: Record<string, string[]>;
+    };
+
+    expect(status.pendingSectionReviews ?? {}).not.toHaveProperty('control-modules');
   });
 
   it('writes light-cone updates into control-modules.yaml through the shared bridge', async () => {

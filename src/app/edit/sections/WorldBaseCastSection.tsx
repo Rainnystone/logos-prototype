@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 
 import {
@@ -8,6 +8,7 @@ import {
   type WorldBaseCastDraft,
   type WorldBaseCharacterDraft,
 } from '@/authoring/sections/worldbase-cast';
+import { useMatchedHeight } from '@/app/edit/shared/useMatchedHeight';
 
 type TextField = 'worldBaseSetting' | 'worldRules' | 'toneBaseline' | 'supportingCast' | 'locationPool';
 type CharacterField =
@@ -184,6 +185,7 @@ export function WorldBaseCastSection({
   isSaving = false,
 }: WorldBaseCastSectionProps) {
   const [selection, setSelection] = useState<CharacterSelection>({ group: 'hero' });
+  const characterEditorRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (selection.group === 'hero') {
@@ -215,6 +217,7 @@ export function WorldBaseCastSection({
       group: selection.group,
     };
   }, [selection, value.antagonists, value.coreCast, value.hero]);
+  const matchedWorkspaceStyle = useMatchedHeight(characterEditorRef);
 
   function updateTextField(
     field: TextField,
@@ -308,10 +311,11 @@ export function WorldBaseCastSection({
         <p className="panel-note">{packageName}</p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]">
+      <div className="grid items-stretch gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]">
         <section
           aria-label="WorldBase workspace"
-          className="max-h-[72vh] space-y-6 overflow-y-auto pr-2"
+          style={matchedWorkspaceStyle}
+          className="min-h-[calc(100vh-16rem)] space-y-6 overflow-y-auto pr-2"
         >
           <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
@@ -404,7 +408,7 @@ export function WorldBaseCastSection({
           </section>
         </section>
 
-        <section aria-label="Character editor column" className="space-y-4">
+        <section ref={characterEditorRef} aria-label="Character editor column" className="space-y-4">
           <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>

@@ -55,4 +55,32 @@ describe('package-diagnostics', () => {
       ),
     ).toBe(true);
   });
+
+  it('blocks package health when story edits still require dependent section review', () => {
+    const diagnostics = buildPackageDiagnostics({
+      packageName: 'sample-scene',
+      source: 'latest-saved',
+      storyPackage: storyPackageFixture,
+      authoringState: {
+        hasSuccessfulSave: true,
+        lastEditedSection: 'worldbase-cast',
+        pendingSectionReviews: {
+          'scene-phase-authoring': ['worldbase-cast'],
+          'control-modules': ['worldbase-cast', 'scene-phase-authoring'],
+        },
+      } as never,
+      recentSaveResults: [],
+    });
+
+    expect(diagnostics.overallStatusView.status).toBe('blocked');
+    expect(
+      diagnostics.unresolvedIssueViews.some(
+        (issue) =>
+          issue.severity === 'blocked' &&
+          issue.repairDestination === 'scene-phase-authoring' &&
+          issue.title.includes('review'),
+      ),
+    ).toBe(true);
+    expect(diagnostics.globalDiagnosticsHelperView.summary).toContain('blocking issue');
+  });
 });
