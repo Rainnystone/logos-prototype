@@ -131,7 +131,7 @@ function CharacterRail({
   addLabel,
 }: CharacterRailProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+    <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
       <div className="mb-4">
         <p className="panel-eyebrow">{title}</p>
         <p className="panel-note">{subtitle}</p>
@@ -146,15 +146,15 @@ function CharacterRail({
               <button
                 key={character.draftId}
                 type="button"
-                className={`w-52 shrink-0 rounded-2xl border p-4 text-left transition ${
+                className={`w-52 shrink-0 rounded-none border-2 p-4 text-left transition ${
                   isSelected
-                    ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
-                    : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300'
+                    ? 'border-black bg-black text-white shadow-brutal'
+                    : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
                 }`}
                 onClick={() => onSelect(character.draftId)}
               >
                 <strong className="block text-sm">{summarizeCharacter(character)}</strong>
-                <p className={`mt-3 text-sm ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
+                <p className={`mt-3 text-sm ${isSelected ? 'text-white/80' : 'text-black/60'}`}>
                   {summarizeSecondaryLine(character)}
                 </p>
               </button>
@@ -163,7 +163,7 @@ function CharacterRail({
 
           <button
             type="button"
-            className="w-44 shrink-0 rounded-2xl border border-dashed border-slate-300 bg-white/70 p-4 text-left text-sm font-semibold text-slate-700 transition hover:border-slate-500"
+            className="w-44 shrink-0 rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold text-black transition hover:bg-[#e5e5e5]"
             onClick={onAdd}
             aria-label={addLabel}
           >
@@ -313,10 +313,10 @@ export function WorldBaseCastSection({
           aria-label="WorldBase workspace"
           className="max-h-[72vh] space-y-6 overflow-y-auto pr-2"
         >
-          <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
               <p className="panel-eyebrow">World Base</p>
-              <h3 className="text-xl font-semibold text-slate-900">World Blocks</h3>
+              <h3 className="text-xl font-semibold text-black uppercase">World Blocks</h3>
             </div>
             <div className="space-y-4">
               {WORLD_TEXT_FIELDS.map((field) => (
@@ -334,23 +334,23 @@ export function WorldBaseCastSection({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
               <p className="panel-eyebrow">Hero</p>
               <p className="panel-note">One fixed hero card, edited on the right.</p>
             </div>
             <button
               type="button"
-              className={`w-full rounded-2xl border p-4 text-left transition ${
+              className={`w-full rounded-none border-2 p-4 text-left transition ${
                 selection.group === 'hero'
-                  ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
-                  : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300'
+                  ? 'border-black bg-black text-white shadow-brutal'
+                  : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
               }`}
               onClick={() => setSelection({ group: 'hero' })}
               aria-label={`Hero ${summarizeCharacter(value.hero)}`}
             >
               <strong className="block text-sm">{summarizeCharacter(value.hero)}</strong>
-              <p className={`mt-3 text-sm ${selection.group === 'hero' ? 'text-slate-200' : 'text-slate-700'}`}>
+              <p className={`mt-3 text-sm ${selection.group === 'hero' ? 'text-white/80' : 'text-black/60'}`}>
                 {summarizeSecondaryLine(value.hero)}
               </p>
             </button>
@@ -376,10 +376,10 @@ export function WorldBaseCastSection({
             addLabel="Add Antagonist Character"
           />
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
               <p className="panel-eyebrow">Loose Blocks</p>
-              <h3 className="text-xl font-semibold text-slate-900">Supporting Cast &amp; Locations</h3>
+              <h3 className="text-xl font-semibold text-black uppercase">Supporting Cast &amp; Locations</h3>
             </div>
             <div className="space-y-4">
               <label className="form-field">
@@ -405,11 +405,11 @@ export function WorldBaseCastSection({
         </section>
 
         <section aria-label="Character editor column" className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="panel-eyebrow">Selected Character Editor</p>
-                <h3 className="text-xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-black uppercase">
                   {selectedCharacter ? summarizeCharacter(selectedCharacter.character) : 'No character selected'}
                 </h3>
               </div>
@@ -463,7 +463,7 @@ export function WorldBaseCastSection({
                   </section>
                 ))}
 
-                <div className="panel-actions border-t border-slate-100 pt-4">
+                <div className="panel-actions border-t-2 border-black pt-4">
                   <button type="button" className="secondary-link" onClick={onReset}>
                     Reset Section
                   </button>

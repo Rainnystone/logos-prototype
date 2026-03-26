@@ -37,11 +37,11 @@ export function PromptStatusPanel({ state, diagnostics }: PromptStatusPanelProps
   const contextEntryCount = resolveContextEntryCount(state);
 
   return (
-    <aside className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg font-mono text-slate-300 text-sm break-words mb-[1.25rem]">
-      <div className="border-b border-slate-800 pb-4 mb-4">
-        <p className="text-[10px] tracking-widest uppercase text-emerald-500 mb-1">[ Prompt Assembly Status ]</p>
-        <h2 className="text-lg font-bold text-slate-100 tracking-tight">Prompt Status</h2>
-        <p className="text-slate-500 mt-2 text-xs">
+    <aside className="bg-black border-2 border-black p-5 shadow-brutal font-mono text-white text-sm break-words mb-[1.25rem]">
+      <div className="border-b-2 border-white/20 pb-4 mb-4">
+        <p className="text-[10px] tracking-widest uppercase text-[#00ff00] mb-1">[ Prompt Assembly Status ]</p>
+        <h2 className="text-lg font-bold text-white tracking-tight">Prompt Status</h2>
+        <p className="text-white/40 mt-2 text-xs">
           {diagnostics.latestOperation
             ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
             : 'Awaiting first assembled prompt.'}
@@ -49,41 +49,41 @@ export function PromptStatusPanel({ state, diagnostics }: PromptStatusPanelProps
       </div>
 
       <section className="inspector-section mb-6">
-        <h3 className="text-slate-400 font-semibold mb-3">Director Note</h3>
-        <p className="bg-slate-950 border border-slate-800 p-3 rounded-md text-slate-300">
+        <h3 className="text-white/60 font-semibold mb-3 uppercase tracking-wider text-xs">Director Note</h3>
+        <p className="bg-white/5 border-2 border-white/20 p-3 rounded-none text-white/80">
           {state?.generationState.directorNoteSummary ??
             'Director note will appear after the first accepted round.'}
         </p>
       </section>
 
       <section className="inspector-section">
-        <h3 className="text-slate-400 font-semibold mb-3">Prompt Object</h3>
+        <h3 className="text-white/60 font-semibold mb-3 uppercase tracking-wider text-xs">Prompt Object</h3>
         {promptLayerCount > 0 ? (
           <>
             <div className="metric-grid mb-4">
-              <div className="bg-slate-950 border border-slate-800 rounded-md p-3">
-                <span className="block text-[10px] uppercase text-slate-500 mb-1">Layers</span>
-                <strong className="text-slate-200">{`${promptLayerCount} layers`}</strong>
+              <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
+                <span className="block text-[10px] uppercase text-white/40 mb-1">Layers</span>
+                <strong className="text-white">{`${promptLayerCount} layers`}</strong>
               </div>
-              <div className="bg-slate-950 border border-slate-800 rounded-md p-3">
-                <span className="block text-[10px] uppercase text-slate-500 mb-1">Context Window</span>
-                <strong className="text-slate-200">{`${contextEntryCount} entries`}</strong>
+              <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
+                <span className="block text-[10px] uppercase text-white/40 mb-1">Context Window</span>
+                <strong className="text-white">{`${contextEntryCount} entries`}</strong>
               </div>
-              <div className="bg-slate-950 border border-slate-800 rounded-md p-3">
-                <span className="block text-[10px] uppercase text-slate-500 mb-1">Retry Count</span>
-                <strong className="text-slate-200">{state?.evaluationState.retryCount ?? 0}</strong>
+              <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
+                <span className="block text-[10px] uppercase text-white/40 mb-1">Retry Count</span>
+                <strong className="text-white">{state?.evaluationState.retryCount ?? 0}</strong>
               </div>
-              <div className="bg-slate-950 border border-slate-800 rounded-md p-3">
-                <span className="block text-[10px] uppercase text-slate-500 mb-1">Router</span>
-                <strong className="text-slate-200">{state?.roundState.currentRouter ?? 'Pending'}</strong>
+              <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
+                <span className="block text-[10px] uppercase text-white/40 mb-1">Router</span>
+                <strong className="text-white">{state?.roundState.currentRouter ?? 'Pending'}</strong>
               </div>
             </div>
-            <p className="text-slate-500 text-xs">
+            <p className="text-white/40 text-xs">
               Layers: {Object.keys(state?.generationState.promptObject ?? {}).join(', ')}
             </p>
           </>
         ) : (
-          <p className="text-slate-500">Prompt object details will appear after the first accepted round.</p>
+          <p className="text-white/40">Prompt object details will appear after the first accepted round.</p>
         )}
       </section>
     </aside>

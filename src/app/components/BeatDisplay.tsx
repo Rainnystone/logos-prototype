@@ -43,11 +43,11 @@ export function BeatDisplay({
   children,
 }: BeatDisplayProps) {
   return (
-    <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 flex flex-col gap-4 font-serif">
+    <section className="bg-white border-2 border-black rounded-none shadow-brutal p-5 flex flex-col gap-4 font-mono">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-xs tracking-wider uppercase text-slate-500 font-sans mb-1">GameView</p>
-          <h2 className="text-2xl font-semibold text-slate-800 font-sans">Current Beat</h2>
+          <p className="text-xs tracking-wider uppercase text-black/50 font-mono mb-1">GameView</p>
+          <h2 className="text-2xl font-semibold text-black font-mono uppercase">Current Beat</h2>
         </div>
         <div className="beat-display__summary">
           {summary ? <p className="panel-note">{summary}</p> : null}

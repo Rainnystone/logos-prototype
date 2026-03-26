@@ -59,7 +59,7 @@ export function PackageWiringValidationSection({
         </div>
 
         <section
-          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+          className="rounded-none border-2 border-black bg-slate-50/80 p-4"
           aria-label="Package overview column"
         >
           <div className="flex items-start justify-between gap-3">
@@ -80,14 +80,14 @@ export function PackageWiringValidationSection({
           <p className="mt-3 text-sm text-slate-700">{diagnostics.overallStatusView.summary}</p>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-none border-2 border-black bg-white p-4">
           <p className="panel-eyebrow">Section Health</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {diagnostics.sectionHealthViews.map((view) => (
               <button
                 key={view.sectionId}
                 type="button"
-                className="rounded-2xl border border-slate-200 p-4 text-left"
+                className="rounded-none border-2 border-black p-4 text-left"
                 onClick={() => setSelectedDetailKey(`section:${view.sectionId}`)}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -106,14 +106,14 @@ export function PackageWiringValidationSection({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-none border-2 border-black bg-white p-4">
           <p className="panel-eyebrow">Assembly Flow</p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {diagnostics.assemblyFlowViews.map((view) => (
               <button
                 key={view.key}
                 type="button"
-                className="rounded-2xl border border-slate-200 p-4 text-left"
+                className="rounded-none border-2 border-black p-4 text-left"
                 onClick={() => setSelectedDetailKey(`flow:${view.key}`)}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -132,7 +132,7 @@ export function PackageWiringValidationSection({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-none border-2 border-black bg-white p-4">
           <p className="panel-eyebrow">Unresolved Issue Queue</p>
           <div className="mt-4 space-y-3">
             {diagnostics.unresolvedIssueViews.length > 0 ? (
@@ -140,7 +140,7 @@ export function PackageWiringValidationSection({
                 <button
                   key={issue.key}
                   type="button"
-                  className="w-full rounded-2xl border border-slate-200 p-4 text-left"
+                  className="w-full rounded-none border-2 border-black p-4 text-left"
                   onClick={() => setSelectedDetailKey(issue.key)}
                 >
                   <div className="flex items-start justify-between gap-3">

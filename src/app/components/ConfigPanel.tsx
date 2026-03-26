@@ -51,22 +51,22 @@ export function ConfigPanel({
   diagnostics,
 }: ConfigPanelProps) {
   return (
-    <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 font-sans">
+    <section className="bg-white border-2 border-black rounded-none shadow-brutal p-5 font-mono">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="text-[10px] tracking-widest uppercase text-slate-500 mb-1">Runtime Config</p>
-          <h2 className="text-lg font-bold text-slate-800 tracking-tight">Provider Setup</h2>
+          <p className="text-[10px] tracking-widest uppercase text-black/50 mb-1">Runtime Config</p>
+          <h2 className="text-lg font-bold text-black tracking-tight uppercase">Provider Setup</h2>
         </div>
-        <p className="text-xs text-slate-400">Stored in localStorage only.</p>
+        <p className="text-xs text-black/40">Stored in localStorage only.</p>
       </div>
       <div className="mb-6">
         <RuntimeConfigForm initialConfig={initialConfig} onSave={onSave} />
       </div>
 
-      <section className="pt-4 border-t border-slate-100">
+      <section className="pt-4 border-t-2 border-black">
         <div className="mb-4">
-          <h3 className="text-sm font-bold text-slate-800">Runtime Usage</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="text-sm font-bold text-black uppercase">Runtime Usage</h3>
+          <p className="text-xs text-black/50">
             {diagnostics?.latestOperation
               ? `Latest observed call: ${formatOperationLabel(diagnostics.latestOperation)}`
               : 'Awaiting first adapter call.'}
@@ -77,10 +77,10 @@ export function ConfigPanel({
             const usage = diagnostics?.usage[operation] ?? null;
 
             return (
-              <article key={operation} className="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-wider text-slate-500">{formatOperationLabel(operation)}</span>
-                <strong className="text-sm text-slate-800">{formatUsageHeadline(usage)}</strong>
-                <p className="text-xs text-slate-400">{formatUsageBreakdown(usage)}</p>
+              <article key={operation} className="p-3 border-2 border-black rounded-none bg-[#f5f5f5] flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-wider text-black/50">{formatOperationLabel(operation)}</span>
+                <strong className="text-sm text-black">{formatUsageHeadline(usage)}</strong>
+                <p className="text-xs text-black/40">{formatUsageBreakdown(usage)}</p>
               </article>
             );
           })}

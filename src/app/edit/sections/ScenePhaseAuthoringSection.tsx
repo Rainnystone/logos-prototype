@@ -270,7 +270,7 @@ export function ScenePhaseAuthoringSection({
               <h3 className="text-xl font-semibold text-slate-900">Scene Frame</h3>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                 <span className="form-label">Scene Name</span>
                 <input
                   aria-label="Scene Name"
@@ -278,7 +278,7 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('sceneName', event)}
                 />
               </label>
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                 <span className="form-label">Opening Hook</span>
                 <textarea
                   aria-label="Opening Hook"
@@ -287,7 +287,7 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('openingHook', event)}
                 />
               </label>
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                 <span className="form-label">Main Axis</span>
                 <textarea
                   aria-label="Main Axis"
@@ -296,7 +296,7 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('mainAxis', event)}
                 />
               </label>
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                 <span className="form-label">End Line</span>
                 <textarea
                   aria-label="End Line"
@@ -305,7 +305,7 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('endLine', event)}
                 />
               </label>
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4 md:col-span-2">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4 md:col-span-2">
                 <span className="form-label">Opening Situation</span>
                 <textarea
                   aria-label="Opening Situation"
@@ -314,7 +314,7 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('openingSituation', event)}
                 />
               </label>
-              <label className="form-field rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4 md:col-span-2">
+              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4 md:col-span-2">
                 <span className="form-label">Sample Purpose</span>
                 <textarea
                   aria-label="Sample Purpose"
@@ -360,7 +360,7 @@ export function ScenePhaseAuthoringSection({
             {selectedPhase ? (
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-[#f6efe1] p-4">
+                  <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                     <span className="form-label">Gradient Type</span>
                     <select
                       aria-label="Gradient Type"
@@ -374,7 +374,7 @@ export function ScenePhaseAuthoringSection({
                       ))}
                     </select>
                   </label>
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-[#f6efe1] p-4">
+                  <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                     <span className="form-label">Router Hint</span>
                     <select
                       aria-label="Router Hint"
@@ -389,14 +389,14 @@ export function ScenePhaseAuthoringSection({
                       ))}
                     </select>
                   </label>
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-[#f6efe1] p-4">
+                  <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                     <span className="form-label">Beat Count</span>
                     <input aria-label="Beat Count" value="4" disabled readOnly />
                   </label>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-white p-4">
+                  <label className="form-field rounded-none border-2 border-black bg-white p-4">
                     <span className="form-label">Phase Name</span>
                     <input
                       aria-label="Phase Name"
@@ -404,7 +404,7 @@ export function ScenePhaseAuthoringSection({
                       onChange={(event) => updatePhaseField('phaseName', event)}
                     />
                   </label>
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-white p-4">
+                  <label className="form-field rounded-none border-2 border-black bg-white p-4">
                     <span className="form-label">Phase End Point</span>
                     <textarea
                       aria-label="Phase End Point"
@@ -413,7 +413,7 @@ export function ScenePhaseAuthoringSection({
                       onChange={(event) => updatePhaseField('phaseEndPoint', event)}
                     />
                   </label>
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-white p-4 md:col-span-2">
+                  <label className="form-field rounded-none border-2 border-black bg-white p-4 md:col-span-2">
                     <span className="form-label">Phase Goal</span>
                     <textarea
                       aria-label="Phase Goal"
@@ -422,7 +422,7 @@ export function ScenePhaseAuthoringSection({
                       onChange={(event) => updatePhaseField('phaseGoal', event)}
                     />
                   </label>
-                  <label className="form-field rounded-2xl border border-[#eadfce] bg-white p-4 md:col-span-2">
+                  <label className="form-field rounded-none border-2 border-black bg-white p-4 md:col-span-2">
                     <span className="form-label">Note</span>
                     <textarea
                       aria-label="Note"

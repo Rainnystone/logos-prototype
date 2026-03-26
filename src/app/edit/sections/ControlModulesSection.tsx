@@ -371,7 +371,7 @@ export function ControlModulesSection({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)]">
         <section
-          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+          className="rounded-none border-2 border-black bg-[#f5f5f5] p-4"
           role="region"
           aria-label="Control stack column"
         >
@@ -386,10 +386,10 @@ export function ControlModulesSection({
                 <button
                   key={card.key}
                   type="button"
-                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                  className={`w-full rounded-none border-2 p-4 text-left transition ${
                     isSelected
-                      ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
-                      : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300'
+                      ? 'border-black bg-black text-white shadow-brutal'
+                      : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
                   }`}
                   aria-label={card.label}
                   onClick={() => setSelectedModule(card.key)}
@@ -401,11 +401,11 @@ export function ControlModulesSection({
                       </div>
                       <div className="mt-1 text-base font-semibold">{card.label}</div>
                     </div>
-                    <span className="rounded-full border border-current/20 px-3 py-1 text-[10px] uppercase tracking-[0.12em] opacity-80">
+                    <span className="rounded-none border border-current/20 px-3 py-1 text-[10px] uppercase tracking-[0.12em] opacity-80">
                       {card.typeLabel}
                     </span>
                   </div>
-                  <p className={`mt-3 text-sm ${isSelected ? 'text-slate-200' : 'text-slate-600'}`}>
+                  <p className={`mt-3 text-sm ${isSelected ? 'text-white/80' : 'text-black/60'}`}>
                     {card.description}
                   </p>
                 </button>
@@ -415,14 +415,14 @@ export function ControlModulesSection({
         </section>
 
         <section className="space-y-4" role="region" aria-label="Module editor column">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <p className="panel-eyebrow">Module Editor Column</p>
                 <h3 className="text-xl font-semibold text-slate-900">{activeModule.label}</h3>
                 <p className="panel-note">{activeModule.description}</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              <span className="rounded-none border border-black bg-[#e5e5e5] px-3 py-1 text-xs font-medium text-black">
                 {activeModule.typeLabel}
               </span>
             </div>
@@ -480,10 +480,10 @@ export function ControlModulesSection({
             {selectedModule === 'beat-volume-definitions' ? (
               <div className="space-y-4">
                 {(['Low', 'Med', 'High'] as const).map((volume) => (
-                  <section key={volume} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <section key={volume} className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h4 className="text-base font-semibold text-slate-900">{volume}</h4>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-500">
+                      <span className="rounded-none border border-black bg-white px-3 py-1 text-xs font-medium text-black">
                         Volume Definition
                       </span>
                     </div>
@@ -522,7 +522,7 @@ export function ControlModulesSection({
                   {value.routerProfiles.map((profile, index) => (
                     <section
                       key={`${profile.routerName || 'router'}-${index}`}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                      className="rounded-none border-2 border-black bg-[#f5f5f5] p-4"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <h4 className="text-base font-semibold text-slate-900">
@@ -593,10 +593,10 @@ export function ControlModulesSection({
                       <button
                         key={bucket}
                         type="button"
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        className={`rounded-none px-3 py-1 text-xs font-medium border ${
                           bucket === selectedAuditBucket
-                            ? 'bg-slate-900 text-slate-50'
-                            : 'bg-slate-100 text-slate-700'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-[#e5e5e5] text-black border-black'
                         }`}
                         onClick={() => updateSelectedBucket(bucket)}
                       >
@@ -616,14 +616,14 @@ export function ControlModulesSection({
                 </div>
 
                 <div
-                  className="max-h-[28rem] space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                  className="max-h-[28rem] space-y-4 overflow-y-auto rounded-none border-2 border-black bg-[#f5f5f5] p-4"
                   role="region"
                   aria-label="Audit question list"
                 >
                   {getCurrentAuditQuestions().map((question, index) => (
                     <section
                       key={`${question.id || 'question'}-${index}`}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
+                      className="rounded-none border-2 border-black bg-white p-4"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <div>
@@ -690,7 +690,7 @@ export function ControlModulesSection({
                   ) : null}
                 </div>
 
-                <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                   <div className="mb-4">
                     <p className="panel-eyebrow">Selection Policy</p>
                     <h4 className="text-base font-semibold text-slate-900">Default and Phase Overrides</h4>

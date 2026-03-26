@@ -107,13 +107,13 @@ export function RuntimeConfigForm({
     (formState.provider === 'openai-compatible' && formState.baseUrl.trim().length === 0);
 
   const inputClass =
-    'w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-slate-400 focus:outline-none font-sans';
+    'w-full px-3 py-2 border-2 border-black rounded-none bg-white focus:ring-2 focus:ring-[#00ff00] focus:outline-none font-mono';
 
   return (
     <>
       <div className="grid gap-3 mb-4">
         <label className="grid gap-1">
-          <span className="text-sm font-medium text-slate-700">Provider</span>
+          <span className="text-sm font-medium text-black uppercase">Provider</span>
           <select
             className={inputClass}
             aria-label="Provider"
@@ -125,7 +125,7 @@ export function RuntimeConfigForm({
           </select>
         </label>
         <label className="grid gap-1">
-          <span className="text-sm font-medium text-slate-700">API Key</span>
+          <span className="text-sm font-medium text-black uppercase">API Key</span>
           <input
             className={inputClass}
             aria-label="API Key"
@@ -135,7 +135,7 @@ export function RuntimeConfigForm({
           />
         </label>
         <label className="grid gap-1">
-          <span className="text-sm font-medium text-slate-700">Model</span>
+          <span className="text-sm font-medium text-black uppercase">Model</span>
           <input
             className={inputClass}
             aria-label="Model"
@@ -146,7 +146,7 @@ export function RuntimeConfigForm({
         </label>
         {formState.provider === 'openai-compatible' ? (
           <label className="grid gap-1">
-            <span className="text-sm font-medium text-slate-700">Base URL</span>
+            <span className="text-sm font-medium text-black uppercase">Base URL</span>
             <input
               className={inputClass}
               aria-label="Base URL"
@@ -159,7 +159,7 @@ export function RuntimeConfigForm({
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <button
-          className="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase text-sm"
           type="button"
           onClick={handleSave}
           disabled={isSaveDisabled}
@@ -167,7 +167,7 @@ export function RuntimeConfigForm({
           Save Runtime Config
         </button>
         {actionSlot}
-        {statusMessage ? <p className="text-sm text-emerald-600 font-medium">{statusMessage}</p> : null}
+        {statusMessage ? <p className="text-sm text-[#00ff00] font-medium">{statusMessage}</p> : null}
       </div>
     </>
   );
