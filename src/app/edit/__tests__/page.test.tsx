@@ -60,6 +60,25 @@ vi.mock('@/authoring/persistence/package-state', () => ({
   loadAuthoringState,
 }));
 
+vi.mock('@/app/story-package-catalog', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/app/story-package-catalog')>();
+
+  return {
+    ...actual,
+    listStoryPackageCatalog: vi.fn(async () => [
+      {
+        packageName: 'sample-scene',
+        sceneId: 'scene-signal-room',
+        sceneName: 'Signal Room',
+        mainAxis: 'Track a hostile signal through a sealed campus wing.',
+        endLine: 'The source is isolated and the public space returns to calm.',
+        phaseCount: 0,
+        totalBeatCount: 0,
+      },
+    ]),
+  };
+});
+
 describe('EditPage', () => {
   it('loads the selected package and opens the requested editor section', async () => {
     const { default: EditPage } = await import('@/app/edit/page');
@@ -84,5 +103,18 @@ describe('EditPage', () => {
       'href',
       '/play?storyPackage=sample-scene',
     );
+  });
+
+  it('uses the unified return label on the editor fallback page', async () => {
+    loadAuthoringState.mockRejectedValueOnce(new Error('load failed'));
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {},
+    });
+
+    render(element);
+
+    expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute('href', '/');
   });
 });

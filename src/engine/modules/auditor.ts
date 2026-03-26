@@ -53,7 +53,7 @@ function buildQuestionIndex(questionSet: AuditQuestionSet): Map<string, AuditQue
  * Selects the audit questions for the active phase using the configured default policy plus
  * any phase-specific append rules.
  *
- * @see LOGOS-SPEC/04_MODULES/auditor.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/auditor.md
  */
 export function selectAuditQuestions(
   questionSet: AuditQuestionSet,
@@ -84,7 +84,7 @@ export function selectAuditQuestions(
  * Builds the current round's AuditPacket from accessible history, generation output, and the
  * selected audit questions.
  *
- * @see LOGOS-SPEC/04_MODULES/auditor.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/auditor.md
  */
 export function buildAuditPacket(
   precedingBeats: readonly HistoryEntry[],
@@ -112,7 +112,7 @@ export function buildAuditPacket(
 /**
  * Zips the adapter's boolean answers back onto the selected audit questions.
  *
- * @see LOGOS-SPEC/04_MODULES/auditor.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/auditor.md
  */
 export function parseAuditResult(
   auditResult: AuditResult,
@@ -137,7 +137,7 @@ export function parseAuditResult(
 /**
  * Executes the complete audit step for the current beat.
  *
- * @see LOGOS-SPEC/04_MODULES/auditor.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/auditor.md
  */
 export async function executeAudit(input: ExecuteAuditInput): Promise<ExecuteAuditOutput> {
   if (!input.adapter.audit) {

@@ -56,7 +56,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
           <p className="panel-eyebrow">Authoring Editor</p>
           <h1>No loadable story package was found.</h1>
           <Link className="primary-link" href="/">
-            Return to Sample Dashboard
+            Return to Title
           </Link>
         </section>
       </main>
@@ -84,7 +84,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
           <h1>Package Load Failed</h1>
           <p>{message}</p>
           <Link className="primary-link" href="/">
-            Return to Sample Dashboard
+            Return to Title
           </Link>
         </section>
       </main>

@@ -95,7 +95,7 @@ function buildFallbackInferenceTrace(lastError: Error | null): string {
 /**
  * Fixture-safe static router selection retained for simplified cases and tests.
  *
- * @see LOGOS-SPEC/04_MODULES/narrative-router.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md
  */
 export function selectRouter(
   routerProfiles: readonly RouterProfile[],
@@ -108,7 +108,7 @@ export function selectRouter(
 /**
  * Returns a copy of the canonical verb lexicon for a router name.
  *
- * @see LOGOS-SPEC/04_MODULES/narrative-router.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md
  */
 export function getVerbLexicon(
   routerProfiles: readonly RouterProfile[],
@@ -126,7 +126,7 @@ export function getVerbLexicon(
 /**
  * LLM-driven narrative router inference for the current round.
  *
- * @see LOGOS-SPEC/04_MODULES/narrative-router.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md
  */
 export function createNarrativeRouter(adapter: LLMAdapter) {
   return {

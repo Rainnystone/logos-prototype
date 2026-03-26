@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { UsageInfoSchema } from '@/types/common';
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
 export const PhaseConsequenceContextSchema = z
   .object({
     mainAxis: z.string(),
@@ -14,7 +14,7 @@ export const PhaseConsequenceContextSchema = z
   .strict();
 export type PhaseConsequenceContext = z.infer<typeof PhaseConsequenceContextSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
 export const TranscriptEntrySchema = z
   .object({
     role: z.enum(['user', 'assistant']),
@@ -23,7 +23,7 @@ export const TranscriptEntrySchema = z
   .strict();
 export type TranscriptEntry = z.infer<typeof TranscriptEntrySchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
 export const PhaseConsequenceRequestSchema = z
   .object({
     context: PhaseConsequenceContextSchema,
@@ -32,7 +32,7 @@ export const PhaseConsequenceRequestSchema = z
   .strict();
 export type PhaseConsequenceRequest = z.infer<typeof PhaseConsequenceRequestSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-consequence-packet-schema.yaml */
 export const PhaseConsequenceResponseSchema = z
   .object({
     phaseConsequences: z.array(z.string()).min(1).max(6),

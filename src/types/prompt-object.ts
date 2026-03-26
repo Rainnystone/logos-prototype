@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { HistoryEntrySchema, VolumeSchema } from '@/types/common';
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const WorldBaseSchema = z
   .object({
     mainCharacters: z.string(),
@@ -12,7 +12,7 @@ export const WorldBaseSchema = z
   .strict();
 export type WorldBase = z.infer<typeof WorldBaseSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const NarrativeSchema = z
   .object({
     mainAxis: z.string(),
@@ -24,7 +24,7 @@ export const NarrativeSchema = z
   .strict();
 export type Narrative = z.infer<typeof NarrativeSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const DirectorNoteSchema = z
   .object({
     volume: VolumeSchema,
@@ -34,7 +34,7 @@ export const DirectorNoteSchema = z
   .strict();
 export type DirectorNote = z.infer<typeof DirectorNoteSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const PromptDirectorNoteSchema = z
   .object({
     volume: VolumeSchema,
@@ -46,7 +46,7 @@ export const PromptDirectorNoteSchema = z
   .strict();
 export type PromptDirectorNote = z.infer<typeof PromptDirectorNoteSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const PreviousDraftSchema = z
   .object({
     beatText: z.string(),
@@ -55,7 +55,7 @@ export const PreviousDraftSchema = z
   .strict();
 export type PreviousDraft = z.infer<typeof PreviousDraftSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const GenerationControlSchema = z
   .object({
     isRewrite: z.boolean(),
@@ -66,7 +66,7 @@ export const GenerationControlSchema = z
   .strict();
 export type GenerationControl = z.infer<typeof GenerationControlSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const PromptObjectSchema = z
   .object({
     worldBase: WorldBaseSchema,

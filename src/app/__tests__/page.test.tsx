@@ -23,20 +23,25 @@ vi.mock('@/app/story-package-catalog', async (importOriginal) => {
 });
 
 describe('HomePage', () => {
-  it('surfaces the editor entry from the main package selector', async () => {
+  it('renders the new title page with direct workbench and editor actions', async () => {
     const { default: HomePage } = await import('@/app/page');
 
     const element = await HomePage();
     render(element);
 
-    expect(screen.getByRole('heading', { name: 'LOGOS Sample Dashboard' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open Editor' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene',
-    );
-    expect(screen.getByRole('link', { name: 'Open Signal Room' })).toHaveAttribute(
+    expect(screen.queryByRole('heading', { name: 'LOGOS Sample Dashboard' })).not.toBeInTheDocument();
+    expect(screen.getByText('LOGOS')).toBeInTheDocument();
+    expect(screen.getByText('Linguistic Oriented Game Orchestration Studio')).toBeInTheDocument();
+    expect(screen.getByText('prototype')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Provider Setup' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Play Workbench' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
+    );
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast',
     );
   });
 });

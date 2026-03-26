@@ -13,7 +13,7 @@ import {
 } from '@/types/story-package';
 
 const projectFixtureRoot = path.resolve(process.cwd(), 'src/story-packages/sample-scene');
-const designFixtureRoot = path.resolve(process.cwd(), 'vendor/LOGOS-SPEC/06_FIXTURES/sample-scene');
+const designFixtureRoot = path.resolve(process.cwd(), 'archive/vendor/LOGOS-SPEC/06_FIXTURES/sample-scene');
 
 function readYamlFile<T>(filePath: string): T {
   return YAML.parse(readFileSync(filePath, 'utf8')) as T;

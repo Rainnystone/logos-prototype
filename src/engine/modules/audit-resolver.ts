@@ -23,7 +23,7 @@ function buildRewriteFeedback(failures: readonly ParsedAuditAnswer[]): string {
 /**
  * Resolves parsed audit answers into flow-control decisions for the rewrite loop.
  *
- * @see LOGOS-SPEC/04_MODULES/audit-resolver.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/audit-resolver.md
  */
 export function resolveAudit(
   parsedResult: ParsedAuditResult,

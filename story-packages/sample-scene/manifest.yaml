@@ -6,7 +6,7 @@ package:
   locale: 'zh-CN'
   author: 'LOGOS Team'
   description: >
-    LOGOS Sample 验证用场景。基于 LOGOS-SPEC/06_FIXTURES/sample-scene/ 转化而来。
+    LOGOS Sample 验证用场景。基于 archive/vendor/LOGOS-SPEC/06_FIXTURES/sample-scene/ 转化而来。
     用于验证控制结构闭环，不代表最终产品故事。
 
 files:

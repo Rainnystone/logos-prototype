@@ -9,11 +9,12 @@ This is the implementation repo for
 `https://github.com/Rainnystone/LOGOS-Narrative-Editor`. The canonical working
 branch is `branch/narrative-editor`.
 
-On this repo, the vendored specification at `vendor/LOGOS-SPEC/` is an in-repo
-design snapshot that must co-evolve with implementation work instead of
-remaining read-only.
+On this repo, archived design/spec materials now live under
+`archive/vendor/LOGOS-SPEC/` and `archive/docs/`.
+They are reference records, not a higher-priority bible than direct human
+instructions, current code, or current tests.
 
-Branch transition rules live at `docs/narrative-editor-branch.md`.
+Branch transition rules live at `archive/docs/narrative-editor-branch.md`.
 
 ## Architecture
 
@@ -29,8 +30,8 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 - New work on `branch/narrative-editor` may start from product intent and
   implementation discoveries, even when no existing spec document covers it
-- `vendor/LOGOS-SPEC/` is editable on this branch and must be updated together
-  with code when behavior, contracts, or workflows change
+- `archive/vendor/LOGOS-SPEC/` remains editable when a task explicitly needs the
+  archived spec snapshot brought back into sync with implementation behavior
 - If code, tests, and spec disagree, resolve the intended behavior first, then
   bring all three back into sync in the same branch
 
@@ -51,7 +52,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 - All LLM calls go through API Adapter — no direct provider imports in modules
 - All prompt construction goes through Prompt Assembler — the single output gate
 - Auditor returns booleans, Audit Resolver makes flow decisions
-- See: LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md
+- See: archive/vendor/LOGOS-SPEC/05_CONTRACTS/module-dependency-map.md
 
 ### 5. LLM vs Code boundary
 
@@ -61,8 +62,8 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 ### 6. Context loading discipline
 
-- Every session: read this file plus `docs/narrative-editor-branch.md`
-- Load `vendor/LOGOS-SPEC/` selectively as reference context, not as a hard gate
+- Every session: read this file plus `archive/docs/narrative-editor-branch.md`
+- Load `archive/vendor/LOGOS-SPEC/` selectively as reference context, not as a hard gate
 - `branch/narrative-editor` is the only default development branch
 - Spec text budget: max 40,000 tokens per session
 - Never load: Agent Client/, LOGOS Prototype/, SillyTavern调研/
@@ -71,12 +72,12 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 
 | What                        | Where                             |
 | --------------------------- | --------------------------------- |
-| Spec root                   | vendor/LOGOS-SPEC/                |
-| Branch transition guide     | docs/narrative-editor-branch.md   |
-| Agent routing guide         | LOGOS-SPEC/00_META/agent-guide.md |
-| Glossary (terminology lock) | LOGOS-SPEC/02_DOMAIN/glossary.md  |
-| Contract schemas            | LOGOS-SPEC/05_CONTRACTS/\*.yaml   |
-| Module specs                | LOGOS-SPEC/04_MODULES/            |
+| Archived spec root          | archive/vendor/LOGOS-SPEC/                |
+| Branch transition guide     | archive/docs/narrative-editor-branch.md   |
+| Agent routing guide         | archive/vendor/LOGOS-SPEC/00_META/agent-guide.md |
+| Glossary (terminology lock) | archive/vendor/LOGOS-SPEC/02_DOMAIN/glossary.md  |
+| Contract schemas            | archive/vendor/LOGOS-SPEC/05_CONTRACTS/\*.yaml   |
+| Module specs                | archive/vendor/LOGOS-SPEC/04_MODULES/            |
 | Engine source               | src/engine/                       |
 | TypeScript types            | src/types/                        |
 | Story packages              | story-packages/                   |

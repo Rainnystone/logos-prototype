@@ -43,7 +43,7 @@ export default async function PlayPage({ searchParams }: PlayPageProps) {
           <p className="panel-eyebrow">Play Workbench</p>
           <h1>No loadable story package was found.</h1>
           <Link className="primary-link" href="/">
-            Return to Sample Dashboard
+            Return to Title
           </Link>
         </section>
       </main>
@@ -64,7 +64,7 @@ export default async function PlayPage({ searchParams }: PlayPageProps) {
           <h1>Package Load Failed</h1>
           <p>{message}</p>
           <Link className="primary-link" href="/">
-            Return to Sample Dashboard
+            Return to Title
           </Link>
         </section>
       </main>

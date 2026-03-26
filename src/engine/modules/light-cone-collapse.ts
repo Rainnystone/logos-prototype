@@ -77,7 +77,7 @@ function applyCollapseCustomization(
 /**
  * Light Cone Collapse manages initial and phase-end Alpha/Beta boundary inference.
  *
- * @see LOGOS-SPEC/04_MODULES/light-cone-collapse.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/light-cone-collapse.md
  */
 export function createLightConeCollapse(adapter: LLMAdapter, customization?: LightConeCustomization) {
   async function executeCollapseWithRetries(

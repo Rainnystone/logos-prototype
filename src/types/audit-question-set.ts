@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
 export const AuditQuestionSchema = z
   .object({
     id: z.string(),
@@ -12,7 +12,7 @@ export const AuditQuestionSchema = z
   .strict();
 export type AuditQuestion = z.infer<typeof AuditQuestionSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
 export const PhaseOverrideSchema = z
   .object({
     append: z.array(z.string()).min(1),
@@ -20,7 +20,7 @@ export const PhaseOverrideSchema = z
   .strict();
 export type PhaseOverride = z.infer<typeof PhaseOverrideSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
 export const SelectionPolicySchema = z
   .object({
     default: z.array(z.string()).min(1),
@@ -29,7 +29,7 @@ export const SelectionPolicySchema = z
   .strict();
 export type SelectionPolicy = z.infer<typeof SelectionPolicySchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
 export const AuditQuestionSetSchema = z
   .object({
     sceneId: z.string(),

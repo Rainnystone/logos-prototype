@@ -32,7 +32,7 @@ describe('EditWorkbench', () => {
       'href',
       '/play?storyPackage=sample-scene',
     );
-    expect(screen.getByRole('link', { name: 'Back to Sample Dashboard' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute(
       'href',
       '/',
     );

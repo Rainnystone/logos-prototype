@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { HistoryEntrySchema } from '@/types/common';
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
 export const AuditContextSchema = z
   .object({
     precedingBeats: z.array(HistoryEntrySchema),
@@ -10,7 +10,7 @@ export const AuditContextSchema = z
   .strict();
 export type AuditContext = z.infer<typeof AuditContextSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
 export const GeneratedContentSchema = z
   .object({
     beatText: z.string(),
@@ -19,7 +19,7 @@ export const GeneratedContentSchema = z
   .strict();
 export type GeneratedContent = z.infer<typeof GeneratedContentSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-packet-schema.yaml */
 export const AuditPacketSchema = z
   .object({
     context: AuditContextSchema,

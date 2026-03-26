@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConfigPanel } from '@/app/components/ConfigPanel';
 import { createEmptyWorkbenchDiagnostics } from '@/app/play/runtime';
+import { ADAPTER_CONFIG_STORAGE_KEY } from '@/app/runtime-config';
 
 describe('ConfigPanel', () => {
   beforeEach(() => {
@@ -46,7 +47,7 @@ describe('ConfigPanel', () => {
     await user.type(screen.getByLabelText('Model'), 'claude-test');
     await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
 
-    expect(localStorage.getItem('logos-adapter-config')).toContain('local-key');
+    expect(localStorage.getItem(ADAPTER_CONFIG_STORAGE_KEY)).toContain('local-key');
   });
 
   it('emits a valid AdapterConfig object on save', async () => {
@@ -95,5 +96,21 @@ describe('ConfigPanel', () => {
     expect(screen.getByText('Latest observed call: Route')).toBeInTheDocument();
     expect(screen.getByText('72 tokens')).toBeInTheDocument();
     expect(screen.getAllByText('Not reported').length).toBeGreaterThan(0);
+  });
+
+  it('keeps runtime usage visible while delegating provider inputs to the shared form', async () => {
+    const user = userEvent.setup();
+
+    render(<ConfigPanel onSave={vi.fn()} diagnostics={createEmptyWorkbenchDiagnostics()} />);
+
+    const configSection = screen.getByRole('heading', { name: 'Provider Setup' }).closest('section');
+    expect(configSection).not.toBeNull();
+    expect(within(configSection as HTMLElement).getByLabelText('Provider')).toBeInTheDocument();
+    expect(within(configSection as HTMLElement).getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai-compatible');
+
+    expect(screen.getByLabelText('Base URL')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Runtime Usage' })).toBeInTheDocument();
   });
 });

@@ -52,7 +52,7 @@ function buildBasePromptObject(input: PromptAssemblerInput): PromptObject {
 /**
  * Assembles the four-layer PromptObject for the normal generation path.
  *
- * @see LOGOS-SPEC/04_MODULES/prompt-assembler.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md
  */
 export function assemblePromptObject(input: PromptAssemblerInput): PromptObject {
   return deepFreeze(validatePromptObject(buildBasePromptObject(input)));
@@ -61,7 +61,7 @@ export function assemblePromptObject(input: PromptAssemblerInput): PromptObject 
 /**
  * Assembles the PromptObject for the rewrite path with a retry-only generationControl overlay.
  *
- * @see LOGOS-SPEC/04_MODULES/prompt-assembler.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md
  */
 export function assembleRewritePromptObject(
   input: PromptAssemblerInput,

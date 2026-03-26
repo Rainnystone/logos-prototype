@@ -20,7 +20,7 @@ function isTranscriptEntry(entry: HistoryEntry): entry is TranscriptEntry {
 /**
  * Builds the PhaseConsequenceRequest from the accepted transcript of the completed phase.
  *
- * @see LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md
  */
 export function buildPhaseConsequenceRequest(
   mainAxis: string,
@@ -50,7 +50,7 @@ export function buildPhaseConsequenceRequest(
 /**
  * Executes the phase-end consequence settlement call through the shared LLM adapter.
  *
- * @see LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/phase-consequence-settlement.md
  */
 export async function settlePhaseConsequences(
   request: PhaseConsequenceRequest,

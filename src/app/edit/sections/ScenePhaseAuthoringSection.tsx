@@ -177,13 +177,94 @@ export function ScenePhaseAuthoringSection({
         <p className="panel-note">{packageName}</p>
       </div>
 
+      <section
+        aria-label="Phase rail section"
+        className="mt-6 rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+      >
+        <div className="mb-4">
+          <div>
+            <p className="panel-eyebrow">Phase Rail</p>
+            <h3 className="text-xl font-semibold text-slate-900">Phase Cards</h3>
+          </div>
+        </div>
+        <div
+          ref={phaseRailRef}
+          className="overflow-x-auto pb-3"
+          aria-label="Phase rail scrollbar"
+          onScroll={syncPhaseRailState}
+        >
+          <div className="flex min-w-max gap-3">
+            {value.phasePlans.map((phase, index) => {
+              const isSelected = index === selectedPhaseIndex;
+              const buttonLabel = phase.phaseName || `Phase ${index + 1}`;
+              return (
+                <button
+                  key={phase.phaseId ?? `${buttonLabel}-${index}`}
+                  type="button"
+                  aria-label={buttonLabel}
+                  className={`w-60 shrink-0 rounded-[1.4rem] border p-4 text-left transition ${
+                    isSelected
+                      ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
+                      : 'border-[#eadfce] bg-[#fffdf8] text-slate-900 hover:border-[#cdb391]'
+                  }`}
+                  onClick={() => setSelectedPhaseIndex(index)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <strong className="text-sm">{buttonLabel}</strong>
+                    <span className="rounded-full bg-black/5 px-2 py-1 text-[10px] uppercase tracking-[0.12em] opacity-70">
+                      {phase.gradientType}
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-sm ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {summarizePhase(phase)}
+                  </p>
+                  <p className={`mt-3 text-xs ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                    {summarizeRouterHint(phase)}
+                  </p>
+                  {phase.notes ? (
+                    <p className={`mt-3 text-xs ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {summarizeNote(phase)}
+                    </p>
+                  ) : null}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              aria-label="Add Phase"
+              className="flex w-40 shrink-0 items-center justify-center rounded-[1.4rem] border border-dashed border-[#d7c2a3] bg-[#fffdf8] px-5 py-6 text-left text-sm font-semibold text-[#8a6e4c] transition hover:border-[#b89264]"
+              onClick={handleAddPhase}
+            >
+              + Add Phase
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <span className="panel-eyebrow whitespace-nowrap">Rail Slider</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={phaseRailProgress}
+            aria-label="Phase rail slider"
+            disabled={!phaseRailScrollable}
+            onChange={handlePhaseRailSliderChange}
+            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#d8c8b3] accent-[#8a6e4c] disabled:cursor-default disabled:opacity-50"
+          />
+        </div>
+      </section>
+
       <div
         role="region"
         aria-label="Scene phase workspace"
         className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(21rem,0.94fr)]"
       >
         <div className="max-h-[72vh] space-y-6 overflow-y-auto pr-2">
-          <section className="rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
+          <section
+            aria-label="Scene frame section"
+            className="rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+          >
             <div className="mb-4">
               <p className="panel-eyebrow">Scene</p>
               <h3 className="text-xl font-semibold text-slate-900">Scene Frame</h3>
@@ -242,81 +323,6 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('samplePurpose', event)}
                 />
               </label>
-            </div>
-          </section>
-
-          <section className="rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
-            <div className="mb-4">
-              <div>
-                <p className="panel-eyebrow">Phase Rail</p>
-                <h3 className="text-xl font-semibold text-slate-900">Phase Cards</h3>
-              </div>
-            </div>
-            <div
-              ref={phaseRailRef}
-              className="overflow-x-auto pb-3"
-              aria-label="Phase rail scrollbar"
-              onScroll={syncPhaseRailState}
-            >
-              <div className="flex min-w-max gap-3">
-                {value.phasePlans.map((phase, index) => {
-                  const isSelected = index === selectedPhaseIndex;
-                  const buttonLabel = phase.phaseName || `Phase ${index + 1}`;
-                  return (
-                    <button
-                      key={phase.phaseId ?? `${buttonLabel}-${index}`}
-                      type="button"
-                      aria-label={buttonLabel}
-                      className={`w-60 shrink-0 rounded-[1.4rem] border p-4 text-left transition ${
-                        isSelected
-                          ? 'border-slate-900 bg-slate-900 text-slate-50 shadow-md'
-                          : 'border-[#eadfce] bg-[#fffdf8] text-slate-900 hover:border-[#cdb391]'
-                      }`}
-                      onClick={() => setSelectedPhaseIndex(index)}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <strong className="text-sm">{buttonLabel}</strong>
-                        <span className="rounded-full bg-black/5 px-2 py-1 text-[10px] uppercase tracking-[0.12em] opacity-70">
-                          {phase.gradientType}
-                        </span>
-                      </div>
-                      <p className={`mt-3 text-sm ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
-                        {summarizePhase(phase)}
-                      </p>
-                      <p className={`mt-3 text-xs ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
-                        {summarizeRouterHint(phase)}
-                      </p>
-                      {phase.notes ? (
-                        <p className={`mt-3 text-xs ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {summarizeNote(phase)}
-                        </p>
-                      ) : null}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  aria-label="Add Phase"
-                  className="flex w-40 shrink-0 items-center justify-center rounded-[1.4rem] border border-dashed border-[#d7c2a3] bg-[#fffdf8] px-5 py-6 text-left text-sm font-semibold text-[#8a6e4c] transition hover:border-[#b89264]"
-                  onClick={handleAddPhase}
-                >
-                  + Add Phase
-                </button>
-              </div>
-            </div>
-            <div className="mt-4 flex items-center gap-3">
-              <span className="panel-eyebrow whitespace-nowrap">Rail Slider</span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={phaseRailProgress}
-                aria-label="Phase rail slider"
-                disabled={!phaseRailScrollable}
-                onChange={handlePhaseRailSliderChange}
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#d8c8b3] accent-[#8a6e4c] disabled:cursor-default disabled:opacity-50"
-              />
             </div>
           </section>
         </div>

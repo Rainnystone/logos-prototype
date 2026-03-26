@@ -110,7 +110,7 @@ function resolveCharacterProfile(characterProfile: string): string {
 /**
  * Encodes the Option Generator three-step pipeline as `optionConstraints`.
  *
- * @see LOGOS-SPEC/04_MODULES/option-generator.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/option-generator.md
  */
 export function buildOptionConstraints(
   roundState: RoundState,
@@ -132,7 +132,7 @@ export function buildOptionConstraints(
 /**
  * Builds the PromptObject Layer-4 DirectorNote from current round control state.
  *
- * @see LOGOS-SPEC/04_MODULES/director-note-layer.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md
  */
 export function buildDirectorNote(
   roundState: RoundState,

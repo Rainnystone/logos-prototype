@@ -7,13 +7,19 @@ const { usePathname } = vi.hoisted(() => ({
   usePathname: vi.fn(() => '/'),
 }));
 
+const { useSearchParams } = vi.hoisted(() => ({
+  useSearchParams: vi.fn(() => new URLSearchParams()),
+}));
+
 vi.mock('next/navigation', () => ({
   usePathname,
+  useSearchParams,
 }));
 
 describe('RootLayout', () => {
   it('renders the global LOGOS header and navigation links', () => {
-    usePathname.mockReturnValue('/');
+    usePathname.mockReturnValue('/play');
+    useSearchParams.mockReturnValue(new URLSearchParams('storyPackage=sample-scene'));
 
     render(
       <AppShell>
@@ -23,12 +29,22 @@ describe('RootLayout', () => {
 
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'LOGOS Workbench' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sample Dashboard' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Play Workbench' })).toHaveAttribute('href', '/play');
+    expect(screen.queryByRole('link', { name: 'Sample Dashboard' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Play Workbench' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Restart Workbench' })).toHaveAttribute(
+      'href',
+      '/play?storyPackage=sample-scene',
+    );
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+    );
   });
 
   it('removes the global LOGOS header on edit routes so the editor shell stays singular', () => {
     usePathname.mockReturnValue('/edit');
+    useSearchParams.mockReturnValue(new URLSearchParams());
 
     render(
       <AppShell>
@@ -41,8 +57,9 @@ describe('RootLayout', () => {
     expect(screen.getByText('Editor Child')).toBeInTheDocument();
   });
 
-  it('renders child content inside the main layout shell', () => {
+  it('removes the global LOGOS header on the title route so the landing page stands alone', () => {
     usePathname.mockReturnValue('/');
+    useSearchParams.mockReturnValue(new URLSearchParams());
 
     render(
       <AppShell>
@@ -50,6 +67,8 @@ describe('RootLayout', () => {
       </AppShell>,
     );
 
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'LOGOS Workbench' })).not.toBeInTheDocument();
     expect(screen.getByText('Runtime Child')).toBeInTheDocument();
   });
 });

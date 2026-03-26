@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { PlayWorkbench } from '@/app/play/PlayWorkbench';
 import { adapterConfigFixture, storyPackageFixture } from '@/app/__tests__/fixtures';
+import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
 import type { CollapseInput, LLMAdapter } from '@/engine/types/adapter-interface';
 import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
 import type { CollapseResponse } from '@/types';
@@ -167,6 +168,10 @@ async function startRound(
 }
 
 describe('PlayWorkbench', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it('shows scene initialization before the workbench is ready', async () => {
     const harness = createPlayAdapterHarness();
 
@@ -255,6 +260,32 @@ describe('PlayWorkbench', () => {
     expect(await screen.findByText('Force accepted after retry limit')).toBeInTheDocument();
     await waitFor(() => {
       expect(harness.getGenerateCount()).toBe(4);
+    });
+  });
+
+  it('reads the runtime config saved through the shared form path', async () => {
+    const user = userEvent.setup();
+    const harness = createPlayAdapterHarness();
+    const { unmount } = render(<RuntimeConfigForm onSave={() => {}} />);
+
+    await user.type(screen.getByLabelText('API Key'), 'shared-runtime-key');
+    await user.type(screen.getByLabelText('Model'), 'shared-runtime-model');
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    unmount();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        adapterFactory={() => harness.adapter}
+      />,
+    );
+
+    expect(await screen.findByText('Configured provider')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText('API Key')).toHaveValue('shared-runtime-key');
+      expect(screen.getByLabelText('Model')).toHaveValue('shared-runtime-model');
     });
   });
 

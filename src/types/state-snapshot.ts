@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { HistoryEntrySchema, VolumeSchema } from '@/types/common';
 
-/** LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
 export const SceneStateSchema = z
   .object({
     sceneId: z.string(),
@@ -18,7 +18,7 @@ export const SceneStateSchema = z
   .strict();
 export type SceneState = z.infer<typeof SceneStateSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
 export const RoundStateSchema = z
   .object({
     phaseGoal: z.string(),
@@ -31,7 +31,7 @@ export const RoundStateSchema = z
   .strict();
 export type RoundState = z.infer<typeof RoundStateSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
 export const GenerationStateSchema = z
   .object({
     directorNoteSummary: z.string(),
@@ -42,7 +42,7 @@ export const GenerationStateSchema = z
   .strict();
 export type GenerationState = z.infer<typeof GenerationStateSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
 export const EvaluationStateSchema = z
   .object({
     auditAnswers: z.array(z.boolean()),
@@ -53,7 +53,7 @@ export const EvaluationStateSchema = z
   .strict();
 export type EvaluationState = z.infer<typeof EvaluationStateSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/state-snapshot-schema.yaml */
 export const StateSnapshotSchema = z
   .object({
     sceneState: SceneStateSchema,

@@ -5,8 +5,8 @@ import { AppShell } from '@/app/AppShell';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LOGOS Workbench',
-  description: 'Author workbench for the LOGOS narrative orchestration engine.',
+  title: 'LOGOS',
+  description: 'Title page for the LOGOS narrative orchestration studio.',
 };
 
 type RootLayoutProps = Readonly<{

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { UsageInfoSchema } from '@/types/common';
 
-/** LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
 export const CollapseContextSchema = z
   .object({
     mainAxis: z.string(),
@@ -15,7 +15,7 @@ export const CollapseContextSchema = z
   .strict();
 export type CollapseContext = z.infer<typeof CollapseContextSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
 export const CollapseRequestSchema = z
   .object({
     context: CollapseContextSchema,
@@ -24,7 +24,7 @@ export const CollapseRequestSchema = z
   .strict();
 export type CollapseRequest = z.infer<typeof CollapseRequestSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/collapse-packet-schema.yaml */
 export const CollapseResponseSchema = z
   .object({
     alpha: z.string(),

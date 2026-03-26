@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -27,11 +27,16 @@ describe('ScenePhaseAuthoringSection', () => {
 
     expect(screen.getByRole('heading', { name: 'Scene & Phase Authoring' })).toBeInTheDocument();
     expect(screen.queryByText('Helper marker')).not.toBeInTheDocument();
+    const phaseRailSection = screen.getByRole('region', { name: 'Phase rail section' });
+    const sceneFrameSection = screen.getByRole('region', { name: 'Scene frame section' });
+
     expect(screen.getByRole('region', { name: 'Scene phase workspace' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Scene Name' })).toHaveValue('Signal Room');
-    expect(screen.getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
+    expect(within(phaseRailSection).getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Gradient Type' })).toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: 'Phase rail slider' })).toBeInTheDocument();
+    expect(within(phaseRailSection).getByRole('slider', { name: 'Phase rail slider' })).toBeInTheDocument();
+    expect(within(sceneFrameSection).queryByRole('slider', { name: 'Phase rail slider' })).not.toBeInTheDocument();
+    expect(phaseRailSection.compareDocumentPosition(sceneFrameSection)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 
     await user.click(screen.getByRole('button', { name: 'Counterplay Lock' }));
     expect(screen.getByRole('textbox', { name: 'Phase Goal' })).toHaveValue(

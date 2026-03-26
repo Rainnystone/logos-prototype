@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml */
 export const GradientTypeSchema = z.enum([
   'Rising',
   'Falling',
@@ -12,7 +12,7 @@ export const GradientTypeSchema = z.enum([
 ]);
 export type GradientType = z.infer<typeof GradientTypeSchema>;
 
-/** LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml */
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/phase-plan-schema.yaml */
 export const PhasePlanSchema = z
   .object({
     phaseId: z.string(),

@@ -25,8 +25,8 @@ function getGradientSequence(gradientType: GradientType): readonly Volume[] {
 /**
  * Maps a phase gradient type to a four-beat volume sequence.
  *
- * @see LOGOS-SPEC/04_MODULES/phase-gradient.md
- * @see LOGOS-SPEC/02_DOMAIN/control-primitives.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/phase-gradient.md
+ * @see archive/vendor/LOGOS-SPEC/02_DOMAIN/control-primitives.md
  */
 export function buildVolumeSequence(gradientType: GradientType): readonly Volume[] {
   return [...getGradientSequence(gradientType)];
@@ -35,8 +35,8 @@ export function buildVolumeSequence(gradientType: GradientType): readonly Volume
 /**
  * Returns the current beat's volume for a 0-based beat index inside the active phase.
  *
- * @see LOGOS-SPEC/04_MODULES/phase-gradient.md
- * @see LOGOS-SPEC/02_DOMAIN/control-primitives.md
+ * @see archive/vendor/LOGOS-SPEC/04_MODULES/phase-gradient.md
+ * @see archive/vendor/LOGOS-SPEC/02_DOMAIN/control-primitives.md
  */
 export function getCurrentVolume(gradientType: GradientType, beatIndex: number): Volume {
   if (!Number.isInteger(beatIndex) || beatIndex < 0 || beatIndex >= PHASE_BEAT_COUNT) {
