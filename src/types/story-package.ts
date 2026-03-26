@@ -10,6 +10,7 @@ export const SceneSpecSchema = z
   .object({
     sceneId: z.string(),
     sceneName: z.string(),
+    openingSituation: z.string().optional(),
     mainAxis: z.string(),
     endLine: z.string(),
     openingHook: z.string().optional(),

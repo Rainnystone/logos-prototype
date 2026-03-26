@@ -2,8 +2,12 @@ import { SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/cont
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import {
   ensureStoryPackageExists,
+  persistScenePhaseDraft,
   persistWorldBaseDraft,
+  readPhasePlansDraftContents,
+  readSceneDraftContents,
   readWorldBaseDraftContents,
+  restoreScenePhaseDraft,
   restoreWorldBaseDraft,
 } from '@/authoring/persistence/repository';
 import {
@@ -13,6 +17,11 @@ import {
   createSaveFailedResult,
 } from '@/authoring/persistence/save-results';
 import { reloadStoryPackage } from '@/authoring/persistence/reload';
+import {
+  renderScenePhaseAuthoring,
+  validateScenePhaseAuthoringDraft,
+  type ScenePhaseAuthoringDraft,
+} from '@/authoring/sections/scene-phase-authoring';
 import { renderWorldBase, type WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import type { StoryPackage } from '@/types';
 
@@ -26,7 +35,10 @@ const supportedModuleScopes = new Set<NonNullable<SaveRequest['moduleScope']>>([
   'router-profile-set',
 ]);
 
-const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([SECTION_IDS[0]]);
+const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([
+  SECTION_IDS[0],
+  SECTION_IDS[1],
+]);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -215,6 +227,49 @@ function extractWorldBaseCastDraft(
   };
 }
 
+function extractScenePhaseAuthoringDraft(
+  request: SaveRequest,
+): ScenePhaseAuthoringDraft | null {
+  const uiFields = request.payload.uiFields;
+
+  if (!uiFields) {
+    return null;
+  }
+
+  const sceneSpec = uiFields.sceneSpec;
+  const phasePlans = uiFields.phasePlans;
+
+  if (!isPlainObject(sceneSpec) || !Array.isArray(phasePlans)) {
+    return null;
+  }
+
+  const normalizedPhasePlans = phasePlans
+    .filter((phase) => isPlainObject(phase))
+    .map((phase) => ({
+      ...(isStringField(phase.phaseId) ? { phaseId: phase.phaseId } : {}),
+      phaseName: isStringField(phase.phaseName) ? phase.phaseName : '',
+      phaseGoal: isStringField(phase.phaseGoal) ? phase.phaseGoal : '',
+      ...(isStringField(phase.phaseEndPoint) ? { phaseEndPoint: phase.phaseEndPoint } : {}),
+      gradientType: isStringField(phase.gradientType)
+        ? (phase.gradientType as ScenePhaseAuthoringDraft['phasePlans'][number]['gradientType'])
+        : 'Steady',
+      ...(isStringField(phase.routerHint) ? { routerHint: phase.routerHint } : {}),
+      ...(isStringField(phase.notes) ? { notes: phase.notes } : {}),
+    }));
+
+  return {
+    sceneSpec: {
+      sceneName: isStringField(sceneSpec.sceneName) ? sceneSpec.sceneName : '',
+      openingSituation: isStringField(sceneSpec.openingSituation) ? sceneSpec.openingSituation : '',
+      mainAxis: isStringField(sceneSpec.mainAxis) ? sceneSpec.mainAxis : '',
+      endLine: isStringField(sceneSpec.endLine) ? sceneSpec.endLine : '',
+      openingHook: isStringField(sceneSpec.openingHook) ? sceneSpec.openingHook : '',
+      samplePurpose: isStringField(sceneSpec.samplePurpose) ? sceneSpec.samplePurpose : '',
+    },
+    phasePlans: normalizedPhasePlans,
+  };
+}
+
 export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> {
   const { request, issues: payloadIssues } = normalizeSaveRequest(input);
   const validationIssues = [...payloadIssues, ...validateSaveRequest(request)];
@@ -247,8 +302,13 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
 
   const nextMainCharacters = extractWorldBaseMainCharactersDraft(request);
   const nextWorldBaseDraft = extractWorldBaseCastDraft(request);
+  const nextScenePhaseDraft = extractScenePhaseAuthoringDraft(request);
 
-  if (nextMainCharacters === null && nextWorldBaseDraft === null) {
+  if (
+    request.sectionId === 'worldbase-cast' &&
+    nextMainCharacters === null &&
+    nextWorldBaseDraft === null
+  ) {
     return createSaveBlockedResult(
       {
         requestId: request.requestId,
@@ -258,6 +318,19 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showInGlobalDiagnostics: false,
       },
       ['No deterministic world-base update was provided.'],
+    );
+  }
+
+  if (request.sectionId === 'scene-phase-authoring' && nextScenePhaseDraft === null) {
+    return createSaveBlockedResult(
+      {
+        requestId: request.requestId,
+        packageName: request.packageName,
+        sectionId: request.sectionId,
+        showLocally: true,
+        showInGlobalDiagnostics: false,
+      },
+      ['No deterministic scene-phase update was provided.'],
     );
   }
 
@@ -297,24 +370,69 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
   try {
     await ensureStoryPackageExists(request.packageName);
     const currentStoryPackage = await reloadStoryPackage(request.packageName);
-    const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
     let changedFiles: readonly string[];
     let reloadedSectionState: StoryPackage;
 
     try {
-      const nextWorldBase =
-        nextWorldBaseDraft !== null
-          ? renderWorldBase(currentStoryPackage.worldBase, nextWorldBaseDraft)
-          : {
-              ...currentStoryPackage.worldBase,
-              mainCharacters: nextMainCharacters ?? currentStoryPackage.worldBase.mainCharacters,
-            };
+      if (request.sectionId === 'worldbase-cast') {
+        const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
 
-      changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase);
-      reloadedSectionState = await reloadStoryPackage(request.packageName);
-    } catch (writeOrReloadError) {
-      await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);
-      throw writeOrReloadError;
+        try {
+          const nextWorldBase =
+            nextWorldBaseDraft !== null
+              ? renderWorldBase(currentStoryPackage.worldBase, nextWorldBaseDraft)
+              : {
+                  ...currentStoryPackage.worldBase,
+                  mainCharacters: nextMainCharacters ?? currentStoryPackage.worldBase.mainCharacters,
+                };
+
+          changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase);
+          reloadedSectionState = await reloadStoryPackage(request.packageName);
+        } catch (writeOrReloadError) {
+          await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents);
+          throw writeOrReloadError;
+        }
+      } else {
+        const originalSceneContents = await readSceneDraftContents(request.packageName);
+        const originalPhasePlansContents = await readPhasePlansDraftContents(request.packageName);
+        const routerOptions = currentStoryPackage.routerProfiles.map((profile) => profile.routerName);
+        const scenePhaseIssues = validateScenePhaseAuthoringDraft(nextScenePhaseDraft!, routerOptions);
+
+        if (scenePhaseIssues.length > 0) {
+          return createSaveBlockedResult(
+            {
+              requestId: request.requestId,
+              packageName: request.packageName,
+              sectionId: request.sectionId,
+              showLocally: true,
+              showInGlobalDiagnostics: false,
+            },
+            scenePhaseIssues,
+          );
+        }
+
+        try {
+          const renderedScenePhase = renderScenePhaseAuthoring(currentStoryPackage, nextScenePhaseDraft!);
+          changedFiles = await persistScenePhaseDraft(
+            request.packageName,
+            renderedScenePhase.sceneSpec,
+            renderedScenePhase.phasePlans,
+          );
+          reloadedSectionState = await reloadStoryPackage(request.packageName);
+        } catch (writeOrReloadError) {
+          await restoreScenePhaseDraft(
+            request.packageName,
+            originalSceneContents,
+            originalPhasePlansContents,
+          );
+          throw writeOrReloadError;
+        }
+      }
+    } catch (earlyResult) {
+      if (typeof earlyResult === 'object' && earlyResult !== null && 'kind' in earlyResult) {
+        return earlyResult as SaveResult;
+      }
+      throw earlyResult;
     }
 
     try {

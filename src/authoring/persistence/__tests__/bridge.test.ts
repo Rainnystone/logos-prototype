@@ -190,14 +190,14 @@ describe('saveSectionDraft', () => {
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
-  it('blocks unsupported section saves instead of treating them as failures', async () => {
+  it('blocks control-modules saves instead of treating them as failures', async () => {
     prepareTestPackage();
 
     const result = await saveSectionDraft({
-      requestId: 'request-section-blocked',
+      requestId: 'request-control-modules-blocked',
       source: 'page',
       packageName: testPackageName,
-      sectionId: 'scene-phase-authoring',
+      sectionId: 'control-modules',
       payload: {
         uiFields: {
           mainCharacters: 'scene-phase-placeholder',
@@ -208,7 +208,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'Deterministic write path for "scene-phase-authoring" is not available in Task 1.',
+        'moduleScope is required for control-modules saves.',
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
@@ -217,6 +217,60 @@ describe('saveSectionDraft', () => {
       npcCharacters: expect.any(String),
       locationPatch: expect.any(String),
     });
+  });
+
+  it('writes scene and phase authoring changes through the same shared bridge', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '走廊先出现异常升温，凪顺势离开人群。',
+            mainAxis: '先追踪信号，再拆掉直播链路，最后回归表面日常。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '午后的走廊先传来异常蜂鸣，而不是教室内的爆裂。',
+            samplePurpose: '验证重新排序后的阶段推进仍然稳定。',
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-02-hunt',
+              phaseName: '走廊追踪',
+              phaseGoal: '先沿着走廊追踪异常信号。',
+              phaseEndPoint: '锁定异常来自旧校舍方向。',
+              gradientType: 'Steady',
+              routerHint: '悬疑/探案',
+              notes: '仍然不能发生正面高强度战斗。',
+            },
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '再回看事故源头，确认直播痕迹。',
+              phaseEndPoint: '确认灰谷烈正在远端引导骚动。',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '藤花仍然必须毫不知情。',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    if (result.kind === 'save_applied') {
+      expect(result.runtimeImpactSummary.changedFiles).toEqual(
+        expect.arrayContaining(['scene.yaml', 'phase-plans.yaml', 'authoring-state.json']),
+      );
+      expect(result.reloadedSectionState.sceneSpec.sceneName).toBe('炎上直播间·改');
+      expect(result.reloadedSectionState.phasePlans[0]?.phaseId).toBe('phase-02-hunt');
+      expect(result.reloadedSectionState.phasePlans[0]?.phaseIndex).toBe(1);
+      expect(result.reloadedSectionState.phasePlans[0]?.phaseName).toBe('走廊追踪');
+    }
   });
 
   it('blocks malformed payload shapes without throwing', async () => {

@@ -5,6 +5,7 @@ export const storyPackageFixture: StoryPackage = {
   sceneSpec: {
     sceneId: 'scene-signal-room',
     sceneName: 'Signal Room',
+    openingSituation: 'A sealed corridor starts to overheat behind the public route.',
     mainAxis: 'Track a hostile signal through a sealed campus wing.',
     endLine: 'The source is isolated and the public space returns to calm.',
     openingHook:
@@ -16,7 +17,9 @@ export const storyPackageFixture: StoryPackage = {
     {
       phaseId: 'phase-01',
       phaseIndex: 1,
+      phaseName: 'Signal Trace',
       phaseGoal: 'Identify the first trace of the signal.',
+      phaseEndPoint: 'The source direction is narrowed to one sealed wing.',
       gradientType: 'Rising',
       beatCount: 4,
       routerHint: 'Investigation',
@@ -25,7 +28,9 @@ export const storyPackageFixture: StoryPackage = {
     {
       phaseId: 'phase-02',
       phaseIndex: 2,
+      phaseName: 'Counterplay Lock',
       phaseGoal: 'Contain the hostile response.',
+      phaseEndPoint: 'The operator enters the sealed wing with a working plan.',
       gradientType: 'Pulse',
       beatCount: 4,
       routerHint: 'Counterplay',

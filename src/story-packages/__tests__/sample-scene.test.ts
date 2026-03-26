@@ -55,6 +55,7 @@ describe('sample-scene story package', () => {
     expect(sceneSpec.samplePurpose).toBe(extractOverviewValue('samplePurpose'));
     expect(sceneSpec.mainAxis).toBe(extractOverviewValue('mainAxis'));
     expect(sceneSpec.endLine).toBe(extractOverviewValue('endLine'));
+    expect(sceneSpec.openingSituation).toContain('过热迹象');
     expect(sceneSpec.openingHook).not.toContain('恶意信号');
     expect(sceneSpec.openingHook).not.toContain('翻出了窗户');
     expect(sceneSpec.openingHook).toContain('一步步查清幕后操控者');
@@ -71,6 +72,8 @@ describe('sample-scene story package', () => {
     expect(projectPhasePlans.phasePlans).toEqual(
       (designPhasePlans.phasePlans as typeof projectPhasePlans.phasePlans) ?? [],
     );
+    expect(projectPhasePlans.phasePlans[0]?.phaseName).toBe('序幕裂缝');
+    expect(projectPhasePlans.phasePlans[0]?.phaseEndPoint).toContain('普通电池故障');
   });
 
   it('converts router lexicon fixtures into RouterProfile objects', () => {

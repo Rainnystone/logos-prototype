@@ -5,7 +5,8 @@ import YAML from 'yaml';
 
 import { parseWithSchema } from '@/lib/validation';
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
-import { WorldBaseSchema, type WorldBase } from '@/types';
+import { WorldBaseSchema, type PhasePlan, type SceneSpec, type WorldBase } from '@/types';
+import { PhasePlansFileSchema, SceneSpecSchema, type PhasePlansFile } from '@/types/story-package';
 
 export function resolveStoryPackageRoot(packageName: string): string {
   return resolvePackageRoot(packageName);
@@ -27,9 +28,25 @@ function resolveWorldBasePath(packageName: string): string {
   return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
 }
 
+function resolveScenePath(packageName: string): string {
+  return path.resolve(resolveStoryPackageRoot(packageName), 'scene.yaml');
+}
+
+function resolvePhasePlansPath(packageName: string): string {
+  return path.resolve(resolveStoryPackageRoot(packageName), 'phase-plans.yaml');
+}
+
 export async function readWorldBaseDraftContents(packageName: string): Promise<string> {
   const worldBasePath = resolveWorldBasePath(packageName);
   return readFile(worldBasePath, 'utf8');
+}
+
+export async function readSceneDraftContents(packageName: string): Promise<string> {
+  return readFile(resolveScenePath(packageName), 'utf8');
+}
+
+export async function readPhasePlansDraftContents(packageName: string): Promise<string> {
+  return readFile(resolvePhasePlansPath(packageName), 'utf8');
 }
 
 export async function persistWorldBaseDraft(
@@ -53,10 +70,55 @@ export async function persistWorldBaseDraft(
   return ['world-base.yaml'];
 }
 
+export async function persistScenePhaseDraft(
+  packageName: string,
+  nextSceneSpec: SceneSpec,
+  nextPhasePlans: readonly PhasePlan[],
+): Promise<readonly string[]> {
+  const scenePath = resolveScenePath(packageName);
+  const phasePlansPath = resolvePhasePlansPath(packageName);
+
+  const currentSceneSpec = parseWithSchema(
+    SceneSpecSchema,
+    YAML.parse(await readFile(scenePath, 'utf8')) as unknown,
+    'sceneSpec',
+  ) as SceneSpec;
+  const currentPhasePlansFile = parseWithSchema(
+    PhasePlansFileSchema,
+    YAML.parse(await readFile(phasePlansPath, 'utf8')) as unknown,
+    'phasePlans',
+  ) as PhasePlansFile;
+
+  const mergedSceneSpec: SceneSpec = {
+    ...currentSceneSpec,
+    ...nextSceneSpec,
+  };
+  const mergedPhasePlansFile: PhasePlansFile = {
+    ...currentPhasePlansFile,
+    sceneId: mergedSceneSpec.sceneId,
+    sceneName: mergedSceneSpec.sceneName,
+    phasePlans: [...nextPhasePlans],
+  };
+
+  await writeFile(scenePath, `${YAML.stringify(mergedSceneSpec)}`, 'utf8');
+  await writeFile(phasePlansPath, `${YAML.stringify(mergedPhasePlansFile)}`, 'utf8');
+
+  return ['scene.yaml', 'phase-plans.yaml'];
+}
+
 export async function restoreWorldBaseDraft(
   packageName: string,
   originalContents: string,
 ): Promise<void> {
   const worldBasePath = resolveWorldBasePath(packageName);
   await writeFile(worldBasePath, originalContents, 'utf8');
+}
+
+export async function restoreScenePhaseDraft(
+  packageName: string,
+  originalSceneContents: string,
+  originalPhasePlansContents: string,
+): Promise<void> {
+  await writeFile(resolveScenePath(packageName), originalSceneContents, 'utf8');
+  await writeFile(resolvePhasePlansPath(packageName), originalPhasePlansContents, 'utf8');
 }

@@ -7,8 +7,14 @@ import { type SectionId } from '@/authoring/contracts';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
+import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthoringSection';
 import { SectionTabs } from '@/app/edit/shared/SectionTabs';
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
+import {
+  createScenePhaseAuthoringDraft,
+  getRouterOptions,
+  type ScenePhaseAuthoringDraft,
+} from '@/authoring/sections/scene-phase-authoring';
 import type { WorldBase } from '@/types';
 
 const SECTION_SUMMARIES: Record<
@@ -75,19 +81,33 @@ export function EditWorkbench({
   const sceneName = initialState.state.sceneSpec.sceneName;
   const [draftWorldBase, setDraftWorldBase] = useState<WorldBase>(initialState.state.worldBase);
   const [savedWorldBase, setSavedWorldBase] = useState<WorldBase>(initialState.state.worldBase);
-  const [saveStatus, setSaveStatus] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [worldBaseSaveStatus, setWorldBaseSaveStatus] = useState<string | null>(null);
+  const [isWorldBaseSaving, setIsWorldBaseSaving] = useState(false);
+  const [draftScenePhase, setDraftScenePhase] = useState<ScenePhaseAuthoringDraft>(
+    createScenePhaseAuthoringDraft(initialState.state),
+  );
+  const [savedScenePhase, setSavedScenePhase] = useState<ScenePhaseAuthoringDraft>(
+    createScenePhaseAuthoringDraft(initialState.state),
+  );
+  const [scenePhaseSaveStatus, setScenePhaseSaveStatus] = useState<string | null>(null);
+  const [isScenePhaseSaving, setIsScenePhaseSaving] = useState(false);
+  const routerOptions = getRouterOptions(initialState.state.routerProfiles);
 
   useEffect(() => {
     setDraftWorldBase(initialState.state.worldBase);
     setSavedWorldBase(initialState.state.worldBase);
-    setSaveStatus(null);
-    setIsSaving(false);
-  }, [initialState.state.worldBase, packageName]);
+    setWorldBaseSaveStatus(null);
+    setIsWorldBaseSaving(false);
+    const nextScenePhaseDraft = createScenePhaseAuthoringDraft(initialState.state);
+    setDraftScenePhase(nextScenePhaseDraft);
+    setSavedScenePhase(nextScenePhaseDraft);
+    setScenePhaseSaveStatus(null);
+    setIsScenePhaseSaving(false);
+  }, [initialState.state, packageName]);
 
   async function handleWorldBaseCastSubmit() {
-    setIsSaving(true);
-    setSaveStatus(null);
+    setIsWorldBaseSaving(true);
+    setWorldBaseSaveStatus(null);
 
     try {
       const response = await fetch(
@@ -121,26 +141,85 @@ export function EditWorkbench({
       ) {
         setDraftWorldBase(result.reloadedSectionState.worldBase);
         setSavedWorldBase(result.reloadedSectionState.worldBase);
-        setSaveStatus('Saved and normalized.');
+        setWorldBaseSaveStatus('Saved and normalized.');
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
-        setSaveStatus(result.blockingIssues.join(' '));
+        setWorldBaseSaveStatus(result.blockingIssues.join(' '));
         return;
       }
 
-      setSaveStatus(result.errorMessage ?? 'Save failed.');
+      setWorldBaseSaveStatus(result.errorMessage ?? 'Save failed.');
     } catch {
-      setSaveStatus('Save failed.');
+      setWorldBaseSaveStatus('Save failed.');
     } finally {
-      setIsSaving(false);
+      setIsWorldBaseSaving(false);
     }
   }
 
   function handleWorldBaseCastReset() {
     setDraftWorldBase(savedWorldBase);
-    setSaveStatus('Reverted to the latest saved state.');
+    setWorldBaseSaveStatus('Reverted to the latest saved state.');
+  }
+
+  async function handleScenePhaseSubmit() {
+    setIsScenePhaseSaving(true);
+    setScenePhaseSaveStatus(null);
+
+    try {
+      const response = await fetch(
+        `/api/authoring/packages/${encodeURIComponent(packageName)}/sections/scene-phase-authoring`,
+        {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: `scene-phase-authoring-${Date.now()}`,
+            source: 'page',
+            payload: {
+              uiFields: draftScenePhase,
+            },
+          }),
+        },
+      );
+
+      const result = (await response.json()) as {
+        readonly kind?: string;
+        readonly reloadedSectionState?: EditWorkbenchProps['initialState']['state'];
+        readonly blockingIssues?: readonly string[];
+        readonly errorMessage?: string;
+      };
+
+      if (
+        response.ok &&
+        (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
+        result.reloadedSectionState
+      ) {
+        const nextDraft = createScenePhaseAuthoringDraft(result.reloadedSectionState);
+        setDraftScenePhase(nextDraft);
+        setSavedScenePhase(nextDraft);
+        setScenePhaseSaveStatus('Saved and reindexed.');
+        return;
+      }
+
+      if (result.kind === 'save_blocked' && result.blockingIssues) {
+        setScenePhaseSaveStatus(result.blockingIssues.join(' '));
+        return;
+      }
+
+      setScenePhaseSaveStatus(result.errorMessage ?? 'Save failed.');
+    } catch {
+      setScenePhaseSaveStatus('Save failed.');
+    } finally {
+      setIsScenePhaseSaving(false);
+    }
+  }
+
+  function handleScenePhaseReset() {
+    setDraftScenePhase(savedScenePhase);
+    setScenePhaseSaveStatus('Reverted to the latest saved state.');
   }
 
   return (
@@ -172,8 +251,19 @@ export function EditWorkbench({
             onChange={setDraftWorldBase}
             onSubmit={handleWorldBaseCastSubmit}
             onReset={handleWorldBaseCastReset}
-            statusMessage={saveStatus ?? undefined}
-            isSaving={isSaving}
+            statusMessage={worldBaseSaveStatus ?? undefined}
+            isSaving={isWorldBaseSaving}
+          />
+        ) : activeSection === 'scene-phase-authoring' ? (
+          <ScenePhaseAuthoringSection
+            packageName={packageName}
+            value={draftScenePhase}
+            routerOptions={routerOptions}
+            onChange={setDraftScenePhase}
+            onSubmit={handleScenePhaseSubmit}
+            onReset={handleScenePhaseReset}
+            statusMessage={scenePhaseSaveStatus ?? undefined}
+            isSaving={isScenePhaseSaving}
           />
         ) : (
           <SectionSurface sectionId={activeSection}>

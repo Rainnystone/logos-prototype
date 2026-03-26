@@ -17,7 +17,9 @@ export const PhasePlanSchema = z
   .object({
     phaseId: z.string(),
     phaseIndex: z.number().int().min(1),
+    phaseName: z.string().optional(),
     phaseGoal: z.string(),
+    phaseEndPoint: z.string().optional(),
     gradientType: GradientTypeSchema,
     beatCount: z.literal(4),
     routerHint: z.string().optional(),
