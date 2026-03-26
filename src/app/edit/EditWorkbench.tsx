@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
+import type { CoordinatorRunResult } from '@/authoring/coordinator/dispatch';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
@@ -26,6 +27,7 @@ import {
   buildPackageDiagnostics,
   type PackageDiagnostics,
 } from '@/authoring/sections/package-diagnostics';
+import { isSuccessfulSaveResult } from '@/authoring/persistence/save-results';
 import type { WorldBase } from '@/types';
 
 const SECTION_SUMMARIES: Record<
@@ -93,6 +95,9 @@ export function EditWorkbench({
   const [recentSaveResults, setRecentSaveResults] = useState<SaveResult[]>([]);
   const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
   const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
+  const [coordinatorSummaries, setCoordinatorSummaries] = useState<
+    Partial<Record<SectionId, string | null>>
+  >({});
   const [draftWorldBase, setDraftWorldBase] = useState<WorldBase>(initialState.state.worldBase);
   const [savedWorldBase, setSavedWorldBase] = useState<WorldBase>(initialState.state.worldBase);
   const [worldBaseSaveStatus, setWorldBaseSaveStatus] = useState<string | null>(null);
@@ -128,12 +133,22 @@ export function EditWorkbench({
     [currentSource, currentState, packageName, recentSaveResults],
   );
   const diagnostics = remoteDiagnostics ?? localDiagnostics;
+  const activeLocalStatusMessage =
+    activeSection === 'worldbase-cast'
+      ? worldBaseSaveStatus
+      : activeSection === 'scene-phase-authoring'
+        ? scenePhaseSaveStatus
+        : activeSection === 'control-modules'
+          ? controlModulesSaveStatus
+          : null;
+  const activeCoordinatorSummary = coordinatorSummaries[activeSection] ?? null;
 
   useEffect(() => {
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
+    setCoordinatorSummaries({});
     setDraftWorldBase(initialState.state.worldBase);
     setSavedWorldBase(initialState.state.worldBase);
     setWorldBaseSaveStatus(null);
@@ -163,6 +178,51 @@ export function EditWorkbench({
       return [result, ...nextResults].slice(0, 10);
     });
     setRemoteDiagnostics(null);
+  }
+
+  function setCoordinatorSummary(sectionId: SectionId, summary: string | null) {
+    setCoordinatorSummaries((currentSummaries) => ({
+      ...currentSummaries,
+      [sectionId]: summary,
+    }));
+  }
+
+  async function requestCoordinatorAssist(
+    sectionId: 'worldbase-cast' | 'scene-phase-authoring' | 'control-modules',
+    uiFields: Record<string, unknown>,
+    moduleScope?: ModuleScope,
+  ): Promise<CoordinatorRunResult | null> {
+    try {
+      const response = await fetch(
+        `/api/authoring/packages/${encodeURIComponent(packageName)}/coordinator`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: `coordinator-${sectionId}-${Date.now()}`,
+            activeSection: sectionId,
+            actorInput: {
+              source: 'form',
+              uiFields,
+            },
+            ...(moduleScope ? { moduleScope } : {}),
+          }),
+        },
+      );
+
+      const result = (await response.json()) as CoordinatorRunResult;
+      setCoordinatorSummary(sectionId, result.coordinatorSummary);
+      rememberSaveResult(result.saveResult);
+      return result;
+    } catch {
+      setCoordinatorSummary(
+        sectionId,
+        'The page helper could not reach the shared save path.',
+      );
+      return null;
+    }
   }
 
   async function handleDiagnosticsRefresh() {
@@ -219,15 +279,48 @@ export function EditWorkbench({
         setDraftWorldBase(result.reloadedSectionState.worldBase);
         setSavedWorldBase(result.reloadedSectionState.worldBase);
         setWorldBaseSaveStatus('Saved and normalized.');
+        setCoordinatorSummary('worldbase-cast', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
         setWorldBaseSaveStatus(result.blockingIssues.join(' '));
+        const coordinatorResult = await requestCoordinatorAssist(
+          'worldbase-cast',
+          draftWorldBase as unknown as Record<string, unknown>,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState?.worldBase
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          setDraftWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          setSavedWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          setWorldBaseSaveStatus('Saved through the page helper.');
+        }
         return;
       }
 
       setWorldBaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      if (result.kind === 'save_failed') {
+        const coordinatorResult = await requestCoordinatorAssist(
+          'worldbase-cast',
+          draftWorldBase as unknown as Record<string, unknown>,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState?.worldBase
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          setDraftWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          setSavedWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          setWorldBaseSaveStatus('Saved through the page helper.');
+        }
+      }
     } catch {
       setWorldBaseSaveStatus('Save failed.');
     } finally {
@@ -238,6 +331,7 @@ export function EditWorkbench({
   function handleWorldBaseCastReset() {
     setDraftWorldBase(savedWorldBase);
     setWorldBaseSaveStatus('Reverted to the latest saved state.');
+    setCoordinatorSummary('worldbase-cast', null);
   }
 
   async function handleScenePhaseSubmit() {
@@ -276,15 +370,54 @@ export function EditWorkbench({
         setDraftScenePhase(nextDraft);
         setSavedScenePhase(nextDraft);
         setScenePhaseSaveStatus('Saved and reindexed.');
+        setCoordinatorSummary('scene-phase-authoring', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
         setScenePhaseSaveStatus(result.blockingIssues.join(' '));
+        const coordinatorResult = await requestCoordinatorAssist(
+          'scene-phase-authoring',
+          draftScenePhase as unknown as Record<string, unknown>,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          const nextDraft = createScenePhaseAuthoringDraft(
+            coordinatorResult.saveResult.reloadedSectionState,
+          );
+          setDraftScenePhase(nextDraft);
+          setSavedScenePhase(nextDraft);
+          setScenePhaseSaveStatus('Saved through the page helper.');
+        }
         return;
       }
 
       setScenePhaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      if (result.kind === 'save_failed') {
+        const coordinatorResult = await requestCoordinatorAssist(
+          'scene-phase-authoring',
+          draftScenePhase as unknown as Record<string, unknown>,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          const nextDraft = createScenePhaseAuthoringDraft(
+            coordinatorResult.saveResult.reloadedSectionState,
+          );
+          setDraftScenePhase(nextDraft);
+          setSavedScenePhase(nextDraft);
+          setScenePhaseSaveStatus('Saved through the page helper.');
+        }
+      }
     } catch {
       setScenePhaseSaveStatus('Save failed.');
     } finally {
@@ -295,6 +428,7 @@ export function EditWorkbench({
   function handleScenePhaseReset() {
     setDraftScenePhase(savedScenePhase);
     setScenePhaseSaveStatus('Reverted to the latest saved state.');
+    setCoordinatorSummary('scene-phase-authoring', null);
   }
 
   async function handleControlModulesSubmit(moduleScope: ModuleScope) {
@@ -334,15 +468,64 @@ export function EditWorkbench({
         setDraftControlModules(nextDraft);
         setSavedControlModules(nextDraft);
         setControlModulesSaveStatus('Saved the active control module.');
+        setCoordinatorSummary('control-modules', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
         setControlModulesSaveStatus(result.blockingIssues.join(' '));
+        const coordinatorResult = await requestCoordinatorAssist(
+          'control-modules',
+          {
+            controlModules: draftControlModules.controlModules,
+            routerProfiles: draftControlModules.routerProfiles,
+            auditQuestionSet: draftControlModules.auditQuestionSet,
+          },
+          moduleScope,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          const nextDraft = createControlModulesDraft(
+            coordinatorResult.saveResult.reloadedSectionState,
+          );
+          setDraftControlModules(nextDraft);
+          setSavedControlModules(nextDraft);
+          setControlModulesSaveStatus('Saved through the page helper.');
+        }
         return;
       }
 
       setControlModulesSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      if (result.kind === 'save_failed') {
+        const coordinatorResult = await requestCoordinatorAssist(
+          'control-modules',
+          {
+            controlModules: draftControlModules.controlModules,
+            routerProfiles: draftControlModules.routerProfiles,
+            auditQuestionSet: draftControlModules.auditQuestionSet,
+          },
+          moduleScope,
+        );
+        if (
+          coordinatorResult &&
+          isSuccessfulSaveResult(coordinatorResult.saveResult) &&
+          coordinatorResult.saveResult.reloadedSectionState
+        ) {
+          setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
+          setCurrentSource('latest-saved');
+          const nextDraft = createControlModulesDraft(
+            coordinatorResult.saveResult.reloadedSectionState,
+          );
+          setDraftControlModules(nextDraft);
+          setSavedControlModules(nextDraft);
+          setControlModulesSaveStatus('Saved through the page helper.');
+        }
+      }
     } catch {
       setControlModulesSaveStatus('Save failed.');
     } finally {
@@ -403,6 +586,7 @@ export function EditWorkbench({
             onReset={() => {
               setDraftControlModules(savedControlModules);
               setControlModulesSaveStatus('Reverted to the latest saved state.');
+              setCoordinatorSummary('control-modules', null);
             }}
             statusMessage={controlModulesSaveStatus ?? undefined}
             isSaving={isControlModulesSaving}
@@ -443,6 +627,10 @@ export function EditWorkbench({
             state: currentState,
           }}
           activeSectionLabel={activeSectionSummary.title}
+          {...(activeLocalStatusMessage ? { localStatusMessage: activeLocalStatusMessage } : {})}
+          {...(activeCoordinatorSummary
+            ? { coordinatorSummary: activeCoordinatorSummary }
+            : {})}
           {...(activeSection === 'package-wiring-validation'
             ? { diagnosticsHelperView: diagnostics.globalDiagnosticsHelperView }
             : {})}

@@ -6,6 +6,8 @@ interface PageHelperPanelProps {
   readonly initialState: AuthoringStateLoadResult;
   readonly activeSectionLabel: string;
   readonly diagnosticsHelperView?: GlobalDiagnosticsHelperView;
+  readonly localStatusMessage?: string;
+  readonly coordinatorSummary?: string;
 }
 
 export function PageHelperPanel({
@@ -13,6 +15,8 @@ export function PageHelperPanel({
   initialState,
   activeSectionLabel,
   diagnosticsHelperView,
+  localStatusMessage,
+  coordinatorSummary,
 }: PageHelperPanelProps) {
   if (diagnosticsHelperView) {
     return (
@@ -47,6 +51,18 @@ export function PageHelperPanel({
           <dd>{activeSectionLabel}</dd>
         </div>
       </dl>
+      {localStatusMessage ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <p className="panel-eyebrow">Current Section Status</p>
+          <p className="text-sm text-slate-700">{localStatusMessage}</p>
+        </div>
+      ) : null}
+      {coordinatorSummary ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <p className="panel-eyebrow">Page Helper Guidance</p>
+          <p className="text-sm text-slate-700">{coordinatorSummary}</p>
+        </div>
+      ) : null}
     </aside>
   );
 }
