@@ -103,11 +103,46 @@ export function getDefaultBaseUrl(provider: ProviderType): string {
   return DEFAULT_BASE_URLS[provider];
 }
 
+export type OperationMode = 'route' | 'generate' | 'audit' | 'settlement' | 'collapse';
+
+export const OPERATION_MODES: readonly OperationMode[] = [
+  'collapse', 'route', 'generate', 'audit', 'settlement',
+] as const;
+
+export const OPERATION_MODE_LABELS: Readonly<Record<OperationMode, string>> = {
+  collapse: 'Collapse',
+  route: 'Route',
+  generate: 'Generate',
+  audit: 'Audit',
+  settlement: 'Settlement',
+};
+
+export interface ModeOverrides {
+  readonly [mode: string]: { readonly temperature?: number; readonly maxOutputTokens?: number } | undefined;
+}
+
+function buildModeConfig(override: { temperature?: number; maxOutputTokens?: number } | undefined) {
+  if (!override) {
+    return undefined;
+  }
+
+  const result: { temperature?: number; maxOutputTokens?: number } = {};
+  if (override.temperature !== undefined) {
+    result.temperature = override.temperature;
+  }
+  if (override.maxOutputTokens !== undefined) {
+    result.maxOutputTokens = override.maxOutputTokens;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export function buildAdapterConfig(
   provider: ProviderType,
   apiKey: string,
   model: string,
   baseUrl?: string,
+  modeOverrides?: ModeOverrides,
 ): AdapterConfig {
   return {
     provider,
@@ -119,6 +154,11 @@ export function buildAdapterConfig(
         : getDefaultBaseUrl(provider)
       ).trim(),
     },
+    ...(modeOverrides?.route ? { routeConfig: buildModeConfig(modeOverrides.route) } : {}),
+    ...(modeOverrides?.generate ? { generateConfig: buildModeConfig(modeOverrides.generate) } : {}),
+    ...(modeOverrides?.audit ? { auditConfig: buildModeConfig(modeOverrides.audit) } : {}),
+    ...(modeOverrides?.settlement ? { settlementConfig: buildModeConfig(modeOverrides.settlement) } : {}),
+    ...(modeOverrides?.collapse ? { collapseConfig: buildModeConfig(modeOverrides.collapse) } : {}),
   };
 }
 
