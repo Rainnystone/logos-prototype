@@ -44,7 +44,7 @@ export function ScenePhaseAuthoringSection({
   const [phaseRailScrollable, setPhaseRailScrollable] = useState(false);
 
   const selectedPhase = value.phasePlans[selectedPhaseIndex];
-  const matchedSceneFrameStyle = useMatchedHeight(detailColumnRef);
+  const matchedSceneFrameStyle = useMatchedHeight(detailColumnRef, { minWidth: 1280 });
 
   useEffect(() => {
     setSelectedPhaseIndex((currentIndex) => {
@@ -172,7 +172,7 @@ export function ScenePhaseAuthoringSection({
 
       <section
         aria-label="Phase rail section"
-        className="mx-auto mt-6 w-full max-w-[88rem] overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
+        className="mt-6 w-full overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
       >
         <div className="border-b-2 border-black px-5 pb-4 pt-5">
           <div>
@@ -277,11 +277,11 @@ export function ScenePhaseAuthoringSection({
       <div
         role="region"
         aria-label="Scene phase workspace"
-        className="mx-auto mt-6 grid w-full max-w-[88rem] items-stretch gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(19.5rem,0.82fr)]"
+        className="mt-6 grid w-full items-stretch gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]"
       >
         <div
           style={matchedSceneFrameStyle}
-          className="min-w-0 min-h-[calc(100vh-21rem)] space-y-6 overflow-y-auto pr-2"
+          className="min-w-0 space-y-6 xl:min-h-[calc(100vh-16rem)] xl:overflow-y-auto xl:pr-2"
         >
           <section
             aria-label="Scene frame section"

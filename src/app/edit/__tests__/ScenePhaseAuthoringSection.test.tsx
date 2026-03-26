@@ -6,6 +6,14 @@ import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthor
 import { createScenePhaseAuthoringDraft } from '@/authoring/sections/scene-phase-authoring';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 
+function setWindowWidth(width: number) {
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    value: width,
+    writable: true,
+  });
+}
+
 describe('ScenePhaseAuthoringSection', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -28,6 +36,7 @@ describe('ScenePhaseAuthoringSection', () => {
     }
 
     vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    setWindowWidth(1440);
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
       this: HTMLElement,
     ) {
@@ -54,6 +63,7 @@ describe('ScenePhaseAuthoringSection', () => {
         onReset={onReset}
       />,
     );
+    window.dispatchEvent(new Event('resize'));
 
     expect(screen.getByRole('heading', { name: 'SCENE & PHASE' })).toBeInTheDocument();
     expect(screen.queryByText('Helper marker')).not.toBeInTheDocument();
@@ -65,14 +75,13 @@ describe('ScenePhaseAuthoringSection', () => {
     const secondaryPhaseCard = within(phaseRailSection).getByRole('button', { name: 'Counterplay Lock' });
 
     expect(workspaceSection).toBeInTheDocument();
-    expect(phaseRailSection.className).toContain('max-w-[88rem]');
     expect(phaseRailSection.className).toContain('border-2');
     expect(phaseRailSection.className).toContain('border-black');
     expect(phaseRailSection.className).toContain('bg-white');
-    expect(workspaceSection.className).toContain('max-w-[88rem]');
     expect(workspaceSection.className).toContain('items-stretch');
-    expect(sceneFrameViewport?.className).toContain('min-h-[calc(100vh-21rem)]');
-    expect(sceneFrameViewport?.className).toContain('overflow-y-auto');
+    expect(workspaceSection.className).toContain('xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]');
+    expect(sceneFrameViewport?.className).toContain('xl:min-h-[calc(100vh-16rem)]');
+    expect(sceneFrameViewport?.className).toContain('xl:overflow-y-auto');
     await waitFor(() => {
       expect(sceneFrameViewport).toHaveStyle({ height: '880px' });
     });
@@ -99,5 +108,58 @@ describe('ScenePhaseAuthoringSection', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the workspace stack naturally on narrower widths without forcing a matched height', () => {
+    class ResizeObserverMock {
+      private readonly callback: ResizeObserverCallback;
+
+      constructor(callback: ResizeObserverCallback) {
+        this.callback = callback;
+      }
+
+      observe(target: Element) {
+        this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver);
+      }
+
+      disconnect() {}
+      unobserve() {}
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
+      this: HTMLElement,
+    ) {
+      if (this.getAttribute('aria-label') === 'Scene Phase Detail Column') {
+        return DOMRect.fromRect({ width: 420, height: 880 });
+      }
+
+      return DOMRect.fromRect({ width: 420, height: 320 });
+    });
+
+    setWindowWidth(1180);
+
+    const draft = createScenePhaseAuthoringDraft(storyPackageFixture);
+
+    render(
+      <ScenePhaseAuthoringSection
+        packageName="sample-scene"
+        value={draft}
+        routerOptions={['Investigation', 'Counterplay']}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+    window.dispatchEvent(new Event('resize'));
+
+    const workspaceSection = screen.getByRole('region', { name: 'Scene phase workspace' });
+    const sceneFrameSection = screen.getByRole('region', { name: 'Scene frame section' });
+    const sceneFrameViewport = sceneFrameSection.parentElement;
+
+    expect(workspaceSection.className).not.toContain('max-w-[88rem]');
+    expect(sceneFrameViewport?.className).toContain('xl:min-h-[calc(100vh-16rem)]');
+    expect(sceneFrameViewport?.className).toContain('xl:overflow-y-auto');
+    expect(sceneFrameViewport).not.toHaveStyle({ height: '880px' });
   });
 });
