@@ -158,7 +158,7 @@ export function ScenePhaseAuthoringSection({
   }
 
   return (
-    <section className="panel">
+    <section className="panel min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <p className="panel-eyebrow">Section Slice</p>
@@ -172,7 +172,7 @@ export function ScenePhaseAuthoringSection({
 
       <section
         aria-label="Phase rail section"
-        className="mt-6 w-full overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
+        className="mt-6 w-full min-w-0 overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
       >
         <div className="border-b-2 border-black px-5 pb-4 pt-5">
           <div>
@@ -180,10 +180,10 @@ export function ScenePhaseAuthoringSection({
             <h3 className="text-2xl font-bold uppercase tracking-tight text-black">Phase Cards</h3>
           </div>
         </div>
-        <div className="space-y-4 bg-[#f5f5f5] px-5 py-5">
+        <div className="min-w-0 space-y-4 bg-[#f5f5f5] px-5 py-5">
           <div
             ref={phaseRailRef}
-            className="overflow-x-auto"
+            className="min-w-0 overflow-x-auto"
             aria-label="Phase rail scrollbar"
             onScroll={syncPhaseRailState}
           >
@@ -277,7 +277,7 @@ export function ScenePhaseAuthoringSection({
       <div
         role="region"
         aria-label="Scene phase workspace"
-        className="mt-6 grid w-full items-stretch gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]"
+        className="mt-6 grid w-full min-w-0 items-stretch gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]"
       >
         <div
           style={matchedSceneFrameStyle}
