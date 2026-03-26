@@ -37,7 +37,11 @@ import {
   validateScenePhaseAuthoringDraft,
   type ScenePhaseAuthoringDraft,
 } from '@/authoring/sections/scene-phase-authoring';
-import { renderWorldBase, type WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
+import {
+  renderWorldBase,
+  type WorldBaseCastDraft,
+  type WorldBaseCharacterDraft,
+} from '@/authoring/sections/worldbase-cast';
 import type { StoryPackage } from '@/types';
 
 const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
@@ -227,6 +231,39 @@ function isStringField(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+function isWorldBaseCharacterDraft(value: unknown): value is WorldBaseCharacterDraft {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.draftId === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.identityRole === 'string' &&
+    typeof value.lightNovelTrait === 'string' &&
+    typeof value.gender === 'string' &&
+    typeof value.personality === 'string' &&
+    typeof value.age === 'string' &&
+    typeof value.occupation === 'string' &&
+    typeof value.characterSummary === 'string' &&
+    typeof value.capabilityBoundary === 'string' &&
+    typeof value.behaviorBoundary === 'string' &&
+    typeof value.oocRedLine === 'string' &&
+    typeof value.clothing === 'string' &&
+    typeof value.propsWeapon === 'string' &&
+    (value.fatalWeakness === undefined || typeof value.fatalWeakness === 'string')
+  );
+}
+
+function extractCharacterList(value: unknown): WorldBaseCharacterDraft[] | undefined {
+  if (!isUnknownArray(value)) {
+    return undefined;
+  }
+
+  const characters = value.filter(isWorldBaseCharacterDraft);
+  return characters.length === value.length ? [...characters] : undefined;
+}
+
 function extractWorldBaseCastDraft(
   request: SaveRequest,
 ): Partial<WorldBaseCastDraft> | null {
@@ -236,18 +273,39 @@ function extractWorldBaseCastDraft(
     return null;
   }
 
-  const mainCharacters = isStringField(uiFields.mainCharacters) ? uiFields.mainCharacters : undefined;
-  const npcCharacters = isStringField(uiFields.npcCharacters) ? uiFields.npcCharacters : undefined;
-  const locationPatch = isStringField(uiFields.locationPatch) ? uiFields.locationPatch : undefined;
+  const worldBaseSetting = isStringField(uiFields.worldBaseSetting)
+    ? uiFields.worldBaseSetting
+    : undefined;
+  const worldRules = isStringField(uiFields.worldRules) ? uiFields.worldRules : undefined;
+  const toneBaseline = isStringField(uiFields.toneBaseline) ? uiFields.toneBaseline : undefined;
+  const hero = isWorldBaseCharacterDraft(uiFields.hero) ? uiFields.hero : undefined;
+  const coreCast = extractCharacterList(uiFields.coreCast);
+  const antagonists = extractCharacterList(uiFields.antagonists);
+  const supportingCast = isStringField(uiFields.supportingCast) ? uiFields.supportingCast : undefined;
+  const locationPool = isStringField(uiFields.locationPool) ? uiFields.locationPool : undefined;
 
-  if (mainCharacters === undefined && npcCharacters === undefined && locationPatch === undefined) {
+  if (
+    worldBaseSetting === undefined &&
+    worldRules === undefined &&
+    toneBaseline === undefined &&
+    hero === undefined &&
+    coreCast === undefined &&
+    antagonists === undefined &&
+    supportingCast === undefined &&
+    locationPool === undefined
+  ) {
     return null;
   }
 
   return {
-    ...(mainCharacters !== undefined ? { mainCharacters } : {}),
-    ...(npcCharacters !== undefined ? { npcCharacters } : {}),
-    ...(locationPatch !== undefined ? { locationPatch } : {}),
+    ...(worldBaseSetting !== undefined ? { worldBaseSetting } : {}),
+    ...(worldRules !== undefined ? { worldRules } : {}),
+    ...(toneBaseline !== undefined ? { toneBaseline } : {}),
+    ...(hero !== undefined ? { hero } : {}),
+    ...(coreCast !== undefined ? { coreCast } : {}),
+    ...(antagonists !== undefined ? { antagonists } : {}),
+    ...(supportingCast !== undefined ? { supportingCast } : {}),
+    ...(locationPool !== undefined ? { locationPool } : {}),
   };
 }
 

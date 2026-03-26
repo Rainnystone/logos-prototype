@@ -19,6 +19,10 @@ import {
   type ControlModulesDraft,
 } from '@/authoring/sections/control-modules';
 import {
+  createWorldBaseCastDraft,
+  type WorldBaseCastDraft,
+} from '@/authoring/sections/worldbase-cast';
+import {
   createScenePhaseAuthoringDraft,
   getRouterOptions,
   type ScenePhaseAuthoringDraft,
@@ -28,7 +32,6 @@ import {
   type PackageDiagnostics,
 } from '@/authoring/sections/package-diagnostics';
 import { isSuccessfulSaveResult } from '@/authoring/persistence/save-results';
-import type { WorldBase } from '@/types';
 
 const SECTION_SUMMARIES: Record<
   SectionId,
@@ -98,8 +101,12 @@ export function EditWorkbench({
   const [coordinatorSummaries, setCoordinatorSummaries] = useState<
     Partial<Record<SectionId, string | null>>
   >({});
-  const [draftWorldBase, setDraftWorldBase] = useState<WorldBase>(initialState.state.worldBase);
-  const [savedWorldBase, setSavedWorldBase] = useState<WorldBase>(initialState.state.worldBase);
+  const [draftWorldBase, setDraftWorldBase] = useState<WorldBaseCastDraft>(
+    createWorldBaseCastDraft(initialState.state.worldBase),
+  );
+  const [savedWorldBase, setSavedWorldBase] = useState<WorldBaseCastDraft>(
+    createWorldBaseCastDraft(initialState.state.worldBase),
+  );
   const [worldBaseSaveStatus, setWorldBaseSaveStatus] = useState<string | null>(null);
   const [isWorldBaseSaving, setIsWorldBaseSaving] = useState(false);
   const [draftScenePhase, setDraftScenePhase] = useState<ScenePhaseAuthoringDraft>(
@@ -149,8 +156,9 @@ export function EditWorkbench({
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
     setCoordinatorSummaries({});
-    setDraftWorldBase(initialState.state.worldBase);
-    setSavedWorldBase(initialState.state.worldBase);
+    const nextWorldBaseDraft = createWorldBaseCastDraft(initialState.state.worldBase);
+    setDraftWorldBase(nextWorldBaseDraft);
+    setSavedWorldBase(nextWorldBaseDraft);
     setWorldBaseSaveStatus(null);
     setIsWorldBaseSaving(false);
     const nextScenePhaseDraft = createScenePhaseAuthoringDraft(initialState.state);
@@ -276,8 +284,9 @@ export function EditWorkbench({
       ) {
         setCurrentState(result.reloadedSectionState);
         setCurrentSource('latest-saved');
-        setDraftWorldBase(result.reloadedSectionState.worldBase);
-        setSavedWorldBase(result.reloadedSectionState.worldBase);
+        const nextDraft = createWorldBaseCastDraft(result.reloadedSectionState.worldBase);
+        setDraftWorldBase(nextDraft);
+        setSavedWorldBase(nextDraft);
         setWorldBaseSaveStatus('Saved and normalized.');
         setCoordinatorSummary('worldbase-cast', null);
         return;
@@ -296,8 +305,11 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
-          setDraftWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
-          setSavedWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          const nextDraft = createWorldBaseCastDraft(
+            coordinatorResult.saveResult.reloadedSectionState.worldBase,
+          );
+          setDraftWorldBase(nextDraft);
+          setSavedWorldBase(nextDraft);
           setWorldBaseSaveStatus('Saved through the page helper.');
         }
         return;
@@ -316,8 +328,11 @@ export function EditWorkbench({
         ) {
           setCurrentState(coordinatorResult.saveResult.reloadedSectionState);
           setCurrentSource('latest-saved');
-          setDraftWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
-          setSavedWorldBase(coordinatorResult.saveResult.reloadedSectionState.worldBase);
+          const nextDraft = createWorldBaseCastDraft(
+            coordinatorResult.saveResult.reloadedSectionState.worldBase,
+          );
+          setDraftWorldBase(nextDraft);
+          setSavedWorldBase(nextDraft);
           setWorldBaseSaveStatus('Saved through the page helper.');
         }
       }

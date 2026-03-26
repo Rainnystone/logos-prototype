@@ -20,11 +20,11 @@ export function PageHelperPanel({
 }: PageHelperPanelProps) {
   if (diagnosticsHelperView) {
     return (
-      <aside className="panel edit-helper-panel">
+      <aside className="panel edit-helper-panel edit-helper-panel--technical">
         <p className="panel-eyebrow">Global Diagnostics Helper</p>
         <h2>Repair Guidance</h2>
         <p>{diagnosticsHelperView.summary}</p>
-        <ul className="mt-4 space-y-2 text-sm text-slate-600">
+        <ul className="mt-4 space-y-2 text-sm text-slate-200">
           {diagnosticsHelperView.repairOrder.map((step) => (
             <li key={step}>{step}</li>
           ))}
@@ -34,7 +34,7 @@ export function PageHelperPanel({
   }
 
   return (
-    <aside className="panel edit-helper-panel">
+    <aside className="panel edit-helper-panel edit-helper-panel--technical">
       <p className="panel-eyebrow">Page Helper</p>
       <h2>Shell status</h2>
       <dl className="edit-helper-panel__facts">
@@ -52,15 +52,15 @@ export function PageHelperPanel({
         </div>
       </dl>
       {localStatusMessage ? (
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
           <p className="panel-eyebrow">Current Section Status</p>
-          <p className="text-sm text-slate-700">{localStatusMessage}</p>
+          <p className="text-sm text-slate-100">{localStatusMessage}</p>
         </div>
       ) : null}
       {coordinatorSummary ? (
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
           <p className="panel-eyebrow">Page Helper Guidance</p>
-          <p className="text-sm text-slate-700">{coordinatorSummary}</p>
+          <p className="text-sm text-slate-100">{coordinatorSummary}</p>
         </div>
       ) : null}
     </aside>

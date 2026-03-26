@@ -35,34 +35,54 @@ afterEach(() => {
   resetTestPackage();
 });
 
-function buildPageStyleSaveRequest(mainCharacters: string) {
+function buildWorldBaseDraft(heroName: string) {
+  return {
+    worldBaseSetting: 'World base',
+    worldRules: 'No open magic',
+    toneBaseline: 'Cold pressure',
+    hero: {
+      draftId: 'hero-1',
+      name: heroName,
+      identityRole: 'Lead breaker',
+      lightNovelTrait: 'Silent pressure',
+      gender: 'Female',
+      personality: 'Cold',
+      age: '17',
+      occupation: 'Student',
+      characterSummary: 'Moves toward the threat.',
+      capabilityBoundary: 'No magic.',
+      behaviorBoundary: 'Never abandons the trace.',
+      oocRedLine: 'No speeches.',
+      clothing: 'Uniform',
+      propsWeapon: 'Ceramic blade',
+    },
+    coreCast: [],
+    antagonists: [],
+    supportingCast: 'Support One：Steady witness',
+    locationPool: 'Signal room',
+  };
+}
+
+function buildPageStyleSaveRequest(heroName: string) {
   return {
     requestId: 'request-page',
     source: 'page' as const,
     packageName: testPackageName,
     sectionId: 'worldbase-cast' as const,
     payload: {
-      uiFields: {
-        mainCharacters,
-      },
+      uiFields: buildWorldBaseDraft(heroName),
     },
   };
 }
 
-function buildCoordinatorStyleSaveRequest(mainCharacters: string) {
+function buildCoordinatorStyleSaveRequest(heroName: string) {
   return {
     requestId: 'request-coordinator',
     source: 'coordinator' as const,
     packageName: testPackageName,
     sectionId: 'worldbase-cast' as const,
     payload: {
-      patchCandidates: [
-        {
-          type: 'replace',
-          path: 'mainCharacters',
-          value: mainCharacters,
-        },
-      ],
+      uiFields: buildWorldBaseDraft(heroName),
     },
   };
 }
@@ -72,9 +92,9 @@ describe('saveSectionDraft', () => {
     prepareTestPackage();
     const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
 
-    const pageStyleSave = (mainCharacters: string) => saveSectionDraft(buildPageStyleSaveRequest(mainCharacters));
-    const coordinatorStyleSave = (mainCharacters: string) =>
-      saveSectionDraft(buildCoordinatorStyleSaveRequest(mainCharacters));
+    const pageStyleSave = (heroName: string) => saveSectionDraft(buildPageStyleSaveRequest(heroName));
+    const coordinatorStyleSave = (heroName: string) =>
+      saveSectionDraft(buildCoordinatorStyleSaveRequest(heroName));
 
     const pageResult = await pageStyleSave('page-main-character-update');
 
@@ -90,10 +110,10 @@ describe('saveSectionDraft', () => {
     expect(coordinatorResult.kind).toBe('save_applied');
     expect(pageResult.kind).toBe(coordinatorResult.kind);
     expect(pageWorldBaseContents).not.toBe(originalWorldBaseContents);
-    expect(pageStoryPackage.worldBase.mainCharacters).toBe('page-main-character-update');
+    expect(pageStoryPackage.worldBase.mainCharacters).toContain('Name: page-main-character-update');
     expect(coordinatorWorldBaseContents).not.toBe(pageWorldBaseContents);
-    expect(coordinatorStoryPackage.worldBase.mainCharacters).toBe(
-      'coordinator-main-character-update',
+    expect(coordinatorStoryPackage.worldBase.mainCharacters).toContain(
+      'Name: coordinator-main-character-update',
     );
   });
 
@@ -107,9 +127,46 @@ describe('saveSectionDraft', () => {
       sectionId: 'worldbase-cast',
       payload: {
         uiFields: {
-          mainCharacters: '  世界基础\n\n主角雾间凪  ',
-          npcCharacters: ' 竹田启司：稳重的男友\n- 末真和子：敏锐的线索人\n新刻敬：正义感强 ',
-          locationPatch: '  2年C班教室  ',
+          ...buildWorldBaseDraft('Hero Draft'),
+          coreCast: [
+            {
+              draftId: 'core-1',
+              name: 'Core Draft',
+              identityRole: 'Anchor',
+              lightNovelTrait: '',
+              gender: 'Female',
+              personality: 'Gentle',
+              age: '',
+              occupation: '',
+              characterSummary: '',
+              capabilityBoundary: '',
+              behaviorBoundary: 'Keep the daily shell steady.',
+              oocRedLine: '',
+              clothing: '',
+              propsWeapon: '',
+            },
+          ],
+          antagonists: [
+            {
+              draftId: 'antagonist-1',
+              name: 'Villain Draft',
+              identityRole: 'Threat',
+              lightNovelTrait: '',
+              gender: 'Male',
+              personality: 'Chaotic',
+              age: '',
+              occupation: '',
+              characterSummary: '',
+              capabilityBoundary: '',
+              behaviorBoundary: 'Always performs.',
+              oocRedLine: '',
+              clothing: '',
+              propsWeapon: '',
+              fatalWeakness: 'Attention drop',
+            },
+          ],
+          supportingCast: ' Support One：Steady witness\n- Support Two：Sharp clue finder ',
+          locationPool: '  Signal room  ',
         },
       },
     });
@@ -124,11 +181,12 @@ describe('saveSectionDraft', () => {
 
     const loaded = await loadStoryPackage(testPackageName);
 
-    expect(loaded.worldBase.mainCharacters).toBe('世界基础\n\n主角雾间凪');
-    expect(loaded.worldBase.npcCharacters).toBe(
-      '竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强',
-    );
-    expect(loaded.worldBase.locationPatch).toBe('2年C班教室');
+    expect(loaded.worldBase.mainCharacters).toContain('## Hero');
+    expect(loaded.worldBase.mainCharacters).toContain('Name: Hero Draft');
+    expect(loaded.worldBase.mainCharacters).toContain('## Core Cast');
+    expect(loaded.worldBase.mainCharacters).toContain('## Antagonists');
+    expect(loaded.worldBase.npcCharacters).toBe('Support One：Steady witness\nSupport Two：Sharp clue finder');
+    expect(loaded.worldBase.locationPatch).toBe('Signal room');
   });
 
   it('writes the authoring status marker after a successful save', async () => {

@@ -114,4 +114,65 @@ describe('EditWorkbench', () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it('submits structured worldbase draft fields through the shared save path', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          kind: 'save_applied',
+          requestId: 'worldbase-cast-1',
+          packageName: 'sample-scene',
+          sectionId: 'worldbase-cast',
+          showLocally: true,
+          showInGlobalDiagnostics: false,
+          reloadedSectionState: storyPackageFixture,
+          runtimeImpactSummary: {
+            changedFiles: ['world-base.yaml', 'authoring-state.json'],
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.clear(screen.getByRole('textbox', { name: 'World Base Setting' }));
+    await user.type(screen.getByRole('textbox', { name: 'World Base Setting' }), 'Updated world');
+    await user.click(screen.getByRole('button', { name: 'Save Section' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      payload: { uiFields: Record<string, unknown> };
+    };
+
+    expect(request.payload.uiFields).toMatchObject({
+      worldBaseSetting: 'Updated world',
+      hero: expect.any(Object),
+      coreCast: expect.any(Array),
+      antagonists: expect.any(Array),
+      supportingCast: expect.any(String),
+      locationPool: expect.any(String),
+    });
+    expect(request.payload.uiFields).not.toHaveProperty('mainCharacters');
+  });
 });

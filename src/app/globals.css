@@ -644,6 +644,24 @@ ul {
   padding: 1.15rem;
 }
 
+.edit-helper-panel--technical {
+  border: 1px solid rgba(82, 113, 138, 0.28);
+  background: linear-gradient(180deg, rgba(14, 28, 49, 0.96) 0%, rgba(9, 23, 44, 0.96) 100%);
+  box-shadow: 0 24px 60px rgba(9, 23, 44, 0.28);
+}
+
+.edit-helper-panel--technical h2,
+.edit-helper-panel--technical dd,
+.edit-helper-panel--technical p,
+.edit-helper-panel--technical li {
+  color: #f3efe8;
+}
+
+.edit-helper-panel--technical .panel-eyebrow,
+.edit-helper-panel--technical dt {
+  color: rgba(230, 212, 186, 0.78);
+}
+
 .edit-surface__facts,
 .edit-helper-panel__facts {
   display: grid;
@@ -657,6 +675,10 @@ ul {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(31, 26, 21, 0.6);
+}
+
+.edit-helper-panel--technical .edit-helper-panel__facts dt {
+  color: rgba(230, 212, 186, 0.78);
 }
 
 .generation-workspace-panel__body {
