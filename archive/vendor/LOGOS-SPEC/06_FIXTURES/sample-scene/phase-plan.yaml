@@ -1,10 +1,10 @@
 sceneId: sample-yanshang-live-room
-sceneName: 炎上直播间
+sceneName: 烈焰小丑
 source: story-source/phase-outline.md
 phasePlans:
   - phaseId: phase-01-prologue
     phaseIndex: 1
-    phaseName: 序幕裂缝
+    phaseName: 序章
     phaseGoal: 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。
     phaseEndPoint: 凪锁定异常事故并判断它不是普通电池故障，同时仍未直接暴露幕后元凶。
     gradientType: Rising

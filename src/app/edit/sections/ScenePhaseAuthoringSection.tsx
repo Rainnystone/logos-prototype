@@ -285,7 +285,7 @@ export function ScenePhaseAuthoringSection({
         >
           <section
             aria-label="Scene frame section"
-            className="min-h-full rounded-[1.75rem] border border-[#eadfce] bg-[#f9f5ee] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+            className="min-h-full rounded-none border-2 border-black bg-[#f5f5f5] p-5"
           >
             <div className="mb-4">
               <p className="panel-eyebrow">Scene</p>
@@ -350,7 +350,7 @@ export function ScenePhaseAuthoringSection({
         </div>
 
         <section ref={detailColumnRef} aria-label="Scene Phase Detail Column" className="min-w-0 space-y-4">
-          <div className="rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf8] p-5 shadow-[0_12px_30px_rgba(31,26,21,0.06)]">
+          <div className="rounded-none border-2 border-black bg-white p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="panel-eyebrow">Selected Phase Editor</p>
@@ -460,7 +460,7 @@ export function ScenePhaseAuthoringSection({
             )}
           </div>
 
-          <div className="rounded-[1.5rem] border border-[#eadfce] bg-[#fffdf8] p-4">
+          <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="panel-actions">
               <button type="button" className="secondary-link" onClick={onReset}>
                 Reset Section

@@ -72,7 +72,7 @@ describe('sample-scene story package', () => {
     expect(projectPhasePlans.phasePlans).toEqual(
       (designPhasePlans.phasePlans as typeof projectPhasePlans.phasePlans) ?? [],
     );
-    expect(projectPhasePlans.phasePlans[0]?.phaseName).toBe('序幕裂缝');
+    expect(projectPhasePlans.phasePlans[0]?.phaseName).toBe('序章');
     expect(projectPhasePlans.phasePlans[0]?.phaseEndPoint).toContain('普通电池故障');
   });
 
