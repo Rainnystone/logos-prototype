@@ -156,6 +156,44 @@ describe('renderWorldBase', () => {
     expect(draft.antagonists.map((character) => character.name)).toEqual(['灰谷烈']);
   });
 
+  it('keeps the trailing antagonists section when parsing structured runtime strings', () => {
+    const draft = createWorldBaseCastDraft({
+      mainCharacters: `## Hero
+### Character 1
+Name: Hero One
+
+## Core Cast
+### Character 1
+Name: Core One
+
+## Antagonists
+### Character 1
+Name: Villain One`,
+      npcCharacters: '',
+      locationPatch: '',
+    });
+
+    expect(draft.coreCast.map((character) => character.name)).toEqual(['Core One']);
+    expect(draft.antagonists.map((character) => character.name)).toEqual(['Villain One']);
+  });
+
+  it('keeps the trailing core-cast section when structured content has no antagonists yet', () => {
+    const draft = createWorldBaseCastDraft({
+      mainCharacters: `## Hero
+### Character 1
+Name: Hero One
+
+## Core Cast
+### Character 1
+Name: Core One`,
+      npcCharacters: '',
+      locationPatch: '',
+    });
+
+    expect(draft.coreCast.map((character) => character.name)).toEqual(['Core One']);
+    expect(draft.antagonists).toEqual([]);
+  });
+
   it('renders structured worldbase data into stable runtime blocks', () => {
     const output = renderWorldBase(currentWorldBase, structuredDraft);
 

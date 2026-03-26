@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
 import type { CoordinatorRunResult } from '@/authoring/coordinator/dispatch';
-import type { AuthoringState } from '@/authoring/persistence/package-state';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
 import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
@@ -70,41 +69,6 @@ interface EditWorkbenchProps {
 }
 
 type EditableSectionId = Exclude<SectionId, 'package-wiring-validation'>;
-type PendingSectionReviews = NonNullable<AuthoringState['pendingSectionReviews']>;
-
-const SECTION_REVIEW_DEPENDENCIES: Record<EditableSectionId, readonly EditableSectionId[]> = {
-  'worldbase-cast': ['scene-phase-authoring', 'control-modules'],
-  'scene-phase-authoring': ['control-modules'],
-  'control-modules': [],
-};
-
-function advancePendingSectionReviews(
-  currentReviews: PendingSectionReviews | undefined,
-  editedSection: EditableSectionId,
-): PendingSectionReviews | undefined {
-  const nextReviews = {
-    ...(currentReviews ?? {}),
-  };
-
-  delete nextReviews[editedSection];
-
-  for (const dependentSection of SECTION_REVIEW_DEPENDENCIES[editedSection]) {
-    const sources = new Set(nextReviews[dependentSection] ?? []);
-    sources.add(editedSection);
-    nextReviews[dependentSection] = Array.from(sources);
-  }
-
-  const populatedEntries = Object.entries(nextReviews).filter((entry) => {
-    const [, sources] = entry;
-    return Array.isArray(sources) && sources.length > 0;
-  });
-
-  if (populatedEntries.length === 0) {
-    return undefined;
-  }
-
-  return Object.fromEntries(populatedEntries) as PendingSectionReviews;
-}
 
 function didPersistAuthoringState(result: SaveResult): boolean {
   return (
@@ -267,14 +231,6 @@ export function EditWorkbench({
       lastEditedSection: sectionId,
       ...(currentAuthoringStatus?.lastSavedRequestId
         ? { lastSavedRequestId: currentAuthoringStatus.lastSavedRequestId }
-        : {}),
-      ...(advancePendingSectionReviews(currentAuthoringStatus?.pendingSectionReviews, sectionId)
-        ? {
-            pendingSectionReviews: advancePendingSectionReviews(
-              currentAuthoringStatus?.pendingSectionReviews,
-              sectionId,
-            ),
-          }
         : {}),
     }));
   }

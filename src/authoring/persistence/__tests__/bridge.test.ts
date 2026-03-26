@@ -8,6 +8,7 @@ import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import * as reloadModule from '@/authoring/persistence/reload';
 import * as repositoryModule from '@/authoring/persistence/repository';
+import { createWorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import { loadStoryPackage } from '@/engine/story-loader';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -333,7 +334,7 @@ describe('saveSectionDraft', () => {
     }
   });
 
-  it('marks dependent sections for review after a worldbase save', async () => {
+  it('does not mark dependent sections for review after a worldbase save', async () => {
     prepareTestPackage();
 
     const result = await saveSectionDraft(buildPageStyleSaveRequest('worldbase-review-flag'));
@@ -344,13 +345,109 @@ describe('saveSectionDraft', () => {
       pendingSectionReviews?: Record<string, string[]>;
     };
 
-    expect(status.pendingSectionReviews).toEqual({
-      'scene-phase-authoring': ['worldbase-cast'],
-      'control-modules': ['worldbase-cast'],
-    });
+    expect(status.pendingSectionReviews).toBeUndefined();
   });
 
-  it('keeps control-modules pending after scene-phase saves and clears the scene review flag', async () => {
+  it('persists a minor hero edit without dropping the rest of the cast', async () => {
+    prepareTestPackage();
+    const storyPackage = await loadStoryPackage(testPackageName);
+    const draft = createWorldBaseCastDraft(storyPackage.worldBase);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-hero-minor-edit',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...draft,
+          hero: {
+            ...draft.hero,
+            gender: '女',
+          },
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const reparsedDraft = createWorldBaseCastDraft(
+      YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
+        mainCharacters: string;
+        npcCharacters: string;
+        locationPatch: string;
+      },
+    );
+
+    expect(reparsedDraft.hero.gender).toBe('女');
+    expect(reparsedDraft.coreCast.map((character) => character.name)).toEqual([
+      '宫下藤花',
+      '不吉波普',
+    ]);
+    expect(reparsedDraft.antagonists.map((character) => character.name)).toEqual(['灰谷烈']);
+  });
+
+  it('persists a minor core-cast edit without dropping the rest of the cast', async () => {
+    prepareTestPackage();
+    const storyPackage = await loadStoryPackage(testPackageName);
+    const draft = createWorldBaseCastDraft(storyPackage.worldBase);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-core-cast-minor-edit',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...draft,
+          coreCast: draft.coreCast.map((character, index) =>
+            index === 0 ? { ...character, gender: '女' } : character,
+          ),
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const worldBaseContents = readFileSync(worldBasePath, 'utf8');
+    expect(worldBaseContents).toContain('## Core Cast');
+    expect(worldBaseContents).toContain('Name: 宫下藤花');
+    expect(worldBaseContents).toContain('Gender: 女');
+    expect(worldBaseContents).toContain('## Antagonists');
+    expect(worldBaseContents).toContain('Name: 灰谷烈');
+  });
+
+  it('persists a minor antagonist edit without dropping the rest of the cast', async () => {
+    prepareTestPackage();
+    const storyPackage = await loadStoryPackage(testPackageName);
+    const draft = createWorldBaseCastDraft(storyPackage.worldBase);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-antagonist-minor-edit',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...draft,
+          antagonists: draft.antagonists.map((character, index) =>
+            index === 0 ? { ...character, gender: '男' } : character,
+          ),
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+
+    const worldBaseContents = readFileSync(worldBasePath, 'utf8');
+    expect(worldBaseContents).toContain('## Core Cast');
+    expect(worldBaseContents).toContain('Name: 宫下藤花');
+    expect(worldBaseContents).toContain('## Antagonists');
+    expect(worldBaseContents).toContain('Name: 灰谷烈');
+    expect(worldBaseContents).toContain('Gender: 男');
+  });
+
+  it('does not keep dependent review blockers after a scene-phase save', async () => {
     prepareTestPackage();
 
     await saveSectionDraft(buildPageStyleSaveRequest('worldbase-review-flag'));
@@ -391,9 +488,7 @@ describe('saveSectionDraft', () => {
       pendingSectionReviews?: Record<string, string[]>;
     };
 
-    expect(status.pendingSectionReviews).toEqual({
-      'control-modules': ['worldbase-cast', 'scene-phase-authoring'],
-    });
+    expect(status.pendingSectionReviews).toBeUndefined();
   });
 
   it('removes cleared optional scene fields from scene.yaml after a scene-phase save', async () => {

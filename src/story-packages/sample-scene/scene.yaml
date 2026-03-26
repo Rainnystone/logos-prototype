@@ -1,9 +1,9 @@
 sceneId: sample-yanshang-live-room
-sceneName: 炎上直播间
-openingSituation: 午后的校园仍维持表层日常，但走廊和教室附近已经出现不合常理的过热迹象，雾间凪必须在不惊动普通学生的前提下先判断异常来自何处。
+sceneName: 烈焰小丑
 mainAxis: 日常教室突发路人手机自燃事件 -> 雾间凪暗中脱离人群并围绕异常事故展开调查 -> 在校园中逐步发现灰谷烈留下的电子陷阱与痕迹 ->
   突入并锁定灰谷烈的直播据点 -> 识破其机制并切断直播观众来源 -> 物理击溃反派并回归日常
 endLine: 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知
+source: archive/vendor/LOGOS-SPEC/06_FIXTURES/sample-scene/scene-overview.md
+openingSituation: 午后的校园仍维持表层日常，但走廊和教室附近已经出现不合常理的过热迹象，雾间凪必须在不惊动普通学生的前提下先判断异常来自何处。
 openingHook: 午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故。她借着查看伤者与事故源头的机会低调离开人群，准备顺着现场残留的线索一步步查清幕后操控者。
 samplePurpose: 验证 LOGOS 在单 Scene、6 Phase、固定 4 Beat Phase 条件下的控制闭环是否稳定，并测试“轻小说本格”文风下的日常/异常切换控制
-source: archive/vendor/LOGOS-SPEC/06_FIXTURES/sample-scene/scene-overview.md

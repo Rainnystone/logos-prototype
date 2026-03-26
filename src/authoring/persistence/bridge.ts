@@ -1,4 +1,4 @@
-import { SECTION_IDS, type SaveRequest, type SaveResult, type SectionId } from '@/authoring/contracts';
+import { SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/contracts';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import {
   ensureStoryPackageExists,
@@ -59,45 +59,6 @@ const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([
   SECTION_IDS[1],
   SECTION_IDS[2],
 ]);
-
-type EditableSectionId = Exclude<SectionId, 'package-wiring-validation'>;
-type PendingSectionReviews = NonNullable<
-  NonNullable<Awaited<ReturnType<typeof authoringStatus.readAuthoringStatus>>>['pendingSectionReviews']
->;
-
-const SECTION_REVIEW_DEPENDENCIES: Record<EditableSectionId, readonly EditableSectionId[]> = {
-  'worldbase-cast': ['scene-phase-authoring', 'control-modules'],
-  'scene-phase-authoring': ['control-modules'],
-  'control-modules': [],
-};
-
-function buildPendingSectionReviews(
-  currentReviews: PendingSectionReviews | undefined,
-  editedSection: EditableSectionId,
-): PendingSectionReviews | undefined {
-  const nextReviews = {
-    ...(currentReviews ?? {}),
-  };
-
-  delete nextReviews[editedSection];
-
-  for (const dependentSection of SECTION_REVIEW_DEPENDENCIES[editedSection]) {
-    const sources = new Set(nextReviews[dependentSection] ?? []);
-    sources.add(editedSection);
-    nextReviews[dependentSection] = Array.from(sources);
-  }
-
-  const normalizedEntries = Object.entries(nextReviews).filter((entry): entry is [string, EditableSectionId[]] => {
-    const [, sources] = entry;
-    return Array.isArray(sources) && sources.length > 0;
-  });
-
-  if (normalizedEntries.length === 0) {
-    return undefined;
-  }
-
-  return Object.fromEntries(normalizedEntries) as PendingSectionReviews;
-}
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -779,18 +740,11 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
     }
 
     try {
-      const currentAuthoringStatus = await authoringStatus.readAuthoringStatus(request.packageName);
-      const nextPendingSectionReviews = buildPendingSectionReviews(
-        currentAuthoringStatus?.pendingSectionReviews,
-        request.sectionId as EditableSectionId,
-      );
-
       await authoringStatus.writeAuthoringStatus(request.packageName, {
         hasSuccessfulSave: true,
         lastSavedAt: new Date().toISOString(),
         lastSavedRequestId: request.requestId,
         lastEditedSection: request.sectionId,
-        ...(nextPendingSectionReviews ? { pendingSectionReviews: nextPendingSectionReviews } : {}),
       });
 
       return createSaveAppliedResult(

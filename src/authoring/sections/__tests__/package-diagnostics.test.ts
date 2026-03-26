@@ -56,7 +56,7 @@ describe('package-diagnostics', () => {
     ).toBe(true);
   });
 
-  it('blocks package health when story edits still require dependent section review', () => {
+  it('ignores stale dependent review markers when computing package health', () => {
     const diagnostics = buildPackageDiagnostics({
       packageName: 'sample-scene',
       source: 'latest-saved',
@@ -72,15 +72,10 @@ describe('package-diagnostics', () => {
       recentSaveResults: [],
     });
 
-    expect(diagnostics.overallStatusView.status).toBe('blocked');
+    expect(diagnostics.overallStatusView.status).toBe('healthy');
     expect(
-      diagnostics.unresolvedIssueViews.some(
-        (issue) =>
-          issue.severity === 'blocked' &&
-          issue.repairDestination === 'scene-phase-authoring' &&
-          issue.title.includes('review'),
-      ),
-    ).toBe(true);
-    expect(diagnostics.globalDiagnosticsHelperView.summary).toContain('blocking issue');
+      diagnostics.unresolvedIssueViews.some((issue) => issue.title.includes('review')),
+    ).toBe(false);
+    expect(diagnostics.globalDiagnosticsHelperView.summary).toContain('No unresolved');
   });
 });

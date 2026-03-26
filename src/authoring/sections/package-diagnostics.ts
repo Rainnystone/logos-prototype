@@ -176,48 +176,6 @@ function buildRouterBreakageIssues(storyPackage: StoryPackage): UnresolvedIssueV
   });
 }
 
-function buildPendingReviewIssues(authoringState?: AuthoringState | null): UnresolvedIssueView[] {
-  const pendingReviews = authoringState?.pendingSectionReviews;
-
-  if (!pendingReviews) {
-    return [];
-  }
-
-  return Object.entries(pendingReviews).flatMap(([sectionId, sourceSections]) => {
-    if (
-      (sectionId !== 'worldbase-cast' &&
-        sectionId !== 'scene-phase-authoring' &&
-        sectionId !== 'control-modules') ||
-      !Array.isArray(sourceSections) ||
-      sourceSections.length === 0
-    ) {
-      return [];
-    }
-
-    const uniqueSources = Array.from(new Set(sourceSections)).filter(
-      (value): value is Exclude<SectionId, 'package-wiring-validation'> =>
-        value === 'worldbase-cast' ||
-        value === 'scene-phase-authoring' ||
-        value === 'control-modules',
-    );
-
-    if (uniqueSources.length === 0) {
-      return [];
-    }
-
-    return [
-      {
-        key: `pending-review:${sectionId}`,
-        severity: 'blocked' as const,
-        title: `${titleCaseSection(sectionId)} review is still required`,
-        summary: `${uniqueSources.map((sourceSection) => titleCaseSection(sourceSection)).join(' and ')} changed the story package, so ${titleCaseSection(sectionId)} must be re-saved before runtime health can be trusted again.`,
-        repairDestination: sectionId,
-        ...(uniqueSources[0] ? { sourceSection: uniqueSources[0] } : {}),
-      },
-    ];
-  });
-}
-
 function toStatus(blockedCount: number, warningCount: number): PackageDiagnosticsStatus {
   if (blockedCount > 0) {
     return 'blocked';
@@ -388,13 +346,11 @@ export function buildPackageDiagnostics({
   packageName,
   source,
   storyPackage,
-  authoringState,
   recentSaveResults,
 }: BuildPackageDiagnosticsInput): PackageDiagnostics {
   const issues = [
     ...recentSaveResults.map(buildIssueViewFromSaveResult).filter((value): value is UnresolvedIssueView => value !== null),
     ...buildRouterBreakageIssues(storyPackage),
-    ...buildPendingReviewIssues(authoringState),
   ];
 
   const blockedCount = issues.filter((issue) => issue.severity === 'blocked').length;

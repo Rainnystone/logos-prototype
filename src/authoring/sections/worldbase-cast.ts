@@ -241,7 +241,7 @@ function parseStructuredCharacterSection(
 function extractStructuredSection(source: string, heading: string): string {
   const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = source.match(
-    new RegExp(`^## ${escapedHeading}\\s*$\\n?([\\s\\S]*?)(?=^##\\s|\\Z)`, 'm'),
+    new RegExp(`^## ${escapedHeading}\\s*$\\n?([\\s\\S]*?)(?=^##\\s|(?![\\s\\S]))`, 'm'),
   );
 
   return normalizeBlock(match?.[1] ?? '');
