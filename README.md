@@ -62,7 +62,8 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 1. 基于 Beat Volume 和 skill 理念的轻量记忆系统
 2. 人物角色关系模块：可视化和可编辑
 3. 存档系统：故事包的存取
-4. 多 Scene 编排
+4. 多 Scene 编排和控制
+5. 名为 Sparkii的创意写作助理agent
 
 ### 功能改进
 
@@ -70,6 +71,7 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 2. 自定义段落梯度
 3. 人物角色系统进一步适配 RPG 的角色技能
 4. 选项生成系统兼容 RPG 的技能
+5. 叙事系统agent化
 
 ## 快速开始
 
