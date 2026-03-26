@@ -111,14 +111,26 @@ npm run test:e2e
 
 ### 1. 从 Title 页面开始
 
-打开首页后，先在右侧 `Provider Setup` 中填写：
+打开首页后，先在 `Provider Setup` 中填写：
 
-- `Provider`
-- `API Key`
-- `Model`
-- `Base URL`（仅在 OpenAI Compatible 模式下需要）
+- `Provider` — 从预设中选择（Anthropic / MiniMax / OpenAI / Custom Provider）
+- `API Key` — 对应供应商的 API 密钥
+- `Model` — 从预设的模型列表中选择（Custom 模式下手动输入）
+- `Base URL` — 预设模式下自动填充，Custom 模式下手动输入
+
+支持的预设供应商：
+
+| Provider | Base URL | 默认模型 |
+|----------|----------|---------|
+| Anthropic | `https://api.anthropic.com` | claude-sonnet-4-20250514 |
+| MiniMax | `https://api.minimaxi.com/anthropic` | MiniMax-M2.7 |
+| OpenAI | `https://api.openai.com/v1` | gpt-4o |
+| Custom | (手动填写) | (手动填写) |
+
+展开 `Advanced Parameters` 可以为每个操作模式（Collapse / Route / Generate / Audit / Settlement）独立调整 temperature 和 max tokens。
 
 点击 `Save Runtime Config` 后，这份配置会同时被 Title 页面和 Workbench 读取。
+非 Anthropic / OpenAI 域名的 API 请求会自动通过服务端代理转发，无需担心 CORS 限制。
 
 ### 2. 用 Play Workbench 跑故事
 
@@ -247,13 +259,16 @@ LOGOS-Narrative-Editor/
 - 让作者先确认项目身份，再进入运行或编辑
 - 把运行配置和入口动作放到同一张页面上
 
-#### RuntimeConfigForm / ConfigPanel
+#### RuntimeConfigForm / ConfigPanel / CollapsiblePanel
 
 作用：
 
-- 统一管理 Provider、API Key、Model 和 Base URL
-- 保存到本地配置
+- 统一管理 Provider 预设、API Key、Model 和 Base URL
+- 支持 Advanced Parameters（per-operation temperature / max tokens 覆写）
+- 保存到本地 localStorage
 - 被 Title 页面和 Workbench 共用
+- ConfigPanel 在 Workbench 中包含 Runtime Usage 诊断
+- CollapsiblePanel 提供统一的展开/收起行为
 
 ### 运行页模块
 
