@@ -30,7 +30,7 @@ const MODE_DEFAULTS = {
   },
   audit: {
     temperature: 0.3,
-    maxOutputTokens: 512,
+    maxOutputTokens: 4096,
   },
   settlement: {
     temperature: 0.1,

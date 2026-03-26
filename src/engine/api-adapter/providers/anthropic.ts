@@ -71,6 +71,16 @@ function extractContent(data: AnthropicApiResponse): string {
     return text;
   }
 
+  const thinking = data.content
+    ?.filter((item) => item.type === 'thinking' && typeof item.text === 'string')
+    .map((item) => item.text)
+    .join('\n')
+    .trim();
+
+  if (thinking && thinking.length > 0) {
+    return thinking;
+  }
+
   throw new Error('Anthropic provider response did not include text content');
 }
 

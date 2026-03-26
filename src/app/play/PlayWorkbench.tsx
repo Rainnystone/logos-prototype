@@ -286,41 +286,7 @@ export function PlayWorkbench({
         </div>
 
         <div className="play-column">
-          <BeatDisplay
-            status={status}
-            beatText={currentState?.generationState.currentBeatText ?? null}
-            rewriteFeedback={rewriteFeedback}
-            forceAccepted={forceAccepted}
-            error={error}
-            summary={gameViewSummary}
-          >
-            <PlayerInput
-              options={currentOptions}
-              isLoading={isInputLoading}
-              disabled={!roundStarted}
-              variant="embedded"
-              onSubmit={handleSubmit}
-            />
-          </BeatDisplay>
-        </div>
-
-        <div className="play-column play-column--feedback">
-          {currentState ? (
-            <StateInspector
-              state={currentState}
-              gradientSequence={gradientSequence}
-              totalPhases={storyPackage.phasePlans.length}
-            />
-          ) : (
-            <aside className="bg-black border-2 border-black p-5 shadow-brutal font-mono text-white text-sm break-words">
-              <div className="border-b-2 border-white/20 pb-4 mb-4">
-                <p className="text-[10px] tracking-widest uppercase text-[#00ff00] mb-1">[ Narrative State Dashboard ]</p>
-                <h2 className="text-lg font-bold text-white tracking-tight">State Inspector</h2>
-              </div>
-              <p>Initializing Scene...</p>
-            </aside>
-          )}
-          <section className="bg-white border-2 border-black rounded-none shadow-brutal overflow-hidden flex flex-col font-mono mb-[1.25rem]">
+          <section className="bg-white border-2 border-black rounded-none shadow-brutal overflow-hidden flex flex-col font-mono">
             <div className="p-5 border-b-2 border-black flex flex-col md:flex-row md:justify-between md:items-start gap-2">
               <div>
                 <p className="text-[10px] tracking-widest uppercase text-black/50 mb-1">Generation Workspace</p>
@@ -336,10 +302,10 @@ export function PlayWorkbench({
                 <blockquote className="pl-4 py-2 border-l-4 border-black bg-white rounded-none">
                   <p className="font-mono text-black italic">{openingHookInput}</p>
                 </blockquote>
-                <button 
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase" 
-                  type="button" 
-                  onClick={handleStartRound} 
+                <button
+                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase"
+                  type="button"
+                  onClick={handleStartRound}
                   disabled={isInputLoading}
                 >
                   Start Round
@@ -370,7 +336,41 @@ export function PlayWorkbench({
               </div>
             )}
           </section>
+          <BeatDisplay
+            status={status}
+            beatText={currentState?.generationState.currentBeatText ?? null}
+            rewriteFeedback={rewriteFeedback}
+            forceAccepted={forceAccepted}
+            error={error}
+            summary={gameViewSummary}
+          >
+            <PlayerInput
+              options={currentOptions}
+              isLoading={isInputLoading}
+              disabled={!roundStarted}
+              variant="embedded"
+              onSubmit={handleSubmit}
+            />
+          </BeatDisplay>
           <BeatHistory entries={beatHistory} />
+        </div>
+
+        <div className="play-column play-column--feedback">
+          {currentState ? (
+            <StateInspector
+              state={currentState}
+              gradientSequence={gradientSequence}
+              totalPhases={storyPackage.phasePlans.length}
+            />
+          ) : (
+            <aside className="bg-black border-2 border-black p-5 shadow-brutal font-mono text-white text-sm break-words">
+              <div className="border-b-2 border-white/20 pb-4 mb-4">
+                <p className="text-[10px] tracking-widest uppercase text-[#00ff00] mb-1">[ Narrative State Dashboard ]</p>
+                <h2 className="text-lg font-bold text-white tracking-tight">State Inspector</h2>
+              </div>
+              <p>Initializing Scene...</p>
+            </aside>
+          )}
         </div>
       </section>
     </main>

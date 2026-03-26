@@ -505,6 +505,6 @@ describe('api adapter', () => {
       return JSON.parse(String(init.body)).max_tokens;
     });
 
-    expect(maxOutputTokens).toEqual([4096, 36864, 512, 8192, 36864]);
+    expect(maxOutputTokens).toEqual([4096, 36864, 4096, 8192, 36864]);
   });
 });
