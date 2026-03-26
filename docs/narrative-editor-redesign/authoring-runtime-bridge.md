@@ -88,21 +88,22 @@ The bridge therefore owns the path from:
 5. UI pages and section skills share the same persistence bridge.
 6. Runtime compatibility is preserved during transition; no prompt hardcoding shortcuts.
 
-## 4.1 Current Webapp Gap
+## 4.1 Current Webapp Status
 
-The current app still has a missing piece:
+The main webapp gap described earlier is now closed in V1.
 
-- it can read story package files on the server
-- but it does not yet expose a coordinator-usable server-side write entry
+Current implemented state:
 
-As of now:
+- story package files are read on the server
+- section pages submit through server-side section persistence routes
+- coordinator-assisted submits use a dedicated server-side coordinator route
+- both entry types converge on the same deterministic bridge before any write
 
-- there are no section persistence API route handlers
-- there are no section persistence server actions
-- there is no shared application entry for coordinator patch persistence
+Still intentionally out of scope:
 
-So the bridge is not only a design idea.
-It also defines required adaptation work for the current webapp architecture.
+- browser-side direct filesystem writes
+- user-visible `dryRun` actions
+- a second persistence stack owned only by coordinator
 
 ## 5. Three Supported Persistence Patterns
 
@@ -246,7 +247,8 @@ and would still be unable to:
 - render or project runtime-compatible outputs
 - return reloaded state to the UI
 
-So adding server-side persistence entrypoints is a required redesign task.
+That requirement is now implemented through shared server-side authoring routes
+that converge on one bridge.
 
 ## 7. Bridge Entry Sources
 

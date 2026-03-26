@@ -286,27 +286,26 @@ Its job is engineering control, not semantic interpretation.
 
 ### 7.2 Current Webapp Gap
 
-The current webapp does not yet provide a coordinator-usable write path.
+The original write-path gap has now been closed in the current implementation.
 
 Current state:
 
 - story package files can be read on the server
-- runtime config can be saved to browser `localStorage`
-- there are no section persistence API routes yet
-- there are no section persistence server actions yet
-- there is no shared server-side write entry for coordinator results
+- section pages now submit through server-side authoring routes
+- coordinator-assisted submits now use a server-side coordinator route
+- both entry paths converge on the same deterministic bridge before writeback
+- latest successful saves now reopen as the default package state
 
-This means the current redesign still has a real infrastructure gap:
+Remaining constraint:
 
-- coordinator and section skills can be designed now
-- but they cannot safely persist section changes until the webapp gains a server-side write interface
+- coordinator remains narrow and form-driven in V1; freeform natural-language authoring is still a future expansion
 
 ### 7.3 Active Requirement
 
-Because of that gap, adapting the current webapp architecture for coordinator
-writeback is now an approved active requirement, not a future nice-to-have.
+Coding agents must preserve this shared-path rule:
 
-Coding agents must treat this as part of the redesign foundation.
+- page submit and coordinator-assisted submit must continue to converge before any writeback
+- no second save stack may be introduced for coordinator
 
 ## 8. Coordinator Request Flow
 

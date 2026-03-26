@@ -57,6 +57,25 @@ Its responsibilities are:
 - perform broad autonomous exploration
 - invent non-approved authoring fields
 
+### 2.4 Current Implemented Scope
+
+The current implementation is intentionally narrower than the full long-term
+design.
+
+Implemented now:
+
+- section-local `section-assist` for form-driven saves
+- one shared server-side save path for page submit and coordinator-assisted submit
+- page-helper summaries after blocked or failed local saves
+- read-only refusal for the diagnostics dashboard
+
+Not implemented yet:
+
+- freeform natural-language authoring intent as a primary input path
+- broad autonomous cross-section editing
+- meaning-changing repair attempts
+- DOM-driving or browser-robot behavior
+
 ## 3. Design Principles
 
 The coordinator should follow these principles:
@@ -133,6 +152,12 @@ Natural-language author request, such as:
 
 This is the primary mode.
 
+Current implementation note:
+
+- this mode is approved in design
+- it is not the current V1 implementation focus
+- current code is limited to form-driven `section-assist`
+
 ### 5.2 `section-assist`
 
 User is already in a known section and asks the coordinator to interpret or
@@ -148,6 +173,12 @@ Example:
 
 Validation failed after a prior skill pass, and the coordinator must ask the
 same skill to repair the patch candidate using structured errors.
+
+Current implementation note:
+
+- the repair loop boundary is present
+- current code only allows narrow deterministic retry slots
+- if no safe deterministic repair exists, the coordinator returns a local explanation instead of guessing
 
 ## 6. Input Contract
 
