@@ -168,13 +168,25 @@ function buildHttpErrorMessage(prefix: string, status: number, detail: string | 
   return new Error(`${prefix} with status ${status}${suffix}`);
 }
 
+function shouldUseProxy(baseUrl: string): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  if (typeof process !== 'undefined' && process.env?.VITEST === 'true') {
+    return false;
+  }
+
+  return !/api\.openai\.com/i.test(baseUrl);
+}
+
 export function createOpenAICompatibleProvider(
   config: ProviderConfig,
   fetchImpl: FetchLike = fetch,
 ): Provider {
   return {
     async call(request: ProviderRequest): Promise<ProviderResponse> {
-      const url = resolveChatCompletionsUrl(config.baseUrl);
+      const targetUrl = resolveChatCompletionsUrl(config.baseUrl);
       const requestBody: Record<string, unknown> = {
         model: request.model ?? config.model,
         messages: request.system
@@ -184,17 +196,26 @@ export function createOpenAICompatibleProvider(
         max_tokens: request.maxOutputTokens,
         response_format: resolveResponseFormat(config.baseUrl, request.responseFormat),
       };
+      const targetHeaders = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      };
 
       let response: Response;
       try {
-        response = await fetchImpl(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${config.apiKey}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
+        if (shouldUseProxy(config.baseUrl)) {
+          response = await fetchImpl('/api/llm/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUrl, targetHeaders, targetBody: requestBody }),
+          });
+        } else {
+          response = await fetchImpl(targetUrl, {
+            method: 'POST',
+            headers: targetHeaders,
+            body: JSON.stringify(requestBody),
+          });
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown network error';
 

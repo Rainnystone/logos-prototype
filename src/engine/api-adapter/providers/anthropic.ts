@@ -74,31 +74,53 @@ function extractContent(data: AnthropicApiResponse): string {
   throw new Error('Anthropic provider response did not include text content');
 }
 
+function shouldUseProxy(baseUrl: string): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  if (typeof process !== 'undefined' && process.env?.VITEST === 'true') {
+    return false;
+  }
+
+  return !/api\.anthropic\.com/i.test(baseUrl);
+}
+
 export function createAnthropicProvider(
   config: ProviderConfig,
   fetchImpl: FetchLike = fetch,
 ): Provider {
   return {
     async call(request: ProviderRequest): Promise<ProviderResponse> {
-      const url = `${trimTrailingSlash(config.baseUrl)}/v1/messages`;
+      const targetUrl = `${trimTrailingSlash(config.baseUrl)}/v1/messages`;
+      const targetHeaders = {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'x-api-key': config.apiKey,
+      };
+      const targetBody = {
+        model: request.model ?? config.model,
+        system: request.system,
+        messages: toAnthropicMessages(request.messages),
+        temperature: request.temperature,
+        max_tokens: request.maxOutputTokens,
+      };
 
       let response: Response;
       try {
-        response = await fetchImpl(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'anthropic-version': '2023-06-01',
-            'x-api-key': config.apiKey,
-          },
-          body: JSON.stringify({
-            model: request.model ?? config.model,
-            system: request.system,
-            messages: toAnthropicMessages(request.messages),
-            temperature: request.temperature,
-            max_tokens: request.maxOutputTokens,
-          }),
-        });
+        if (shouldUseProxy(config.baseUrl)) {
+          response = await fetchImpl('/api/llm/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUrl, targetHeaders, targetBody }),
+          });
+        } else {
+          response = await fetchImpl(targetUrl, {
+            method: 'POST',
+            headers: targetHeaders,
+            body: JSON.stringify(targetBody),
+          });
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown network error';
 
