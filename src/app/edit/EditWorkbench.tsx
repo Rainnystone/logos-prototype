@@ -149,6 +149,25 @@ export function EditWorkbench({
           ? controlModulesSaveStatus
           : null;
   const activeCoordinatorSummary = coordinatorSummaries[activeSection] ?? null;
+  const embedHelperInSection = activeSection === 'scene-phase-authoring';
+
+  const pageHelperPanel = (
+    <PageHelperPanel
+      packageName={packageName}
+      initialState={{
+        source: currentSource,
+        state: currentState,
+      }}
+      activeSectionLabel={activeSectionSummary.title}
+      {...(activeLocalStatusMessage ? { localStatusMessage: activeLocalStatusMessage } : {})}
+      {...(activeCoordinatorSummary
+        ? { coordinatorSummary: activeCoordinatorSummary }
+        : {})}
+      {...(activeSection === 'package-wiring-validation'
+        ? { diagnosticsHelperView: diagnostics.globalDiagnosticsHelperView }
+        : {})}
+    />
+  );
 
   useEffect(() => {
     setCurrentState(initialState.state);
@@ -568,7 +587,14 @@ export function EditWorkbench({
 
       <PageActionBar packageName={packageName} />
 
-      <section className="edit-layout">
+      <section
+        className="edit-layout"
+        style={
+          embedHelperInSection
+            ? { gridTemplateColumns: 'minmax(12rem, 16rem) minmax(0, 1fr)' }
+            : undefined
+        }
+      >
         <SectionTabs packageName={packageName} activeSection={activeSection} />
         {activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
@@ -585,10 +611,10 @@ export function EditWorkbench({
             packageName={packageName}
             value={draftScenePhase}
             routerOptions={routerOptions}
+            helperPanel={pageHelperPanel}
             onChange={setDraftScenePhase}
             onSubmit={handleScenePhaseSubmit}
             onReset={handleScenePhaseReset}
-            statusMessage={scenePhaseSaveStatus ?? undefined}
             isSaving={isScenePhaseSaving}
           />
         ) : activeSection === 'control-modules' ? (
@@ -635,21 +661,7 @@ export function EditWorkbench({
             </dl>
           </SectionSurface>
         )}
-        <PageHelperPanel
-          packageName={packageName}
-          initialState={{
-            source: currentSource,
-            state: currentState,
-          }}
-          activeSectionLabel={activeSectionSummary.title}
-          {...(activeLocalStatusMessage ? { localStatusMessage: activeLocalStatusMessage } : {})}
-          {...(activeCoordinatorSummary
-            ? { coordinatorSummary: activeCoordinatorSummary }
-            : {})}
-          {...(activeSection === 'package-wiring-validation'
-            ? { diagnosticsHelperView: diagnostics.globalDiagnosticsHelperView }
-            : {})}
-        />
+        {!embedHelperInSection ? pageHelperPanel : null}
       </section>
     </main>
   );

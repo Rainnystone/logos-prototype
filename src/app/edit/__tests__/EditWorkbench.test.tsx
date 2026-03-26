@@ -175,4 +175,23 @@ describe('EditWorkbench', () => {
     });
     expect(request.payload.uiFields).not.toHaveProperty('mainCharacters');
   });
+
+  it('embeds the page helper inside the scene-phase workspace instead of keeping a third outer column', () => {
+    const { container } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="scene-phase-authoring"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    const editLayout = container.querySelector('.edit-layout');
+    expect(editLayout).not.toBeNull();
+    expect(editLayout?.children).toHaveLength(2);
+    expect(screen.getByLabelText('Scene Phase Detail Column')).toBeInTheDocument();
+    expect(screen.getByText('Shell status')).toBeInTheDocument();
+  });
 });
