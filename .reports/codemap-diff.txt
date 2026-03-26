@@ -1,0 +1,23 @@
+Codemap Diff Report
+===================
+Generated: 2026-03-27
+
+Previous version: (none — first generation)
+Change percentage: 100% (new files)
+
+Files generated:
+  docs/codemaps/architecture.md  — System overview, two chains, module deps, patterns
+  docs/codemaps/backend.md       — API routes, engine modules, authoring pipeline, test coverage
+  docs/codemaps/frontend.md      — Component trees, state management, CSS architecture
+  docs/codemaps/data.md          — Domain types, draft types, save types, provider types, file formats
+
+Summary:
+  - 4 codemap files created
+  - Covers 61 source files + 40 test files
+  - Documents 4 API routes, 10 engine modules, 12 authoring files
+  - Documents 27 frontend components across 3 pages
+  - Documents 30+ TypeScript types/interfaces
+  - Documents 8 story package file formats
+
+No previous codemaps existed — no diff comparison possible.
+Next update should compare against this baseline.
