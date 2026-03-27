@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { FocusEvent } from 'react';
 
 import type { StateSnapshot, Volume } from '@/types';
 
@@ -9,6 +10,10 @@ interface StateInspectorProps {
   readonly gradientSequence: readonly Volume[];
   readonly totalPhases?: number | undefined;
 }
+
+type ConstraintKey = 'alpha' | 'beta';
+
+const CONSTRAINT_PREVIEW_LIMIT = 88;
 
 function getVolumeClass(volume: Volume) {
   if (volume === 'High') {
@@ -22,9 +27,73 @@ function getVolumeClass(volume: Volume) {
   return 'volume-chip volume-chip--low';
 }
 
+function getConstraintPreview(text: string) {
+  if (text.length <= CONSTRAINT_PREVIEW_LIMIT) {
+    return text;
+  }
+
+  return '...';
+}
+
 export function StateInspector({ state, gradientSequence, totalPhases }: StateInspectorProps) {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [expandedConstraint, setExpandedConstraint] = useState<ConstraintKey | null>(null);
   const resolvedTotalPhases = totalPhases ?? state.sceneState.currentPhaseIndex;
+
+  function handleConstraintBlur(key: ConstraintKey, event: FocusEvent<HTMLElement>) {
+    if (event.currentTarget.contains(event.relatedTarget)) {
+      return;
+    }
+
+    setExpandedConstraint((currentValue) => (currentValue === key ? null : currentValue));
+  }
+
+  function renderConstraintCard(key: ConstraintKey, label: string, text: string) {
+    const isExpandable = text.length > CONSTRAINT_PREVIEW_LIMIT;
+    const isExpanded = isExpandable && expandedConstraint === key;
+    const preview = getConstraintPreview(text);
+
+    return (
+      <div className="relative min-h-[4.75rem]">
+        <article
+          data-testid={`constraint-card-${key}`}
+          data-expanded={isExpanded}
+          className={`absolute inset-x-0 top-0 rounded-none border-2 bg-[#0a0a0a] p-3 transition-[border-color,background-color,box-shadow,transform] duration-150 ${
+            isExpanded
+              ? 'z-20 border-[#00ff00] bg-black shadow-[6px_6px_0_0_rgba(0,255,0,0.12)]'
+              : 'z-0 border-white/20 bg-white/5'
+          } ${isExpandable ? 'cursor-pointer focus:outline-none focus-visible:border-[#00ff00]' : ''}`}
+          onMouseEnter={() => {
+            if (isExpandable) {
+              setExpandedConstraint(key);
+            }
+          }}
+          onMouseLeave={() => {
+            if (isExpandable) {
+              setExpandedConstraint((currentValue) => (currentValue === key ? null : currentValue));
+            }
+          }}
+          onFocus={() => {
+            if (isExpandable) {
+              setExpandedConstraint(key);
+            }
+          }}
+          onBlur={(event) => handleConstraintBlur(key, event)}
+          tabIndex={isExpandable ? 0 : undefined}
+        >
+          <h4 className="mb-2 text-[#00ff00] uppercase text-xs tracking-wider">{label}</h4>
+          <p
+            data-testid={`constraint-body-${key}`}
+            className={`whitespace-pre-wrap break-words leading-relaxed ${
+              isExpanded ? 'text-white' : 'text-white/80'
+            }`}
+          >
+            {isExpanded ? text : preview}
+          </p>
+        </article>
+      </div>
+    );
+  }
 
   return (
     <aside className="bg-black border-2 border-black p-5 shadow-brutal font-mono text-white text-sm break-words">
@@ -59,14 +128,8 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
           </div>
         </div>
         <div className="grid gap-3">
-          <article className="rounded-none border-2 border-white/20 bg-white/5 p-3">
-            <h4 className="mb-1 text-[#00ff00] uppercase text-xs tracking-wider">Alpha</h4>
-            <p className="whitespace-pre-wrap break-words leading-relaxed text-white/80">{state.sceneState.alpha}</p>
-          </article>
-          <article className="rounded-none border-2 border-white/20 bg-white/5 p-3">
-            <h4 className="mb-1 text-[#00ff00] uppercase text-xs tracking-wider">Beta</h4>
-            <p className="whitespace-pre-wrap break-words leading-relaxed text-white/80">{state.sceneState.beta}</p>
-          </article>
+          {renderConstraintCard('alpha', 'Alpha', state.sceneState.alpha)}
+          {renderConstraintCard('beta', 'Beta', state.sceneState.beta)}
         </div>
       </section>
 

@@ -30,6 +30,64 @@ describe('StateInspector', () => {
     expect(screen.getByText(stateSnapshotFixture.sceneState.beta)).toBeInTheDocument();
   });
 
+  it('keeps long Alpha and Beta compact by default and reveals the full text on hover or focus', async () => {
+    const user = userEvent.setup();
+    const longAlpha =
+      'Push hard enough to expose the source, but not the operator. Keep tracing the unstable signal through each blind corner until the hostile pattern starts to repeat.';
+    const longBeta =
+      'Delay too long and the signal will spread into public view. Once the witnesses gather, every next move becomes louder, riskier, and harder to contain.';
+
+    render(
+      <StateInspector
+        state={{
+          ...stateSnapshotFixture,
+          sceneState: {
+            ...stateSnapshotFixture.sceneState,
+            alpha: longAlpha,
+            beta: longBeta,
+          },
+        }}
+        gradientSequence={['Low', 'Med', 'High', 'Low']}
+      />,
+    );
+
+    const alphaCard = screen.getByTestId('constraint-card-alpha');
+    const betaCard = screen.getByTestId('constraint-card-beta');
+    const alphaBody = screen.getByTestId('constraint-body-alpha');
+    const betaBody = screen.getByTestId('constraint-body-beta');
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'false');
+    expect(alphaBody).not.toHaveTextContent(longAlpha);
+    expect(alphaBody).toHaveTextContent('...');
+    expect(betaCard).toHaveAttribute('data-expanded', 'false');
+    expect(betaBody).not.toHaveTextContent(longBeta);
+    expect(betaBody).toHaveTextContent('...');
+
+    await user.hover(alphaCard);
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'true');
+    expect(alphaBody).toHaveTextContent(longAlpha);
+
+    await user.unhover(alphaCard);
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'false');
+    expect(alphaBody).not.toHaveTextContent(longAlpha);
+
+    await user.tab();
+    expect(alphaCard).toHaveFocus();
+
+    await user.tab();
+
+    expect(betaCard).toHaveFocus();
+    expect(betaCard).toHaveAttribute('data-expanded', 'true');
+    expect(betaBody).toHaveTextContent(longBeta);
+
+    await user.tab();
+
+    expect(betaCard).toHaveAttribute('data-expanded', 'false');
+    expect(betaBody).not.toHaveTextContent(longBeta);
+  });
+
   it('displays the current volume and router', () => {
     render(
       <StateInspector
