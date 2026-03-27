@@ -293,7 +293,7 @@ describe('saveSectionDraft', () => {
           sceneSpec: {
             sceneName: '炎上直播间·改',
             openingSituation: '走廊先出现异常升温，凪顺势离开人群。',
-            mainAxis: '先追踪信号，再拆掉直播链路，最后回归表面日常。',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
             endLine: '灰谷烈失势，校园恢复表面平静。',
             openingHook: '午后的走廊先传来异常蜂鸣，而不是教室内的爆裂。',
             samplePurpose: '验证重新排序后的阶段推进仍然稳定。',
@@ -328,6 +328,17 @@ describe('saveSectionDraft', () => {
         expect.arrayContaining(['scene.yaml', 'phase-plans.yaml', 'authoring-state.json']),
       );
       expect(result.reloadedSectionState.sceneSpec.sceneName).toBe('炎上直播间·改');
+      expect((result.reloadedSectionState.sceneSpec as Record<string, string>).startPoint).toBe(
+        '日常走廊先出现异常升温，凪从人群表层脱离。',
+      );
+      expect(result.reloadedSectionState.sceneSpec.mainAxis).toBe(
+        [
+          '日常走廊先出现异常升温，凪从人群表层脱离。',
+          '先沿着走廊追踪异常信号。',
+          '再回看事故源头，确认直播痕迹。',
+          '灰谷烈失势，校园恢复表面平静。',
+        ].join(' -> '),
+      );
       expect(result.reloadedSectionState.phasePlans[0]?.phaseId).toBe('phase-02-hunt');
       expect(result.reloadedSectionState.phasePlans[0]?.phaseIndex).toBe(1);
       expect(result.reloadedSectionState.phasePlans[0]?.phaseName).toBe('走廊追踪');

@@ -15,7 +15,7 @@ type ScenePhaseStorySlice = Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'rou
 export interface ScenePhaseSceneDraft {
   sceneName: string;
   openingSituation: string;
-  mainAxis: string;
+  startPoint: string;
   endLine: string;
   openingHook: string;
   samplePurpose: string;
@@ -49,6 +49,30 @@ function normalizeOptionalText(value: string | undefined): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function deriveStartPointFromMainAxis(mainAxis: string): string {
+  const normalizedMainAxis = normalizeText(mainAxis);
+  const [firstSegment] = normalizedMainAxis
+    .split(/\s*->\s*/g)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  return firstSegment ?? normalizedMainAxis;
+}
+
+function deriveMainAxis(
+  startPoint: string,
+  phasePlans: readonly Pick<ScenePhasePlanDraft, 'phaseGoal'>[],
+  endLine: string,
+): string {
+  return [
+    normalizeText(startPoint),
+    ...phasePlans.map((phasePlan) => normalizeText(phasePlan.phaseGoal)),
+    normalizeText(endLine),
+  ]
+    .filter(Boolean)
+    .join(' -> ');
+}
+
 function slugifyPhaseName(value: string): string {
   const normalized = value
     .normalize('NFKD')
@@ -75,7 +99,7 @@ export function createScenePhaseAuthoringDraft(
     sceneSpec: {
       sceneName: source.sceneSpec.sceneName,
       openingSituation: source.sceneSpec.openingSituation ?? '',
-      mainAxis: source.sceneSpec.mainAxis,
+      startPoint: source.sceneSpec.startPoint ?? deriveStartPointFromMainAxis(source.sceneSpec.mainAxis),
       endLine: source.sceneSpec.endLine,
       openingHook: source.sceneSpec.openingHook ?? '',
       samplePurpose: source.sceneSpec.samplePurpose ?? '',
@@ -113,8 +137,8 @@ export function validateScenePhaseAuthoringDraft(
     issues.push('Scene name is required.');
   }
 
-  if (!normalizeText(draft.sceneSpec.mainAxis)) {
-    issues.push('Main axis is required.');
+  if (!normalizeText(draft.sceneSpec.startPoint)) {
+    issues.push('Start point is required.');
   }
 
   if (!normalizeText(draft.sceneSpec.endLine)) {
@@ -160,7 +184,8 @@ export function renderScenePhaseAuthoring(
   const nextSceneSpec: SceneSpec = {
     sceneId: current.sceneSpec.sceneId,
     sceneName: normalizeText(draft.sceneSpec.sceneName),
-    mainAxis: normalizeText(draft.sceneSpec.mainAxis),
+    startPoint: normalizeText(draft.sceneSpec.startPoint),
+    mainAxis: deriveMainAxis(draft.sceneSpec.startPoint, draft.phasePlans, draft.sceneSpec.endLine),
     endLine: normalizeText(draft.sceneSpec.endLine),
     ...(current.sceneSpec.source ? { source: current.sceneSpec.source } : {}),
     ...(normalizeOptionalText(draft.sceneSpec.openingSituation)

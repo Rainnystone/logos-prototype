@@ -87,6 +87,8 @@ describe('ScenePhaseAuthoringSection', () => {
     });
     expect(sceneFrameSection.className).toContain('min-h-full');
     expect(screen.getByRole('textbox', { name: 'Scene Name' })).toHaveValue('Signal Room');
+    expect(screen.getByRole('textbox', { name: 'Start Point' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Main Axis' })).not.toBeInTheDocument();
     expect(within(phaseRailSection).getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
     expect(selectedPhaseCard.className).toContain('bg-black');
     expect(selectedPhaseCard.className).toContain('shadow-brutal');
@@ -97,6 +99,7 @@ describe('ScenePhaseAuthoringSection', () => {
     expect(within(phaseRailSection).getByRole('slider', { name: 'Phase rail slider' })).toBeInTheDocument();
     expect(within(sceneFrameSection).queryByRole('slider', { name: 'Phase rail slider' })).not.toBeInTheDocument();
     expect(phaseRailSection.compareDocumentPosition(sceneFrameSection)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(within(sceneFrameSection).queryByText('Derived Main Axis')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Counterplay Lock' }));
     expect(screen.getByRole('textbox', { name: 'Phase Goal' })).toHaveValue(

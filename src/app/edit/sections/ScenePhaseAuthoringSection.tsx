@@ -310,12 +310,12 @@ export function ScenePhaseAuthoringSection({
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                <span className="form-label">Main Axis</span>
+                <span className="form-label">Start Point</span>
                 <textarea
-                  aria-label="Main Axis"
+                  aria-label="Start Point"
                   rows={4}
-                  value={value.sceneSpec.mainAxis}
-                  onChange={(event) => updateSceneField('mainAxis', event)}
+                  value={value.sceneSpec.startPoint}
+                  onChange={(event) => updateSceneField('startPoint', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
