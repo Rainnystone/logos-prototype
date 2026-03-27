@@ -13,6 +13,7 @@ const currentStoryPackage = {
     sceneId: 'scene-signal-room',
     sceneName: 'Signal Room',
     openingSituation: 'A sealed corridor starts to overheat behind the public route.',
+    startPoint: 'A relay sparks behind the public route and pulls the operator off the daily track.',
     mainAxis: 'Track the hostile signal without exposing the operator.',
     endLine: 'The source is isolated and the public route returns to calm.',
     openingHook: 'A relay sparks and forces the operator to slip away from the crowd.',
@@ -63,6 +64,9 @@ describe('scene-phase-authoring', () => {
     expect(draft.sceneSpec.sceneName).toBe('Signal Room');
     expect(draft.sceneSpec.openingSituation).toBe(
       'A sealed corridor starts to overheat behind the public route.',
+    );
+    expect((draft.sceneSpec as unknown as Record<string, string>).startPoint).toBe(
+      'A relay sparks behind the public route and pulls the operator off the daily track.',
     );
     expect(draft.phasePlans[0]?.phaseName).toBe('Signal Trace');
     expect(draft.phasePlans[1]?.phaseName).toBe('Counterplay Lock');
@@ -133,5 +137,44 @@ describe('scene-phase-authoring', () => {
     expect(output.sceneSpec).not.toHaveProperty('openingSituation');
     expect(output.sceneSpec).not.toHaveProperty('openingHook');
     expect(output.sceneSpec).not.toHaveProperty('samplePurpose');
+  });
+
+  it('derives mainAxis from startPoint, ordered phase goals, and endLine', () => {
+    const draft = {
+      sceneSpec: {
+        sceneName: 'Signal Room',
+        openingSituation: 'A sealed corridor starts to overheat behind the public route.',
+        startPoint: 'The operator notices the first hostile surge inside the corridor.',
+        endLine: 'The source is isolated and the public route returns to calm.',
+        openingHook: 'A relay sparks and forces the operator to slip away from the crowd.',
+        samplePurpose: 'Validate the scene-phase authoring loop.',
+      },
+      phasePlans: createScenePhaseAuthoringDraft(currentStoryPackage).phasePlans,
+    } as unknown as ScenePhaseAuthoringDraft;
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec.mainAxis).toBe(
+      [
+        'The operator notices the first hostile surge inside the corridor.',
+        'Identify the first trace of the signal.',
+        'Contain the hostile response.',
+        'The source is isolated and the public route returns to calm.',
+      ].join(' -> '),
+    );
+  });
+
+  it('requires a scene start point before saving the section', () => {
+    const draft = {
+      sceneSpec: {
+        ...createScenePhaseAuthoringDraft(currentStoryPackage).sceneSpec,
+        startPoint: '   ',
+      },
+      phasePlans: createScenePhaseAuthoringDraft(currentStoryPackage).phasePlans,
+    } as unknown as ScenePhaseAuthoringDraft;
+
+    expect(validateScenePhaseAuthoringDraft(draft, ['Investigation', 'Counterplay'])).toContain(
+      'Start point is required.',
+    );
   });
 });

@@ -343,7 +343,11 @@ function extractScenePhaseAuthoringDraft(
     sceneSpec: {
       sceneName: isStringField(sceneSpec.sceneName) ? sceneSpec.sceneName : '',
       openingSituation: isStringField(sceneSpec.openingSituation) ? sceneSpec.openingSituation : '',
-      mainAxis: isStringField(sceneSpec.mainAxis) ? sceneSpec.mainAxis : '',
+      startPoint: isStringField(sceneSpec.startPoint)
+        ? sceneSpec.startPoint
+        : isStringField(sceneSpec.mainAxis)
+          ? sceneSpec.mainAxis
+          : '',
       endLine: isStringField(sceneSpec.endLine) ? sceneSpec.endLine : '',
       openingHook: isStringField(sceneSpec.openingHook) ? sceneSpec.openingHook : '',
       samplePurpose: isStringField(sceneSpec.samplePurpose) ? sceneSpec.samplePurpose : '',

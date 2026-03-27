@@ -53,6 +53,7 @@ describe('sample-scene story package', () => {
     expect(sceneSpec.sceneId).toBe(extractOverviewValue('sceneId'));
     expect(sceneSpec.sceneName).toBe(extractOverviewValue('sceneName'));
     expect(sceneSpec.samplePurpose).toBe(extractOverviewValue('samplePurpose'));
+    expect(sceneSpec.startPoint).toBe(extractOverviewValue('startPoint'));
     expect(sceneSpec.mainAxis).toBe(extractOverviewValue('mainAxis'));
     expect(sceneSpec.endLine).toBe(extractOverviewValue('endLine'));
     expect(sceneSpec.openingSituation).toContain('过热迹象');
