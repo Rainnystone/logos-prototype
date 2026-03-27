@@ -30,6 +30,9 @@ describe('ControlModulesSection', () => {
     expect(screen.getByRole('region', { name: 'Module editor column' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Light Cone Collapse' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Boundary Guidance' })).toBeInTheDocument();
+    expect(screen.getByText('故事/光锥边界应如何划定')).toBeInTheDocument();
+    expect(screen.getByText('故事/光锥边界会随着玩家行为如何逐步收拢')).toBeInTheDocument();
+    expect(screen.getByText('Phase 结束后系统结算玩家因果状态的规则')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Auditor Question Set' }));
 

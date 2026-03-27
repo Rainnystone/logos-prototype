@@ -53,6 +53,12 @@ const MODULE_CARDS: readonly {
   },
 ] as const;
 
+const LIGHT_CONE_FIELD_NOTES = {
+  boundaryGuidance: '故事/光锥边界应如何划定',
+  convergenceGuidance: '故事/光锥边界会随着玩家行为如何逐步收拢',
+  phaseSettlementGuidance: 'Phase 结束后系统结算玩家因果状态的规则',
+} as const;
+
 function createDraftQuestion(scope: string): AuditQuestion {
   return {
     id: `AQ-DRAFT-${scope.toUpperCase()}-${Date.now()}`,
@@ -431,6 +437,7 @@ export function ControlModulesSection({
               <div className="space-y-4">
                 <label className="form-field">
                   <span className="form-label">Boundary Guidance</span>
+                  <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.boundaryGuidance}</p>
                   <textarea
                     aria-label="Boundary Guidance"
                     value={value.controlModules.lightConeCustomization.boundaryGuidance}
@@ -439,6 +446,7 @@ export function ControlModulesSection({
                 </label>
                 <label className="form-field">
                   <span className="form-label">Convergence Guidance</span>
+                  <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.convergenceGuidance}</p>
                   <textarea
                     aria-label="Convergence Guidance"
                     value={value.controlModules.lightConeCustomization.convergenceGuidance}
@@ -447,6 +455,7 @@ export function ControlModulesSection({
                 </label>
                 <label className="form-field">
                   <span className="form-label">Phase Settlement Guidance</span>
+                  <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.phaseSettlementGuidance}</p>
                   <textarea
                     aria-label="Phase Settlement Guidance"
                     value={value.controlModules.lightConeCustomization.phaseSettlementGuidance}
