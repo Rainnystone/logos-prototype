@@ -2,16 +2,23 @@ sceneId: sample-yanshang-live-room
 source: story-source/control-modules.md
 lightConeCustomization:
   boundaryGuidance: Keep the current player state as the light-cone apex and the
-    current end line as the far convergence target.
+    current end line as the far convergence target.需要考虑每一个
+    phasegoal，并逐步拓宽。光锥的边界是到达 endline
+    情况下，玩家行为所允许的最激进和最消极（被故事和环境推着走）的推演，需要详细考虑如何经过每个 phase 并最重到达 endline ，alpha 和
+    beta 不能写成一个句宽泛的描述，要有边界和约束感。
   convergenceGuidance: Let the cone remain wide early, then narrow more sharply as
-    the route closes in on the signal source.
+    the route closes in on the signal source.必须根据 phase settlement
+    的情况推演玩家行为产生的后果，从而收拢光锥，以反应玩家需要为自己的行为和选择负责的理念。
   phaseSettlementGuidance: Re-evaluate the boundaries only after each phase
-    settlement is complete; do not collapse the space beat by beat。
+    settlement is complete; do not collapse the space beat by beat。必须考虑玩家在这个
+    phase 的行为对周遭环境、人际关系的影响和因果
 directorNoteAdditions:
   beatConstraintsAdditions: Keep every beat local, physical, and explainable as a
-    contained campus incident.
+    contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。
   optionConstraintsAdditions: Options should keep tactical contrast without
-    drifting into overt supernatural spectacle.
+    drifting into overt supernatural
+    spectacle.雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC
+    。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行
 beatVolumeDefinitions:
   Low:
     beatConstraints: Use summary framing, compressed time, and broad causal movement
