@@ -122,7 +122,7 @@ describe('scene-phase-authoring', () => {
     };
 
     expect(validateScenePhaseAuthoringDraft(draft, ['Investigation', 'Counterplay'])).toEqual([
-      'Phase "Signal Trace" uses an unavailable router selection "Ghost Route".',
+      'Phase "Signal Trace" 使用了不可用的 Router 选择 "Ghost Route"。',
     ]);
   });
 
@@ -174,7 +174,7 @@ describe('scene-phase-authoring', () => {
     } as unknown as ScenePhaseAuthoringDraft;
 
     expect(validateScenePhaseAuthoringDraft(draft, ['Investigation', 'Counterplay'])).toContain(
-      'Start point is required.',
+      '起点是必填项。',
     );
   });
 });

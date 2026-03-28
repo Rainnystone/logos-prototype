@@ -41,26 +41,31 @@ const SECTION_SUMMARIES: Record<
   }
 > = {
   'worldbase-cast': {
-    eyebrow: 'WorldBase & Cast',
-    title: 'WorldBase & Cast',
-    description: 'Shape the shared world description, named cast, and fixed location details.',
+    eyebrow: '当前页',
+    title: '世界与角色',
+    description: '编辑世界基础、角色阵列和当前角色卡片。',
   },
   'scene-phase-authoring': {
-    eyebrow: 'SCENE & PHASE',
-    title: 'SCENE & PHASE',
-    description: 'Adjust the scene spine and phase progression before the beat loop runs.',
+    eyebrow: '当前页',
+    title: '场景与阶段',
+    description: '编辑场景框架、Phase 轨道和当前阶段内容。',
   },
   'control-modules': {
-    eyebrow: 'Control Modules',
-    title: 'Control Modules',
-    description: 'Prepare the control slices that steer generation, auditing, and recovery.',
+    eyebrow: '当前页',
+    title: '控制模块',
+    description: '整理控制层、路由配置和审查问题。',
   },
   'package-wiring-validation': {
-    eyebrow: 'Package Wiring Validation',
-    title: 'Package Wiring Validation',
-    description: 'Check whether the package pieces still connect cleanly after edits.',
+    eyebrow: '当前页',
+    title: '控制台',
+    description: '检查整包连线、健康状态和修复建议。',
   },
 };
+
+const SAVE_FAILED_STATUS = '保存失败。';
+const SAVE_PATH_FAILURE_STATUS = '页面助手无法连通共享保存路径。';
+const PAGE_HELPER_SAVE_STATUS = '已通过页面助手保存。';
+const RESET_STATUS = '已恢复到最新保存版本。';
 
 interface EditWorkbenchProps {
   readonly packageName: string;
@@ -75,6 +80,43 @@ function didPersistAuthoringState(result: SaveResult): boolean {
     (result.kind === 'save_applied' || result.kind === 'save_applied_with_warnings') &&
     result.runtimeImpactSummary.changedFiles.includes('authoring-state.json')
   );
+}
+
+function formatSaveFailureMessage(result: SaveResult | null): string {
+  if (result?.kind === 'save_failed') {
+    return `保存失败：${result.errorMessage}`;
+  }
+
+  return SAVE_FAILED_STATUS;
+}
+
+function formatAppliedSaveMessage(
+  result: Extract<SaveResult, { kind: 'save_applied' | 'save_applied_with_warnings' }>,
+  successMessage: string,
+): string {
+  const warnings = 'warnings' in result ? result.warnings ?? [] : [];
+  if (result.kind === 'save_applied_with_warnings' || warnings.length > 0) {
+    return warnings.length > 0 ? `已保存，但仍有提示：${warnings.join(' ')}` : '已保存，但仍有提示。';
+  }
+
+  return successMessage;
+}
+
+function formatHelperSaveMessage(
+  result: Extract<SaveResult, { kind: 'save_applied' | 'save_applied_with_warnings' }>,
+): string {
+  const warnings = 'warnings' in result ? result.warnings ?? [] : [];
+  if (result.kind === 'save_applied_with_warnings' || warnings.length > 0) {
+    return warnings.length > 0
+      ? `已通过页面助手保存，但仍有提示：${warnings.join(' ')}`
+      : '已通过页面助手保存，但仍有提示。';
+  }
+
+  return PAGE_HELPER_SAVE_STATUS;
+}
+
+function formatBlockedSaveMessage(issues: readonly string[]): string {
+  return `保存被阻止：${issues.join(' ')}`;
 }
 
 function SectionSurface({
@@ -265,10 +307,7 @@ export function EditWorkbench({
       rememberSaveResult(result.saveResult);
       return result;
     } catch {
-      setCoordinatorSummary(
-        sectionId,
-        'The page helper could not reach the shared save path.',
-      );
+      setCoordinatorSummary(sectionId, SAVE_PATH_FAILURE_STATUS);
       return null;
     }
   }
@@ -330,13 +369,13 @@ export function EditWorkbench({
         const nextDraft = createWorldBaseCastDraft(result.reloadedSectionState.worldBase);
         setDraftWorldBase(nextDraft);
         setSavedWorldBase(nextDraft);
-        setWorldBaseSaveStatus('Saved and normalized.');
+        setWorldBaseSaveStatus(formatAppliedSaveMessage(result, '已保存并归一化。'));
         setCoordinatorSummary('worldbase-cast', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
-        setWorldBaseSaveStatus(result.blockingIssues.join(' '));
+        setWorldBaseSaveStatus(formatBlockedSaveMessage(result.blockingIssues));
         const coordinatorResult = await requestCoordinatorAssist(
           'worldbase-cast',
           draftWorldBase as unknown as Record<string, unknown>,
@@ -356,12 +395,12 @@ export function EditWorkbench({
           );
           setDraftWorldBase(nextDraft);
           setSavedWorldBase(nextDraft);
-          setWorldBaseSaveStatus('Saved through the page helper.');
+          setWorldBaseSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
         return;
       }
 
-      setWorldBaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      setWorldBaseSaveStatus(formatSaveFailureMessage(result));
       if (result.kind === 'save_failed') {
         const coordinatorResult = await requestCoordinatorAssist(
           'worldbase-cast',
@@ -382,11 +421,11 @@ export function EditWorkbench({
           );
           setDraftWorldBase(nextDraft);
           setSavedWorldBase(nextDraft);
-          setWorldBaseSaveStatus('Saved through the page helper.');
+          setWorldBaseSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
       }
     } catch {
-      setWorldBaseSaveStatus('Save failed.');
+      setWorldBaseSaveStatus(SAVE_FAILED_STATUS);
     } finally {
       setIsWorldBaseSaving(false);
     }
@@ -394,7 +433,7 @@ export function EditWorkbench({
 
   function handleWorldBaseCastReset() {
     setDraftWorldBase(savedWorldBase);
-    setWorldBaseSaveStatus('Reverted to the latest saved state.');
+    setWorldBaseSaveStatus(RESET_STATUS);
     setCoordinatorSummary('worldbase-cast', null);
   }
 
@@ -436,13 +475,13 @@ export function EditWorkbench({
         const nextDraft = createScenePhaseAuthoringDraft(result.reloadedSectionState);
         setDraftScenePhase(nextDraft);
         setSavedScenePhase(nextDraft);
-        setScenePhaseSaveStatus('Saved and reindexed.');
+        setScenePhaseSaveStatus(formatAppliedSaveMessage(result, '已保存并重新编排。'));
         setCoordinatorSummary('scene-phase-authoring', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
-        setScenePhaseSaveStatus(result.blockingIssues.join(' '));
+        setScenePhaseSaveStatus(formatBlockedSaveMessage(result.blockingIssues));
         const coordinatorResult = await requestCoordinatorAssist(
           'scene-phase-authoring',
           draftScenePhase as unknown as Record<string, unknown>,
@@ -462,12 +501,12 @@ export function EditWorkbench({
           );
           setDraftScenePhase(nextDraft);
           setSavedScenePhase(nextDraft);
-          setScenePhaseSaveStatus('Saved through the page helper.');
+          setScenePhaseSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
         return;
       }
 
-      setScenePhaseSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      setScenePhaseSaveStatus(formatSaveFailureMessage(result));
       if (result.kind === 'save_failed') {
         const coordinatorResult = await requestCoordinatorAssist(
           'scene-phase-authoring',
@@ -488,11 +527,11 @@ export function EditWorkbench({
           );
           setDraftScenePhase(nextDraft);
           setSavedScenePhase(nextDraft);
-          setScenePhaseSaveStatus('Saved through the page helper.');
+          setScenePhaseSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
       }
     } catch {
-      setScenePhaseSaveStatus('Save failed.');
+      setScenePhaseSaveStatus(SAVE_FAILED_STATUS);
     } finally {
       setIsScenePhaseSaving(false);
     }
@@ -500,7 +539,7 @@ export function EditWorkbench({
 
   function handleScenePhaseReset() {
     setDraftScenePhase(savedScenePhase);
-    setScenePhaseSaveStatus('Reverted to the latest saved state.');
+    setScenePhaseSaveStatus(RESET_STATUS);
     setCoordinatorSummary('scene-phase-authoring', null);
   }
 
@@ -543,13 +582,13 @@ export function EditWorkbench({
         const nextDraft = createControlModulesDraft(result.reloadedSectionState);
         setDraftControlModules(nextDraft);
         setSavedControlModules(nextDraft);
-        setControlModulesSaveStatus('Saved the active control module.');
+        setControlModulesSaveStatus(formatAppliedSaveMessage(result, '已保存当前控制模块。'));
         setCoordinatorSummary('control-modules', null);
         return;
       }
 
       if (result.kind === 'save_blocked' && result.blockingIssues) {
-        setControlModulesSaveStatus(result.blockingIssues.join(' '));
+        setControlModulesSaveStatus(formatBlockedSaveMessage(result.blockingIssues));
         const coordinatorResult = await requestCoordinatorAssist(
           'control-modules',
           {
@@ -574,12 +613,12 @@ export function EditWorkbench({
           );
           setDraftControlModules(nextDraft);
           setSavedControlModules(nextDraft);
-          setControlModulesSaveStatus('Saved through the page helper.');
+          setControlModulesSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
         return;
       }
 
-      setControlModulesSaveStatus(result.kind === 'save_failed' ? result.errorMessage : 'Save failed.');
+      setControlModulesSaveStatus(formatSaveFailureMessage(result));
       if (result.kind === 'save_failed') {
         const coordinatorResult = await requestCoordinatorAssist(
           'control-modules',
@@ -605,11 +644,11 @@ export function EditWorkbench({
           );
           setDraftControlModules(nextDraft);
           setSavedControlModules(nextDraft);
-          setControlModulesSaveStatus('Saved through the page helper.');
+          setControlModulesSaveStatus(formatHelperSaveMessage(coordinatorResult.saveResult));
         }
       }
     } catch {
-      setControlModulesSaveStatus('Save failed.');
+      setControlModulesSaveStatus(SAVE_FAILED_STATUS);
     } finally {
       setIsControlModulesSaving(false);
     }
@@ -669,7 +708,7 @@ export function EditWorkbench({
             onSubmit={handleControlModulesSubmit}
             onReset={() => {
               setDraftControlModules(savedControlModules);
-              setControlModulesSaveStatus('Reverted to the latest saved state.');
+              setControlModulesSaveStatus(RESET_STATUS);
               setCoordinatorSummary('control-modules', null);
             }}
             statusMessage={controlModulesSaveStatus ?? undefined}

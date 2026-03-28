@@ -76,11 +76,13 @@ interface BuildPackageDiagnosticsInput {
 
 const SECTION_LABELS: Record<Exclude<SectionId, 'package-wiring-validation'>, string> = {
   'worldbase-cast': '世界与角色',
-  'scene-phase-authoring': '故事结构',
+  'scene-phase-authoring': '场景与阶段',
   'control-modules': '控制模块',
 };
 
-function titleCaseSection(sectionId: Exclude<SectionId, 'package-wiring-validation'>): string {
+const DIAGNOSTICS_PAGE_LABEL = '控制台';
+
+function getSectionLabel(sectionId: Exclude<SectionId, 'package-wiring-validation'>): string {
   return SECTION_LABELS[sectionId];
 }
 
@@ -91,18 +93,21 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
 
   const sectionLabel =
     result.sectionId === 'package-wiring-validation'
-      ? '组装与校验'
-      : result.sectionId === 'worldbase-cast'
-        ? 'WorldBase & Cast'
-        : result.sectionId === 'scene-phase-authoring'
-          ? 'SCENE & PHASE'
-          : 'Control Modules';
+      ? DIAGNOSTICS_PAGE_LABEL
+      : getSectionLabel(result.sectionId);
+
+  const issueTitle =
+    result.kind === 'save_applied_with_warnings'
+      ? '保存出现警告'
+      : result.kind === 'save_blocked'
+        ? '保存被阻塞'
+        : '保存失败';
 
   if (result.kind === 'save_applied_with_warnings') {
     return {
       key: `save-result:${result.requestId}`,
       severity: 'warning',
-      title: `${sectionLabel} save returned warnings`,
+      title: `${sectionLabel} ${issueTitle}`,
       summary: result.warnings.join(' '),
       ...(result.sectionId === 'package-wiring-validation'
         ? {}
@@ -120,7 +125,7 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
     return {
       key: `save-result:${result.requestId}`,
       severity: 'blocked',
-      title: `${sectionLabel} save remains blocked`,
+      title: `${sectionLabel} ${issueTitle}`,
       summary: result.blockingIssues.join(' '),
       ...(result.sectionId === 'package-wiring-validation'
         ? {}
@@ -138,7 +143,7 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
     return {
       key: `save-result:${result.requestId}`,
       severity: 'blocked',
-      title: `${sectionLabel} save failed`,
+      title: `${sectionLabel} ${issueTitle}`,
       summary: result.errorMessage,
       ...(result.sectionId === 'package-wiring-validation'
         ? {}
@@ -167,8 +172,8 @@ function buildRouterBreakageIssues(storyPackage: StoryPackage): UnresolvedIssueV
       {
         key: `router-breakage:${phasePlan.phaseId}`,
         severity: 'blocked' as const,
-        title: `Phase router selection is invalid`,
-        summary: `Phase "${phasePlan.phaseName ?? phasePlan.phaseId}" still references router "${phasePlan.routerHint}", but that router no longer exists.`,
+        title: 'Phase 路由选择无效',
+        summary: `Phase "${phasePlan.phaseName ?? phasePlan.phaseId}" 仍引用 Router "${phasePlan.routerHint}"，但该 Router 已不存在。`,
         repairDestination: 'scene-phase-authoring' as const,
         sourceSection: 'control-modules' as const,
       },
@@ -190,14 +195,14 @@ function toStatus(blockedCount: number, warningCount: number): PackageDiagnostic
 
 function buildOverallSummary(blockedCount: number, warningCount: number): string {
   if (blockedCount > 0) {
-    return `${blockedCount} blocking issue${blockedCount === 1 ? ' requires' : 's require'} repair.`;
+    return `${blockedCount} 个阻塞问题需要修复。`;
   }
 
   if (warningCount > 0) {
-    return `${warningCount} warning${warningCount === 1 ? ' requires' : 's require'} follow-up.`;
+    return `${warningCount} 个警告需要跟进。`;
   }
 
-  return 'No unresolved package-wide issues remain.';
+  return '当前没有未解决的整包问题。';
 }
 
 function buildSectionHealthViews(issues: readonly UnresolvedIssueView[]): SectionHealthView[] {
@@ -210,11 +215,11 @@ function buildSectionHealthViews(issues: readonly UnresolvedIssueView[]): Sectio
 
       return {
         sectionId,
-        label: titleCaseSection(sectionId),
+        label: getSectionLabel(sectionId),
         status,
         summary:
           status === 'healthy'
-            ? 'No unresolved package-level issues remain for this section.'
+            ? '当前页面没有未解决的整包问题。'
             : buildOverallSummary(blockedCount, warningCount),
         blocksPackage: blockedCount > 0,
         handledLocally: relatedIssues.length === 0,
@@ -231,39 +236,39 @@ function buildAssemblyFlowViews(issues: readonly UnresolvedIssueView[]): Assembl
   return [
     {
       key: 'section-outputs',
-      label: 'Section Outputs',
+      label: '页面输出',
       status: savePathStatus,
       summary: hasBlocked
-        ? 'At least one section output still leaves the package unresolved.'
+        ? '至少有一个页面输出仍让整包保持未解决。'
         : hasWarnings
-          ? 'Section saves completed, but follow-up warnings remain.'
-          : 'Section outputs are consistent with the current package state.',
+          ? '页面保存已完成，但仍有需要跟进的警告。'
+          : '页面输出与当前整包状态一致。',
     },
     {
       key: 'shared-save-bridge',
-      label: 'Shared Save Bridge',
+      label: '共享保存链路',
       status: savePathStatus,
       summary: hasBlocked
-        ? 'The save bridge accepted data, but package-level repair is still required.'
+        ? '保存链路已接收数据，但仍需要整包级修复。'
         : hasWarnings
-          ? 'The save bridge completed with warnings that should be reviewed.'
-          : 'The shared save bridge completed cleanly.',
+          ? '保存链路已完成，但仍有警告需要查看。'
+          : '共享保存链路已干净完成。',
     },
     {
       key: 'package-reload',
-      label: 'Package Reload',
+      label: '整包重新加载',
       status: 'healthy',
-      summary: 'The package can still be reloaded after the latest successful save.',
+      summary: '最新一次成功保存后，整包仍可重新加载。',
     },
     {
       key: 'runtime-health',
-      label: 'Runtime Health',
+      label: '运行态健康',
       status: hasBlocked ? 'blocked' : hasWarnings ? 'warning' : 'healthy',
       summary: hasBlocked
-        ? 'Runtime setup is not yet trustworthy because unresolved package issues remain.'
+        ? '由于整包问题仍未解决，运行态暂时还不可信。'
         : hasWarnings
-          ? 'Runtime setup is available, but some warnings still need attention.'
-          : 'Runtime-facing data is currently healthy.',
+          ? '运行态已可用，但仍有警告需要处理。'
+          : '面向运行态的数据当前健康。',
     },
   ];
 }
@@ -279,8 +284,8 @@ function buildDetailViews(
     title: overallStatusView.title,
     summary: overallStatusView.summary,
     detailLines: [
-      `${overallStatusView.blockedCount} blocking issue(s)`,
-      `${overallStatusView.warningCount} warning(s)`,
+      `阻塞问题：${overallStatusView.blockedCount} 个`,
+      `警告问题：${overallStatusView.warningCount} 个`,
     ],
   };
 
@@ -289,10 +294,10 @@ function buildDetailViews(
     title: view.label,
     summary: view.summary,
     detailLines: [
-      view.blocksPackage ? 'This section currently blocks whole-package health.' : 'This section does not block whole-package health.',
+      view.blocksPackage ? '该页面当前会阻断整包健康。' : '该页面不会阻断整包健康。',
       view.handledLocally
-        ? 'No unresolved package-wide issues remain for this section.'
-        : 'Some issues were promoted beyond section-local handling.',
+        ? '当前没有上升到整包级的问题。'
+        : '有部分问题已经上升到整包级处理。',
     ],
     repairDestination: view.sectionId,
   }));
@@ -301,7 +306,7 @@ function buildDetailViews(
     key: `flow:${view.key}`,
     title: view.label,
     summary: view.summary,
-    detailLines: [`Current status: ${view.status}`],
+    detailLines: [`当前状态：${view.status}`],
   }));
 
   const issueDetails = issues.map<DetailView>((issue) => ({
@@ -310,11 +315,11 @@ function buildDetailViews(
     summary: issue.summary,
     detailLines: [
       issue.sourceSection
-        ? `Upstream source: ${titleCaseSection(issue.sourceSection)}`
-        : 'No upstream source section is attached.',
+        ? `来源页面：${getSectionLabel(issue.sourceSection)}`
+        : '没有上游来源页面。',
       issue.repairDestination
-        ? `Repair in: ${titleCaseSection(issue.repairDestination)}`
-        : 'Repair destination is not assigned.',
+        ? `修复到：${getSectionLabel(issue.repairDestination)}`
+        : '没有分配修复目标。',
     ],
     ...(issue.repairDestination ? { repairDestination: issue.repairDestination } : {}),
   }));
@@ -337,8 +342,8 @@ function buildGlobalHelperView(issues: readonly UnresolvedIssueView[]): GlobalDi
     summary: buildOverallSummary(blockedCount, warningCount),
     repairOrder:
       distinctDestinations.length > 0
-        ? distinctDestinations.map((destination) => titleCaseSection(destination))
-        : ['No further repair routing is required.'],
+        ? distinctDestinations.map((destination) => getSectionLabel(destination))
+        : ['当前没有继续修复的路由。'],
   };
 }
 
@@ -357,7 +362,7 @@ export function buildPackageDiagnostics({
   const warningCount = issues.filter((issue) => issue.severity === 'warning').length;
   const overallStatusView: OverallStatusView = {
     status: toStatus(blockedCount, warningCount),
-    title: 'Package Health',
+    title: '整包健康',
     summary: buildOverallSummary(blockedCount, warningCount),
     blockedCount,
     warningCount,

@@ -18,45 +18,45 @@ const MODULE_CARDS: readonly {
 }[] = [
   {
     key: 'light-cone',
-    label: 'Light Cone Collapse',
-    typeLabel: 'Replacement',
-    groupLabel: 'Layer 3',
-    description: 'Define how the boundary cone tightens toward the end line after each phase.',
+    label: '光锥收束',
+    typeLabel: '替换型',
+    groupLabel: '第 3 层',
+    description: '收拢边界光锥，控制结算后的可行动范围。',
   },
   {
     key: 'director-note-additions',
-    label: 'Director Note Additions',
-    typeLabel: 'Additive',
-    groupLabel: 'Layer 4',
-    description: 'Add author-managed note constraints on top of the system-generated base.',
+    label: '导演提示补充',
+    typeLabel: '补充型',
+    groupLabel: '第 4 层',
+    description: '在系统提示上追加作者侧的约束补充。',
   },
   {
     key: 'beat-volume-definitions',
-    label: 'Beat Volume Definitions',
-    typeLabel: 'Definition',
-    groupLabel: 'Layer 4',
-    description: 'Define what Low, Med, and High actually mean for beats and options.',
+    label: 'Beat Volume 定义',
+    typeLabel: '定义型',
+    groupLabel: '第 4 层',
+    description: '把 Low、Med、High 的节奏和选项标准写清楚。',
   },
   {
     key: 'router-profile-set',
-    label: 'Router Profile Set',
-    typeLabel: 'Structured',
-    groupLabel: 'Layer 4',
-    description: 'Create and edit router profiles that feed downstream router selection.',
+    label: 'Router 配置组',
+    typeLabel: '结构型',
+    groupLabel: '第 4 层',
+    description: '管理送入阶段路由的 Router 配置。',
   },
   {
     key: 'auditor-question-set',
-    label: 'Auditor Question Set',
-    typeLabel: 'Parallel Control',
-    groupLabel: 'Parallel',
-    description: 'Maintain audit questions and selection policy outside the prompt stack.',
+    label: '审查问题组',
+    typeLabel: '并行控制',
+    groupLabel: '并行层',
+    description: '维护审查问题与选择策略。',
   },
 ] as const;
 
 const LIGHT_CONE_FIELD_NOTES = {
-  boundaryGuidance: '故事/光锥边界应如何划定',
-  convergenceGuidance: '故事/光锥边界会随着玩家行为如何逐步收拢',
-  phaseSettlementGuidance: 'Phase 结束后系统结算玩家因果状态的规则',
+  boundaryGuidance: '边界要如何收口',
+  convergenceGuidance: '每个 Phase 结算后如何继续收拢',
+  phaseSettlementGuidance: 'Phase 结束时如何结算光锥状态',
 } as const;
 
 function createDraftQuestion(scope: string): AuditQuestion {
@@ -366,11 +366,9 @@ export function ControlModulesSection({
     <section className="panel">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <p className="panel-eyebrow">Section Slice</p>
-          <h2>Control Modules</h2>
-          <p className="panel-note">
-            Shape the shared control layers that steer collapse, director notes, routing, and audit.
-          </p>
+          <p className="panel-eyebrow">当前页</p>
+          <h2>控制模块</h2>
+          <p className="panel-note">整理控制层、路由配置和审查问题。</p>
         </div>
         <p className="panel-note">{packageName}</p>
       </div>
@@ -379,11 +377,11 @@ export function ControlModulesSection({
         <section
           className="rounded-none border-2 border-black bg-[#f5f5f5] p-4"
           role="region"
-          aria-label="Control stack column"
+          aria-label="控制栈"
         >
           <div className="mb-4">
-            <p className="panel-eyebrow">Control Stack</p>
-            <h3 className="text-xl font-semibold text-slate-900">Layered Modules</h3>
+            <p className="panel-eyebrow">控制栈</p>
+            <h3 className="text-xl font-semibold text-slate-900">模块层</h3>
           </div>
           <div className="space-y-3">
             {MODULE_CARDS.map((card) => {
@@ -420,11 +418,11 @@ export function ControlModulesSection({
           </div>
         </section>
 
-        <section className="space-y-4" role="region" aria-label="Module editor column">
+        <section className="space-y-4" role="region" aria-label="模块编辑">
           <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <p className="panel-eyebrow">Module Editor Column</p>
+                <p className="panel-eyebrow">模块编辑</p>
                 <h3 className="text-xl font-semibold text-slate-900">{activeModule.label}</h3>
                 <p className="panel-note">{activeModule.description}</p>
               </div>
@@ -436,28 +434,28 @@ export function ControlModulesSection({
             {selectedModule === 'light-cone' ? (
               <div className="space-y-4">
                 <label className="form-field">
-                  <span className="form-label">Boundary Guidance</span>
+                  <span className="form-label">边界说明</span>
                   <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.boundaryGuidance}</p>
                   <textarea
-                    aria-label="Boundary Guidance"
+                    aria-label="边界说明"
                     value={value.controlModules.lightConeCustomization.boundaryGuidance}
                     onChange={updateLightCone('boundaryGuidance')}
                   />
                 </label>
                 <label className="form-field">
-                  <span className="form-label">Convergence Guidance</span>
+                  <span className="form-label">收束说明</span>
                   <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.convergenceGuidance}</p>
                   <textarea
-                    aria-label="Convergence Guidance"
+                    aria-label="收束说明"
                     value={value.controlModules.lightConeCustomization.convergenceGuidance}
                     onChange={updateLightCone('convergenceGuidance')}
                   />
                 </label>
                 <label className="form-field">
-                  <span className="form-label">Phase Settlement Guidance</span>
+                  <span className="form-label">Phase 收束说明</span>
                   <p className="panel-note">{LIGHT_CONE_FIELD_NOTES.phaseSettlementGuidance}</p>
                   <textarea
-                    aria-label="Phase Settlement Guidance"
+                    aria-label="Phase 收束说明"
                     value={value.controlModules.lightConeCustomization.phaseSettlementGuidance}
                     onChange={updateLightCone('phaseSettlementGuidance')}
                   />
@@ -468,17 +466,17 @@ export function ControlModulesSection({
             {selectedModule === 'director-note-additions' ? (
               <div className="space-y-4">
                 <label className="form-field">
-                  <span className="form-label">Beat Constraint Additions</span>
+                  <span className="form-label">Beat 限制补充</span>
                   <textarea
-                    aria-label="Beat Constraint Additions"
+                    aria-label="Beat 限制补充"
                     value={value.controlModules.directorNoteAdditions.beatConstraintsAdditions}
                     onChange={updateDirectorNote('beatConstraintsAdditions')}
                   />
                 </label>
                 <label className="form-field">
-                  <span className="form-label">Option Constraint Additions</span>
+                  <span className="form-label">选项限制补充</span>
                   <textarea
-                    aria-label="Option Constraint Additions"
+                    aria-label="选项限制补充"
                     value={value.controlModules.directorNoteAdditions.optionConstraintsAdditions}
                     onChange={updateDirectorNote('optionConstraintsAdditions')}
                   />
@@ -493,22 +491,22 @@ export function ControlModulesSection({
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h4 className="text-base font-semibold text-slate-900">{volume}</h4>
                       <span className="rounded-none border border-black bg-white px-3 py-1 text-xs font-medium text-black">
-                        Volume Definition
+                        Volume 定义
                       </span>
                     </div>
                     <div className="space-y-4">
                       <label className="form-field">
-                        <span className="form-label">Beat Constraints</span>
+                        <span className="form-label">Beat 限制</span>
                         <textarea
-                          aria-label={`${volume} Beat Constraints`}
+                          aria-label={`${volume} Beat 限制`}
                           value={value.controlModules.beatVolumeDefinitions[volume].beatConstraints}
                           onChange={updateBeatVolume(volume, 'beatConstraints')}
                         />
                       </label>
                       <label className="form-field">
-                        <span className="form-label">Option Formatting</span>
+                        <span className="form-label">选项格式</span>
                         <textarea
-                          aria-label={`${volume} Option Formatting`}
+                          aria-label={`${volume} 选项格式`}
                           value={value.controlModules.beatVolumeDefinitions[volume].optionFormatting}
                           onChange={updateBeatVolume(volume, 'optionFormatting')}
                         />
@@ -522,9 +520,9 @@ export function ControlModulesSection({
             {selectedModule === 'router-profile-set' ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="panel-note">Edit the router profiles that feed the scene-phase selector.</p>
+                  <p className="panel-note">编辑送入场景阶段选择器的 Router 配置。</p>
                   <button type="button" className="secondary-link" onClick={addRouterProfile}>
-                    Add Router
+                    新增 Router
                   </button>
                 </div>
                 <div className="space-y-4">
@@ -535,21 +533,21 @@ export function ControlModulesSection({
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <h4 className="text-base font-semibold text-slate-900">
-                          {profile.routerName || `Router ${index + 1}`}
+                          {profile.routerName || `未命名 Router ${index + 1}`}
                         </h4>
                         <button
                           type="button"
                           className="secondary-link"
                           onClick={() => removeRouterProfile(index)}
                         >
-                          Delete
+                          删除
                         </button>
                       </div>
                       <div className="space-y-4">
                         <label className="form-field">
-                          <span className="form-label">Router Name</span>
+                          <span className="form-label">Router 名</span>
                           <input
-                            aria-label={`Router Name ${index + 1}`}
+                            aria-label={`Router 名 ${index + 1}`}
                             value={profile.routerName}
                             onChange={(event) =>
                               updateRouterProfile(index, 'routerName', event.currentTarget.value)
@@ -557,9 +555,9 @@ export function ControlModulesSection({
                           />
                         </label>
                         <label className="form-field">
-                          <span className="form-label">Semantic Core</span>
+                          <span className="form-label">语义核心</span>
                           <textarea
-                            aria-label={`Router Semantic Core ${index + 1}`}
+                            aria-label={`语义核心 ${index + 1}`}
                             value={profile.routerSemanticCore}
                             onChange={(event) =>
                               updateRouterProfile(
@@ -571,9 +569,9 @@ export function ControlModulesSection({
                           />
                         </label>
                         <label className="form-field">
-                          <span className="form-label">Verb Lexicon</span>
+                          <span className="form-label">动词词库</span>
                           <input
-                            aria-label={`Router Verb Lexicon ${index + 1}`}
+                            aria-label={`动词词库 ${index + 1}`}
                             value={formatVerbLexicon(profile.verbLexicon)}
                             onChange={(event) =>
                               updateRouterProfile(index, 'verbLexicon', event.currentTarget.value)
@@ -593,9 +591,9 @@ export function ControlModulesSection({
                   {auditBuckets.map((bucket) => {
                     const label =
                       bucket === 'global'
-                        ? 'Global Questions'
+                        ? '全局问题'
                         : bucket === 'control'
-                          ? 'Control Questions'
+                          ? '控制问题'
                           : `Phase ${bucket.replace('phase:', '')}`;
 
                     return (
@@ -616,18 +614,16 @@ export function ControlModulesSection({
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <p className="panel-note">
-                    Add, remove, and adjust audit questions for the current bucket.
-                  </p>
+                  <p className="panel-note">为当前分组新增、删除并调整审查问题。</p>
                   <button type="button" className="secondary-link" onClick={addAuditQuestion}>
-                    Add Question
+                    新增问题
                   </button>
                 </div>
 
                 <div
                   className="max-h-[28rem] space-y-4 overflow-y-auto rounded-none border-2 border-black bg-[#f5f5f5] p-4"
                   role="region"
-                  aria-label="Audit question list"
+                  aria-label="审查问题列表"
                 >
                   {getCurrentAuditQuestions().map((question, index) => (
                     <section
@@ -637,7 +633,7 @@ export function ControlModulesSection({
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <div>
                           <div className="text-xs uppercase tracking-[0.12em] text-slate-500">
-                            {question.id || 'New Question'}
+                            {question.id || '未命名问题'}
                           </div>
                         </div>
                         <button
@@ -645,14 +641,14 @@ export function ControlModulesSection({
                           className="secondary-link"
                           onClick={() => removeAuditQuestion(index)}
                         >
-                          Delete
+                          删除
                         </button>
                       </div>
                       <div className="space-y-4">
                         <label className="form-field">
-                          <span className="form-label">Question</span>
+                          <span className="form-label">问题</span>
                           <textarea
-                            aria-label={`Audit Question ${index + 1}`}
+                            aria-label={`问题 ${index + 1}`}
                             value={question.question}
                             onChange={(event) =>
                               updateAuditQuestionField(index, 'question', event.currentTarget.value)
@@ -660,9 +656,9 @@ export function ControlModulesSection({
                           />
                         </label>
                         <label className="form-field">
-                          <span className="form-label">Rationale</span>
+                          <span className="form-label">理由</span>
                           <textarea
-                            aria-label={`Audit Rationale ${index + 1}`}
+                            aria-label={`理由 ${index + 1}`}
                             value={question.rationale ?? ''}
                             onChange={(event) =>
                               updateAuditQuestionField(index, 'rationale', event.currentTarget.value)
@@ -678,7 +674,7 @@ export function ControlModulesSection({
                                 updateAuditQuestionField(index, 'expected', event.currentTarget.checked)
                               }
                             />
-                            Expected true
+                            期望为真
                           </label>
                           <label className="flex items-center gap-2 text-sm text-slate-700">
                             <input
@@ -688,25 +684,25 @@ export function ControlModulesSection({
                                 updateAuditQuestionField(index, 'blocking', event.currentTarget.checked)
                               }
                             />
-                            Blocking
+                            阻断
                           </label>
                         </div>
                       </div>
                     </section>
                   ))}
                   {getCurrentAuditQuestions().length === 0 ? (
-                    <p className="panel-note">No questions in this bucket yet.</p>
+                    <p className="panel-note">当前分组还没有问题。</p>
                   ) : null}
                 </div>
 
                 <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
                   <div className="mb-4">
-                    <p className="panel-eyebrow">Selection Policy</p>
-                    <h4 className="text-base font-semibold text-slate-900">Default and Phase Overrides</h4>
+                    <p className="panel-eyebrow">选择策略</p>
+                    <h4 className="text-base font-semibold text-slate-900">默认项与 Phase 覆盖</h4>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <p className="mb-2 text-sm font-medium text-slate-700">Default Questions</p>
+                      <p className="mb-2 text-sm font-medium text-slate-700">默认问题</p>
                       <div className="grid gap-2">
                         {allAuditQuestions.map((question) => (
                           <label key={`default-${question.id}`} className="flex items-start gap-2 text-sm text-slate-700">
@@ -715,7 +711,7 @@ export function ControlModulesSection({
                               checked={value.auditQuestionSet.selectionPolicy.default.includes(question.id)}
                               onChange={() => toggleDefaultSelection(question.id)}
                             />
-                            <span>{question.id}: {question.question || 'Untitled question'}</span>
+                            <span>{question.id}: {question.question || '未命名问题'}</span>
                           </label>
                         ))}
                       </div>
@@ -734,14 +730,14 @@ export function ControlModulesSection({
                                 >
                                   <input
                                     type="checkbox"
-                                    checked={
-                                      value.auditQuestionSet.selectionPolicy.phaseOverrides?.[
-                                        phaseId
-                                      ]?.append.includes(question.id) ?? false
-                                    }
-                                    onChange={() => togglePhaseOverrideSelection(phaseId, question.id)}
-                                  />
-                                  <span>{question.id}: {question.question || 'Untitled question'}</span>
+                                  checked={
+                                    value.auditQuestionSet.selectionPolicy.phaseOverrides?.[
+                                      phaseId
+                                    ]?.append.includes(question.id) ?? false
+                                  }
+                                  onChange={() => togglePhaseOverrideSelection(phaseId, question.id)}
+                                />
+                                  <span>{question.id}: {question.question || '未命名问题'}</span>
                                 </label>
                               ))}
                             </div>
@@ -756,7 +752,7 @@ export function ControlModulesSection({
 
             <div className="panel-actions mt-6">
               <button type="button" className="secondary-link" onClick={onReset}>
-                Reset Section
+                重置本页
               </button>
               <button
                 type="button"
@@ -764,7 +760,7 @@ export function ControlModulesSection({
                 disabled={isSaving}
                 onClick={() => onSubmit(selectedModule)}
               >
-                {isSaving ? 'Saving...' : 'Save Section'}
+                {isSaving ? '保存中...' : '保存本页'}
               </button>
             </div>
 

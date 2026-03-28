@@ -53,10 +53,10 @@ export function buildCoordinatorSaveRequest(
     return {
       saveResult: createCoordinatorLocalBlockedResult(
         input,
-        'The diagnostics dashboard is read-only. Return to an editable section before saving.',
+        '控制台是只读的，请先回到可编辑页面再保存。',
       ),
       coordinatorSummary:
-        'The page helper cannot write from the diagnostics dashboard. Return to one of the editable sections first.',
+        '页面助理不能直接在控制台写入，请先切回可编辑页面。',
       usedRepair: false,
     };
   }
@@ -65,10 +65,10 @@ export function buildCoordinatorSaveRequest(
     return {
       saveResult: createCoordinatorLocalBlockedResult(
         input,
-        'Current page fields are required before the page helper can retry this save.',
+        '重试这次保存前，需要当前页面字段。',
       ),
       coordinatorSummary:
-        'The page helper needs the current page fields before it can retry this save.',
+        '页面助理需要当前页面字段，才能重试这次保存。',
       usedRepair: false,
     };
   }
@@ -77,10 +77,10 @@ export function buildCoordinatorSaveRequest(
     return {
       saveResult: createCoordinatorLocalBlockedResult(
         input,
-        'An active control module is required before the page helper can retry this save.',
+        '重试这次保存前，需要当前激活的控制模块。',
       ),
       coordinatorSummary:
-        'The page helper needs the active control module before it can retry this save.',
+        '页面助理需要当前激活的控制模块，才能重试这次保存。',
       usedRepair: false,
     };
   }
@@ -104,22 +104,22 @@ export function summarizeCoordinatorResult(
 ): string {
   if (result.kind === 'save_applied') {
     return usedRepair
-      ? 'The page helper repaired the current section and saved it through the shared save path.'
-      : 'The page helper saved the current section through the shared save path.';
+      ? '页面助理已修复当前页面，并通过共享保存路径完成保存。'
+      : '页面助理已通过共享保存路径保存当前页面。';
   }
 
   if (result.kind === 'save_applied_with_warnings') {
-    const warningText = result.warnings?.join(' ') ?? 'Review the remaining warnings.';
+    const warningText = result.warnings?.join(' ') ?? '请查看剩余警告。';
     return usedRepair
-      ? `The page helper repaired the current section and saved it, but there are still warnings. ${warningText}`
-      : `The page helper saved the current section, but there are still warnings. ${warningText}`;
+      ? `页面助理已修复当前页面并完成保存，但仍有警告。${warningText}`
+      : `页面助理已完成当前页面保存，但仍有警告。${warningText}`;
   }
 
   if (result.kind === 'save_failed') {
-    return 'The page helper reached the shared save path, but the section still failed to save.';
+    return '页面助理已走到共享保存路径，但页面仍然保存失败。';
   }
 
   return usedRepair
-    ? 'The page helper retried the section but could not repair the blocking issue.'
-    : 'The page helper kept the request local and could not repair the blocking issue.';
+    ? '页面助理已重试页面，但仍无法修复阻塞问题。'
+    : '页面助理保留了本地请求，但仍无法修复阻塞问题。';
 }

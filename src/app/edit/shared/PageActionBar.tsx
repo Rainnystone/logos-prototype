@@ -8,10 +8,10 @@ export function PageActionBar({ packageName }: PageActionBarProps) {
   return (
     <section className="panel edit-action-bar">
       <Link className="primary-link" href="/">
-        Return to Title
+        返回标题
       </Link>
       <Link className="secondary-link" href={`/play?storyPackage=${encodeURIComponent(packageName)}`}>
-        Open Scene
+        打开场景
       </Link>
     </section>
   );

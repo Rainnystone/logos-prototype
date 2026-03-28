@@ -44,27 +44,25 @@ export function PackageWiringValidationSection({
       <div className="panel space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <p className="panel-eyebrow">Advanced Diagnostics</p>
-            <h2>Package Wiring &amp; Validation</h2>
-            <p className="panel-note">
-              Review package-wide health after section-local saves and coordinator-assisted repairs.
-            </p>
+            <p className="panel-eyebrow">高级诊断</p>
+            <h2>控制台</h2>
+            <p className="panel-note">查看整包保存后的状态，并按需回到对应页面修复问题。</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="panel-note">{packageName}</span>
             <button type="button" className="secondary-link" onClick={onRefresh} disabled={isRefreshing}>
-              {isRefreshing ? 'Refreshing...' : 'Re-check'}
+              {isRefreshing ? '刷新中...' : '重新检查'}
             </button>
           </div>
         </div>
 
         <section
           className="rounded-none border-2 border-black bg-slate-50/80 p-4"
-          aria-label="Package overview column"
+          aria-label="整体状态"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="panel-eyebrow">Overall Status</p>
+              <p className="panel-eyebrow">整体状态</p>
               <h3 className="text-xl font-semibold text-slate-900">
                 {diagnostics.overallStatusView.title}
               </h3>
@@ -81,7 +79,7 @@ export function PackageWiringValidationSection({
         </section>
 
         <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">Section Health</p>
+          <p className="panel-eyebrow">页面状态</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {diagnostics.sectionHealthViews.map((view) => (
               <button
@@ -107,7 +105,7 @@ export function PackageWiringValidationSection({
         </section>
 
         <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">Assembly Flow</p>
+          <p className="panel-eyebrow">组装流程</p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {diagnostics.assemblyFlowViews.map((view) => (
               <button
@@ -133,7 +131,7 @@ export function PackageWiringValidationSection({
         </section>
 
         <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">Unresolved Issue Queue</p>
+          <p className="panel-eyebrow">未解决问题</p>
           <div className="mt-4 space-y-3">
             {diagnostics.unresolvedIssueViews.length > 0 ? (
               diagnostics.unresolvedIssueViews.map((issue) => (
@@ -157,15 +155,15 @@ export function PackageWiringValidationSection({
                 </button>
               ))
             ) : (
-              <p className="text-sm text-slate-600">No unresolved package-level issues remain.</p>
+              <p className="text-sm text-slate-600">当前没有未解决的整包问题。</p>
             )}
           </div>
         </section>
       </div>
 
-      <section className="space-y-6 xl:sticky xl:top-6" aria-label="Selected diagnostics detail">
+      <section className="space-y-6 xl:sticky xl:top-6" aria-label="当前详情">
         <div className="panel h-full">
-          <p className="panel-eyebrow">Selected Detail</p>
+          <p className="panel-eyebrow">当前详情</p>
           <h3 className="text-2xl font-semibold text-slate-900">
             {selectedDetail?.title ?? diagnostics.overallStatusView.title}
           </h3>

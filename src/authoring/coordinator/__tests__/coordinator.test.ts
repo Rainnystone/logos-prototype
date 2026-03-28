@@ -89,7 +89,7 @@ describe('runCoordinatorSave', () => {
       }),
     );
     expect(result.saveResult.kind).toBe('save_applied');
-    expect(result.coordinatorSummary).toMatch(/saved/i);
+    expect(result.coordinatorSummary).toContain('通过共享保存路径保存当前页面');
     expect(result.usedRepair).toBe(false);
   });
 
@@ -108,7 +108,7 @@ describe('runCoordinatorSave', () => {
 
     expect(saveSectionDraft).not.toHaveBeenCalled();
     expect(result.saveResult.kind).toBe('save_blocked');
-    expect(result.coordinatorSummary).toMatch(/active control module/i);
+    expect(result.coordinatorSummary).toContain('当前激活的控制模块');
     expect(result.usedRepair).toBe(false);
   });
 
@@ -122,7 +122,7 @@ describe('runCoordinatorSave', () => {
           showLocally: true,
           showInGlobalDiagnostics: false,
         },
-        ['Phase "Signal Trace" uses an unavailable router selection "Missing".'],
+        ['Phase "Signal Trace" 使用了不可用的 Router 选择 "Missing"。'],
       ),
     );
 
@@ -148,7 +148,7 @@ describe('runCoordinatorSave', () => {
 
     expect(saveSectionDraft).toHaveBeenCalledTimes(1);
     expect(result.saveResult.kind).toBe('save_blocked');
-    expect(result.coordinatorSummary).toMatch(/could not repair/i);
+    expect(result.coordinatorSummary).toContain('无法修复阻塞问题');
     expect(result.usedRepair).toBe(false);
   });
 });

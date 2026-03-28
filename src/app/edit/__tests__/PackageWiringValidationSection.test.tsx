@@ -23,7 +23,7 @@ describe('PackageWiringValidationSection', () => {
           runtimeImpactSummary: {
             changedFiles: ['control-modules.yaml'],
           },
-          warnings: ['Authoring status marker write failed.'],
+          warnings: ['作者状态标记写入失败。'],
         },
       ],
     });
@@ -38,18 +38,18 @@ describe('PackageWiringValidationSection', () => {
       />,
     );
 
-    expect(screen.getByRole('region', { name: 'Package overview column' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Selected diagnostics detail' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Package Wiring & Validation' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Control Modules save returned warnings' })).toBeInTheDocument();
-    expect(screen.getAllByText('1 warning requires follow-up.').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /Control Modules save returned warnings/i })).toBeInTheDocument();
-    expect(screen.getAllByText('Authoring status marker write failed.').length).toBeGreaterThan(0);
+    expect(screen.getByRole('region', { name: '整体状态' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '当前详情' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '控制台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '控制模块 保存出现警告' })).toBeInTheDocument();
+    expect(screen.getAllByText('1 个警告需要跟进。').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /控制模块 保存出现警告/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/作者状态标记写入失败/).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: /Re-check/i }));
+    fireEvent.click(screen.getByRole('button', { name: /重新检查/i }));
     expect(onRefresh).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole('button', { name: /Package Reload healthy/i }));
-    expect(screen.getByRole('heading', { name: 'Package Reload' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /整包重新加载 healthy/i }));
+    expect(screen.getByRole('heading', { name: '整包重新加载' })).toBeInTheDocument();
   });
 });
