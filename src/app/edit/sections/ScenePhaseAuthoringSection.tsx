@@ -25,7 +25,7 @@ interface ScenePhaseAuthoringSectionProps {
 }
 
 function summarizeRouterHint(phase: ScenePhasePlanDraft): string {
-  return phase.routerHint?.trim() || 'No router selected.';
+  return phase.routerHint?.trim() || '当前没有 Router';
 }
 
 export function ScenePhaseAuthoringSection({
@@ -161,30 +161,28 @@ export function ScenePhaseAuthoringSection({
     <section className="panel min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <p className="panel-eyebrow">Section Slice</p>
-          <h2>SCENE &amp; PHASE</h2>
-          <p className="panel-note">
-            Field-based editing for one scene frame, one phase rail, and one focused phase editor.
-          </p>
+          <p className="panel-eyebrow">当前页</p>
+          <h2>场景与阶段</h2>
+          <p className="panel-note">编辑一个场景框架、一个 Phase 轨道和当前 Phase。</p>
         </div>
         <p className="panel-note">{packageName}</p>
       </div>
 
       <section
-        aria-label="Phase rail section"
+        aria-label="Phase 轨道区"
         className="mt-6 w-full min-w-0 overflow-hidden rounded-none border-2 border-black bg-white shadow-brutal"
       >
         <div className="border-b-2 border-black px-5 pb-4 pt-5">
           <div>
-            <p className="panel-eyebrow">Phase Rail</p>
-            <h3 className="text-2xl font-bold uppercase tracking-tight text-black">Phase Cards</h3>
+            <p className="panel-eyebrow">Phase 轨道</p>
+            <h3 className="text-2xl font-bold uppercase tracking-tight text-black">Phase 卡片</h3>
           </div>
         </div>
         <div className="min-w-0 space-y-4 bg-[#f5f5f5] px-5 py-5">
           <div
             ref={phaseRailRef}
             className="min-w-0 overflow-x-auto"
-            aria-label="Phase rail scrollbar"
+            aria-label="Phase 轨道滚动条"
             onScroll={syncPhaseRailState}
           >
             <div className="flex min-w-max gap-4">
@@ -232,7 +230,7 @@ export function ScenePhaseAuthoringSection({
                         isSelected ? 'text-white/60' : 'text-black/60'
                       }`}
                     >
-                      <span className="mb-0.5 block font-semibold uppercase">Router Hint:</span>
+                      <span className="mb-0.5 block font-semibold uppercase">Router 提示</span>
                       {summarizeRouterHint(phase)}
                     </p>
                     {phase.notes ? (
@@ -249,23 +247,23 @@ export function ScenePhaseAuthoringSection({
               })}
               <button
                 type="button"
-                aria-label="Add Phase"
+                aria-label="新增 Phase"
                 className="flex w-[18rem] shrink-0 items-center justify-center rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold uppercase tracking-[0.05em] text-black transition hover:bg-[#e5e5e5]"
                 onClick={handleAddPhase}
               >
-                + Add Phase
+                + 新增 Phase
               </button>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="panel-eyebrow whitespace-nowrap text-black">Rail Slider</span>
+            <span className="panel-eyebrow whitespace-nowrap text-black">轨道滑块</span>
             <input
               type="range"
               min={0}
               max={100}
               step={1}
               value={phaseRailProgress}
-              aria-label="Phase rail slider"
+              aria-label="轨道滑块"
               disabled={!phaseRailScrollable}
               onChange={handlePhaseRailSliderChange}
               className="h-2 w-full cursor-pointer appearance-none rounded-none border border-black bg-white accent-black disabled:cursor-default disabled:opacity-50"
@@ -276,7 +274,7 @@ export function ScenePhaseAuthoringSection({
 
       <div
         role="region"
-        aria-label="Scene phase workspace"
+        aria-label="场景与阶段工作区"
         className="mt-6 grid w-full min-w-0 items-stretch gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]"
       >
         <div
@@ -284,62 +282,62 @@ export function ScenePhaseAuthoringSection({
           className="min-w-0 space-y-6 xl:min-h-[calc(100vh-16rem)] xl:overflow-y-auto xl:pr-2"
         >
           <section
-            aria-label="Scene frame section"
+            aria-label="场景框架区"
             className="min-h-full rounded-none border-2 border-black bg-[#f5f5f5] p-5"
           >
             <div className="mb-4">
-              <p className="panel-eyebrow">Scene</p>
-              <h3 className="text-xl font-semibold text-slate-900">Scene Frame</h3>
+              <p className="panel-eyebrow">场景</p>
+              <h3 className="text-xl font-semibold text-slate-900">场景框架</h3>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                <span className="form-label">Scene Name</span>
+                <span className="form-label">场景名</span>
                 <input
-                  aria-label="Scene Name"
+                  aria-label="场景名"
                   value={value.sceneSpec.sceneName}
                   onChange={(event) => updateSceneField('sceneName', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                <span className="form-label">Opening Hook</span>
+                <span className="form-label">开场钩子</span>
                 <textarea
-                  aria-label="Opening Hook"
+                  aria-label="开场钩子"
                   rows={3}
                   value={value.sceneSpec.openingHook}
                   onChange={(event) => updateSceneField('openingHook', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                <span className="form-label">Start Point</span>
+                <span className="form-label">起点</span>
                 <textarea
-                  aria-label="Start Point"
+                  aria-label="起点"
                   rows={4}
                   value={value.sceneSpec.startPoint}
                   onChange={(event) => updateSceneField('startPoint', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                <span className="form-label">End Line</span>
+                <span className="form-label">终点线</span>
                 <textarea
-                  aria-label="End Line"
+                  aria-label="终点线"
                   rows={4}
                   value={value.sceneSpec.endLine}
                   onChange={(event) => updateSceneField('endLine', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4 md:col-span-2">
-                <span className="form-label">Opening Situation</span>
+                <span className="form-label">开场情况</span>
                 <textarea
-                  aria-label="Opening Situation"
+                  aria-label="开场情况"
                   rows={3}
                   value={value.sceneSpec.openingSituation}
                   onChange={(event) => updateSceneField('openingSituation', event)}
                 />
               </label>
               <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4 md:col-span-2">
-                <span className="form-label">Sample Purpose</span>
+                <span className="form-label">示例用途</span>
                 <textarea
-                  aria-label="Sample Purpose"
+                  aria-label="示例用途"
                   rows={3}
                   value={value.sceneSpec.samplePurpose}
                   onChange={(event) => updateSceneField('samplePurpose', event)}
@@ -349,17 +347,15 @@ export function ScenePhaseAuthoringSection({
           </section>
         </div>
 
-        <section ref={detailColumnRef} aria-label="Scene Phase Detail Column" className="min-w-0 space-y-4">
+        <section ref={detailColumnRef} aria-label="当前阶段编辑区" className="min-w-0 space-y-4">
           <div className="rounded-none border-2 border-black bg-white p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="panel-eyebrow">Selected Phase Editor</p>
+                <p className="panel-eyebrow">当前阶段</p>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  {selectedPhase?.phaseName || 'No phase selected'}
+                  {selectedPhase?.phaseName || '当前没有 Phase'}
                 </h3>
-                <p className="panel-note">
-                  Edit the selected phase on the right, while the left rail stays summary-first.
-                </p>
+                <p className="panel-note">在右侧编辑当前 Phase，左侧轨道只保留摘要。</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="secondary-link pointer-events-none">
@@ -374,7 +370,7 @@ export function ScenePhaseAuthoringSection({
                   disabled={value.phasePlans.length <= 1}
                   onClick={handleRemovePhase}
                 >
-                  Remove
+                  删除
                 </button>
               </div>
             </div>
@@ -383,9 +379,9 @@ export function ScenePhaseAuthoringSection({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                    <span className="form-label">Gradient Type</span>
+                    <span className="form-label">Gradient 类型</span>
                     <select
-                      aria-label="Gradient Type"
+                      aria-label="Gradient 类型"
                       value={selectedPhase.gradientType}
                       onChange={(event) => updatePhaseField('gradientType', event)}
                     >
@@ -397,13 +393,13 @@ export function ScenePhaseAuthoringSection({
                     </select>
                   </label>
                   <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                    <span className="form-label">Router Hint</span>
+                    <span className="form-label">Router 提示</span>
                     <select
-                      aria-label="Router Hint"
+                      aria-label="Router 提示"
                       value={selectedPhase.routerHint ?? ''}
                       onChange={(event) => updatePhaseField('routerHint', event)}
                     >
-                      <option value="">Select router</option>
+                      <option value="">选择 Router</option>
                       {routerOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -412,42 +408,42 @@ export function ScenePhaseAuthoringSection({
                     </select>
                   </label>
                   <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4">
-                    <span className="form-label">Beat Count</span>
-                    <input aria-label="Beat Count" value="4" disabled readOnly />
+                    <span className="form-label">Beat 数</span>
+                    <input aria-label="Beat 数" value="4" disabled readOnly />
                   </label>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="form-field rounded-none border-2 border-black bg-white p-4">
-                    <span className="form-label">Phase Name</span>
+                    <span className="form-label">Phase 名</span>
                     <input
-                      aria-label="Phase Name"
+                      aria-label="Phase 名"
                       value={selectedPhase.phaseName}
                       onChange={(event) => updatePhaseField('phaseName', event)}
                     />
                   </label>
                   <label className="form-field rounded-none border-2 border-black bg-white p-4">
-                    <span className="form-label">Phase End Point</span>
+                    <span className="form-label">Phase 终点</span>
                     <textarea
-                      aria-label="Phase End Point"
+                      aria-label="Phase 终点"
                       rows={3}
                       value={selectedPhase.phaseEndPoint ?? ''}
                       onChange={(event) => updatePhaseField('phaseEndPoint', event)}
                     />
                   </label>
                   <label className="form-field rounded-none border-2 border-black bg-white p-4 md:col-span-2">
-                    <span className="form-label">Phase Goal</span>
+                    <span className="form-label">Phase 目标</span>
                     <textarea
-                      aria-label="Phase Goal"
+                      aria-label="Phase 目标"
                       rows={4}
                       value={selectedPhase.phaseGoal}
                       onChange={(event) => updatePhaseField('phaseGoal', event)}
                     />
                   </label>
                   <label className="form-field rounded-none border-2 border-black bg-white p-4 md:col-span-2">
-                    <span className="form-label">Note</span>
+                    <span className="form-label">备注</span>
                     <textarea
-                      aria-label="Note"
+                      aria-label="备注"
                       rows={4}
                       value={selectedPhase.notes ?? ''}
                       onChange={(event) => updatePhaseField('notes', event)}
@@ -456,14 +452,14 @@ export function ScenePhaseAuthoringSection({
                 </div>
               </div>
             ) : (
-              <p className="panel-note">Add a phase to begin editing.</p>
+              <p className="panel-note">新增一个 Phase 开始编辑。</p>
             )}
           </div>
 
           <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="panel-actions">
               <button type="button" className="secondary-link" onClick={onReset}>
-                Reset Section
+                重置本页
               </button>
               <button
                 type="button"
@@ -471,7 +467,7 @@ export function ScenePhaseAuthoringSection({
                 disabled={isSaving}
                 onClick={onSubmit}
               >
-                {isSaving ? 'Saving...' : 'Save Section'}
+                {isSaving ? '保存中...' : '保存本页'}
               </button>
             </div>
           </div>

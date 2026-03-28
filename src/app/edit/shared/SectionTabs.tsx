@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { SECTION_IDS, type SectionId } from '@/authoring/contracts';
 
 const SECTION_LABELS: Record<SectionId, string> = {
-  'worldbase-cast': 'WorldBase & Cast',
-  'scene-phase-authoring': 'SCENE & PHASE',
-  'control-modules': 'Control Modules',
-  'package-wiring-validation': 'Package Wiring Validation',
+  'worldbase-cast': '世界与角色',
+  'scene-phase-authoring': '场景与阶段',
+  'control-modules': '控制模块',
+  'package-wiring-validation': '控制台',
 };
 
 interface SectionTabsProps {

@@ -134,39 +134,39 @@ export function validateScenePhaseAuthoringDraft(
   const routerOptionSet = new Set(routerOptions.map((option) => option.trim()).filter(Boolean));
 
   if (!normalizeText(draft.sceneSpec.sceneName)) {
-    issues.push('Scene name is required.');
+    issues.push('场景名是必填项。');
   }
 
   if (!normalizeText(draft.sceneSpec.startPoint)) {
-    issues.push('Start point is required.');
+    issues.push('起点是必填项。');
   }
 
   if (!normalizeText(draft.sceneSpec.endLine)) {
-    issues.push('End line is required.');
+    issues.push('终点线是必填项。');
   }
 
   if (draft.phasePlans.length === 0) {
-    issues.push('At least one phase is required.');
+    issues.push('至少需要一个 Phase。');
   }
 
   draft.phasePlans.forEach((phasePlan, index) => {
     const phaseLabel = normalizeText(phasePlan.phaseName) || `Phase ${index + 1}`;
 
     if (!normalizeText(phasePlan.phaseName)) {
-      issues.push(`Phase ${index + 1} is missing a phase name.`);
+      issues.push(`第 ${index + 1} 个 Phase 缺少 Phase 名。`);
     }
 
     if (!normalizeText(phasePlan.phaseGoal)) {
-      issues.push(`Phase "${phaseLabel}" is missing a phase goal.`);
+      issues.push(`Phase "${phaseLabel}" 缺少 Phase 目标。`);
     }
 
     if (!GRADIENT_OPTIONS.includes(phasePlan.gradientType)) {
-      issues.push(`Phase "${phaseLabel}" uses an unsupported gradient "${phasePlan.gradientType}".`);
+      issues.push(`Phase "${phaseLabel}" 使用了不支持的 Gradient "${phasePlan.gradientType}"。`);
     }
 
     if (phasePlan.routerHint && !routerOptionSet.has(phasePlan.routerHint.trim())) {
       issues.push(
-        `Phase "${phaseLabel}" uses an unavailable router selection "${phasePlan.routerHint}".`,
+        `Phase "${phaseLabel}" 使用了不可用的 Router 选择 "${phasePlan.routerHint}"。`,
       );
     }
   });

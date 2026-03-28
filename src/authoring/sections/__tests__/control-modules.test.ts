@@ -138,7 +138,7 @@ describe('control-modules', () => {
     };
 
     expect(validateControlModulesDraft(currentStoryPackage, nextDraft, 'router-profile-set')).toEqual([
-      'Router profile "Investigation" is still referenced by one or more phase router hints.',
+      'Router 配置 "Investigation" 仍被一个或多个 Phase 的 Router 提示引用。',
     ]);
   });
 

@@ -78,31 +78,31 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
   const requestId =
     typeof rawInput.requestId === 'string'
       ? rawInput.requestId
-      : (issues.push('requestId must be a string.'), '');
+      : (issues.push('请求编号必须是字符串。'), '');
   const packageName =
     typeof rawInput.packageName === 'string'
       ? rawInput.packageName
-      : (issues.push('packageName must be a string.'), '');
+      : (issues.push('包名必须是字符串。'), '');
   const sectionId =
     typeof rawInput.sectionId === 'string'
       ? (rawInput.sectionId as SaveRequest['sectionId'])
-      : (issues.push('sectionId must be a string.'), '' as SaveRequest['sectionId']);
+      : (issues.push('页面标识必须是字符串。'), '' as SaveRequest['sectionId']);
   const source =
     typeof rawInput.source === 'string'
       ? (rawInput.source as SaveRequest['source'])
-      : (issues.push('source must be a string.'), 'page');
+      : (issues.push('保存来源必须是字符串。'), 'page');
   const moduleScope =
     rawInput.moduleScope === undefined
       ? undefined
       : typeof rawInput.moduleScope === 'string'
         ? (rawInput.moduleScope as NonNullable<SaveRequest['moduleScope']>)
-        : (issues.push('moduleScope must be a string when provided.'), undefined);
+        : (issues.push('模块范围在提供时必须是字符串。'), undefined);
   const dryRun =
     rawInput.dryRun === undefined
       ? false
       : typeof rawInput.dryRun === 'boolean'
         ? rawInput.dryRun
-        : (issues.push('dryRun must be a boolean when provided.'), false);
+        : (issues.push('试运行标记在提供时必须是布尔值。'), false);
   const rawPayload = rawInput.payload as unknown;
   const payload: {
     uiFields?: Record<string, unknown>;
@@ -110,7 +110,7 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
   } = {};
 
   if (!isPlainObject(rawPayload)) {
-    issues.push('payload must be an object.');
+    issues.push('保存内容必须是对象。');
     return {
       request: {
         requestId,
@@ -129,7 +129,7 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
     if (isPlainObject(rawPayload.uiFields)) {
       payload.uiFields = { ...rawPayload.uiFields };
     } else {
-      issues.push('uiFields must be an object when provided.');
+      issues.push('界面字段在提供时必须是对象。');
     }
   }
 
@@ -140,7 +140,7 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
         if (isPlainObject(candidate)) {
           sanitizedPatchCandidates.push({ ...candidate });
         } else {
-          issues.push('patchCandidates must contain object candidates.');
+          issues.push('补丁候选里只能放对象。');
         }
       }
 
@@ -148,7 +148,7 @@ function normalizeSaveRequest(input: SaveRequest): { request: SaveRequest; issue
         payload.patchCandidates = sanitizedPatchCandidates;
       }
     } else {
-      issues.push('patchCandidates must be an array when provided.');
+      issues.push('补丁候选在提供时必须是数组。');
     }
   }
 
@@ -170,31 +170,31 @@ function validateSaveRequest(request: SaveRequest): readonly string[] {
   const issues: string[] = [];
 
   if (!supportedSectionIds.has(request.sectionId)) {
-    issues.push(`Unsupported section "${request.sectionId}".`);
+    issues.push(`不支持的页面 "${request.sectionId}"。`);
   }
 
   if (!supportedSaveSources.has(request.source)) {
-    issues.push(`Unsupported save source "${request.source}".`);
+    issues.push(`不支持的保存来源 "${request.source}"。`);
   }
 
   if (request.moduleScope && !supportedModuleScopes.has(request.moduleScope)) {
-    issues.push(`Unsupported moduleScope "${request.moduleScope}".`);
+    issues.push(`不支持的模块范围 "${request.moduleScope}"。`);
   }
 
   if (request.moduleScope && request.sectionId !== 'control-modules') {
-    issues.push('moduleScope is only valid for control-modules saves.');
+    issues.push('只有控制模块保存才能使用模块范围。');
   }
 
   if (request.sectionId === 'control-modules' && !request.moduleScope) {
-    issues.push('moduleScope is required for control-modules saves.');
+    issues.push('控制模块保存需要模块范围。');
   }
 
   if (!request.requestId.trim()) {
-    issues.push('requestId is required.');
+    issues.push('请求编号是必填项。');
   }
 
   if (!request.packageName.trim()) {
-    issues.push('packageName is required.');
+    issues.push('包名是必填项。');
   }
 
   return issues;
@@ -515,7 +515,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showLocally: true,
         showInGlobalDiagnostics: false,
       },
-      [`Deterministic write path for "${request.sectionId}" is not available in Task 1.`],
+      [`当前不支持 "${request.sectionId}" 的确定性写入路径。`],
     );
   }
 
@@ -537,7 +537,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showLocally: true,
         showInGlobalDiagnostics: false,
       },
-      ['No deterministic world-base update was provided.'],
+      ['没有提供可确定的世界基础更新。'],
     );
   }
 
@@ -550,7 +550,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showLocally: true,
         showInGlobalDiagnostics: false,
       },
-      ['No deterministic scene-phase update was provided.'],
+      ['没有提供可确定的场景与阶段更新。'],
     );
   }
 
@@ -563,7 +563,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         showLocally: true,
         showInGlobalDiagnostics: false,
       },
-      ['No deterministic control-modules update was provided.'],
+      ['没有提供可确定的控制模块更新。'],
     );
   }
 
@@ -581,7 +581,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
           showInGlobalDiagnostics: false,
         },
         reloadedSectionState,
-        ['dryRun completed without writing files.'],
+        ['试运行已完成，但没有写入文件。'],
         [],
       );
     } catch (error) {
@@ -775,7 +775,7 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
           showInGlobalDiagnostics: true,
         },
         reloadedSectionState,
-        [`Authoring status marker write failed: ${markerMessage}`],
+        [`作者状态标记写入失败：${markerMessage}`],
         changedFiles,
       );
     }

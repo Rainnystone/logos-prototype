@@ -21,15 +21,18 @@ describe('package-diagnostics', () => {
           runtimeImpactSummary: {
             changedFiles: ['control-modules.yaml'],
           },
-          warnings: ['Authoring status marker write failed.'],
+          warnings: ['作者状态标记写入失败。'],
         },
       ],
     });
 
     expect(diagnostics.overallStatusView.status).toBe('warning');
+    expect(diagnostics.overallStatusView.summary).toBe('1 个警告需要跟进。');
     expect(diagnostics.unresolvedIssueViews).toHaveLength(1);
     expect(diagnostics.unresolvedIssueViews[0]?.severity).toBe('warning');
-    expect(diagnostics.globalDiagnosticsHelperView.summary).toContain('1 warning');
+    expect(diagnostics.unresolvedIssueViews[0]?.title).toBe('控制模块 保存出现警告');
+    expect(diagnostics.globalDiagnosticsHelperView.summary).toBe('1 个警告需要跟进。');
+    expect(diagnostics.globalDiagnosticsHelperView.repairOrder).toEqual(['控制模块']);
   });
 
   it('flags cross-section router breakage as a blocking package issue', () => {
@@ -50,7 +53,7 @@ describe('package-diagnostics', () => {
       diagnostics.unresolvedIssueViews.some(
         (issue) =>
           issue.severity === 'blocked' &&
-          issue.title.includes('router') &&
+          issue.title === 'Phase 路由选择无效' &&
           issue.repairDestination === 'scene-phase-authoring',
       ),
     ).toBe(true);
@@ -76,6 +79,6 @@ describe('package-diagnostics', () => {
     expect(
       diagnostics.unresolvedIssueViews.some((issue) => issue.title.includes('review')),
     ).toBe(false);
-    expect(diagnostics.globalDiagnosticsHelperView.summary).toContain('No unresolved');
+    expect(diagnostics.globalDiagnosticsHelperView.summary).toBe('当前没有未解决的整包问题。');
   });
 });

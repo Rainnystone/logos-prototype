@@ -245,7 +245,7 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
-      expect(result.blockingIssues).toContain('No deterministic world-base update was provided.');
+      expect(result.blockingIssues).toContain('没有提供可确定的世界基础更新。');
     }
     expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
@@ -269,7 +269,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'moduleScope is required for control-modules saves.',
+        '控制模块保存需要模块范围。',
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
@@ -693,7 +693,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'Router profile "悬疑/探案" is still referenced by one or more phase router hints.',
+        'Router 配置 "悬疑/探案" 仍被一个或多个 Phase 的 Router 提示引用。',
       );
     }
   });
@@ -713,7 +713,7 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
-      expect(result.blockingIssues).toContain('patchCandidates must be an array when provided.');
+      expect(result.blockingIssues).toContain('补丁候选在提供时必须是数组。');
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
@@ -735,8 +735,8 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
-      expect(result.blockingIssues).toContain('requestId must be a string.');
-      expect(result.blockingIssues).toContain('packageName must be a string.');
+      expect(result.blockingIssues).toContain('请求编号必须是字符串。');
+      expect(result.blockingIssues).toContain('包名必须是字符串。');
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
@@ -764,7 +764,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_blocked');
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain(
-        'moduleScope is required for control-modules saves.',
+        '控制模块保存需要模块范围。',
       );
     }
     expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
@@ -792,7 +792,7 @@ describe('saveSectionDraft', () => {
     expect(writeAuthoringStatusSpy).toHaveBeenCalledTimes(1);
     expect(result.kind).toBe('save_applied_with_warnings');
     if (result.kind === 'save_applied_with_warnings') {
-      expect(result.warnings).toContain('Authoring status marker write failed: marker write failed');
+      expect(result.warnings).toContain('作者状态标记写入失败：marker write failed');
       expect(result.runtimeImpactSummary.changedFiles).toEqual(['world-base.yaml']);
     }
     expect(await loadStoryPackage(testPackageName)).toMatchObject({
@@ -865,7 +865,7 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_applied_with_warnings');
     if (result.kind === 'save_applied_with_warnings') {
-      expect(result.warnings).toContain('dryRun completed without writing files.');
+      expect(result.warnings).toContain('试运行已完成，但没有写入文件。');
       expect(result.runtimeImpactSummary.changedFiles).toEqual([]);
     }
     expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);

@@ -53,10 +53,10 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     return (
       <main className="workspace-page">
         <section className="panel selector-card selector-card--error">
-          <p className="panel-eyebrow">Authoring Editor</p>
-          <h1>No loadable story package was found.</h1>
+          <p className="panel-eyebrow">编辑器</p>
+          <h1>未找到可加载的故事包。</h1>
           <Link className="primary-link" href="/">
-            Return to Title
+            返回标题
           </Link>
         </section>
       </main>
@@ -75,16 +75,16 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     );
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to load the selected story package.';
+      error instanceof Error ? error.message : '无法加载所选故事包。';
 
     return (
       <main className="workspace-page">
         <section className="panel selector-card selector-card--error">
-          <p className="panel-eyebrow">Authoring Editor</p>
-          <h1>Package Load Failed</h1>
-          <p>{message}</p>
+          <p className="panel-eyebrow">编辑器</p>
+          <h1>故事包加载失败</h1>
+          <p>加载失败：{message}</p>
           <Link className="primary-link" href="/">
-            Return to Title
+            返回标题
           </Link>
         </section>
       </main>

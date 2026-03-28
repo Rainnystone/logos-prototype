@@ -8,9 +8,9 @@ const runCoordinatorSave = vi.fn(async () => ({
     sectionId: 'worldbase-cast' as const,
     showLocally: true,
     showInGlobalDiagnostics: false,
-    blockingIssues: ['Main characters are required.'],
+    blockingIssues: ['主角是必填项。'],
   },
-  coordinatorSummary: 'The page helper kept the request local and could not repair the blocking issue.',
+  coordinatorSummary: '页面助理保留了本地请求，但无法修复阻塞问题。',
   usedRepair: false,
 }));
 
@@ -76,5 +76,11 @@ describe('POST coordinator route', () => {
       }),
     );
     expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      coordinatorSummary: '页面助理保留了本地请求，但无法修复阻塞问题。',
+      saveResult: {
+        blockingIssues: ['主角是必填项。'],
+      },
+    });
   });
 });

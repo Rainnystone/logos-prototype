@@ -11,11 +11,11 @@ const draftValue: WorldBaseCastDraft = {
   toneBaseline: 'Cold pressure',
   hero: {
     draftId: 'hero-1',
-    name: 'Hero One',
+    name: '',
     identityRole: 'Lead breaker',
     lightNovelTrait: 'Silent pressure',
-    gender: 'Female',
-    personality: 'Cold',
+    gender: '',
+    personality: '',
     age: '17',
     occupation: 'Student',
     characterSummary: 'Moves straight at the threat.',
@@ -121,32 +121,83 @@ describe('WorldBaseCastSection', () => {
     await waitFor(() => {
       expect(workspaceRegion).toHaveStyle({ height: '960px' });
     });
-    expect(screen.getByRole('heading', { name: 'World Blocks' }).closest('section')?.className).not.toContain(
+    expect(screen.getByRole('heading', { name: '世界文本块' }).closest('section')?.className).not.toContain(
       'min-h-full',
     );
     expect(screen.getByRole('region', { name: 'Character editor column' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'WorldBase & Cast' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'World Base Setting' })).toHaveValue('World base');
-    expect(screen.getByRole('button', { name: /Hero One/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '世界与角色' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveValue('World base');
+    expect(screen.getByRole('button', { name: /未命名角色/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Core One/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Villain One/ })).toBeInTheDocument();
+    expect(screen.getByText('世界基础')).toBeInTheDocument();
+    expect(screen.getByText('世界规则 / 禁忌 / 异常性质')).toBeInTheDocument();
+    expect(screen.getByText('文风基线')).toBeInTheDocument();
+    expect(screen.getByText('主角')).toBeInTheDocument();
+    expect(screen.getByText('核心角色')).toBeInTheDocument();
+    expect(screen.getByText('反派')).toBeInTheDocument();
+    expect(screen.getByText('杂项块')).toBeInTheDocument();
+    expect(screen.getByText('当前角色')).toBeInTheDocument();
+    expect(screen.getByText('当前条目')).toBeInTheDocument();
+    expect(screen.getByText('完整卡片')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Core One/ }));
     expect(screen.getByRole('heading', { name: 'Core One' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Character Name' })).toHaveValue('Core One');
+    expect(screen.getByRole('textbox', { name: '角色名' })).toHaveValue('Core One');
 
-    await user.clear(screen.getByRole('textbox', { name: 'Character Name' }));
-    await user.type(screen.getByRole('textbox', { name: 'Character Name' }), 'Core Two');
+    await user.clear(screen.getByRole('textbox', { name: '角色名' }));
+    await user.type(screen.getByRole('textbox', { name: '角色名' }), 'Core Two');
 
     expect(onChange).toHaveBeenCalled();
 
-    await user.click(screen.getByRole('button', { name: 'Add Core Cast Character' }));
-    await user.click(screen.getByRole('button', { name: 'Add Antagonist Character' }));
+    await user.click(screen.getByRole('button', { name: '新增核心角色' }));
+    await user.click(screen.getByRole('button', { name: '新增反派' }));
 
-    await user.click(screen.getByRole('button', { name: 'Save Section' }));
-    await user.click(screen.getByRole('button', { name: 'Reset Section' }));
+    await user.click(screen.getByRole('button', { name: '保存本页' }));
+    await user.click(screen.getByRole('button', { name: '重置本页' }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Chinese fallbacks when the hero card is missing name and traits', async () => {
+    class ResizeObserverMock {
+      private readonly callback: ResizeObserverCallback;
+
+      constructor(callback: ResizeObserverCallback) {
+        this.callback = callback;
+      }
+
+      observe(target: Element) {
+        this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver);
+      }
+
+      disconnect() {}
+      unobserve() {}
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
+      this: HTMLElement,
+    ) {
+      if (this.getAttribute('aria-label') === 'Character editor column') {
+        return DOMRect.fromRect({ width: 420, height: 960 });
+      }
+
+      return DOMRect.fromRect({ width: 420, height: 320 });
+    });
+
+    render(
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        value={draftValue}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: '未命名角色' })).toBeInTheDocument();
+    expect(screen.getByText('性别 / 性格')).toBeInTheDocument();
   });
 });

@@ -257,13 +257,13 @@ export function validateControlModulesDraft(
 
   if (moduleScope === 'light-cone') {
     if (!normalizeText(draft.controlModules.lightConeCustomization.boundaryGuidance)) {
-      issues.push('Light cone boundary guidance is required.');
+      issues.push('光锥边界说明是必填项。');
     }
     if (!normalizeText(draft.controlModules.lightConeCustomization.convergenceGuidance)) {
-      issues.push('Light cone convergence guidance is required.');
+      issues.push('光锥收束说明是必填项。');
     }
     if (!normalizeText(draft.controlModules.lightConeCustomization.phaseSettlementGuidance)) {
-      issues.push('Light cone phase-settlement guidance is required.');
+      issues.push('光锥 Phase 收束说明是必填项。');
     }
   }
 
@@ -272,17 +272,17 @@ export function validateControlModulesDraft(
       !normalizeText(draft.controlModules.directorNoteAdditions.beatConstraintsAdditions) &&
       !normalizeText(draft.controlModules.directorNoteAdditions.optionConstraintsAdditions)
     ) {
-      issues.push('Director note additions require at least one non-empty addition field.');
+      issues.push('导演提示补充至少需要一个非空字段。');
     }
   }
 
   if (moduleScope === 'beat-volume-definitions') {
     for (const volume of ['Low', 'Med', 'High'] as const) {
       if (!normalizeText(draft.controlModules.beatVolumeDefinitions[volume].beatConstraints)) {
-        issues.push(`${volume} beat constraints are required.`);
+        issues.push(`${volume} Beat 限制是必填项。`);
       }
       if (!normalizeText(draft.controlModules.beatVolumeDefinitions[volume].optionFormatting)) {
-        issues.push(`${volume} option formatting is required.`);
+        issues.push(`${volume} 选项格式是必填项。`);
       }
     }
   }
@@ -290,7 +290,7 @@ export function validateControlModulesDraft(
   if (moduleScope === 'router-profile-set') {
     const nextProfiles = normalizeRouterProfiles(draft.routerProfiles);
     if (nextProfiles.length === 0) {
-      issues.push('At least one router profile is required.');
+      issues.push('至少需要一个 Router 配置。');
     }
 
     const nextNames = new Set(nextProfiles.map((profile) => profile.routerName));
@@ -298,7 +298,7 @@ export function validateControlModulesDraft(
       const routerHint = phasePlan.routerHint?.trim();
       if (routerHint && !nextNames.has(routerHint)) {
         issues.push(
-          `Router profile "${routerHint}" is still referenced by one or more phase router hints.`,
+          `Router 配置 "${routerHint}" 仍被一个或多个 Phase 的 Router 提示引用。`,
         );
         break;
       }
@@ -306,10 +306,10 @@ export function validateControlModulesDraft(
 
     for (const profile of nextProfiles) {
       if (!profile.routerSemanticCore) {
-        issues.push(`Router profile "${profile.routerName}" is missing a semantic core.`);
+        issues.push(`Router 配置 "${profile.routerName}" 缺少语义核心。`);
       }
       if (profile.verbLexicon.length === 0) {
-        issues.push(`Router profile "${profile.routerName}" must keep at least one verb.`);
+        issues.push(`Router 配置 "${profile.routerName}" 必须保留至少一个动词。`);
       }
     }
   }
@@ -317,22 +317,22 @@ export function validateControlModulesDraft(
   if (moduleScope === 'auditor-question-set') {
     const normalized = normalizeAuditQuestionSet(draft.auditQuestionSet);
     if (normalized.globalQuestions.length === 0) {
-      issues.push('At least one global audit question is required.');
+      issues.push('至少需要一个全局审查问题。');
     }
     for (const question of normalized.globalQuestions) {
       if (!normalizeText(question.question)) {
-        issues.push(`Audit question "${question.id}" is missing its question text.`);
+        issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
       }
     }
     for (const question of normalized.controlQuestions) {
       if (!normalizeText(question.question)) {
-        issues.push(`Audit question "${question.id}" is missing its question text.`);
+        issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
       }
     }
     for (const questions of Object.values(normalized.phaseSpecificQuestions ?? {})) {
       for (const question of questions) {
         if (!normalizeText(question.question)) {
-          issues.push(`Audit question "${question.id}" is missing its question text.`);
+          issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
         }
       }
     }

@@ -40,20 +40,20 @@ const WORLD_TEXT_FIELDS: readonly {
 }[] = [
   {
     key: 'worldBaseSetting',
-    label: 'World Base Setting',
-    description: 'Describe the world foundation in one broad block.',
+    label: '世界基础设定',
+    description: '用一块文本写清世界底座。',
     rows: 4,
   },
   {
     key: 'worldRules',
-    label: 'World Rules / Prohibitions / Anomalous Properties',
-    description: 'Capture the hard rules, bans, and anomaly behavior here.',
+    label: '世界规则 / 禁忌 / 异常性质',
+    description: '把硬规则、禁忌和异常表现放在这里。',
     rows: 5,
   },
   {
     key: 'toneBaseline',
-    label: 'Genre Tone & Prose Baseline',
-    description: 'Keep the tonal and prose baseline stable across later beats.',
+    label: '文风基线',
+    description: '保持后续内容的语气和笔调一致。',
     rows: 4,
   },
 ] as const;
@@ -68,27 +68,27 @@ const CHARACTER_FIELD_GROUPS: readonly {
   }[];
 }[] = [
   {
-    label: 'Current Selection',
+    label: '当前条目',
     fields: [
-      { key: 'name', label: 'Character Name' },
-      { key: 'identityRole', label: 'Identity / Narrative Role' },
-      { key: 'lightNovelTrait', label: 'Light-Novel Trait', textarea: true, rows: 3 },
-      { key: 'gender', label: 'Gender' },
-      { key: 'personality', label: 'Personality' },
-      { key: 'age', label: 'Age' },
-      { key: 'occupation', label: 'Occupation' },
-      { key: 'characterSummary', label: 'Character Summary', textarea: true, rows: 4 },
+      { key: 'name', label: '角色名' },
+      { key: 'identityRole', label: '身份 / 叙事定位' },
+      { key: 'lightNovelTrait', label: '轻小说特征', textarea: true, rows: 3 },
+      { key: 'gender', label: '性别' },
+      { key: 'personality', label: '性格' },
+      { key: 'age', label: '年龄' },
+      { key: 'occupation', label: '身份职业' },
+      { key: 'characterSummary', label: '角色概述', textarea: true, rows: 4 },
     ],
   },
   {
-    label: 'Full Card',
+    label: '完整卡片',
     fields: [
-      { key: 'capabilityBoundary', label: 'Capability Boundary', textarea: true, rows: 4 },
-      { key: 'behaviorBoundary', label: 'Behavior Boundary', textarea: true, rows: 4 },
-      { key: 'oocRedLine', label: 'OOC Red Line', textarea: true, rows: 3 },
-      { key: 'clothing', label: 'Clothing', textarea: true, rows: 2 },
-      { key: 'propsWeapon', label: 'Props / Weapon', textarea: true, rows: 2 },
-      { key: 'fatalWeakness', label: 'Fatal Weakness', textarea: true, rows: 3 },
+      { key: 'capabilityBoundary', label: '能力边界', textarea: true, rows: 4 },
+      { key: 'behaviorBoundary', label: '行为边界', textarea: true, rows: 4 },
+      { key: 'oocRedLine', label: 'OOC 红线', textarea: true, rows: 3 },
+      { key: 'clothing', label: '外观 / 穿着', textarea: true, rows: 2 },
+      { key: 'propsWeapon', label: '道具 / 武器', textarea: true, rows: 2 },
+      { key: 'fatalWeakness', label: '致命弱点', textarea: true, rows: 3 },
     ],
   },
 ] as const;
@@ -114,12 +114,12 @@ interface WorldBaseCastSectionProps {
 }
 
 function summarizeCharacter(character: WorldBaseCharacterDraft): string {
-  return character.name.trim() || 'Untitled Character';
+  return character.name.trim() || '未命名角色';
 }
 
 function summarizeSecondaryLine(character: WorldBaseCharacterDraft): string {
   const parts = [character.gender.trim(), character.personality.trim()].filter((value) => value.length > 0);
-  return parts.length > 0 ? parts.join(' / ') : 'Gender / Personality';
+  return parts.length > 0 ? parts.join(' / ') : '性别 / 性格';
 }
 
 function CharacterRail({
@@ -302,11 +302,9 @@ export function WorldBaseCastSection({
     <section className="panel worldbase-cast">
       <div className="panel-heading">
         <div>
-          <p className="panel-eyebrow">Section Slice</p>
-          <h2>WorldBase & Cast</h2>
-          <p className="panel-note">
-            Mixed authoring for world text blocks, summary rails, and one focused character editor.
-          </p>
+          <p className="panel-eyebrow">当前页</p>
+          <h2>世界与角色</h2>
+          <p className="panel-note">编辑世界文本块、角色轨道和右侧当前卡片。</p>
         </div>
         <p className="panel-note">{packageName}</p>
       </div>
@@ -319,8 +317,8 @@ export function WorldBaseCastSection({
         >
           <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
-              <p className="panel-eyebrow">World Base</p>
-              <h3 className="text-xl font-semibold text-black uppercase">World Blocks</h3>
+              <p className="panel-eyebrow">世界基础</p>
+              <h3 className="text-xl font-semibold text-black uppercase">世界文本块</h3>
             </div>
             <div className="space-y-4">
               {WORLD_TEXT_FIELDS.map((field) => (
@@ -340,8 +338,8 @@ export function WorldBaseCastSection({
 
           <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
-              <p className="panel-eyebrow">Hero</p>
-              <p className="panel-note">One fixed hero card, edited on the right.</p>
+              <p className="panel-eyebrow">主角</p>
+              <p className="panel-note">固定主角卡，右侧编辑完整卡。</p>
             </div>
             <button
               type="button"
@@ -351,7 +349,7 @@ export function WorldBaseCastSection({
                   : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
               }`}
               onClick={() => setSelection({ group: 'hero' })}
-              aria-label={`Hero ${summarizeCharacter(value.hero)}`}
+              aria-label={`主角 ${summarizeCharacter(value.hero)}`}
             >
               <strong className="block text-sm">{summarizeCharacter(value.hero)}</strong>
               <p className={`mt-3 text-sm ${selection.group === 'hero' ? 'text-white/80' : 'text-black/60'}`}>
@@ -361,44 +359,44 @@ export function WorldBaseCastSection({
           </section>
 
           <CharacterRail
-            title="Core Cast"
-            subtitle="Summary cards only. The full card opens on the right."
+            title="核心角色"
+            subtitle="这里只放摘要卡，完整卡在右侧展开。"
             cards={value.coreCast}
             selection={selection}
             onSelect={(draftId) => setSelection({ group: 'coreCast', draftId })}
             onAdd={() => addCharacter('coreCast')}
-            addLabel="Add Core Cast Character"
+            addLabel="新增核心角色"
           />
 
           <CharacterRail
-            title="Antagonists"
-            subtitle="Summary cards only. The full card opens on the right."
+            title="反派"
+            subtitle="这里只放摘要卡，完整卡在右侧展开。"
             cards={value.antagonists}
             selection={selection}
             onSelect={(draftId) => setSelection({ group: 'antagonists', draftId })}
             onAdd={() => addCharacter('antagonists')}
-            addLabel="Add Antagonist Character"
+            addLabel="新增反派"
           />
 
           <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
             <div className="mb-4">
-              <p className="panel-eyebrow">Loose Blocks</p>
-              <h3 className="text-xl font-semibold text-black uppercase">Supporting Cast &amp; Locations</h3>
+              <p className="panel-eyebrow">杂项块</p>
+              <h3 className="text-xl font-semibold text-black uppercase">普通配角与地点</h3>
             </div>
             <div className="space-y-4">
               <label className="form-field">
-                <span className="form-label">Ordinary Supporting Cast</span>
+                <span className="form-label">普通配角</span>
                 <textarea
-                  aria-label="Ordinary Supporting Cast"
+                  aria-label="普通配角"
                   rows={5}
                   value={value.supportingCast}
                   onChange={(event) => updateTextField('supportingCast', event)}
                 />
               </label>
               <label className="form-field">
-                <span className="form-label">Location Pool / Scene Elements</span>
+                <span className="form-label">地点词池 / 场景元素</span>
                 <textarea
-                  aria-label="Location Pool / Scene Elements"
+                  aria-label="地点词池 / 场景元素"
                   rows={5}
                   value={value.locationPool}
                   onChange={(event) => updateTextField('locationPool', event)}
@@ -412,14 +410,14 @@ export function WorldBaseCastSection({
           <div className="rounded-none border-2 border-black bg-white p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="panel-eyebrow">Selected Character Editor</p>
+                <p className="panel-eyebrow">当前角色</p>
                 <h3 className="text-xl font-semibold text-black uppercase">
-                  {selectedCharacter ? summarizeCharacter(selectedCharacter.character) : 'No character selected'}
+                  {selectedCharacter ? summarizeCharacter(selectedCharacter.character) : '当前没有角色'}
                 </h3>
               </div>
               {selectedCharacter && selectedCharacter.group !== 'hero' ? (
                 <button type="button" className="secondary-link" onClick={removeSelectedCharacter}>
-                  Remove
+                  删除
                 </button>
               ) : null}
             </div>
@@ -469,10 +467,10 @@ export function WorldBaseCastSection({
 
                 <div className="panel-actions border-t-2 border-black pt-4">
                   <button type="button" className="secondary-link" onClick={onReset}>
-                    Reset Section
+                    重置本页
                   </button>
                   <button type="button" className="primary-link" disabled={isSaving} onClick={onSubmit}>
-                    {isSaving ? 'Saving...' : 'Save Section'}
+                    {isSaving ? '保存中...' : '保存本页'}
                   </button>
                 </div>
               </div>
