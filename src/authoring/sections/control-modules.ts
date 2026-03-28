@@ -317,22 +317,22 @@ export function validateControlModulesDraft(
   if (moduleScope === 'auditor-question-set') {
     const normalized = normalizeAuditQuestionSet(draft.auditQuestionSet);
     if (normalized.globalQuestions.length === 0) {
-      issues.push('至少需要一个全局审查问题。');
+      issues.push('至少需要一个全局审计问题。');
     }
     for (const question of normalized.globalQuestions) {
       if (!normalizeText(question.question)) {
-        issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
+        issues.push(`审计问题 "${question.id}" 缺少问题文本。`);
       }
     }
     for (const question of normalized.controlQuestions) {
       if (!normalizeText(question.question)) {
-        issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
+        issues.push(`审计问题 "${question.id}" 缺少问题文本。`);
       }
     }
     for (const questions of Object.values(normalized.phaseSpecificQuestions ?? {})) {
       for (const question of questions) {
         if (!normalizeText(question.question)) {
-          issues.push(`审查问题 "${question.id}" 缺少问题文本。`);
+          issues.push(`审计问题 "${question.id}" 缺少问题文本。`);
         }
       }
     }

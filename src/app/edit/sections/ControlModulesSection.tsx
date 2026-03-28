@@ -46,10 +46,10 @@ const MODULE_CARDS: readonly {
   },
   {
     key: 'auditor-question-set',
-    label: '审查问题组',
+    label: '审计问题组',
     typeLabel: '并行控制',
     groupLabel: '并行层',
-    description: '维护审查问题与选择策略。',
+    description: '维护审计问题与选择策略。',
   },
 ] as const;
 
@@ -368,7 +368,7 @@ export function ControlModulesSection({
         <div>
           <p className="panel-eyebrow">当前页</p>
           <h2>控制模块</h2>
-          <p className="panel-note">整理控制层、路由配置和审查问题。</p>
+          <p className="panel-note">整理控制层、路由配置和审计问题。</p>
         </div>
         <p className="panel-note">{packageName}</p>
       </div>
@@ -614,7 +614,7 @@ export function ControlModulesSection({
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <p className="panel-note">为当前分组新增、删除并调整审查问题。</p>
+                  <p className="panel-note">为当前分组新增、删除并调整审计问题。</p>
                   <button type="button" className="secondary-link" onClick={addAuditQuestion}>
                     新增问题
                   </button>
@@ -623,7 +623,7 @@ export function ControlModulesSection({
                 <div
                   className="max-h-[28rem] space-y-4 overflow-y-auto rounded-none border-2 border-black bg-[#f5f5f5] p-4"
                   role="region"
-                  aria-label="审查问题列表"
+                  aria-label="审计问题列表"
                 >
                   {getCurrentAuditQuestions().map((question, index) => (
                     <section

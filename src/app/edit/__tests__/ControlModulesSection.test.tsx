@@ -55,7 +55,7 @@ describe('ControlModulesSection', () => {
     expect(screen.getByRole('button', { name: '导演提示补充' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Beat Volume 定义' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Router 配置组' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '审查问题组' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '审计问题组' })).toBeInTheDocument();
     expect(screen.getByText('第 3 层')).toBeInTheDocument();
     expect(screen.getAllByText('第 4 层')).toHaveLength(3);
     expect(screen.getByText('并行层')).toBeInTheDocument();
@@ -84,13 +84,13 @@ describe('ControlModulesSection', () => {
     expect(screen.getByRole('textbox', { name: '语义核心 1' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: '动词词库 1' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '审查问题组' }));
+    await user.click(screen.getByRole('button', { name: '审计问题组' }));
 
     expect(screen.getByRole('button', { name: '全局问题' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '控制问题' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '新增问题' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: '审查问题列表' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '审计问题列表' })).toBeInTheDocument();
     expect(screen.getAllByText(/未命名问题/)).toHaveLength(4);
     expect(screen.getByText('问题')).toBeInTheDocument();
     expect(screen.getByText('理由')).toBeInTheDocument();

@@ -53,7 +53,7 @@ const SECTION_SUMMARIES: Record<
   'control-modules': {
     eyebrow: '当前页',
     title: '控制模块',
-    description: '整理控制层、路由配置和审查问题。',
+    description: '整理控制层、路由配置和审计问题。',
   },
   'package-wiring-validation': {
     eyebrow: '当前页',
