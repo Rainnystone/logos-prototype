@@ -1,0 +1,132 @@
+<h2>Narrative Editor 语言策略</h2>
+<p class="subtitle">目标不是“把英文全翻掉”，而是让作者第一次进入页面时就能看懂每一块在做什么。</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>全中文主导</h3>
+      <p>主标题、按钮、字段名全部改成中文，只在代码和底层数据里保留英文。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>中文主导，英文辅助</h3>
+      <p>界面上先给中文主名，必要时在小字里保留英文原词或术语解释。推荐。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>保留英文术语，加中文说明</h3>
+      <p>像现在一样保留英文块名，但每一块补一行更直白的中文解释。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>同一块区域的三种写法</h3>
+  <p class="subtitle">下面用你现在最常见的一类区块做对比：页签、区块标题、编辑器标题、按钮。</p>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-body">
+      <p class="label">A. 全中文主导</p>
+      <div class="mockup">
+        <div class="mockup-header">页面导航</div>
+        <div class="mockup-body">
+          <div class="mock-nav">世界与角色｜场景与阶段｜控制模块｜组装与校验</div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="mockup-header">页面内容</div>
+        <div class="mockup-body">
+          <h3>世界与角色</h3>
+          <p class="subtitle">用文字块和角色卡设定故事世界、人物关系与风格基线。</p>
+          <div class="split">
+            <div class="mock-content">
+              <strong>世界基础设定</strong>
+              <p>说明这个故事的世界框架。</p>
+            </div>
+            <div class="mock-content">
+              <strong>当前角色编辑器</strong>
+              <p>编辑当前选中的人物卡。</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="mock-button">重置本页</button>
+            <button class="mock-button">保存本页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p class="label">B. 中文主导，英文辅助</p>
+      <div class="mockup">
+        <div class="mockup-header">页面导航</div>
+        <div class="mockup-body">
+          <div class="mock-nav">世界与角色 / WorldBase & Cast｜场景与阶段 / Scene & Phase｜控制模块｜组装与校验</div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="mockup-header">页面内容</div>
+        <div class="mockup-body">
+          <h3>世界与角色</h3>
+          <p class="subtitle">WorldBase & Cast · 设定世界文本、角色卡与叙事风格基线。</p>
+          <div class="split">
+            <div class="mock-content">
+              <strong>世界基础设定</strong>
+              <p>World Base Setting · 说明这个故事的世界框架。</p>
+            </div>
+            <div class="mock-content">
+              <strong>当前角色编辑器</strong>
+              <p>Selected Character Editor · 编辑当前选中的人物卡。</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="mock-button">重置本页</button>
+            <button class="mock-button">保存本页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p class="label">C. 英文术语保留，中文补说明</p>
+      <div class="mockup">
+        <div class="mockup-header">页面导航</div>
+        <div class="mockup-body">
+          <div class="mock-nav">WorldBase & Cast｜SCENE & PHASE｜Control Modules｜Package Wiring Validation</div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="mockup-header">页面内容</div>
+        <div class="mockup-body">
+          <h3>WorldBase & Cast</h3>
+          <p class="subtitle">设定这个故事的世界与角色信息。</p>
+          <div class="split">
+            <div class="mock-content">
+              <strong>World Base Setting</strong>
+              <p>这里填写故事的世界基础设定。</p>
+            </div>
+            <div class="mock-content">
+              <strong>Selected Character Editor</strong>
+              <p>这里编辑当前选中的角色。</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="mock-button">Reset Section</button>
+            <button class="mock-button">Save Section</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -15,11 +15,11 @@ lightConeCustomization:
 directorNoteAdditions:
   beatConstraintsAdditions: Keep every beat local, physical, and explainable as a
     contained campus incident.每一轮不得少于 1000
-    字，日式轻小说本格风。玩家=雾间凪，叙事应该以“你”，第二人称视角描述故事情节
+    字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切
+    OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致
+    OOC，则主角必须只能以内心活动的方式吐槽而非直接执行
   optionConstraintsAdditions: Options should keep tactical contrast without
-    drifting into overt supernatural
-    spectacle.雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC
-    。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行
+    drifting into overt supernatural spectacle.
 beatVolumeDefinitions:
   Low:
     beatConstraints: "**时间加速流转**。侧重结果、环境大局、因果总结。禁止进行冗长的单次动作描写，鼓励使用叙述性蒙太奇。"
