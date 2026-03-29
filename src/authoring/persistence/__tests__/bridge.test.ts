@@ -323,6 +323,7 @@ describe('saveSectionDraft', () => {
 
   it('writes scene and phase authoring changes through the same shared bridge', async () => {
     prepareTestPackage();
+    const originalStoryPackage = await loadStoryPackage(testPackageName);
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase',
@@ -337,7 +338,9 @@ describe('saveSectionDraft', () => {
             startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
             endLine: '灰谷烈失势，校园恢复表面平静。',
             openingHook: '午后的走廊先传来异常蜂鸣，而不是教室内的爆裂。',
-            samplePurpose: '验证重新排序后的阶段推进仍然稳定。',
+            samplePurpose: '这段不应被这次保存改掉。',
+            castMode: 'explicit',
+            cast: ['chr_ant01', 'chr_hero01', 'chr_core01', 'chr_missing', 'chr_core01', 42 as unknown],
           },
           phasePlans: [
             {
@@ -371,6 +374,10 @@ describe('saveSectionDraft', () => {
       expect(result.reloadedSectionState.sceneSpec.sceneName).toBe('炎上直播间·改');
       expect(result.reloadedSectionState.sceneSpec.startPoint).toBe(
         '日常走廊先出现异常升温，凪从人群表层脱离。',
+      );
+      expect(result.reloadedSectionState.sceneSpec.cast).toEqual(['chr_core01', 'chr_ant01']);
+      expect(result.reloadedSectionState.sceneSpec.samplePurpose).toBe(
+        originalStoryPackage.sceneSpec.samplePurpose,
       );
       expect(result.reloadedSectionState.sceneSpec.mainAxis).toBe(
         [
@@ -555,8 +562,9 @@ describe('saveSectionDraft', () => {
     expect(status.pendingSectionReviews).toBeUndefined();
   });
 
-  it('removes cleared optional scene fields from scene.yaml after a scene-phase save', async () => {
+  it('preserves the existing sample purpose while clearing other optional scene fields', async () => {
     prepareTestPackage();
+    const originalStoryPackage = await loadStoryPackage(testPackageName);
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase-clear-optionals',
@@ -595,7 +603,7 @@ describe('saveSectionDraft', () => {
     expect(savedScene.sceneName).toBe('炎上直播间·改');
     expect(savedScene).not.toHaveProperty('openingSituation');
     expect(savedScene).not.toHaveProperty('openingHook');
-    expect(savedScene).not.toHaveProperty('samplePurpose');
+    expect(savedScene.samplePurpose).toBe(originalStoryPackage.sceneSpec.samplePurpose);
   });
 
   it('clears the control-modules review flag after a control-modules save', async () => {
@@ -768,6 +776,87 @@ describe('saveSectionDraft', () => {
       expect(result.blockingIssues).toContain('补丁候选在提供时必须是数组。');
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
+  it('blocks malformed explicit scene cast payloads instead of clearing cast to empty', async () => {
+    prepareTestPackage();
+    const originalScene = readFileSync(scenePath, 'utf8');
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-malformed-cast',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: [1, { characterId: 'chr_core01' }, false],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    expect(readFileSync(scenePath, 'utf8')).toBe(originalScene);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
+  it('preserves an explicit empty cast through save and reload', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-explicit-empty-cast',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: [],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    if (result.kind === 'save_applied') {
+      expect(result.reloadedSectionState.sceneSpec.cast).toEqual([]);
+      expect(readFileSync(scenePath, 'utf8')).toContain('cast: []');
+    }
   });
 
   it('blocks malformed top-level request fields without throwing', async () => {

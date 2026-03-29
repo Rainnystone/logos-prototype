@@ -1,4 +1,5 @@
 import type { GradientType, PhasePlan, RouterProfile, SceneSpec, StoryPackage } from '@/types';
+import { normalizeSceneCastSelection } from '@/authoring/sections/scene-cast';
 
 const GRADIENT_OPTIONS = [
   'Rising',
@@ -10,7 +11,7 @@ const GRADIENT_OPTIONS = [
   'Steady',
 ] as const satisfies readonly GradientType[];
 
-type ScenePhaseStorySlice = Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles'>;
+type ScenePhaseStorySlice = Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles' | 'worldBase'>;
 
 export interface ScenePhaseSceneDraft {
   sceneName: string;
@@ -18,7 +19,8 @@ export interface ScenePhaseSceneDraft {
   startPoint: string;
   endLine: string;
   openingHook: string;
-  samplePurpose: string;
+  castMode: 'unset' | 'explicit';
+  cast?: string[];
 }
 
 export interface ScenePhasePlanDraft {
@@ -102,7 +104,8 @@ export function createScenePhaseAuthoringDraft(
       startPoint: source.sceneSpec.startPoint ?? deriveStartPointFromMainAxis(source.sceneSpec.mainAxis),
       endLine: source.sceneSpec.endLine,
       openingHook: source.sceneSpec.openingHook ?? '',
-      samplePurpose: source.sceneSpec.samplePurpose ?? '',
+      castMode: source.sceneSpec.cast ? 'explicit' : 'unset',
+      ...(source.sceneSpec.cast ? { cast: [...source.sceneSpec.cast] } : {}),
     },
     phasePlans: source.phasePlans.map((phasePlan) => ({
       phaseId: phasePlan.phaseId,
@@ -194,10 +197,15 @@ export function renderScenePhaseAuthoring(
     ...(normalizeOptionalText(draft.sceneSpec.openingHook)
       ? { openingHook: normalizeOptionalText(draft.sceneSpec.openingHook) }
       : {}),
-    ...(normalizeOptionalText(draft.sceneSpec.samplePurpose)
-      ? { samplePurpose: normalizeOptionalText(draft.sceneSpec.samplePurpose) }
+    ...(normalizeOptionalText(current.sceneSpec.samplePurpose)
+      ? { samplePurpose: normalizeOptionalText(current.sceneSpec.samplePurpose) }
       : {}),
   };
+
+  if (draft.sceneSpec.castMode === 'explicit') {
+    const normalizedSceneCast = normalizeSceneCastSelection(current.worldBase, draft.sceneSpec.cast);
+    nextSceneSpec.cast = normalizedSceneCast.cast;
+  }
 
   const nextPhasePlans: PhasePlan[] = draft.phasePlans.map((phaseDraft, index) => {
     const phaseName = normalizeText(phaseDraft.phaseName);

@@ -334,15 +334,6 @@ export function ScenePhaseAuthoringSection({
                   onChange={(event) => updateSceneField('openingSituation', event)}
                 />
               </label>
-              <label className="form-field rounded-none border-2 border-black bg-[#f5f5f5] p-4 md:col-span-2">
-                <span className="form-label">示例用途</span>
-                <textarea
-                  aria-label="示例用途"
-                  rows={3}
-                  value={value.sceneSpec.samplePurpose}
-                  onChange={(event) => updateSceneField('samplePurpose', event)}
-                />
-              </label>
             </div>
           </section>
         </div>

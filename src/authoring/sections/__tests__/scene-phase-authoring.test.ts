@@ -55,7 +55,91 @@ const currentStoryPackage = {
       verbLexicon: ['break'],
     },
   ],
-} as const satisfies Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles'>;
+  worldBase: {
+    worldBaseSetting: 'World base',
+    worldRules: 'Rules',
+    toneBaseline: 'Tone',
+    hero: {
+      characterId: 'chr_hero01',
+      name: 'Hero',
+      identityRole: 'Lead',
+      lightNovelTrait: 'Trait',
+      gender: 'Female',
+      personality: 'Calm',
+      age: '17',
+      occupation: 'Student',
+      characterSummary: 'Hero summary',
+      capabilityBoundary: 'Boundary',
+      behaviorBoundary: 'Behavior',
+      oocRedLine: 'Red line',
+      clothing: 'Uniform',
+      propsWeapon: 'None',
+    },
+    coreCast: [
+      {
+        characterId: 'chr_core01',
+        name: 'Core One',
+        identityRole: 'Anchor',
+        lightNovelTrait: 'Trait',
+        gender: 'Female',
+        personality: 'Kind',
+        age: '16',
+        occupation: 'Student',
+        characterSummary: 'Core summary',
+        capabilityBoundary: 'Boundary',
+        behaviorBoundary: 'Behavior',
+        oocRedLine: 'Red line',
+        clothing: 'Uniform',
+        propsWeapon: 'None',
+      },
+      {
+        characterId: 'chr_core02',
+        name: 'Core Two',
+        identityRole: 'Anchor',
+        lightNovelTrait: 'Trait',
+        gender: 'Male',
+        personality: 'Calm',
+        age: '18',
+        occupation: 'Student',
+        characterSummary: 'Core summary',
+        capabilityBoundary: 'Boundary',
+        behaviorBoundary: 'Behavior',
+        oocRedLine: 'Red line',
+        clothing: 'Uniform',
+        propsWeapon: 'None',
+      },
+    ],
+    antagonists: [
+      {
+        characterId: 'chr_ant01',
+        name: 'Antagonist One',
+        identityRole: 'Threat',
+        lightNovelTrait: 'Trait',
+        gender: 'Male',
+        personality: 'Chaotic',
+        age: '19',
+        occupation: 'Streamer',
+        characterSummary: 'Antagonist summary',
+        capabilityBoundary: 'Boundary',
+        behaviorBoundary: 'Behavior',
+        oocRedLine: 'Red line',
+        clothing: 'Coat',
+        propsWeapon: 'Device',
+        fatalWeakness: 'Weakness',
+      },
+    ],
+    npcCharacters: 'NPC',
+    locationPatch: 'Location',
+  },
+} as const satisfies Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles' | 'worldBase'>;
+
+const currentStoryPackageWithCast = {
+  ...currentStoryPackage,
+  sceneSpec: {
+    ...currentStoryPackage.sceneSpec,
+    cast: ['chr_core01', 'chr_ant01'],
+  },
+} as const satisfies Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles' | 'worldBase'>;
 
 describe('scene-phase-authoring', () => {
   it('creates a draft that keeps scene fields and phase display names together', () => {
@@ -68,8 +152,17 @@ describe('scene-phase-authoring', () => {
     expect((draft.sceneSpec as unknown as Record<string, string>).startPoint).toBe(
       'A relay sparks behind the public route and pulls the operator off the daily track.',
     );
+    expect(draft.sceneSpec.castMode).toBe('unset');
+    expect(draft.sceneSpec).not.toHaveProperty('samplePurpose');
     expect(draft.phasePlans[0]?.phaseName).toBe('Signal Trace');
     expect(draft.phasePlans[1]?.phaseName).toBe('Counterplay Lock');
+  });
+
+  it('creates an explicit cast draft when the source scene already has cast ids', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackageWithCast);
+
+    expect(draft.sceneSpec.castMode).toBe('explicit');
+    expect(draft.sceneSpec.cast).toEqual(['chr_core01', 'chr_ant01']);
   });
 
   it('keeps phaseId stable and recalculates phaseIndex from order', () => {
@@ -130,13 +223,12 @@ describe('scene-phase-authoring', () => {
     const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
     draft.sceneSpec.openingSituation = '';
     draft.sceneSpec.openingHook = '';
-    draft.sceneSpec.samplePurpose = '';
 
     const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
 
     expect(output.sceneSpec).not.toHaveProperty('openingSituation');
     expect(output.sceneSpec).not.toHaveProperty('openingHook');
-    expect(output.sceneSpec).not.toHaveProperty('samplePurpose');
+    expect(output.sceneSpec.samplePurpose).toBe('Validate the scene-phase authoring loop.');
   });
 
   it('derives mainAxis from startPoint, ordered phase goals, and endLine', () => {
@@ -147,7 +239,7 @@ describe('scene-phase-authoring', () => {
         startPoint: 'The operator notices the first hostile surge inside the corridor.',
         endLine: 'The source is isolated and the public route returns to calm.',
         openingHook: 'A relay sparks and forces the operator to slip away from the crowd.',
-        samplePurpose: 'Validate the scene-phase authoring loop.',
+        castMode: 'unset',
       },
       phasePlans: createScenePhaseAuthoringDraft(currentStoryPackage).phasePlans,
     } as unknown as ScenePhaseAuthoringDraft;
@@ -162,6 +254,35 @@ describe('scene-phase-authoring', () => {
         'The source is isolated and the public route returns to calm.',
       ].join(' -> '),
     );
+  });
+
+  it('preserves an absent cast when saving an untouched legacy draft', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec).not.toHaveProperty('cast');
+    expect(output.sceneSpec.samplePurpose).toBe('Validate the scene-phase authoring loop.');
+  });
+
+  it('writes an explicit empty cast when no valid cast ids remain', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
+    draft.sceneSpec.castMode = 'explicit';
+    draft.sceneSpec.cast = [];
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec.cast).toEqual([]);
+  });
+
+  it('normalizes cast ids to the shared world-base order and drops stale ids', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackageWithCast);
+    draft.sceneSpec.castMode = 'explicit';
+    draft.sceneSpec.cast = ['chr_ant01', 'chr_hero01', 'chr_missing', 'chr_core02', 'chr_core01'];
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec.cast).toEqual(['chr_core01', 'chr_core02', 'chr_ant01']);
   });
 
   it('requires a scene start point before saving the section', () => {

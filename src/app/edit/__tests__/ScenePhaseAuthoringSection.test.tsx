@@ -90,6 +90,7 @@ describe('ScenePhaseAuthoringSection', () => {
     expect(screen.getByRole('textbox', { name: '场景名' })).toHaveValue('Signal Room');
     expect(screen.getByRole('textbox', { name: '起点' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: '主轴' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: '示例用途' })).not.toBeInTheDocument();
     expect(within(phaseRailSection).getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
     expect(selectedPhaseCard.className).toContain('bg-black');
     expect(selectedPhaseCard.className).toContain('shadow-brutal');

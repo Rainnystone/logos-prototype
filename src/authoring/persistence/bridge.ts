@@ -313,6 +313,27 @@ function extractScenePhaseAuthoringDraft(
       ...(isStringField(phase.notes) ? { notes: phase.notes } : {}),
     }));
 
+  const rawCast = sceneSpec.cast as unknown;
+  const castIsArray = Array.isArray(rawCast);
+  const cast = castIsArray
+    ? rawCast.filter((value): value is string => isStringField(value))
+    : undefined;
+  const filteredCast = cast ?? [];
+  const castMode =
+    sceneSpec.castMode === 'explicit' || sceneSpec.castMode === 'unset'
+      ? sceneSpec.castMode
+      : cast
+        ? 'explicit'
+        : 'unset';
+
+  if (castMode === 'explicit' && !castIsArray) {
+    return null;
+  }
+
+  if (castMode === 'explicit' && castIsArray && rawCast.length > 0 && filteredCast.length === 0) {
+    return null;
+  }
+
   return {
     sceneSpec: {
       sceneName: isStringField(sceneSpec.sceneName) ? sceneSpec.sceneName : '',
@@ -324,7 +345,8 @@ function extractScenePhaseAuthoringDraft(
           : '',
       endLine: isStringField(sceneSpec.endLine) ? sceneSpec.endLine : '',
       openingHook: isStringField(sceneSpec.openingHook) ? sceneSpec.openingHook : '',
-      samplePurpose: isStringField(sceneSpec.samplePurpose) ? sceneSpec.samplePurpose : '',
+      castMode,
+      ...(cast ? { cast } : {}),
     },
     phasePlans: normalizedPhasePlans,
   };
