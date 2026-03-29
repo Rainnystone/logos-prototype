@@ -10,8 +10,45 @@ import {
 import type { DirectorNote, PreviousDraft, WorldBase } from '@/types';
 
 const worldBase: WorldBase = {
-  mainCharacters: 'main-characters',
-  npcCharacters: '',
+  worldBaseSetting: 'world-setting',
+  worldRules: 'world-rules',
+  toneBaseline: 'tone-baseline',
+  hero: {
+    characterId: 'chr_hero01',
+    name: 'Hero One',
+    identityRole: 'Lead character',
+    lightNovelTrait: 'Calm and precise',
+    gender: 'Female',
+    personality: 'Reserved',
+    age: '16',
+    occupation: 'Student',
+    characterSummary: 'Primary viewpoint character.',
+    capabilityBoundary: 'Uses only physical methods.',
+    behaviorBoundary: 'Does not panic under pressure.',
+    oocRedLine: 'Never breaks character.',
+    clothing: 'School uniform',
+    propsWeapon: 'Flashlight',
+  },
+  coreCast: [
+    {
+      characterId: 'chr_core01',
+      name: 'Core One',
+      identityRole: 'Support',
+      lightNovelTrait: 'Reliable',
+      gender: 'Male',
+      personality: 'Steady',
+      age: '17',
+      occupation: 'Student',
+      characterSummary: 'Core supporting character.',
+      capabilityBoundary: 'Stays within the setting.',
+      behaviorBoundary: 'Remains grounded.',
+      oocRedLine: 'Does not leave the scene.',
+      clothing: 'School uniform',
+      propsWeapon: 'Notebook',
+    },
+  ],
+  antagonists: [],
+  npcCharacters: 'Support One - steady witness',
   locationPatch: 'location-patch',
 };
 
@@ -68,9 +105,11 @@ describe('Prompt Assembler', () => {
   it('maps layer 1 worldBase fields exactly', () => {
     const promptObject = assemblePromptObject(baseInput);
 
-    expect(promptObject.worldBase.mainCharacters).toBe(worldBase.mainCharacters);
+    expect(promptObject.worldBase.mainCharacters).toContain('## Hero');
+    expect(promptObject.worldBase.mainCharacters).toContain('Name: Hero One');
+    expect(promptObject.worldBase.mainCharacters).toContain('## Core Cast');
     expect(promptObject.worldBase.locationPatch).toBe(worldBase.locationPatch);
-    expect(promptObject.worldBase.npcCharacters).toBe('');
+    expect(promptObject.worldBase.npcCharacters).toBe('Support One：steady witness');
   });
 
   it('maps layer 2 history from precedingBeats using a new array', () => {
@@ -152,7 +191,7 @@ describe('Prompt Assembler', () => {
   it('preserves all four layers on the rewrite path', () => {
     const promptObject = assembleRewritePromptObject(baseInput, rewriteContext);
 
-    expect(promptObject.worldBase.mainCharacters).toBe(worldBase.mainCharacters);
+    expect(promptObject.worldBase.mainCharacters).toContain('Name: Hero One');
     expect(promptObject.history).toEqual(baseInput.precedingBeats);
     expect(promptObject.narrative.phaseGoal).toBe(baseInput.phaseGoal);
     expect(promptObject.directorNote.router).toBe(baseInput.currentRouter);

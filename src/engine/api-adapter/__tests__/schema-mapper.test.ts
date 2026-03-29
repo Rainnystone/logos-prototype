@@ -16,6 +16,7 @@ import {
   sampleRouteRequest,
   sampleRewritePromptObject,
   sampleSettlementRequest,
+  sampleStructuredWorldBase,
 } from '@/engine/api-adapter/__tests__/fixtures';
 
 describe('schema mapper', () => {
@@ -55,7 +56,9 @@ describe('schema mapper', () => {
     it('maps PromptObject into a ProviderRequest with world base and narrative in system', () => {
       const request = mapForGenerate(samplePromptObject, 'openai-compatible');
 
-      expect(request.system).toContain(samplePromptObject.worldBase.mainCharacters);
+      expect(samplePromptObject.worldBase.mainCharacters).toContain('## Hero');
+      expect(samplePromptObject.worldBase.mainCharacters).toContain('Name: Hero One');
+      expect(request.system).toContain(sampleStructuredWorldBase.hero.name);
       expect(request.system).toContain(samplePromptObject.worldBase.npcCharacters);
       expect(request.system).toContain(samplePromptObject.worldBase.locationPatch);
       expect(request.system).toContain(samplePromptObject.narrative.mainAxis);

@@ -1,4 +1,5 @@
 import { deepFreeze } from '@/lib/deep-freeze';
+import { renderCharacterProfileForOOC } from '@/engine/modules/world-base-prompt-render';
 import { parseWithSchema } from '@/lib/validation';
 import {
   type BeatVolumeDefinitions,
@@ -151,7 +152,7 @@ export function buildDirectorNote(
       optionConstraints: buildOptionConstraints(
         roundState,
         sceneState,
-        worldBase.mainCharacters,
+        renderCharacterProfileForOOC(worldBase),
         controlOverrides,
       ),
     },
