@@ -1,128 +1,94 @@
-mainCharacters: >-
-  ## World Base Setting
+worldBaseSetting: >-
+  不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。
 
-  不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定
+worldRules: |-
+  严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。
+  所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。
 
+toneBaseline: >-
+  日式轻小说本格风格。
 
-  ## World Rules / Prohibitions / Anomalous Properties
+hero:
+  characterId: chr_hero01
+  name: 雾间凪
+  identityRole: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者
+  lightNovelTrait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。
+  gender: 女
+  personality: 冷峻
+  age: "17"
+  occupation: 高中生
+  characterSummary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。
+  capabilityBoundary: |-
+    绝对禁止使用任何魔法、法术或超自然异能。
+    战斗全部基于极高的人类身体机能与街头格斗术。
+    武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。
+    轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。
+  behaviorBoundary: >-
+    面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。
+  oocRedLine: >-
+    绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。
+  clothing: 制服下藏有便于行动的战术装备。
+  propsWeapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。
 
-  严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在
+coreCast:
+  - characterId: chr_core01
+    name: 宫下藤花
+    identityRole: 绝对的日常锚点 / 异常绝缘体
+    lightNovelTrait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。
+    gender: 女
+    personality: 温和
+    age: "16"
+    occupation: 高中生
+    characterSummary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。
+    capabilityBoundary: ""
+    behaviorBoundary: |-
+      所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。
+      即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。
+    oocRedLine: >-
+      绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。
+    clothing: 标准女高中生制服。
+    propsWeapon: ""
+  - characterId: chr_core02
+    name: 不吉波普
+    identityRole: 机械降神 (Deus Ex Machina)
+    lightNovelTrait: 只在最坏情况下作为清场与收束机制出现的都市传说式存在。
+    gender: 未知
+    personality: 冷静
+    age: 未知
+    occupation: 未知
+    characterSummary: 只作为玩家彻底死亡或失败之后的兜底机制存在，正常流程里不能主动出手抢戏。
+    capabilityBoundary: 仅在雾间凪彻底失败或死亡之后才允许介入。
+    behaviorBoundary: 只要雾间凪还在战斗，哪怕濒死，不吉波普也绝对不能主动跳出来抢戏、帮忙打怪或提供解说。
+    oocRedLine: 不能在正常推进阶段提前现身，不能抢走玩家的主动破局位置。
+    clothing: 黑色长外套与都市传说式装束。
+    propsWeapon: ""
 
+antagonists:
+  - characterId: chr_ant01
+    name: 灰谷烈
+    identityRole: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播
+    lightNovelTrait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。
+    gender: 男
+    personality: 张扬
+    age: "18"
+    occupation: 主播
+    characterSummary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。
+    capabilityBoundary: |-
+      触发条件：目标对他产生恐惧或强烈关注，例如观看直播。
+      效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。
+    behaviorBoundary: |-
+      他时刻对着空气或隐形镜头说话，互动感极强。
+      他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。
+    oocRedLine: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。
+    clothing: 夸张醒目的主播穿搭。
+    propsWeapon: 直播设备、信号链路与被操控的电子装置。
+    fatalWeakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。
 
-  ## Genre Tone & Prose Baseline
-
-  日式轻小说本格风格
-
-
-  ## Hero
-
-  ### Character 1
-
-  Name: 雾间凪
-
-  Identity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者
-
-  Light-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。
-
-  Capability Boundary:
-
-  绝对禁止使用任何魔法、法术或超自然异能。
-
-  战斗全部基于极高的人类身体机能（奥运冠军级的爆发力/耐力）与街头格斗术（截拳道变种）。
-
-  武器仅限于：藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素/麻醉针，以及环境中的物理道具。
-
-  自愈与假死：轻微伤（割伤、骨裂）拥有肉眼可见的极快愈合速度。一旦遭受致死打击（如心脏停跳），身体会强制进入 2 小时假死休眠，苏醒后伴随剧痛与短期记忆断层。
-
-  Behavior Boundary:
-
-  面对不可名状的恐怖时，她的第一反应永远是“寻找物理弱点并予以破坏”，绝不移开视线。
-
-  OOC 红线：绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。
-
-  OOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。
-
-
-  ## Core Cast
-
-  ### Character 1
-
-  Name: 宫下藤花
-
-  Identity / Narrative Role: 绝对的日常锚点 / 异常绝缘体
-
-  Light-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。
-
-  Gender: 女
-
-  Age: 16
-
-  Behavior Boundary:
-
-  绝对规则（系统级约束）：所有的异变、怪异和攻击，在认知和物理层面都会自动“忽略”她的存在。
-
-  她是暴风眼中的盲点。即使灰谷烈在隔壁大开杀戒，或者凪在她面前的走廊上搏斗，她也只会因为视角遮挡、巧合或者单纯的“没注意”，而觉得“今天学校好安静啊”。
-
-  OOC 红线：绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。她必须全程保持在和平的日常位面。
-
-  OOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。她必须全程保持在和平的日常位面。
-
-
-  ### Character 2
-
-  Name: 不吉波普
-
-  Identity / Narrative Role: 机械降神 (Deus Ex Machina)
-
-  Age: 未知
-
-  Behavior Boundary:
-
-  仅作为“玩家（雾间凪）彻底死亡/失败”后的兜底清场机制。
-
-  OOC 红线：只要雾间凪还在战斗，哪怕濒死，不吉波普也绝对不能主动跳出来抢戏、帮忙打怪或提供解说。
-
-  OOC Red Line: 只要雾间凪还在战斗，哪怕濒死，不吉波普也绝对不能主动跳出来抢戏、帮忙打怪或提供解说。
-
-
-  ## Antagonists
-
-  ### Character 1
-
-  Name: 灰谷烈
-
-  Identity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播
-
-  Light-Novel Trait: 诺兰版小丑的无序感 + 癫狂的现代网络乐子人。极具表演型人格，台词充满弹幕黑话与病态的煽动性。
-
-  Gender: 男
-
-  Personality: 张扬
-
-  Age: 18
-
-  Character Summary: 极致演绎诺兰蝙蝠侠电影第一部小丑的性格和举止，癫狂但是聪明，会尝试反制玩家的行为，擅长给玩家制造道德困境
-
-  Capability Boundary:
-
-  触发条件：只要目标对他产生“恐惧”或“强烈关注（如观看他的直播）”。
-
-  效果：能通过网络信号让目标的电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。
-
-  Behavior Boundary:
-
-  他时刻对着空气（或隐形镜头）说话，互动感极强。
-
-  他不追求高效杀人，只追求“节目效果”。他会刻意给猎物留出逃生希望，只为了拍摄绝望的特写。
-
-  OOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。
-
-  Fatal Weakness:
-  社会性死亡。一旦其直播间在线人数归零（物理切断网络或破坏服务器），所有基于“关注度”的力量瞬间溃散，他将退化为一个脆弱的普通人。
 npcCharacters: |-
   竹田启司：稳重的男友
   末真和子：敏锐的线索人
   新刻敬：正义感强
+
 locationPatch: |-
   # Location Pool: 场景地点与交互物件池
 

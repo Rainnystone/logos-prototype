@@ -191,9 +191,19 @@ describe('EditWorkbench', () => {
 
     expect(request.payload.uiFields).toMatchObject({
       worldBaseSetting: 'Updated world',
-      hero: expect.any(Object),
-      coreCast: expect.any(Array),
-      antagonists: expect.any(Array),
+      hero: expect.objectContaining({
+        characterId: expect.stringMatching(/^chr_/),
+      }),
+      coreCast: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: expect.stringMatching(/^chr_/),
+        }),
+      ]),
+      antagonists: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: expect.stringMatching(/^chr_/),
+        }),
+      ]),
       supportingCast: expect.any(String),
       locationPool: expect.any(String),
     });

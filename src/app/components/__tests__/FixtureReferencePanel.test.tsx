@@ -12,7 +12,10 @@ describe('FixtureReferencePanel', () => {
 
     expect(screen.getByText('fixtures/signal-room')).toBeInTheDocument();
     expect(screen.getByText('Validate the workbench control loop.')).toBeInTheDocument();
-    expect(screen.getByText(storyPackageFixture.worldBase.mainCharacters)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.worldBaseSetting)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.hero.name)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.coreCast[0]!.name)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.antagonists[0]!.name)).toBeInTheDocument();
     expect(screen.getByText(storyPackageFixture.worldBase.npcCharacters)).toBeInTheDocument();
     expect(screen.getByText(storyPackageFixture.worldBase.locationPatch)).toBeInTheDocument();
     expect(

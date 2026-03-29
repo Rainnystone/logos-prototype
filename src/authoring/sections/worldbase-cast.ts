@@ -1,4 +1,5 @@
 import type { CharacterProfile, WorldBase } from '@/types';
+import { generateCharacterId } from '@/lib/character-id';
 
 type CharacterKind = 'hero' | 'core' | 'antagonist';
 
@@ -112,13 +113,13 @@ function normalizeCharacterList(
 
 export function createEmptyWorldBaseCharacterDraft(
   kind: CharacterKind,
-  index: number,
+  _index: number,
 ): WorldBaseCharacterDraft {
-  const fallbackId = createCharacterDraftId(kind, index);
+  const generatedId = generateCharacterId();
 
   return {
-    draftId: fallbackId,
-    characterId: fallbackId,
+    draftId: generatedId,
+    characterId: generatedId,
     name: '',
     identityRole: '',
     lightNovelTrait: '',

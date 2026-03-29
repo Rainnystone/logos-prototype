@@ -332,6 +332,9 @@ describe('PlayWorkbench', () => {
     expect(screen.queryByText('Fixture Reference')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show Fixture Reference' }));
     expect(screen.getByText('Fixture Reference')).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.hero.name)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.coreCast[0]!.name)).toBeInTheDocument();
+    expect(screen.getByText(storyPackageFixture.worldBase.antagonists[0]!.name)).toBeInTheDocument();
     expect(screen.getByText(storyPackageFixture.worldBase.locationPatch)).toBeInTheDocument();
 
     const providerSetupButton = screen.getByRole('button', { name: /Provider Setup/i });

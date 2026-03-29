@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,6 +13,7 @@ const draftValue: WorldBaseCastDraft = {
   toneBaseline: 'Cold pressure',
   hero: {
     draftId: 'hero-1',
+    characterId: 'chr_hero001',
     name: '',
     identityRole: 'Lead breaker',
     lightNovelTrait: 'Silent pressure',
@@ -28,6 +31,7 @@ const draftValue: WorldBaseCastDraft = {
   coreCast: [
     {
       draftId: 'core-1',
+      characterId: 'chr_core001',
       name: 'Core One',
       identityRole: 'Anchor',
       lightNovelTrait: 'Soft contrast',
@@ -46,6 +50,7 @@ const draftValue: WorldBaseCastDraft = {
   antagonists: [
     {
       draftId: 'antagonist-1',
+      characterId: 'chr_ant001',
       name: 'Villain One',
       identityRole: 'Threat',
       lightNovelTrait: 'Showman',
@@ -65,6 +70,41 @@ const draftValue: WorldBaseCastDraft = {
   supportingCast: 'Support One：Steady witness',
   locationPool: 'Signal room',
 };
+
+function renderControlledSection(initialValue: WorldBaseCastDraft = draftValue) {
+  const onSubmit = vi.fn();
+  const onReset = vi.fn();
+  const onChange = vi.fn();
+  let latestValue = initialValue;
+
+  function Harness() {
+    const [value, setValue] = useState(initialValue);
+    latestValue = value;
+
+    return (
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        value={value}
+        onChange={(nextValue) => {
+          latestValue = nextValue;
+          onChange(nextValue);
+          setValue(nextValue);
+        }}
+        onSubmit={onSubmit}
+        onReset={onReset}
+      />
+    );
+  }
+
+  render(<Harness />);
+
+  return {
+    onSubmit,
+    onReset,
+    onChange,
+    getValue: () => latestValue,
+  };
+}
 
 describe('WorldBaseCastSection', () => {
   afterEach(() => {
@@ -199,5 +239,48 @@ describe('WorldBaseCastSection', () => {
 
     expect(screen.getByRole('heading', { name: '未命名角色' })).toBeInTheDocument();
     expect(screen.getByText('性别 / 性格')).toBeInTheDocument();
+  });
+
+  it('assigns a stable characterId when adding a character and does not reuse an existing id after delete-then-add', async () => {
+    const user = userEvent.setup();
+    const initialValue: WorldBaseCastDraft = {
+      ...draftValue,
+      coreCast: [
+        {
+          ...draftValue.coreCast[0]!,
+          draftId: 'legacy-core-1',
+          characterId: 'chr_core001',
+          name: 'Core One',
+        },
+        {
+          ...draftValue.coreCast[0]!,
+          draftId: 'legacy-core-2',
+          characterId: 'chr_core002',
+          name: 'Core Two',
+        },
+      ],
+    };
+    const { getValue } = renderControlledSection(initialValue);
+
+    await user.click(screen.getByRole('button', { name: /Core One/ }));
+    await user.click(screen.getByRole('button', { name: '删除' }));
+
+    expect(getValue().coreCast.map((character) => character.characterId)).toEqual(['chr_core002']);
+
+    await user.click(screen.getByRole('button', { name: '新增核心角色' }));
+
+    const newCharacter = getValue().coreCast.at(-1);
+
+    expect(newCharacter).toBeDefined();
+    expect(newCharacter?.characterId).toMatch(/^chr_[0-9a-f]{6}$/);
+    expect(newCharacter?.characterId).not.toBe('chr_core001');
+    expect(newCharacter?.characterId).not.toBe('chr_core002');
+    expect(getValue().coreCast.map((character) => character.characterId)).toEqual([
+      'chr_core002',
+      expect.any(String),
+    ]);
+    expect(new Set(getValue().coreCast.map((character) => character.characterId)).size).toBe(
+      getValue().coreCast.length,
+    );
   });
 });

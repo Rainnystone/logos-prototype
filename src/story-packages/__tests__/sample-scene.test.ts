@@ -4,7 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { describe, expect, it } from 'vitest';
 
-import { AuditQuestionSetSchema, WorldBaseSchema } from '@/types';
+import { AuditQuestionSetSchema } from '@/types';
 import {
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
@@ -14,6 +14,27 @@ import {
 
 const projectFixtureRoot = path.resolve(process.cwd(), 'src/story-packages/sample-scene');
 const designFixtureRoot = path.resolve(process.cwd(), 'archive/vendor/LOGOS-SPEC/06_FIXTURES/sample-scene');
+
+type StructuredSceneSpec = {
+  readonly sceneId: string;
+  readonly sceneName: string;
+  readonly openingSituation?: string;
+  readonly startPoint?: string;
+  readonly mainAxis: string;
+  readonly endLine: string;
+  readonly openingHook?: string;
+  readonly samplePurpose?: string;
+  readonly source?: string;
+  readonly cast?: readonly string[];
+};
+
+type StructuredWorldBase = {
+  readonly hero: { readonly name: string; readonly characterId: string };
+  readonly coreCast: readonly Array<{ readonly name: string; readonly characterId: string }>;
+  readonly antagonists: readonly Array<{ readonly name: string; readonly characterId: string }>;
+  readonly npcCharacters: string;
+  readonly locationPatch: string;
+};
 
 function readYamlFile<T>(filePath: string): T {
   return YAML.parse(readFileSync(filePath, 'utf8')) as T;
@@ -48,7 +69,7 @@ describe('sample-scene story package', () => {
   it('converts scene overview into a valid scene spec', () => {
     const sceneSpec = SceneSpecSchema.parse(
       readYamlFile(path.resolve(projectFixtureRoot, 'scene.yaml')),
-    );
+    ) as StructuredSceneSpec;
 
     expect(sceneSpec.sceneId).toBe(extractOverviewValue('sceneId'));
     expect(sceneSpec.sceneName).toBe(extractOverviewValue('sceneName'));
@@ -60,6 +81,14 @@ describe('sample-scene story package', () => {
     expect(sceneSpec.openingHook).not.toContain('恶意信号');
     expect(sceneSpec.openingHook).not.toContain('翻出了窗户');
     expect(sceneSpec.openingHook).toContain('一步步查清幕后操控者');
+  });
+
+  it('stores scene cast separately in scene.yaml', () => {
+    const scene = readYamlFile<StructuredSceneSpec>(
+      path.resolve(projectFixtureRoot, 'scene.yaml'),
+    );
+
+    expect(scene.cast).toEqual(expect.arrayContaining([expect.stringMatching(/^chr_/)]));
   });
 
   it('converts PhasePlan fixtures into a valid phase-plans.yaml file', () => {
@@ -171,12 +200,25 @@ describe('sample-scene story package', () => {
     }
   });
 
-  it('stores world-base content in machine-parseable YAML', () => {
-    const worldBase = WorldBaseSchema.parse(
-      readYamlFile(path.resolve(projectFixtureRoot, 'world-base.yaml')),
+  it('stores world-base content as structured YAML with cast members separated out', () => {
+    const worldBase = readYamlFile<StructuredWorldBase>(
+      path.resolve(projectFixtureRoot, 'world-base.yaml'),
     );
 
-    expect(worldBase.mainCharacters.length).toBeGreaterThan(0);
+    expect(worldBase).toMatchObject({
+      hero: {
+        name: '雾间凪',
+        characterId: expect.stringMatching(/^chr_/),
+      },
+      coreCast: expect.arrayContaining([
+        expect.objectContaining({ name: '宫下藤花' }),
+        expect.objectContaining({ name: '不吉波普' }),
+      ]),
+      antagonists: expect.arrayContaining([
+        expect.objectContaining({ name: '灰谷烈' }),
+      ]),
+    });
+    expect(worldBase).not.toHaveProperty('mainCharacters');
     expect(worldBase.npcCharacters).toContain('竹田启司：');
     expect(worldBase.npcCharacters).toContain('末真和子：');
     expect(worldBase.npcCharacters).toContain('新刻敬：');

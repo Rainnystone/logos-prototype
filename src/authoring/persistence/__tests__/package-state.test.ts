@@ -68,7 +68,7 @@ describe('loadAuthoringState', () => {
       sectionId: 'worldbase-cast',
       payload: {
         uiFields: {
-          mainCharacters: 'reopened-main-characters',
+          worldBaseSetting: 'reopened-world-base-setting',
         },
       },
     });
@@ -78,7 +78,7 @@ describe('loadAuthoringState', () => {
     const reopened = await loadAuthoringState(testPackageName);
 
     expect(reopened.source).toBe('latest-saved');
-    expect(reopened.state.worldBase.mainCharacters).toBe('reopened-main-characters');
+    expect(reopened.state.worldBase.worldBaseSetting).toBe('reopened-world-base-setting');
   });
 
   it('keeps the authoring marker tiny and readable when it is written directly', async () => {

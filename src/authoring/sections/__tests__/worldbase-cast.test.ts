@@ -71,9 +71,9 @@ const structuredWorldBase: WorldBase = {
 
 describe('createEmptyWorldBaseCharacterDraft', () => {
   it('creates an empty structured draft for a requested slot', () => {
-    expect(createEmptyWorldBaseCharacterDraft('core', 2)).toEqual({
-      draftId: 'core-2',
-      characterId: 'core-2',
+    const draft = createEmptyWorldBaseCharacterDraft('core', 2);
+
+    expect(draft).toMatchObject({
       name: '',
       identityRole: '',
       lightNovelTrait: '',
@@ -88,6 +88,8 @@ describe('createEmptyWorldBaseCharacterDraft', () => {
       clothing: '',
       propsWeapon: '',
     });
+    expect(draft.characterId).toMatch(/^chr_[0-9a-f]{6}$/);
+    expect(draft.draftId).toBe(draft.characterId);
   });
 });
 
