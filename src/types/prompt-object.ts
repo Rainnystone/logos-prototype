@@ -3,14 +3,51 @@ import { z } from 'zod';
 import { HistoryEntrySchema, VolumeSchema } from '@/types/common';
 
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+export const CharacterProfileSchema = z
+  .object({
+    characterId: z.string(),
+    name: z.string(),
+    identityRole: z.string(),
+    lightNovelTrait: z.string(),
+    gender: z.string(),
+    personality: z.string(),
+    age: z.string(),
+    occupation: z.string(),
+    characterSummary: z.string(),
+    capabilityBoundary: z.string(),
+    behaviorBoundary: z.string(),
+    oocRedLine: z.string(),
+    clothing: z.string(),
+    propsWeapon: z.string(),
+    fatalWeakness: z.string().optional(),
+  })
+  .strict();
+export type CharacterProfile = z.infer<typeof CharacterProfileSchema>;
+
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const WorldBaseSchema = z
+  .object({
+    worldBaseSetting: z.string().default(''),
+    worldRules: z.string().default(''),
+    toneBaseline: z.string().default(''),
+    hero: CharacterProfileSchema,
+    coreCast: z.array(CharacterProfileSchema).default([]),
+    antagonists: z.array(CharacterProfileSchema).default([]),
+    npcCharacters: z.string().default(''),
+    locationPatch: z.string(),
+  })
+  .strict();
+export type WorldBase = z.infer<typeof WorldBaseSchema>;
+
+/** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
+export const PromptWorldBaseSchema = z
   .object({
     mainCharacters: z.string(),
     npcCharacters: z.string().default(''),
     locationPatch: z.string(),
   })
   .strict();
-export type WorldBase = z.infer<typeof WorldBaseSchema>;
+export type PromptWorldBase = z.infer<typeof PromptWorldBaseSchema>;
 
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const NarrativeSchema = z
@@ -69,7 +106,7 @@ export type GenerationControl = z.infer<typeof GenerationControlSchema>;
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const PromptObjectSchema = z
   .object({
-    worldBase: WorldBaseSchema,
+    worldBase: PromptWorldBaseSchema,
     history: z.array(HistoryEntrySchema),
     narrative: NarrativeSchema,
     directorNote: PromptDirectorNoteSchema,

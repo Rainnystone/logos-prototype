@@ -13,6 +13,88 @@ import type {
 } from '@/types';
 
 describe('Phase 00 contract types', () => {
+  it('exports a structured runtime character schema and world-base schema', async () => {
+    const types = await import('@/types');
+
+    expect(
+      types.CharacterProfileSchema.parse({
+        characterId: 'chr_hero01',
+        name: 'Hero One',
+        identityRole: 'Lead character',
+        lightNovelTrait: 'Calm and precise',
+        gender: 'Female',
+        personality: 'Reserved',
+        age: '16',
+        occupation: 'Student',
+        characterSummary: 'Primary viewpoint character.',
+        capabilityBoundary: 'Uses only physical methods.',
+        behaviorBoundary: 'Does not panic under pressure.',
+        oocRedLine: 'Never breaks character.',
+        clothing: 'School uniform',
+        propsWeapon: 'None',
+      }),
+    ).toMatchObject({ characterId: 'chr_hero01' });
+
+    expect(
+      types.WorldBaseSchema.parse({
+        worldBaseSetting: 'World setting',
+        worldRules: 'World rules',
+        toneBaseline: 'Tone baseline',
+        hero: {
+          characterId: 'chr_hero01',
+          name: 'Hero One',
+          identityRole: 'Lead character',
+          lightNovelTrait: 'Calm and precise',
+          gender: 'Female',
+          personality: 'Reserved',
+          age: '16',
+          occupation: 'Student',
+          characterSummary: 'Primary viewpoint character.',
+          capabilityBoundary: 'Uses only physical methods.',
+          behaviorBoundary: 'Does not panic under pressure.',
+          oocRedLine: 'Never breaks character.',
+          clothing: 'School uniform',
+          propsWeapon: 'None',
+        },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: 'NPC pool',
+        locationPatch: 'Location notes',
+      }),
+    ).toHaveProperty('hero.characterId', 'chr_hero01');
+  });
+
+  it('exports a separate prompt-only world-base schema', async () => {
+    const types = await import('@/types');
+
+    expect(
+      types.PromptWorldBaseSchema.parse({
+        mainCharacters: 'main-characters',
+        npcCharacters: 'npc-characters',
+        locationPatch: 'location-patch',
+      }),
+    ).toMatchObject({
+      mainCharacters: 'main-characters',
+      npcCharacters: 'npc-characters',
+      locationPatch: 'location-patch',
+    });
+  });
+
+  it('keeps scene cast available on the public scene spec contract', async () => {
+    const storyPackage = await import('@/types/story-package');
+
+    expect(storyPackage.SceneSpecSchema).toBeDefined();
+    expect(() =>
+      storyPackage.SceneSpecSchema.parse({
+        sceneId: 'scene-id',
+        sceneName: 'Scene Name',
+        cast: ['chr_hero01', 'chr_core01'],
+        mainAxis: 'main-axis',
+        endLine: 'end-line',
+      }),
+    ).not.toThrow();
+  });
+
   it('models PromptObject with an optional generationControl payload', () => {
     const promptObject: PromptObject = {
       worldBase: {

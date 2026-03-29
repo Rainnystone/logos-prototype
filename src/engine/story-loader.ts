@@ -7,6 +7,11 @@ import { deepFreeze } from '@/lib/deep-freeze';
 import { parseWithSchema } from '@/lib/validation';
 import { AuditQuestionSetSchema, WorldBaseSchema } from '@/types';
 import {
+  filterWorldBaseForSceneCast,
+  isLegacyWorldBase,
+  migrateLegacyWorldBase,
+} from '@/story-packages/world-base-compat';
+import {
   ControlModulesSchema,
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
@@ -34,7 +39,21 @@ async function loadAndValidate<T>(
   }
 }
 
-export async function loadStoryPackage(packageName: string): Promise<StoryPackage> {
+async function loadValidatedWorldBase(filePath: string) {
+  return loadAndValidate(
+    filePath,
+    (data) => {
+      const migratedWorldBase = isLegacyWorldBase(data) ? migrateLegacyWorldBase(data) : data;
+      return parseWithSchema(WorldBaseSchema, migratedWorldBase, 'worldBase');
+    },
+    'world base',
+  );
+}
+
+async function loadStoryPackageInternal(
+  packageName: string,
+  options?: { readonly runtimeProjection?: boolean },
+): Promise<StoryPackage> {
   const packageRoot = path.resolve(process.cwd(), 'src/story-packages', packageName);
 
   try {
@@ -63,16 +82,18 @@ export async function loadStoryPackage(packageName: string): Promise<StoryPackag
     (data) => parseWithSchema(AuditQuestionSetSchema, data, 'auditQuestionSet'),
     'audit question set',
   );
-  const worldBase = await loadAndValidate(
-    path.resolve(packageRoot, 'world-base.yaml'),
-    (data) => parseWithSchema(WorldBaseSchema, data, 'worldBase'),
-    'world base',
-  );
+  const worldBase = await loadValidatedWorldBase(path.resolve(packageRoot, 'world-base.yaml'));
   const controlModules = await loadAndValidate(
     path.resolve(packageRoot, 'control-modules.yaml'),
     (data) => parseWithSchema(ControlModulesSchema, data, 'controlModules'),
     'control modules',
   );
+  const projectedWorldBase = options?.runtimeProjection
+    ? filterWorldBaseForSceneCast(
+        worldBase as Parameters<typeof filterWorldBaseForSceneCast>[0],
+        sceneSpec.cast ? { cast: sceneSpec.cast } : undefined,
+      )
+    : worldBase;
 
   return deepFreeze(
     parseWithSchema(
@@ -83,11 +104,19 @@ export async function loadStoryPackage(packageName: string): Promise<StoryPackag
         routerProfiles: routerLexiconFile.routers,
         auditQuestionSet,
         controlModules,
-        worldBase,
+        worldBase: projectedWorldBase,
       },
       'storyPackage',
     ),
   );
+}
+
+export async function loadStoryPackage(packageName: string): Promise<StoryPackage> {
+  return loadStoryPackageInternal(packageName);
+}
+
+export async function loadRuntimeStoryPackage(packageName: string): Promise<StoryPackage> {
+  return loadStoryPackageInternal(packageName, { runtimeProjection: true });
 }
 
 export type { RouterProfile, SceneSpec, StoryPackage } from '@/types/story-package';
