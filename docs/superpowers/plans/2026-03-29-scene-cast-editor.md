@@ -23,7 +23,7 @@
 - `src/authoring/persistence/bridge.ts`
   Accept the new Scene Cast UI payload shape and pass editor-only mode through the shared save bridge.
 - `src/authoring/persistence/__tests__/bridge.test.ts`
-  Prove no-op saves preserve absent `cast`, explicit empty saves write `cast: []`, and stale IDs are removed on save.
+  Prove no-op saves preserve absent `cast`, explicit empty saves write `cast: []`, stale IDs are removed on save, and hidden `samplePurpose` content is not deleted by this page.
 - `src/app/edit/sections/SceneCastSelector.tsx`
   Render the new brutalist Scene Cast component with summary strip, expandable grouped pools, direct chip removal, warning chips for stale IDs, and hidden implicit hero behavior.
 - `src/app/edit/__tests__/SceneCastSelector.test.tsx`
@@ -72,7 +72,7 @@ Expected: FAIL because the draft model does not yet support `castMode` or cast n
 
 - [ ] **Step 5: Extend the failing bridge and runtime tests**
 
-Add save-path coverage for preserving absent `cast` on untouched legacy Scenes, writing explicit empty `cast: []`, and dropping stale IDs on save; add loader coverage proving absent `cast` still loads the full shared cast.
+Add save-path coverage for preserving absent `cast` on untouched legacy Scenes, writing explicit empty `cast: []`, dropping stale IDs on save, and preserving existing `samplePurpose` when this page saves; add loader coverage proving absent `cast` still loads the full shared cast.
 
 - [ ] **Step 6: Run the bridge, loader, and sample package tests to verify they fail**
 
@@ -95,7 +95,7 @@ Create one focused helper module that derives selectable `coreCast` and `antagon
 
 - [ ] **Step 2: Extend the scene-phase draft model**
 
-Add `cast?: string[]` and `castMode: 'unset' | 'explicit'` to the authoring draft, load absent `sceneSpec.cast` as legacy unset, and stop carrying `samplePurpose` on this page’s editable draft.
+Add `cast?: string[]` and `castMode: 'unset' | 'explicit'` to the authoring draft, load absent `sceneSpec.cast` as legacy unset, and remove `samplePurpose` from this page’s editable controls while still preserving any existing underlying value through save.
 
 - [ ] **Step 3: Render Scene cast with correct save semantics**
 
@@ -163,19 +163,20 @@ git commit -m "feat: add scene cast selector to scene authoring"
 
 **Files:**
 - Modify: `src/app/edit/EditWorkbench.tsx`
+- Modify: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 - Modify: `src/app/__tests__/fixtures.ts`
 - Modify: `src/story-packages/sample-scene/scene.yaml`
 - Modify: `src/story-packages/__tests__/sample-scene.test.ts`
 - Modify: `src/engine/__tests__/story-loader.test.ts`
 
-- [ ] **Step 1: Write the failing workbench fixture adjustments**
+- [ ] **Step 1: Write the failing workbench and fixture adjustments**
 
-Update fixture expectations so `sceneSpec.cast` contains only non-hero IDs and add assertions where needed that the hero remains implicit rather than listed.
+Update `EditWorkbench.test.tsx` so it fails until the Scene page receives shared cast candidates from package state, then update fixture expectations so `sceneSpec.cast` contains only non-hero IDs and add assertions where needed that the hero remains implicit rather than listed.
 
-- [ ] **Step 2: Run the fixture and loader tests to verify they fail**
+- [ ] **Step 2: Run the workbench, fixture, and loader tests to verify they fail**
 
-Run: `npm exec vitest run src/story-packages/__tests__/sample-scene.test.ts src/engine/__tests__/story-loader.test.ts`
-Expected: FAIL because current fixtures still encode the hero inside `sceneSpec.cast`.
+Run: `npm exec vitest run src/app/edit/__tests__/EditWorkbench.test.tsx src/story-packages/__tests__/sample-scene.test.ts src/engine/__tests__/story-loader.test.ts`
+Expected: FAIL because `EditWorkbench` does not yet pass candidate data and current fixtures still encode the hero inside `sceneSpec.cast`.
 
 - [ ] **Step 3: Pass shared character candidates into the Scene page**
 
@@ -206,7 +207,7 @@ git commit -m "refactor: align scene cast fixtures with editor contract"
 
 - [ ] **Step 1: Add any missing regression coverage around page wiring**
 
-Make sure page-level tests still prove the Scene page renders through the unified editor shell and that section saves keep using the existing route.
+Make sure page-level tests still prove the Scene page renders through the unified editor shell, that section saves keep using the existing route, and that saving this page does not delete preserved `samplePurpose` content.
 
 - [ ] **Step 2: Run the focused UI and route tests**
 
@@ -230,7 +231,7 @@ Expected: PASS
 
 - [ ] **Step 6: Perform real browser verification**
 
-Open the Narrative Editor, navigate to `场景与阶段`, verify the new Scene Cast block visually matches the existing brutalist style, confirm collapsed-by-default behavior, select and remove characters, save, reload, and confirm the Scene Cast persists correctly into the page state and runtime-facing data.
+Open the Narrative Editor, navigate to `场景与阶段`, verify the new Scene Cast block visually matches the existing brutalist style, confirm collapsed-by-default behavior, select and remove characters, save, reload, and confirm the Scene Cast persists correctly into the page state and runtime-facing data. Also verify three high-risk cases manually: an untouched legacy Scene still saves without creating `cast`, stale characters show warning state before save and disappear only after save, and existing `samplePurpose` content remains preserved even though it is no longer editable on this page.
 
 - [ ] **Step 7: Commit the final regressions and verification work**
 
