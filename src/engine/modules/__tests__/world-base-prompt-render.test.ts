@@ -94,4 +94,44 @@ describe('world-base prompt render', () => {
     expect(antiOocProfile).not.toContain('Core One');
     expect(antiOocProfile).not.toContain('Antagonist One');
   });
+
+  it('indents multiline hero fields when rendering prompt text', () => {
+    const promptWorldBase = renderWorldBaseForPrompt({
+      ...structuredWorldBase,
+      hero: {
+        ...structuredWorldBase.hero,
+        characterSummary: 'First line\nSecond line',
+        capabilityBoundary: 'Boundary line one\nBoundary line two',
+      },
+    });
+
+    expect(promptWorldBase.mainCharacters).toContain('Character Summary:\n  First line\n  Second line');
+    expect(promptWorldBase.mainCharacters).toContain(
+      'Capability Boundary:\n  Boundary line one\n  Boundary line two',
+    );
+  });
+
+  it('returns an empty anti-OOC profile when hero fields are blank', () => {
+    const antiOocProfile = renderCharacterProfileForOOC({
+      ...structuredWorldBase,
+      hero: {
+        ...structuredWorldBase.hero,
+        name: '',
+        identityRole: '',
+        lightNovelTrait: '',
+        gender: '',
+        personality: '',
+        age: '',
+        occupation: '',
+        characterSummary: '',
+        capabilityBoundary: '',
+        behaviorBoundary: '',
+        oocRedLine: '',
+        clothing: '',
+        propsWeapon: '',
+      },
+    });
+
+    expect(antiOocProfile).toBe('');
+  });
 });

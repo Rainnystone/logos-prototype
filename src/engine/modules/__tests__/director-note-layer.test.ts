@@ -150,6 +150,32 @@ describe('Director Note Layer', () => {
     expect(directorNote.optionConstraints).toMatch(/materially distinct|orthogonal/i);
   });
 
+  it('falls back to the default anti-OOC guidance when hero profile fields are blank', () => {
+    const directorNote = buildDirectorNote(baseRoundState, baseSceneState, {
+      ...baseWorldBase,
+      hero: {
+        ...baseWorldBase.hero,
+        name: '',
+        identityRole: '',
+        lightNovelTrait: '',
+        gender: '',
+        personality: '',
+        age: '',
+        occupation: '',
+        characterSummary: '',
+        capabilityBoundary: '',
+        behaviorBoundary: '',
+        oocRedLine: '',
+        clothing: '',
+        propsWeapon: '',
+      },
+    });
+
+    expect(directorNote.optionConstraints).toContain(
+      'No character profile supplied; default to baseline plausibility checks.',
+    );
+  });
+
   it('works with minimal required RoundState fields', () => {
     const minimalRoundState: RoundState = {
       phaseGoal: 'goal',

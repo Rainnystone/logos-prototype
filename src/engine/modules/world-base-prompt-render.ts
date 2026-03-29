@@ -88,7 +88,7 @@ function renderFieldLines(label: string, value: string): string[] {
     return [`${label}: ${lines[0]}`];
   }
 
-  return [`${label}:`, ...lines];
+  return [`${label}:`, ...lines.map((line) => `  ${line}`)];
 }
 
 function hasRenderableCharacterData(character: CharacterProfile, kind: CharacterKind): boolean {
@@ -167,6 +167,10 @@ function renderCharacterGroup(
 }
 
 export function renderCharacterProfileForOOC(worldBase: WorldBase): string {
+  if (!hasRenderableCharacterData(worldBase.hero, 'hero')) {
+    return '';
+  }
+
   return renderCharacterBlock(worldBase.hero, 1, 'hero');
 }
 
