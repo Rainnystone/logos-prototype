@@ -24,55 +24,51 @@ describe('world-base compatibility helpers', () => {
     ).toBe(false);
   });
 
-  it('migrates legacy world-base content into structured character profiles', () => {
+  it('migrates legacy mainCharacters blobs into structured character profiles', () => {
     const migrated = migrateLegacyWorldBase({
-      mainCharacters: `## World Base Setting
-World setting text
+      mainCharacters: `# Characters
 
-## World Rules / Prohibitions / Anomalous Properties
-World rules text
+## 1. 玩家角色：Hero One
 
-## Genre Tone & Prose Baseline
-Tone text
+**【身份定位】** Lead character
+**【轻小说特质】** Calm and precise
 
-## Hero
-### Character 1
-Name: Hero One
-Identity / Narrative Role: Lead character
-Light-Novel Trait: Calm and precise
-Behavior Boundary:
-Always stays focused.
-OOC Red Line: Never breaks character.
+- **行为边界**：
+  - Always stays focused.
+  - **OOC 红线**：Never breaks character.
 
-## Core Cast
-### Character 1
-Name: Core One
-Identity / Narrative Role: Support
-Behavior Boundary:
-Stays grounded.
+## 2. 关键角色与机制
 
-## Antagonists
-### Character 1
-Name: Villain One
-Identity / Narrative Role: Opponent
-Behavior Boundary:
-Pushes conflict forward.
-Fatal Weakness:
-Overconfidence.`,
+### A. Core One
+
+**【身份定位】** Support
+
+- **行为边界**：
+  - Stays grounded.
+
+## 3. 核心反派：Villain One
+
+**【身份定位】** Opponent
+
+- **行为边界**：
+  - Pushes conflict forward.
+- **致命弱点**：
+  - Overconfidence.`,
       npcCharacters: 'NPC pool',
       locationPatch: 'Location notes',
     });
 
-    expect(migrated.worldBaseSetting).toBe('World setting text');
-    expect(migrated.worldRules).toBe('World rules text');
-    expect(migrated.toneBaseline).toBe('Tone text');
+    expect(migrated.worldBaseSetting).toBe('');
+    expect(migrated.worldRules).toBe('');
+    expect(migrated.toneBaseline).toBe('');
     expect(migrated.hero).toMatchObject({
       name: 'Hero One',
       identityRole: 'Lead character',
       lightNovelTrait: 'Calm and precise',
-      behaviorBoundary: 'Always stays focused.',
       oocRedLine: 'Never breaks character.',
     });
+    expect(migrated.hero.behaviorBoundary).toContain('Always stays focused.');
+    expect(migrated.hero.behaviorBoundary).toContain('OOC 红线：Never breaks character.');
     expect(migrated.hero.characterId).toMatch(/^chr_[0-9a-f]{6}$/);
     expect(migrated.coreCast).toHaveLength(1);
     expect(migrated.coreCast[0]).toMatchObject({
