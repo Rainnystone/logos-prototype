@@ -18,7 +18,7 @@ describe('StateInspector', () => {
     expect(screen.getByText('Beat 3 / 4')).toBeInTheDocument();
   });
 
-  it('displays Alpha and Beta boundaries', () => {
+  it('renders Alpha and Beta constraint cards', () => {
     render(
       <StateInspector
         state={stateSnapshotFixture}
@@ -26,8 +26,10 @@ describe('StateInspector', () => {
       />,
     );
 
-    expect(screen.getByText(stateSnapshotFixture.sceneState.alpha)).toBeInTheDocument();
-    expect(screen.getByText(stateSnapshotFixture.sceneState.beta)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Alpha' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Beta' })).toBeInTheDocument();
+    expect(screen.getByTestId('constraint-body-alpha')).toHaveTextContent('...');
+    expect(screen.getByTestId('constraint-body-beta')).toHaveTextContent('...');
   });
 
   it('keeps long Alpha and Beta compact by default and reveals the full text on hover or focus', async () => {
@@ -86,6 +88,50 @@ describe('StateInspector', () => {
 
     expect(betaCard).toHaveAttribute('data-expanded', 'false');
     expect(betaBody).not.toHaveTextContent(longBeta);
+  });
+
+  it('keeps visually long Chinese Alpha and Beta compact by default and reveals the full text on hover', async () => {
+    const user = userEvent.setup();
+    const chineseAlpha =
+      '凪主动切断起火源并利用混乱迅速脱离宫下藤花的视线，在不惊动校方的情况下强行突破电子陷阱，以最短路径锁定并突袭视听室。';
+    const chineseBeta =
+      '凪在确保宫下藤花安全疏散后，被动跟随异常信号的引导进入偏僻校区，在避开人群的同时逐步落入灰谷烈布置的诱导陷阱，最终被迫进入视听室对峙。';
+
+    render(
+      <StateInspector
+        state={{
+          ...stateSnapshotFixture,
+          sceneState: {
+            ...stateSnapshotFixture.sceneState,
+            alpha: chineseAlpha,
+            beta: chineseBeta,
+          },
+        }}
+        gradientSequence={['Low', 'Med', 'High', 'Low']}
+      />,
+    );
+
+    const alphaCard = screen.getByTestId('constraint-card-alpha');
+    const betaCard = screen.getByTestId('constraint-card-beta');
+    const alphaBody = screen.getByTestId('constraint-body-alpha');
+    const betaBody = screen.getByTestId('constraint-body-beta');
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'false');
+    expect(alphaBody).toHaveTextContent('...');
+    expect(alphaBody).not.toHaveTextContent(chineseAlpha);
+    expect(betaCard).toHaveAttribute('data-expanded', 'false');
+    expect(betaBody).toHaveTextContent('...');
+    expect(betaBody).not.toHaveTextContent(chineseBeta);
+
+    await user.hover(alphaCard);
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'true');
+    expect(alphaBody).toHaveTextContent(chineseAlpha);
+
+    await user.unhover(alphaCard);
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'false');
+    expect(alphaBody).toHaveTextContent('...');
   });
 
   it('displays the current volume and router', () => {

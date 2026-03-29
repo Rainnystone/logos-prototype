@@ -1,0 +1,26 @@
+<h2>场景阵容 (Scene Cast) UI 视觉优化方案</h2>
+<p class="subtitle">目标：保留下拉功能，增强新粗野主义 (Neo-Brutalism) 视觉一致性，解决当前布局松散和边框突兀的问题。</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案 A：重型手风琴展开 (The Heavy Accordion)</h3>
+      <p>将当前松散的细线框改为<strong>统一的粗边框（2px/3px）区块</strong>。展开时，下方列表不作为浮层，而是作为区块的自然向下延伸。内部采用紧凑的高对比度网格，消除“悬浮”和拼凑感，与右侧的“备注”和底部的按钮重量感对齐。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案 B：硬阴影下拉菜单 (The Brutal Popover)</h3>
+      <p>主界面收起时极致干练。点击“展开”后，角色选择面板作为<strong>带有实色硬阴影 (如 4px 4px 0 #000) 的绝对定位浮层</strong>出现。这样可以在不破坏或挤压下方页面布局（文档流）的前提下进行选择，同时硬阴影是完美契合新粗野主义的经典元素。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案 C：分栏式内嵌面板 (The Split Panel)</h3>
+      <p>彻底抛弃“下拉”概念。将该区域变成一个<strong>固定形态的粗边框控制面板</strong>。左半边是已选角色筹码，右半边（或下方固定区域）是一个内部可滚动的候选角色列表。消除“展开/收起”带来的页面跳动，提供最稳定的视觉锚点。</p>
+    </div>
+  </div>
+</div>

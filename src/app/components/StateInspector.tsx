@@ -13,7 +13,8 @@ interface StateInspectorProps {
 
 type ConstraintKey = 'alpha' | 'beta';
 
-const CONSTRAINT_PREVIEW_LIMIT = 88;
+const CONSTRAINT_PREVIEW_LIMIT = 50;
+const WIDE_CHARACTER_PATTERN = /[\u1100-\u11ff\u2e80-\u9fff\uf900-\ufaff\uff01-\uff60]/u;
 
 function getVolumeClass(volume: Volume) {
   if (volume === 'High') {
@@ -27,8 +28,14 @@ function getVolumeClass(volume: Volume) {
   return 'volume-chip volume-chip--low';
 }
 
+function getConstraintVisualLength(text: string) {
+  return Array.from(text).reduce((total, character) => {
+    return total + (WIDE_CHARACTER_PATTERN.test(character) ? 2 : 1);
+  }, 0);
+}
+
 function getConstraintPreview(text: string) {
-  if (text.length <= CONSTRAINT_PREVIEW_LIMIT) {
+  if (getConstraintVisualLength(text) <= CONSTRAINT_PREVIEW_LIMIT) {
     return text;
   }
 
@@ -49,7 +56,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
   }
 
   function renderConstraintCard(key: ConstraintKey, label: string, text: string) {
-    const isExpandable = text.length > CONSTRAINT_PREVIEW_LIMIT;
+    const isExpandable = getConstraintVisualLength(text) > CONSTRAINT_PREVIEW_LIMIT;
     const isExpanded = isExpandable && expandedConstraint === key;
     const preview = getConstraintPreview(text);
 
