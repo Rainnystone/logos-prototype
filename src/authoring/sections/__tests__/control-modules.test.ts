@@ -79,7 +79,6 @@ const currentStoryPackage = {
     },
     directorNoteAdditions: {
       beatConstraintsAdditions: 'Keep the pressure physical and local.',
-      optionConstraintsAdditions: 'Options must preserve clean tactical contrast.',
     },
     beatVolumeDefinitions: {
       Low: {

@@ -148,14 +148,11 @@ export function buildDirectorNote(
         buildBeatConstraints(roundState, sceneState, controlOverrides),
         controlOverrides?.directorNoteAdditions.beatConstraintsAdditions,
       ),
-      optionConstraints: appendAuthorAddition(
-        buildOptionConstraints(
-          roundState,
-          sceneState,
-          worldBase.mainCharacters,
-          controlOverrides,
-        ),
-        controlOverrides?.directorNoteAdditions.optionConstraintsAdditions,
+      optionConstraints: buildOptionConstraints(
+        roundState,
+        sceneState,
+        worldBase.mainCharacters,
+        controlOverrides,
       ),
     },
     'directorNote',

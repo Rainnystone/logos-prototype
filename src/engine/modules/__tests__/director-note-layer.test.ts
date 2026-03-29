@@ -151,7 +151,6 @@ describe('Director Note Layer', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase, {
       directorNoteAdditions: {
         beatConstraintsAdditions: 'Never let the scene drift into spectacle beyond a containable campus incident.',
-        optionConstraintsAdditions: 'Keep every option grounded in immediate physical action.',
       },
       beatVolumeDefinitions: {
         Low: {
@@ -178,8 +177,8 @@ describe('Director Note Layer', () => {
     expect(directorNote.optionConstraints).toContain(
       'Use balanced action options with clear real-time wording.',
     );
-    expect(directorNote.optionConstraints).toContain(
-      'Keep every option grounded in immediate physical action.',
+    expect(directorNote.optionConstraints).not.toContain(
+      'Never let the scene drift into spectacle beyond a containable campus incident.',
     );
   });
 });

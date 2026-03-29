@@ -115,7 +115,6 @@ export const storyPackageFixture: StoryPackage = deepFreeze({
     },
     directorNoteAdditions: {
       beatConstraintsAdditions: 'keep the beat local and concrete',
-      optionConstraintsAdditions: 'keep the options tactically distinct',
     },
     beatVolumeDefinitions: {
       Low: {

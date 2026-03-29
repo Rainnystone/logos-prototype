@@ -163,7 +163,7 @@ export function ControlModulesSection({
     };
   }
 
-  function updateDirectorNote(field: 'beatConstraintsAdditions' | 'optionConstraintsAdditions') {
+  function updateDirectorNote(field: 'beatConstraintsAdditions') {
     return (event: ChangeEvent<HTMLTextAreaElement>) => {
       updateDraft({
         ...value,
@@ -471,14 +471,6 @@ export function ControlModulesSection({
                     aria-label="Beat 限制补充"
                     value={value.controlModules.directorNoteAdditions.beatConstraintsAdditions}
                     onChange={updateDirectorNote('beatConstraintsAdditions')}
-                  />
-                </label>
-                <label className="form-field">
-                  <span className="form-label">选项限制补充</span>
-                  <textarea
-                    aria-label="选项限制补充"
-                    value={value.controlModules.directorNoteAdditions.optionConstraintsAdditions}
-                    onChange={updateDirectorNote('optionConstraintsAdditions')}
                   />
                 </label>
               </div>

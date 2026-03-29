@@ -65,7 +65,6 @@ export type LightConeCustomization = z.infer<typeof LightConeCustomizationSchema
 export const DirectorNoteAdditionsSchema = z
   .object({
     beatConstraintsAdditions: z.string(),
-    optionConstraintsAdditions: z.string(),
   })
   .strict();
 export type DirectorNoteAdditions = z.infer<typeof DirectorNoteAdditionsSchema>;

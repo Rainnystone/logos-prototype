@@ -84,7 +84,6 @@ export const storyPackageFixture: StoryPackage = {
     },
     directorNoteAdditions: {
       beatConstraintsAdditions: 'Keep beats local, physical, and easy to trace.',
-      optionConstraintsAdditions: 'Keep options tactically distinct without overt spectacle.',
     },
     beatVolumeDefinitions: {
       Low: {

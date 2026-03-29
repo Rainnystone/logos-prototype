@@ -626,7 +626,6 @@ describe('saveSectionDraft', () => {
             },
             directorNoteAdditions: {
               beatConstraintsAdditions: 'Keep the current beat grounded.',
-              optionConstraintsAdditions: 'Keep the options materially distinct.',
             },
             beatVolumeDefinitions: {
               Low: {

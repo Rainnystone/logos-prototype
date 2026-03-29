@@ -67,6 +67,10 @@ describe('ControlModulesSection', () => {
     expect(screen.getByRole('button', { name: '保存本页' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '重置本页' })).toBeInTheDocument();
 
+    await user.click(screen.getByRole('button', { name: '导演提示补充' }));
+    expect(screen.getByRole('textbox', { name: 'Beat 限制补充' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: '选项限制补充' })).not.toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: 'Beat Volume 定义' }));
 
     expect(screen.getByText('Low')).toBeInTheDocument();

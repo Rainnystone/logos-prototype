@@ -33,7 +33,6 @@ const loadAuthoringState = vi.fn(async () => ({
       },
       directorNoteAdditions: {
         beatConstraintsAdditions: 'beat additions',
-        optionConstraintsAdditions: 'option additions',
       },
       beatVolumeDefinitions: {
         Low: {

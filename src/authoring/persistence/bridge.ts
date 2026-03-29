@@ -456,9 +456,6 @@ function extractControlModulesDraft(request: SaveRequest): ControlModulesDraft |
         beatConstraintsAdditions: isStringField(directorNoteAdditions.beatConstraintsAdditions)
           ? directorNoteAdditions.beatConstraintsAdditions
           : '',
-        optionConstraintsAdditions: isStringField(directorNoteAdditions.optionConstraintsAdditions)
-          ? directorNoteAdditions.optionConstraintsAdditions
-          : '',
       },
       beatVolumeDefinitions: {
         Low: toVolumeEntry(beatVolumeDefinitions.Low),

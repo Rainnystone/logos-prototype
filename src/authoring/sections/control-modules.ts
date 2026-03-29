@@ -268,10 +268,7 @@ export function validateControlModulesDraft(
   }
 
   if (moduleScope === 'director-note-additions') {
-    if (
-      !normalizeText(draft.controlModules.directorNoteAdditions.beatConstraintsAdditions) &&
-      !normalizeText(draft.controlModules.directorNoteAdditions.optionConstraintsAdditions)
-    ) {
+    if (!normalizeText(draft.controlModules.directorNoteAdditions.beatConstraintsAdditions)) {
       issues.push('导演提示补充至少需要一个非空字段。');
     }
   }
@@ -370,9 +367,6 @@ export function renderControlModulesSave(
         directorNoteAdditions: {
           beatConstraintsAdditions: normalizeText(
             draft.controlModules.directorNoteAdditions.beatConstraintsAdditions,
-          ),
-          optionConstraintsAdditions: normalizeText(
-            draft.controlModules.directorNoteAdditions.optionConstraintsAdditions,
           ),
         },
       },

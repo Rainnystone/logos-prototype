@@ -34,7 +34,6 @@ const storyPackageFixture = {
     },
     directorNoteAdditions: {
       beatConstraintsAdditions: 'beat additions',
-      optionConstraintsAdditions: 'option additions',
     },
     beatVolumeDefinitions: {
       Low: {
