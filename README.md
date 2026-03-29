@@ -12,6 +12,7 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 - 一个 LOGOS Narrative Editor，负责作者侧的四个正式页面编辑。
 - 一条 coordinator-first 的保存与验证路径，用来把页面编辑安全地写回故事包。
 - 一套 sample story package 和完整测试，用来验证这套控制结构确实可运行。
+- 一套已经结构化的世界与角色写法，用来把主角、核心角色、反派和场景出场边界正式拆开。
 
 从产品定位上看，LOGOS 可以理解成“面向文字叙事的 RPG Maker”，只是它的基本单位不是地图块和事件树，而是 `Scene`、`Phase`、`Beat`、`Volume`、`Router`、`Alpha/Beta` 和 `Director Note` 这些叙事控制对象。当前仓库已经把这套对象拆进了页面、模块、故事包和测试里，能够同时被人类作者和 AI coding agent 理解与使用。
 
@@ -53,6 +54,13 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 
 - 仓库内置 `sample-scene`，用于验证当前控制结构。
 - 当前测试覆盖运行时、作者编辑链路、故事包样例、UI 页面和引擎模块。
+
+### 6. 角色结构与场景出场控制
+
+- `world-base.yaml` 已经把主角、核心角色和反派拆成独立结构，而不是继续混在一整段人物文本里。
+- 每个正式角色都有稳定身份标记，后续可以作为记忆系统和跨场景引用的锚点。
+- `scene.yaml` 已经支持单独记录当前场景的出场角色名单。
+- Narrative Editor 已经提供对应的场景出场角色编辑入口，作者默认不需要直接查看或手写 YAML。
 
 ## Roadmap
 
@@ -218,6 +226,7 @@ npm run test:e2e
 - coordinator 负责解释请求和组织保存
 - bridge / persistence 负责验证、写回和重载
 - 失败时会返回阻塞信息，而不是静默写坏故事包
+- 角色主档和场景出场边界已经分开写回，不再依赖一整段混合人物文本
 
 ## 项目结构
 
