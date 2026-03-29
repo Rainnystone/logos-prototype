@@ -93,18 +93,12 @@ export async function persistWorldBaseDraft(
   nextWorldBase: WorldBase,
 ): Promise<readonly string[]> {
   const worldBasePath = resolveWorldBasePath(packageName);
-  const currentWorldBase = parseWithSchema(
+  const validatedWorldBase = parseWithSchema(
     WorldBaseSchema,
-    YAML.parse(await readFile(worldBasePath, 'utf8')) as unknown,
+    nextWorldBase,
     'worldBase',
   ) as WorldBase;
-
-  const mergedWorldBase: WorldBase = {
-    ...currentWorldBase,
-    ...nextWorldBase,
-  };
-
-  await writeFile(worldBasePath, `${YAML.stringify(mergedWorldBase)}`, 'utf8');
+  await writeFile(worldBasePath, `${YAML.stringify(validatedWorldBase)}`, 'utf8');
 
   return ['world-base.yaml'];
 }

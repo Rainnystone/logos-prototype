@@ -38,7 +38,7 @@ import {
   type ScenePhaseAuthoringDraft,
 } from '@/authoring/sections/scene-phase-authoring';
 import {
-  renderWorldBase,
+  applyWorldBaseCastDraft,
   type WorldBaseCastDraft,
   type WorldBaseCharacterDraft,
 } from '@/authoring/sections/worldbase-cast';
@@ -200,33 +200,6 @@ function validateSaveRequest(request: SaveRequest): readonly string[] {
   return issues;
 }
 
-function extractWorldBaseMainCharactersDraft(request: SaveRequest): string | null {
-  const uiFields = request.payload.uiFields;
-  if (uiFields && typeof uiFields.mainCharacters === 'string') {
-    return uiFields.mainCharacters;
-  }
-
-  const patchCandidates = request.payload.patchCandidates ?? [];
-  const patchCandidate = patchCandidates.find((candidate) => {
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-      return false;
-    }
-
-    const recordCandidate = candidate as Record<string, unknown>;
-    return (
-      recordCandidate.type === 'replace' &&
-      recordCandidate.path === 'mainCharacters' &&
-      typeof recordCandidate.value === 'string'
-    );
-  });
-
-  if (!patchCandidate || typeof patchCandidate !== 'object' || Array.isArray(patchCandidate)) {
-    return null;
-  }
-
-  return (patchCandidate as Record<string, unknown>).value as string;
-}
-
 function isStringField(value: unknown): value is string {
   return typeof value === 'string';
 }
@@ -238,6 +211,7 @@ function isWorldBaseCharacterDraft(value: unknown): value is WorldBaseCharacterD
 
   return (
     typeof value.draftId === 'string' &&
+    typeof value.characterId === 'string' &&
     typeof value.name === 'string' &&
     typeof value.identityRole === 'string' &&
     typeof value.lightNovelTrait === 'string' &&
@@ -516,16 +490,11 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
     );
   }
 
-  const nextMainCharacters = extractWorldBaseMainCharactersDraft(request);
   const nextWorldBaseDraft = extractWorldBaseCastDraft(request);
   const nextScenePhaseDraft = extractScenePhaseAuthoringDraft(request);
   const nextControlModulesDraft = extractControlModulesDraft(request);
 
-  if (
-    request.sectionId === 'worldbase-cast' &&
-    nextMainCharacters === null &&
-    nextWorldBaseDraft === null
-  ) {
+  if (request.sectionId === 'worldbase-cast' && nextWorldBaseDraft === null) {
     return createSaveBlockedResult(
       {
         requestId: request.requestId,
@@ -608,13 +577,10 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName);
 
         try {
-          const nextWorldBase =
-            nextWorldBaseDraft !== null
-              ? renderWorldBase(currentStoryPackage.worldBase, nextWorldBaseDraft)
-              : {
-                  ...currentStoryPackage.worldBase,
-                  mainCharacters: nextMainCharacters ?? currentStoryPackage.worldBase.mainCharacters,
-                };
+          const nextWorldBase = applyWorldBaseCastDraft(
+            currentStoryPackage.worldBase,
+            nextWorldBaseDraft!,
+          );
 
           changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase);
           reloadedSectionState = await reloadStoryPackage(request.packageName);
