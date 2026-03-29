@@ -110,7 +110,7 @@ export function SceneCastSelector({
 
   return (
     <section className="rounded-none border-2 border-black bg-white shadow-brutal">
-      <div className="border-b-2 border-black bg-[#f5f5f5] px-4 py-4">
+      <div className={`px-4 py-4 transition-colors ${isExpanded ? 'border-b-2 border-black bg-white' : 'bg-white'}`}>
         <div className="flex items-start justify-between gap-3">
           <button
             type="button"
@@ -120,22 +120,22 @@ export function SceneCastSelector({
             onClick={() => setIsExpanded((currentExpanded) => !currentExpanded)}
           >
             <p className="panel-eyebrow">场景阵容</p>
-            <h4 className="text-xl font-semibold text-black">Scene Cast</h4>
-            <p className="mt-2 text-sm leading-relaxed text-black">{summaryCopy}</p>
+            <h4 className="text-xl font-bold uppercase tracking-[0.08em] text-black">Scene Cast</h4>
+            <p className="mt-2 text-sm leading-relaxed text-black/80">{summaryCopy}</p>
           </button>
           <button
             type="button"
             aria-controls={bodyId}
             aria-expanded={isExpanded}
-            className="secondary-link shrink-0"
+            className={`shrink-0 rounded-none border-2 border-black bg-white px-4 py-2 text-sm font-bold uppercase transition hover:bg-[#e5e5e5] ${!isExpanded ? 'shadow-[2px_2px_0_0_#000]' : ''}`}
             onClick={() => setIsExpanded((currentExpanded) => !currentExpanded)}
           >
-            <span className="mr-2">场景阵容</span>
-            <span aria-hidden="true">{isExpanded ? '收起' : '展开'}</span>
+            <span aria-hidden="true">{isExpanded ? '收起 ▲' : '展开 ▼'}</span>
+            <span className="sr-only">场景阵容</span>
           </button>
         </div>
 
-        <div className="mt-3 flex min-h-10 flex-wrap gap-2">
+        <div className="mt-4 flex min-h-10 flex-wrap gap-2">
           {selectedEntries.length > 0 ? (
             selectedEntries.map((entry) => (
               <button
@@ -149,7 +149,7 @@ export function SceneCastSelector({
               </button>
             ))
           ) : (
-            <span className="inline-flex items-center border-2 border-black bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black">
+            <span className="inline-flex items-center border-2 border-black bg-[#f5f5f5] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black">
               主角默认继承，不在这里选择
             </span>
           )}
@@ -170,7 +170,7 @@ export function SceneCastSelector({
           {value.castMode === 'unset' ? null : (
             <button
               type="button"
-              className="inline-flex items-center border-2 border-black bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black transition hover:bg-[#e5e5e5]"
+              className="inline-flex items-center border-2 border-black bg-[#f5f5f5] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black transition hover:bg-[#e5e5e5]"
               onClick={restoreDefaultInheritance}
             >
               使用默认继承
@@ -206,7 +206,7 @@ export function SceneCastSelector({
       </div>
 
       {isExpanded ? (
-        <div id={bodyId} className="grid gap-4 bg-white p-4 md:grid-cols-2">
+        <div id={bodyId} className="grid gap-4 bg-[#f5f5f5] p-4 md:grid-cols-2">
           {(['核心角色', '反派'] as const).map((groupLabel) => {
             const entries = selectableEntries.filter((entry) => entry.groupLabel === groupLabel);
 
@@ -214,7 +214,7 @@ export function SceneCastSelector({
               <section
                 key={groupLabel}
                 aria-label={groupLabel}
-                className="rounded-none border-2 border-black bg-[#f5f5f5] p-4"
+                className="rounded-none border-2 border-black bg-white p-4"
               >
                 <div className="mb-3">
                   <p className="panel-eyebrow">{groupLabel}</p>
