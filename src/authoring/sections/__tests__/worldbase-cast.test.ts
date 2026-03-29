@@ -71,7 +71,7 @@ const structuredWorldBase: WorldBase = {
 
 describe('createEmptyWorldBaseCharacterDraft', () => {
   it('creates an empty structured draft for a requested slot', () => {
-    const draft = createEmptyWorldBaseCharacterDraft('core', 2);
+    const draft = createEmptyWorldBaseCharacterDraft('core');
 
     expect(draft).toMatchObject({
       name: '',

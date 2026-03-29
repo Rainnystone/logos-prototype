@@ -37,14 +37,6 @@ function formatUsageHeadline(usage: UsageInfo | null) {
   return derivedTotal > 0 ? `${derivedTotal} tokens` : 'Not reported';
 }
 
-function formatUsageBreakdown(usage: UsageInfo | null) {
-  if (!usage) {
-    return 'Prompt -, Completion -';
-  }
-
-  return `Prompt ${usage.promptTokens ?? '-'}, Completion ${usage.completionTokens ?? '-'}`;
-}
-
 export function ConfigPanel({
   initialConfig = null,
   onSave,

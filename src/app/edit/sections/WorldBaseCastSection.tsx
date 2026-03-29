@@ -264,7 +264,6 @@ export function WorldBaseCastSection({
   function addCharacter(group: 'coreCast' | 'antagonists') {
     const nextCharacter = createEmptyWorldBaseCharacterDraft(
       group === 'coreCast' ? 'core' : 'antagonist',
-      value[group].length + 1,
     );
 
     onChange({

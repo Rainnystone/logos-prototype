@@ -369,7 +369,7 @@ describe('saveSectionDraft', () => {
         expect.arrayContaining(['scene.yaml', 'phase-plans.yaml', 'authoring-state.json']),
       );
       expect(result.reloadedSectionState.sceneSpec.sceneName).toBe('炎上直播间·改');
-      expect((result.reloadedSectionState.sceneSpec as Record<string, string>).startPoint).toBe(
+      expect(result.reloadedSectionState.sceneSpec.startPoint).toBe(
         '日常走廊先出现异常升温，凪从人群表层脱离。',
       );
       expect(result.reloadedSectionState.sceneSpec.mainAxis).toBe(
@@ -892,7 +892,6 @@ describe('saveSectionDraft', () => {
 
   it('returns a warning-style dryRun result without changing files', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const originalWorldBase = readSavedWorldBase();
 
     const result = await saveSectionDraft({

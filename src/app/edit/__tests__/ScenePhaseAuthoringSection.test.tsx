@@ -181,7 +181,8 @@ describe('ScenePhaseAuthoringSection', () => {
     const firstPhaseWithoutRouter =
       draft.phasePlans.length > 0
         ? (() => {
-            const { routerHint: _routerHint, ...phase } = draft.phasePlans[0]!;
+            const { routerHint, ...phase } = draft.phasePlans[0]!;
+            void routerHint;
             return phase;
           })()
         : null;

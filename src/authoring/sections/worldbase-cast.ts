@@ -113,7 +113,6 @@ function normalizeCharacterList(
 
 export function createEmptyWorldBaseCharacterDraft(
   kind: CharacterKind,
-  _index: number,
 ): WorldBaseCharacterDraft {
   const generatedId = generateCharacterId();
 

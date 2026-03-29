@@ -30,8 +30,8 @@ type StructuredSceneSpec = {
 
 type StructuredWorldBase = {
   readonly hero: { readonly name: string; readonly characterId: string };
-  readonly coreCast: readonly Array<{ readonly name: string; readonly characterId: string }>;
-  readonly antagonists: readonly Array<{ readonly name: string; readonly characterId: string }>;
+  readonly coreCast: ReadonlyArray<{ readonly name: string; readonly characterId: string }>;
+  readonly antagonists: ReadonlyArray<{ readonly name: string; readonly characterId: string }>;
   readonly npcCharacters: string;
   readonly locationPatch: string;
 };
@@ -87,8 +87,17 @@ describe('sample-scene story package', () => {
     const scene = readYamlFile<StructuredSceneSpec>(
       path.resolve(projectFixtureRoot, 'scene.yaml'),
     );
+    const worldBase = readYamlFile<StructuredWorldBase>(
+      path.resolve(projectFixtureRoot, 'world-base.yaml'),
+    );
+    const knownCharacterIds = new Set([
+      worldBase.hero.characterId,
+      ...worldBase.coreCast.map((character) => character.characterId),
+      ...worldBase.antagonists.map((character) => character.characterId),
+    ]);
 
     expect(scene.cast).toEqual(expect.arrayContaining([expect.stringMatching(/^chr_/)]));
+    expect(scene.cast?.every((characterId) => knownCharacterIds.has(characterId))).toBe(true);
   });
 
   it('converts PhasePlan fixtures into a valid phase-plans.yaml file', () => {
