@@ -73,10 +73,21 @@ Structure:
 
 Interaction:
 
+- Summary strip is always visible
+- Component is collapsed by default on first page load
+- Clicking the summary strip header or chevron toggles expand / collapse
 - Clicking a pool card toggles selected / unselected
 - Clicking a selected summary chip removes that character immediately
 - Hover feedback is subtle
 - Primary interaction is click/tap, not hover-dependent
+
+Summary content rules:
+
+- If the Scene is in legacy unset state, the summary strip shows a neutral placeholder:
+  - `当前沿用默认场景范围（尚未单独设置出场角色）`
+- If the Scene is explicit and no non-hero role is selected, the summary strip shows:
+  - `除主角外，当前没有额外出场角色`
+- If explicit selections exist, the summary strip shows selected character chips
 
 ### Visual Rules
 
@@ -104,9 +115,15 @@ The component must stay consistent with the existing neue brutalism system:
 
 Extend the scene-phase authoring draft so Scene-level draft data includes:
 
-- `cast: string[]`
+- `cast?: string[]`
+- `castMode: 'unset' | 'explicit'`
 
-This field stores only shared non-hero `characterId` values.
+`cast` stores only shared non-hero `characterId` values.
+
+`castMode` is editor-only state used to preserve the semantic difference between:
+
+- Scene has never authored a dedicated cast yet (`unset`)
+- Scene has explicitly authored a cast, including an explicit empty set (`explicit`)
 
 ### Candidate Source
 
@@ -121,7 +138,10 @@ No duplicated Scene-local character registry is introduced.
 
 ### Write Path
 
-Saving the `场景与阶段` page writes `sceneSpec.cast` directly to `scene.yaml.cast`.
+Saving the `场景与阶段` page writes Scene cast to `scene.yaml` by mode:
+
+- If `castMode === 'unset'`, do not write a `cast` field and preserve an absent `scene.yaml.cast`
+- If `castMode === 'explicit'`, write normalized `sceneSpec.cast` directly to `scene.yaml.cast`
 
 ### Ordering Rule
 
@@ -147,6 +167,25 @@ Do not omit the field when the author has explicitly saved an empty selection. O
 - "no Scene cast was authored yet"
 - "the author intentionally selected nobody beyond the hero"
 
+### Legacy Unset Behavior
+
+Existing scenes that do not yet have `scene.yaml.cast` must load into the editor as:
+
+- `castMode: 'unset'`
+- `cast: undefined`
+
+This avoids silently converting old Scene meaning from:
+
+- "no dedicated Scene cast was authored"
+
+into:
+
+- "the author explicitly selected nobody beyond the hero"
+
+If the author opens the page and saves without interacting with Scene cast, the file must remain without `cast`.
+
+The Scene only transitions from `unset` to `explicit` when the author directly interacts with the Scene cast control.
+
 ## Compatibility / Preservation Rules
 
 ### samplePurpose
@@ -163,7 +202,9 @@ To avoid widening scope:
 
 If a Scene already has `cast`, load and display it.
 
-If a Scene does not yet have `cast`, initialize the editor draft as an empty selection rather than inventing one from heuristics.
+If a Scene does not yet have `cast`, load it into the editor as legacy unset state rather than inventing an empty selection.
+
+The component must not infer or preselect all available characters in this case. It should instead show the neutral legacy placeholder until the author makes an explicit Scene cast choice.
 
 ## Validation Rules
 
@@ -171,12 +212,17 @@ If a Scene does not yet have `cast`, initialize the editor draft as an empty sel
 - Invalid / dangling IDs must not survive a save round
 - Hero must never be duplicated into `cast`
 - Duplicate IDs must be collapsed to one entry in the saved result
+- `cast: []` is valid only when the Scene is in explicit mode
 
 ## Error Handling
 
-- If a referenced character disappears from `worldBase`, the editor should simply stop showing it as selectable
+- If a referenced character disappears from `worldBase`, it must not appear in the selectable pool
+- If explicit `cast` contains stale IDs, the summary strip should still surface them as disabled warning chips until save
+- A short inline warning should explain that these characters are no longer available and will be removed on next save
 - On save, stale IDs should be dropped rather than preserved invisibly
 - The UI should remain usable even when the selected set becomes empty
+
+This avoids silent data loss between load and save while still keeping persisted Scene cast clean.
 
 ## Test Expectations
 
@@ -189,13 +235,20 @@ The change should be covered at three levels:
 - Clicking pool card toggles selection
 - Selected state is visually distinct
 - Hero does not appear in the selector
+- Component defaults to collapsed
+- Legacy unset Scene shows neutral placeholder instead of empty-selection copy
+- Explicit empty Scene shows the explicit empty-selection copy
+- Stale IDs surface as disabled warning chips before save
 
 ### Authoring / Save Path
 
 - Draft includes Scene `cast`
+- Draft preserves `unset` vs `explicit` Scene cast state
 - Save writes `scene.yaml.cast` directly
 - Empty selection persists as `cast: []`
 - Saved IDs are normalized to shared library order
+- Saving an untouched legacy Scene does not create `cast`
+- Saving an explicit Scene with stale IDs drops them
 
 ### Fixture / Runtime
 
@@ -221,8 +274,9 @@ This design is complete when:
 
 - Authors can edit Scene cast without touching YAML
 - The component visually matches the current brutalist editor
-- `scene.yaml.cast` is written directly from editor state
+- `scene.yaml.cast` is written directly from explicit editor state
 - Hero is implicit and hidden
 - No priority semantics are introduced
 - Empty non-hero selection is valid
 - The engine remains responsible for Beat-level character emergence
+- Legacy scenes without `cast` do not silently change meaning after a no-op save
