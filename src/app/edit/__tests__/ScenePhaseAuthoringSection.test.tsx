@@ -1,9 +1,13 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthoringSection';
-import { createScenePhaseAuthoringDraft } from '@/authoring/sections/scene-phase-authoring';
+import {
+  createScenePhaseAuthoringDraft,
+  type ScenePhaseAuthoringDraft,
+} from '@/authoring/sections/scene-phase-authoring';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 
 function setWindowWidth(width: number) {
@@ -57,6 +61,7 @@ describe('ScenePhaseAuthoringSection', () => {
       <ScenePhaseAuthoringSection
         packageName="sample-scene"
         value={draft}
+        sceneCastLibrary={storyPackageFixture.worldBase}
         routerOptions={['Investigation', 'Counterplay']}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -91,6 +96,12 @@ describe('ScenePhaseAuthoringSection', () => {
     expect(screen.getByRole('textbox', { name: '起点' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: '主轴' })).not.toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: '示例用途' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '场景阵容' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByText('已选 2 个非主角角色。')).toBeInTheDocument();
+    expect(screen.queryByText(storyPackageFixture.worldBase.hero.name)).not.toBeInTheDocument();
     expect(within(phaseRailSection).getByRole('button', { name: 'Signal Trace' })).toBeInTheDocument();
     expect(selectedPhaseCard.className).toContain('bg-black');
     expect(selectedPhaseCard.className).toContain('shadow-brutal');
@@ -159,6 +170,7 @@ describe('ScenePhaseAuthoringSection', () => {
       <ScenePhaseAuthoringSection
         packageName="sample-scene"
         value={draft}
+        sceneCastLibrary={storyPackageFixture.worldBase}
         routerOptions={['Investigation', 'Counterplay']}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -196,6 +208,7 @@ describe('ScenePhaseAuthoringSection', () => {
       <ScenePhaseAuthoringSection
         packageName="sample-scene"
         value={sparseDraft}
+        sceneCastLibrary={storyPackageFixture.worldBase}
         routerOptions={[]}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -219,6 +232,7 @@ describe('ScenePhaseAuthoringSection', () => {
           ...draft,
           phasePlans: [],
         }}
+        sceneCastLibrary={storyPackageFixture.worldBase}
         routerOptions={[]}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -231,5 +245,79 @@ describe('ScenePhaseAuthoringSection', () => {
     expect(screen.getByText('当前没有 Phase')).toBeInTheDocument();
     expect(screen.getByText('新增一个 Phase 开始编辑。')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '新增 Phase' })).toBeInTheDocument();
+  });
+
+  it('updates the scene cast draft through onChange when switching back to default inheritance', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const draft = createScenePhaseAuthoringDraft(storyPackageFixture);
+
+    function PageHarness() {
+      const [value, setValue] = useState<ScenePhaseAuthoringDraft>(() => ({
+        ...draft,
+        sceneSpec: {
+          ...draft.sceneSpec,
+          castMode: 'unset' as const,
+        },
+      }));
+
+      return (
+        <ScenePhaseAuthoringSection
+          packageName="sample-scene"
+          value={value}
+          sceneCastLibrary={storyPackageFixture.worldBase}
+          routerOptions={[]}
+          onChange={(nextValue) => {
+            onChange(nextValue);
+            setValue(nextValue);
+          }}
+          onSubmit={vi.fn()}
+          onReset={vi.fn()}
+        />
+      );
+    }
+
+    render(
+      <PageHarness />,
+    );
+
+    expect(screen.getByText('沿用默认阵容，未显式选择。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Touka Miyashita' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('Scene Cast'));
+    await user.click(screen.getByRole('button', { name: '选择 核心角色 Touka Miyashita' }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sceneSpec: expect.objectContaining({
+          castMode: 'explicit',
+          cast: [storyPackageFixture.worldBase.coreCast[0]!.characterId],
+        }),
+      }),
+    );
+    expect(screen.getByText('已选 1 个非主角角色。')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '移除 Touka Miyashita' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '使用默认继承' }));
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sceneSpec: expect.objectContaining({
+          castMode: 'unset',
+        }),
+      }),
+    );
+    expect(
+      onChange.mock.calls.some(
+        ([nextValue]) =>
+          typeof nextValue === 'object' &&
+          nextValue !== null &&
+          'sceneSpec' in nextValue &&
+          (nextValue as { sceneSpec: { castMode: string; cast?: readonly string[] } }).sceneSpec
+            .castMode === 'unset' &&
+          !('cast' in (nextValue as { sceneSpec: { castMode: string; cast?: readonly string[] } }).sceneSpec),
+      ),
+    ).toBe(true);
+    expect(screen.getByText('沿用默认阵容，未显式选择。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Touka Miyashita' })).not.toBeInTheDocument();
   });
 });

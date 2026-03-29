@@ -11,6 +11,7 @@ const tempPackageNames = [
   '__invalid-sample-scene__',
   '__structured-sample-scene__',
   '__legacy-migration-sample-scene__',
+  '__runtime-absent-cast-sample-scene__',
   '__runtime-cast-sample-scene__',
 ] as const;
 
@@ -149,6 +150,17 @@ function writeSceneCast(packagePath: string, cast: readonly string[]): void {
   );
 }
 
+function removeSceneCast(packagePath: string): void {
+  const sceneSpec = YAML.parse(readFileSync(path.resolve(packagePath, 'scene.yaml'), 'utf8')) as Record<
+    string,
+    unknown
+  >;
+  const { cast, ...nextSceneSpec } = sceneSpec;
+  void cast;
+
+  writeFileSync(path.resolve(packagePath, 'scene.yaml'), YAML.stringify(nextSceneSpec), 'utf8');
+}
+
 describe('story loader', () => {
   it('loads a structured story package through the full-package path', async () => {
     const packageName = '__structured-sample-scene__';
@@ -181,6 +193,20 @@ describe('story loader', () => {
     expect(runtimePackage.worldBase.coreCast).toHaveLength(1);
     expect(runtimePackage.worldBase.antagonists).toHaveLength(0);
     expect(runtimePackage.worldBase.coreCast[0]?.characterId).toBeDefined();
+  });
+
+  it('keeps the full shared cast when a runtime scene has no explicit cast', async () => {
+    const packageName = '__runtime-absent-cast-sample-scene__';
+    const packagePath = copySamplePackage(packageName);
+    writeStructuredWorldBase(packagePath);
+    removeSceneCast(packagePath);
+
+    const storyLoader = await import('@/engine/story-loader');
+    const runtimePackage = await storyLoader.loadRuntimeStoryPackage(packageName);
+
+    expect(runtimePackage.worldBase.hero.characterId).toBeDefined();
+    expect(runtimePackage.worldBase.coreCast).toHaveLength(2);
+    expect(runtimePackage.worldBase.antagonists).toHaveLength(1);
   });
 
   it('migrates legacy world-base content in memory when loading a package', async () => {

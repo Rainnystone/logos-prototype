@@ -10,6 +10,10 @@ import {
   type ScenePhasePlanDraft,
 } from '@/authoring/sections/scene-phase-authoring';
 import { useMatchedHeight } from '@/app/edit/shared/useMatchedHeight';
+import {
+  SceneCastSelector,
+  type SceneCastLibrary,
+} from '@/app/edit/sections/SceneCastSelector';
 
 type SceneField = keyof ScenePhaseAuthoringDraft['sceneSpec'];
 type PhaseField = keyof ScenePhasePlanDraft;
@@ -17,6 +21,7 @@ type PhaseField = keyof ScenePhasePlanDraft;
 interface ScenePhaseAuthoringSectionProps {
   readonly packageName: string;
   readonly value: ScenePhaseAuthoringDraft;
+  readonly sceneCastLibrary: SceneCastLibrary;
   readonly routerOptions: readonly string[];
   readonly onChange: (nextValue: ScenePhaseAuthoringDraft) => void;
   readonly onSubmit: () => void;
@@ -31,6 +36,7 @@ function summarizeRouterHint(phase: ScenePhasePlanDraft): string {
 export function ScenePhaseAuthoringSection({
   packageName,
   value,
+  sceneCastLibrary,
   routerOptions,
   onChange,
   onSubmit,
@@ -93,6 +99,29 @@ export function ScenePhaseAuthoringSection({
         ...value.sceneSpec,
         [field]: event.currentTarget.value,
       },
+    });
+  }
+
+  function updateSceneCast(nextCast: { readonly castMode: 'unset' | 'explicit'; readonly cast?: readonly string[] }) {
+    const nextSceneSpec =
+      nextCast.castMode === 'explicit'
+        ? {
+            ...value.sceneSpec,
+            castMode: 'explicit' as const,
+            cast: [...(nextCast.cast ?? [])],
+          }
+        : (() => {
+            const { cast, ...restSceneSpec } = value.sceneSpec;
+            void cast;
+            return {
+              ...restSceneSpec,
+              castMode: 'unset' as const,
+            };
+          })();
+
+    onChange({
+      ...value,
+      sceneSpec: nextSceneSpec,
     });
   }
 
@@ -333,8 +362,15 @@ export function ScenePhaseAuthoringSection({
                   value={value.sceneSpec.openingSituation}
                   onChange={(event) => updateSceneField('openingSituation', event)}
                 />
-              </label>
-            </div>
+                </label>
+              </div>
+              <div className="mt-5">
+                <SceneCastSelector
+                  value={value.sceneSpec}
+                  sceneCastLibrary={sceneCastLibrary}
+                  onChange={updateSceneCast}
+                />
+              </div>
           </section>
         </div>
 

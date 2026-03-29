@@ -693,6 +693,7 @@ export function EditWorkbench({
           <ScenePhaseAuthoringSection
             packageName={packageName}
             value={draftScenePhase}
+            sceneCastLibrary={currentState.worldBase}
             routerOptions={routerOptions}
             onChange={setDraftScenePhase}
             onSubmit={handleScenePhaseSubmit}

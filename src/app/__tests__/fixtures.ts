@@ -66,7 +66,7 @@ export const storyPackageFixture: StoryPackage = {
   sceneSpec: {
     sceneId: 'scene-signal-room',
     sceneName: 'Signal Room',
-    cast: ['chr_f0c1a7', 'chr_a21d4e', 'chr_9b8e42'],
+    cast: ['chr_a21d4e', 'chr_9b8e42'],
     openingSituation: 'A sealed corridor starts to overheat behind the public route.',
     mainAxis: 'Track a hostile signal through a sealed campus wing.',
     endLine: 'The source is isolated and the public space returns to calm.',

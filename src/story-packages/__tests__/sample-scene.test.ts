@@ -96,7 +96,11 @@ describe('sample-scene story package', () => {
       ...worldBase.antagonists.map((character) => character.characterId),
     ]);
 
-    expect(scene.cast).toEqual(expect.arrayContaining([expect.stringMatching(/^chr_/)]));
+    expect(scene.cast).toEqual([
+      worldBase.coreCast[0]!.characterId,
+      worldBase.antagonists[0]!.characterId,
+    ]);
+    expect(scene.cast).not.toContain(worldBase.hero.characterId);
     expect(scene.cast?.every((characterId) => knownCharacterIds.has(characterId))).toBe(true);
   });
 
