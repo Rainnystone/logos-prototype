@@ -53,7 +53,17 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 ### 5. 样例故事包与回归测试
 
 - 仓库内置 `sample-scene`，用于验证当前控制结构。
-- 当前测试覆盖运行时、作者编辑链路、故事包样例、UI 页面和引擎模块。
+- 测试覆盖：50+ 测试文件，覆盖阈值 80%。
+- 测试域：核心引擎、模块、API 适配、E2E、作者链路、UI 组件、页面。
+
+## 版本历程
+
+| 版本 | 发布日期 | 标志性进展 |
+|------|----------|------------|
+| v1.0.0-stable | 2026-03-21 | 运行时闭环稳定，首版可用系统 |
+| v1.2.0-neue-brutalism | 2026-03-26 | Neue Brutalism 视觉重塑 |
+| v1.3.0-narrative-editor-zh | 2026-03-29 | 编辑器全界面中文化 |
+| v1.3.1 | 当前 | 角色系统重构前的稳定基线 |
 
 ### 6. 角色结构与场景出场控制
 
@@ -64,17 +74,21 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 
 ## Roadmap
 
-下面这些不是当前开发要求，而是后续方向：
+以下不是当前开发要求，而是后续迭代方向：
 
-### 新模块
+### 正在设计阶段
 
-1. 基于 Beat Volume 和 skill 理念的轻量记忆系统
-2. 人物角色关系模块：可视化和可编辑
-3. 存档系统：故事包的存取
-4. 多 Scene 编排和控制
-5. 名为 Sparkii的创意写作助理agent
+- **角色系统重构**：将 WorldBase 中的角色拆分为结构化对象，支持 stable character ID，为后续 memory system 做准备
 
-### 功能改进
+### 新模块（未来）
+
+1. 基于 Beat Volume 的轻量记忆系统
+2. 角色关系可视化编辑
+3. 存档系统（故事包存取）
+4. 多 Scene 编排
+5. Sparkii 创意写作助手（AI agent 辅助）
+
+### 功能改进（未来）
 
 1. 自定义 Phase 的 Beat 数
 2. 自定义段落梯度
@@ -201,12 +215,13 @@ npm run test:e2e
 
 `Player Input → State Convergence → Routing → Director Note → Prompt Assembly → LLM Generation → Audit → Rewrite Loop → Output`
 
-对应到仓库里的职责：
+对应到仓库里的职责（11 个模块）：
 
 - `orchestrator`：负责整条运行时主循环
 - `light-cone-collapse`：收束当前叙事边界
 - `narrative-router`：决定本轮走哪种叙事路径
 - `director-note-layer`：为当前回合补充控制约束
+- `option-generator`：生成玩家可选的交互选项
 - `prompt-assembler`：拼出真正发给模型的 prompt 对象
 - `auditor`：判断当前结果是否过线
 - `audit-resolver`：决定通过、重写还是强制接受
@@ -233,30 +248,43 @@ npm run test:e2e
 ```text
 LOGOS-Narrative-Editor/
 ├── src/
-│   ├── app/
-│   │   ├── page.tsx                 # Title 页面
-│   │   ├── play/                    # Play Workbench
-│   │   ├── edit/                    # Narrative Editor
-│   │   ├── components/              # 运行页与首页的可复用组件
-│   │   ├── runtime-config.ts        # 运行配置读写
-│   │   └── story-package-catalog.ts # 故事包入口索引
-│   ├── authoring/
-│   │   ├── contracts.ts             # 作者保存契约
-│   │   ├── coordinator/             # coordinator 调度
-│   │   ├── persistence/             # 保存、写回、重载、状态
-│   │   └── sections/                # 各编辑页的草稿与诊断结构
-│   ├── engine/
-│   │   ├── orchestrator.ts          # 运行时主循环
-│   │   ├── modules/                 # 运行时控制模块
-│   │   └── api-adapter/             # 模型适配层
-│   ├── story-packages/              # 样例故事包
-│   └── types/                       # 共享类型与契约
-├── story-packages/                  # 外层故事包目录
-├── archive/
-│   ├── docs/                        # 归档设计、计划、说明
-│   └── vendor/LOGOS-SPEC/           # 归档规格快照与样例材料
+│   ├── app/                    # Next.js App Router
+│   │   ├── page.tsx            # Title 页面
+│   │   ├── play/               # Play Workbench
+│   │   ├── edit/               # Narrative Editor (四页)
+│   │   ├── components/         # 16 个可复用组件
+│   │   ├── api/                # API routes (LLM 代理、coordinator)
+│   │   ├── runtime-config.ts
+│   │   └── story-package-catalog.ts
+│   ├── engine/                 # 核心引擎
+│   │   ├── orchestrator.ts     # 主循环
+│   │   ├── modules/            # 11 个运行时控制模块
+│   │   └── api-adapter/        # 模型适配层
+│   ├── authoring/              # 作者编辑链路
+│   │   ├── contracts.ts
+│   │   ├── coordinator/
+│   │   ├── persistence/
+│   │   └── sections/           # 四页草稿逻辑
+│   ├── lib/                    # 工具函数 (deep-freeze 等)
+│   ├── testing/                # 测试工具
+│   ├── story-packages/         # 嵌入样例包
+│   └── types/                  # Zod schemas + TypeScript types
+├── story-packages/             # 外层故事包目录
+├── docs/                       # 当前设计文档
+├── archive/                    # 归档材料
+│   ├── docs/                   # 归档设计说明
+│   └── vendor/LOGOS-SPEC/      # 归档规格快照
 └── README.md
 ```
+
+## 设计风格
+
+LOGOS 使用 Neue Brutalism 设计风格：
+
+- JetBrains Mono + Space Grotesk 字体组合
+- brutal shadows (`4px 4px 0 #000000`)
+- monospace-heavy aesthetic
+- 强边框、高对比、信息密度优先
 
 ## 页面与模块说明
 
