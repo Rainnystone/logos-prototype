@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { renderWorldBaseForPrompt } from '@/engine/modules/world-base-prompt-render';
 import {
   validateAuditPacket,
   validateAuditQuestionSet,
@@ -11,16 +12,39 @@ import {
   validatePromptObject,
   validateStateSnapshot,
 } from '@/engine/schema-validator';
+import type { WorldBase } from '@/types';
+
+const structuredWorldBase: WorldBase = {
+  worldBaseSetting: 'world-setting',
+  worldRules: 'world-rules',
+  toneBaseline: 'tone-baseline',
+  hero: {
+    characterId: 'chr_hero01',
+    name: 'Hero One',
+    identityRole: 'Lead character',
+    lightNovelTrait: 'Calm and precise',
+    gender: 'Female',
+    personality: 'Reserved',
+    age: '16',
+    occupation: 'Student',
+    characterSummary: 'Primary viewpoint character.',
+    capabilityBoundary: 'Uses only physical methods.',
+    behaviorBoundary: 'Does not panic under pressure.',
+    oocRedLine: 'Never breaks character.',
+    clothing: 'School uniform',
+    propsWeapon: 'Flashlight',
+  },
+  coreCast: [],
+  antagonists: [],
+  npcCharacters: 'Support One - steady witness',
+  locationPatch: 'location-patch',
+};
 
 describe('schema validator', () => {
   it('accepts a valid PromptObject', () => {
     expect(
       validatePromptObject({
-        worldBase: {
-          mainCharacters: 'main-characters',
-          npcCharacters: 'npc-characters',
-          locationPatch: 'location-patch',
-        },
+        worldBase: renderWorldBaseForPrompt(structuredWorldBase),
         history: [],
         narrative: {
           mainAxis: 'main-axis',
@@ -38,6 +62,9 @@ describe('schema validator', () => {
         },
       }),
     ).toMatchObject({
+      worldBase: {
+        mainCharacters: expect.stringContaining('Name: Hero One'),
+      },
       directorNote: {
         volume: 'Low',
       },

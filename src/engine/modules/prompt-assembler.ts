@@ -1,5 +1,6 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import { validatePromptObject } from '@/engine/schema-validator';
+import { renderWorldBaseForPrompt } from '@/engine/modules/world-base-prompt-render';
 import type { DirectorNote, HistoryEntry, PreviousDraft, PromptObject, WorldBase } from '@/types';
 
 export interface PromptAssemblerInput {
@@ -22,12 +23,10 @@ export interface RewriteContext {
 }
 
 function buildBasePromptObject(input: PromptAssemblerInput): PromptObject {
+  const promptWorldBase = renderWorldBaseForPrompt(input.worldBase);
+
   return {
-    worldBase: {
-      mainCharacters: input.worldBase.mainCharacters,
-      npcCharacters: input.worldBase.npcCharacters ?? '',
-      locationPatch: input.worldBase.locationPatch,
-    },
+    worldBase: promptWorldBase,
     history: input.precedingBeats.map((entry) => ({
       role: entry.role,
       content: entry.content,

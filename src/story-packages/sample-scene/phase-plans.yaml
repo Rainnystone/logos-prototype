@@ -1,17 +1,16 @@
 sceneId: sample-yanshang-live-room
-sceneName: 炎上
+sceneName: 烈焰小丑
 source: story-source/phase-outline.md
 phasePlans:
   - phaseId: phase-01-prologue
     phaseIndex: 1
     phaseName: 序章
-    phaseGoal: 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪最终知道灰谷烈的存在，但对其弱点一无所知。
-    phaseEndPoint: 雾间凪基本清楚手机自燃属于异常，并且来自一个地下网络直播群体，有一个叫灰谷烈的主播主导
+    phaseGoal: 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。
+    phaseEndPoint: 凪锁定异常事故并判断它不是普通电池故障，同时仍未直接暴露幕后元凶。
     gradientType: Rising
     beatCount: 4
     routerHint: 日常/闲暇
-    notes: 逐步引导玩家(雾间凪）通过手机或者其它线索探寻手机自燃背后的原因，中间会遭遇反派的陷阱，但是本phase
-      没有机会直接面对反派头目，也对灰谷烈的能力和弱点并不了解
+    notes: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。
   - phaseId: phase-02-hunt
     phaseIndex: 2
     phaseName: 走廊追踪

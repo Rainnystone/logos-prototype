@@ -5,9 +5,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
 
+const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
+
+vi.mock('@/app/edit/sections/ScenePhaseAuthoringSection', () => ({
+  ScenePhaseAuthoringSection: (props: unknown) => {
+    renderScenePhaseAuthoringSection(props);
+    return <div data-testid="scene-phase-authoring-section-mock" />;
+  },
+}));
+
 describe('EditWorkbench', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    renderScenePhaseAuthoringSection.mockReset();
   });
 
   it('renders the shared shell copy in Chinese while keeping the shell chrome English', () => {
@@ -191,13 +201,64 @@ describe('EditWorkbench', () => {
 
     expect(request.payload.uiFields).toMatchObject({
       worldBaseSetting: 'Updated world',
-      hero: expect.any(Object),
-      coreCast: expect.any(Array),
-      antagonists: expect.any(Array),
+      hero: expect.objectContaining({
+        characterId: expect.stringMatching(/^chr_/),
+      }),
+      coreCast: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: expect.stringMatching(/^chr_/),
+        }),
+      ]),
+      antagonists: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: expect.stringMatching(/^chr_/),
+        }),
+      ]),
       supportingCast: expect.any(String),
       locationPool: expect.any(String),
     });
     expect(request.payload.uiFields).not.toHaveProperty('mainCharacters');
+  });
+
+  it('passes the shared scene cast library into the scene authoring section', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="scene-phase-authoring"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('scene-phase-authoring-section-mock')).toBeInTheDocument();
+    expect(renderScenePhaseAuthoringSection).toHaveBeenCalled();
+
+    const props = renderScenePhaseAuthoringSection.mock.calls.at(-1)?.[0] as {
+      readonly sceneCastLibrary: {
+        readonly hero: { readonly characterId: string; readonly name: string };
+        readonly coreCast: readonly { readonly characterId: string; readonly name: string }[];
+        readonly antagonists: readonly { readonly characterId: string; readonly name: string }[];
+      };
+      readonly value: {
+        readonly sceneSpec: {
+          readonly castMode: 'unset' | 'explicit';
+          readonly cast?: readonly string[];
+        };
+      };
+    };
+
+    expect(props.sceneCastLibrary.hero.characterId).toBe(storyPackageFixture.worldBase.hero.characterId);
+    expect(props.sceneCastLibrary.coreCast).toHaveLength(storyPackageFixture.worldBase.coreCast.length);
+    expect(props.sceneCastLibrary.antagonists).toHaveLength(
+      storyPackageFixture.worldBase.antagonists.length,
+    );
+    expect(props.value.sceneSpec.castMode).toBe('explicit');
+    expect(props.value.sceneSpec.cast).toEqual([
+      storyPackageFixture.worldBase.coreCast[0]!.characterId,
+      storyPackageFixture.worldBase.antagonists[0]!.characterId,
+    ]);
   });
 
   it('shows the shared save-path reachability failure when the helper cannot connect', async () => {

@@ -44,6 +44,7 @@ function buildWorldBaseDraft(heroName: string) {
     toneBaseline: 'Cold pressure',
     hero: {
       draftId: 'hero-1',
+      characterId: 'chr_hero01',
       name: heroName,
       identityRole: 'Lead breaker',
       lightNovelTrait: 'Silent pressure',
@@ -62,6 +63,32 @@ function buildWorldBaseDraft(heroName: string) {
     antagonists: [],
     supportingCast: 'Support One：Steady witness',
     locationPool: 'Signal room',
+  };
+}
+
+function readSavedWorldBase() {
+  return YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
+    worldBaseSetting: string;
+    worldRules: string;
+    toneBaseline: string;
+    hero: {
+      characterId: string;
+      name: string;
+      gender?: string;
+    };
+    coreCast: Array<{
+      characterId: string;
+      name: string;
+      gender?: string;
+    }>;
+    antagonists: Array<{
+      characterId: string;
+      name: string;
+      gender?: string;
+      fatalWeakness?: string;
+    }>;
+    npcCharacters: string;
+    locationPatch: string;
   };
 }
 
@@ -107,19 +134,22 @@ describe('saveSectionDraft', () => {
 
     const coordinatorWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const coordinatorStoryPackage = await loadStoryPackage(testPackageName);
+    const savedWorldBase = readSavedWorldBase();
 
     expect(pageResult.kind).toBe('save_applied');
     expect(coordinatorResult.kind).toBe('save_applied');
     expect(pageResult.kind).toBe(coordinatorResult.kind);
     expect(pageWorldBaseContents).not.toBe(originalWorldBaseContents);
-    expect(pageStoryPackage.worldBase.mainCharacters).toContain('Name: page-main-character-update');
+    expect(pageStoryPackage.worldBase.hero.name).toBe('page-main-character-update');
     expect(coordinatorWorldBaseContents).not.toBe(pageWorldBaseContents);
-    expect(coordinatorStoryPackage.worldBase.mainCharacters).toContain(
-      'Name: coordinator-main-character-update',
-    );
+    expect(coordinatorStoryPackage.worldBase.hero.name).toBe('coordinator-main-character-update');
+    expect(savedWorldBase.hero).toMatchObject({
+      characterId: 'chr_hero01',
+      name: 'coordinator-main-character-update',
+    });
   });
 
-  it('renders worldbase-cast draft fields into normalized runtime blocks', async () => {
+  it('writes structured worldbase yaml from a structured worldbase-cast save request', async () => {
     prepareTestPackage();
 
     const result = await saveSectionDraft({
@@ -133,6 +163,7 @@ describe('saveSectionDraft', () => {
           coreCast: [
             {
               draftId: 'core-1',
+              characterId: 'chr_core01',
               name: 'Core Draft',
               identityRole: 'Anchor',
               lightNovelTrait: '',
@@ -151,6 +182,7 @@ describe('saveSectionDraft', () => {
           antagonists: [
             {
               draftId: 'antagonist-1',
+              characterId: 'chr_ant01',
               name: 'Villain Draft',
               identityRole: 'Threat',
               lightNovelTrait: '',
@@ -181,12 +213,25 @@ describe('saveSectionDraft', () => {
       ]);
     }
 
+    const savedWorldBase = readSavedWorldBase();
     const loaded = await loadStoryPackage(testPackageName);
 
-    expect(loaded.worldBase.mainCharacters).toContain('## Hero');
-    expect(loaded.worldBase.mainCharacters).toContain('Name: Hero Draft');
-    expect(loaded.worldBase.mainCharacters).toContain('## Core Cast');
-    expect(loaded.worldBase.mainCharacters).toContain('## Antagonists');
+    expect(savedWorldBase.hero).toMatchObject({
+      characterId: 'chr_hero01',
+      name: 'Hero Draft',
+    });
+    expect(savedWorldBase.coreCast[0]).toMatchObject({
+      characterId: 'chr_core01',
+      name: 'Core Draft',
+    });
+    expect(savedWorldBase.antagonists[0]).toMatchObject({
+      characterId: 'chr_ant01',
+      name: 'Villain Draft',
+      fatalWeakness: 'Attention drop',
+    });
+    expect(loaded.worldBase.hero.name).toBe('Hero Draft');
+    expect(loaded.worldBase.coreCast[0]?.name).toBe('Core Draft');
+    expect(loaded.worldBase.antagonists[0]?.name).toBe('Villain Draft');
     expect(loaded.worldBase.npcCharacters).toBe('Support One：Steady witness\nSupport Two：Sharp clue finder');
     expect(loaded.worldBase.locationPatch).toBe('Signal room');
   });
@@ -200,9 +245,7 @@ describe('saveSectionDraft', () => {
       packageName: testPackageName,
       sectionId: 'worldbase-cast',
       payload: {
-        uiFields: {
-          mainCharacters: 'status-marker-update',
-        },
+        uiFields: buildWorldBaseDraft('status-marker-update'),
       },
     });
 
@@ -226,9 +269,10 @@ describe('saveSectionDraft', () => {
     prepareTestPackage();
     const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
     const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
-      mainCharacters: string;
-      npcCharacters: string;
-      locationPatch: string;
+      worldBaseSetting?: string;
+      hero?: { name: string };
+      npcCharacters?: string;
+      locationPatch?: string;
     };
 
     const result = await saveSectionDraft({
@@ -253,6 +297,7 @@ describe('saveSectionDraft', () => {
 
   it('blocks control-modules saves instead of treating them as failures', async () => {
     prepareTestPackage();
+    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
 
     const result = await saveSectionDraft({
       requestId: 'request-control-modules-blocked',
@@ -261,7 +306,7 @@ describe('saveSectionDraft', () => {
       sectionId: 'control-modules',
       payload: {
         uiFields: {
-          mainCharacters: 'scene-phase-placeholder',
+          ...buildWorldBaseDraft('scene-phase-placeholder'),
         },
       },
     });
@@ -273,15 +318,12 @@ describe('saveSectionDraft', () => {
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
-    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toMatchObject({
-      mainCharacters: expect.any(String),
-      npcCharacters: expect.any(String),
-      locationPatch: expect.any(String),
-    });
+    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
   });
 
   it('writes scene and phase authoring changes through the same shared bridge', async () => {
     prepareTestPackage();
+    const originalStoryPackage = await loadStoryPackage(testPackageName);
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase',
@@ -296,7 +338,9 @@ describe('saveSectionDraft', () => {
             startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
             endLine: '灰谷烈失势，校园恢复表面平静。',
             openingHook: '午后的走廊先传来异常蜂鸣，而不是教室内的爆裂。',
-            samplePurpose: '验证重新排序后的阶段推进仍然稳定。',
+            samplePurpose: '这段不应被这次保存改掉。',
+            castMode: 'explicit',
+            cast: ['chr_ant01', 'chr_hero01', 'chr_core01', 'chr_missing', 'chr_core01', 42 as unknown],
           },
           phasePlans: [
             {
@@ -328,8 +372,12 @@ describe('saveSectionDraft', () => {
         expect.arrayContaining(['scene.yaml', 'phase-plans.yaml', 'authoring-state.json']),
       );
       expect(result.reloadedSectionState.sceneSpec.sceneName).toBe('炎上直播间·改');
-      expect((result.reloadedSectionState.sceneSpec as Record<string, string>).startPoint).toBe(
+      expect(result.reloadedSectionState.sceneSpec.startPoint).toBe(
         '日常走廊先出现异常升温，凪从人群表层脱离。',
+      );
+      expect(result.reloadedSectionState.sceneSpec.cast).toEqual(['chr_core01', 'chr_ant01']);
+      expect(result.reloadedSectionState.sceneSpec.samplePurpose).toBe(
+        originalStoryPackage.sceneSpec.samplePurpose,
       );
       expect(result.reloadedSectionState.sceneSpec.mainAxis).toBe(
         [
@@ -382,13 +430,9 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_applied');
 
-    const reparsedDraft = createWorldBaseCastDraft(
-      YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
-        mainCharacters: string;
-        npcCharacters: string;
-        locationPatch: string;
-      },
-    );
+    const reparsedDraft = createWorldBaseCastDraft(readSavedWorldBase() as Parameters<
+      typeof createWorldBaseCastDraft
+    >[0]);
 
     expect(reparsedDraft.hero.gender).toBe('女');
     expect(reparsedDraft.coreCast.map((character) => character.name)).toEqual([
@@ -420,12 +464,20 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_applied');
 
-    const worldBaseContents = readFileSync(worldBasePath, 'utf8');
-    expect(worldBaseContents).toContain('## Core Cast');
-    expect(worldBaseContents).toContain('Name: 宫下藤花');
-    expect(worldBaseContents).toContain('Gender: 女');
-    expect(worldBaseContents).toContain('## Antagonists');
-    expect(worldBaseContents).toContain('Name: 灰谷烈');
+    expect(readSavedWorldBase()).toMatchObject({
+      coreCast: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: draft.coreCast[0]?.draftId,
+          name: '宫下藤花',
+          gender: '女',
+        }),
+      ]),
+      antagonists: expect.arrayContaining([
+        expect.objectContaining({
+          name: '灰谷烈',
+        }),
+      ]),
+    });
   });
 
   it('persists a minor antagonist edit without dropping the rest of the cast', async () => {
@@ -450,12 +502,20 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_applied');
 
-    const worldBaseContents = readFileSync(worldBasePath, 'utf8');
-    expect(worldBaseContents).toContain('## Core Cast');
-    expect(worldBaseContents).toContain('Name: 宫下藤花');
-    expect(worldBaseContents).toContain('## Antagonists');
-    expect(worldBaseContents).toContain('Name: 灰谷烈');
-    expect(worldBaseContents).toContain('Gender: 男');
+    expect(readSavedWorldBase()).toMatchObject({
+      coreCast: expect.arrayContaining([
+        expect.objectContaining({
+          name: '宫下藤花',
+        }),
+      ]),
+      antagonists: expect.arrayContaining([
+        expect.objectContaining({
+          characterId: draft.antagonists[0]?.draftId,
+          name: '灰谷烈',
+          gender: '男',
+        }),
+      ]),
+    });
   });
 
   it('does not keep dependent review blockers after a scene-phase save', async () => {
@@ -502,8 +562,9 @@ describe('saveSectionDraft', () => {
     expect(status.pendingSectionReviews).toBeUndefined();
   });
 
-  it('removes cleared optional scene fields from scene.yaml after a scene-phase save', async () => {
+  it('preserves the existing sample purpose while clearing other optional scene fields', async () => {
     prepareTestPackage();
+    const originalStoryPackage = await loadStoryPackage(testPackageName);
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase-clear-optionals',
@@ -542,7 +603,7 @@ describe('saveSectionDraft', () => {
     expect(savedScene.sceneName).toBe('炎上直播间·改');
     expect(savedScene).not.toHaveProperty('openingSituation');
     expect(savedScene).not.toHaveProperty('openingHook');
-    expect(savedScene).not.toHaveProperty('samplePurpose');
+    expect(savedScene.samplePurpose).toBe(originalStoryPackage.sceneSpec.samplePurpose);
   });
 
   it('clears the control-modules review flag after a control-modules save', async () => {
@@ -717,6 +778,87 @@ describe('saveSectionDraft', () => {
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
+  it('blocks malformed explicit scene cast payloads instead of clearing cast to empty', async () => {
+    prepareTestPackage();
+    const originalScene = readFileSync(scenePath, 'utf8');
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-malformed-cast',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: [1, { characterId: 'chr_core01' }, false],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    expect(readFileSync(scenePath, 'utf8')).toBe(originalScene);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
+  it('preserves an explicit empty cast through save and reload', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-explicit-empty-cast',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: [],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    if (result.kind === 'save_applied') {
+      expect(result.reloadedSectionState.sceneSpec.cast).toEqual([]);
+      expect(readFileSync(scenePath, 'utf8')).toContain('cast: []');
+    }
+  });
+
   it('blocks malformed top-level request fields without throwing', async () => {
     prepareTestPackage();
 
@@ -726,9 +868,7 @@ describe('saveSectionDraft', () => {
       packageName: 42 as unknown as string,
       sectionId: 'worldbase-cast',
       payload: {
-        uiFields: {
-          mainCharacters: 'top-level-malformed-request',
-        },
+        uiFields: buildWorldBaseDraft('top-level-malformed-request'),
       },
     });
 
@@ -742,11 +882,7 @@ describe('saveSectionDraft', () => {
 
   it('blocks control-modules saves when moduleScope is missing', async () => {
     prepareTestPackage();
-    const originalWorldBase = YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
-      mainCharacters: string;
-      npcCharacters: string;
-      locationPatch: string;
-    };
+    const originalWorldBase = readSavedWorldBase();
 
     const result = await saveSectionDraft({
       requestId: 'request-control-modules-missing-scope',
@@ -755,7 +891,7 @@ describe('saveSectionDraft', () => {
       sectionId: 'control-modules',
       payload: {
         uiFields: {
-          mainCharacters: 'control-modules-placeholder',
+          ...buildWorldBaseDraft('control-modules-placeholder'),
         },
       },
     });
@@ -782,9 +918,7 @@ describe('saveSectionDraft', () => {
       packageName: testPackageName,
       sectionId: 'worldbase-cast',
       payload: {
-        uiFields: {
-          mainCharacters: 'marker-warning-update',
-        },
+        uiFields: buildWorldBaseDraft('marker-warning-update'),
       },
     });
 
@@ -796,10 +930,12 @@ describe('saveSectionDraft', () => {
     }
     expect(await loadStoryPackage(testPackageName)).toMatchObject({
       worldBase: {
-        mainCharacters: 'marker-warning-update',
+        hero: {
+          name: 'marker-warning-update',
+        },
       },
     });
-    expect(readFileSync(worldBasePath, 'utf8')).toContain('marker-warning-update');
+    expect(readSavedWorldBase().hero.name).toBe('marker-warning-update');
   });
 
   it('restores the original world-base file when reload fails', async () => {
@@ -824,8 +960,11 @@ describe('saveSectionDraft', () => {
       .spyOn(repositoryModule, 'persistWorldBaseDraft')
       .mockImplementationOnce(async () => {
         const clobberedWorldBase = YAML.stringify({
-          ...YAML.parse(originalWorldBaseContents),
-          mainCharacters: 'clobbered-before-throw',
+          ...readSavedWorldBase(),
+          hero: {
+            ...readSavedWorldBase().hero,
+            name: 'clobbered-before-throw',
+          },
         });
 
         writeFileSync(worldBasePath, clobberedWorldBase, 'utf8');
@@ -842,12 +981,7 @@ describe('saveSectionDraft', () => {
 
   it('returns a warning-style dryRun result without changing files', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
-    const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
-      mainCharacters: string;
-      npcCharacters: string;
-      locationPatch: string;
-    };
+    const originalWorldBase = readSavedWorldBase();
 
     const result = await saveSectionDraft({
       requestId: 'request-dry-run',
@@ -856,9 +990,7 @@ describe('saveSectionDraft', () => {
       sectionId: 'worldbase-cast',
       dryRun: true,
       payload: {
-        uiFields: {
-          mainCharacters: 'dry-run-placeholder',
-        },
+        uiFields: buildWorldBaseDraft('dry-run-placeholder'),
       },
     });
 

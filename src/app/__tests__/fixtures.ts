@@ -1,10 +1,72 @@
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { StateSnapshot, StoryPackage } from '@/types';
 
+const storyPackageWorldBase: StoryPackage['worldBase'] = {
+  worldBaseSetting: 'A sealed campus wing holds an overheating signal line under an ordinary school day.',
+  worldRules: 'No open magic. Every solution must stay physical, observable, and local to the current scene.',
+  toneBaseline: 'Cold pressure with restrained light-novel pacing.',
+  hero: {
+    characterId: 'chr_f0c1a7',
+    name: 'Nagi Kirima',
+    identityRole: 'Lead breaker',
+    lightNovelTrait: 'Silent pressure',
+    gender: 'Female',
+    personality: 'Cold',
+    age: '17',
+    occupation: 'Student',
+    characterSummary: 'Moves straight at the threat without leaving the physical plane.',
+    capabilityBoundary: 'No magic, only trained physical action and prepared tools.',
+    behaviorBoundary: 'Never abandons the trace once the threat becomes visible.',
+    oocRedLine: 'No speeches and no hesitation.',
+    clothing: 'School uniform with concealed gear.',
+    propsWeapon: 'Ceramic blade',
+  },
+  coreCast: [
+    {
+      characterId: 'chr_a21d4e',
+      name: 'Touka Miyashita',
+      identityRole: 'Ordinary-life anchor',
+      lightNovelTrait: 'Soft contrast',
+      gender: 'Female',
+      personality: 'Gentle',
+      age: '16',
+      occupation: 'Student',
+      characterSummary: 'Keeps the ordinary layer intact and must remain outside the real danger.',
+      capabilityBoundary: '',
+      behaviorBoundary: 'Must stay out of direct danger and outside anomaly awareness.',
+      oocRedLine: 'Never notices the anomaly.',
+      clothing: 'School uniform',
+      propsWeapon: '',
+    },
+  ],
+  antagonists: [
+    {
+      characterId: 'chr_9b8e42',
+      name: 'Retsu Haitani',
+      identityRole: 'Signal-born threat',
+      lightNovelTrait: 'Showman',
+      gender: 'Male',
+      personality: 'Chaotic',
+      age: '18',
+      occupation: 'Streamer',
+      characterSummary: 'Turns attention into pressure and performs through every attack.',
+      capabilityBoundary: 'Needs fear or focused attention to trigger device overheat.',
+      behaviorBoundary: 'Always performs for an audience and escalates through spectacle.',
+      oocRedLine: 'Cannot become quiet and efficient.',
+      clothing: 'Stream jacket',
+      propsWeapon: 'Phone rig',
+      fatalWeakness: 'Loses power when attention drops to zero.',
+    },
+  ],
+  npcCharacters: 'Support One：Steady witness',
+  locationPatch: 'A sealed corridor with old lights, cameras, and echoing vents.',
+};
+
 export const storyPackageFixture: StoryPackage = {
   sceneSpec: {
     sceneId: 'scene-signal-room',
     sceneName: 'Signal Room',
+    cast: ['chr_a21d4e', 'chr_9b8e42'],
     openingSituation: 'A sealed corridor starts to overheat behind the public route.',
     mainAxis: 'Track a hostile signal through a sealed campus wing.',
     endLine: 'The source is isolated and the public space returns to calm.',
@@ -100,11 +162,7 @@ export const storyPackageFixture: StoryPackage = {
       },
     },
   },
-  worldBase: {
-    mainCharacters: 'An operator who keeps a calm surface under pressure.',
-    npcCharacters: 'A nearby witness who should stay outside the real danger.',
-    locationPatch: 'A sealed corridor with old lights, cameras, and echoing vents.',
-  },
+  worldBase: storyPackageWorldBase,
 };
 
 export const stateSnapshotFixture: StateSnapshot = {
@@ -136,7 +194,12 @@ export const stateSnapshotFixture: StateSnapshot = {
   generationState: {
     directorNoteSummary: 'Volume=High | BeatRules=Active | OptionRules=Active',
     promptObject: {
-      worldBase: storyPackageFixture.worldBase,
+      worldBase: {
+        mainCharacters:
+          'An operator who keeps a calm surface under pressure while staying strictly physical.',
+        npcCharacters: storyPackageFixture.worldBase.npcCharacters,
+        locationPatch: storyPackageFixture.worldBase.locationPatch,
+      },
       history: [
         { role: 'user', content: 'Inspect the flickering camera.' },
         { role: 'assistant', content: 'The lens jerks toward the hallway corner.' },

@@ -24,7 +24,44 @@ const baseSceneState: SceneState = {
 };
 
 const baseWorldBase: WorldBase = {
-  mainCharacters: 'disciplined character profile',
+  worldBaseSetting: 'world-setting',
+  worldRules: 'world-rules',
+  toneBaseline: 'tone-baseline',
+  hero: {
+    characterId: 'chr_hero01',
+    name: 'Hero One',
+    identityRole: 'Lead breaker',
+    lightNovelTrait: 'Calm pressure.',
+    gender: 'Female',
+    personality: 'Reserved',
+    age: '16',
+    occupation: 'Student',
+    characterSummary: 'Primary viewpoint character.',
+    capabilityBoundary: 'Uses only physical action.',
+    behaviorBoundary: 'Never panics under pressure.',
+    oocRedLine: 'Never becomes hesitant.',
+    clothing: 'School uniform',
+    propsWeapon: 'Flashlight',
+  },
+  coreCast: [
+    {
+      characterId: 'chr_core01',
+      name: 'Core One',
+      identityRole: 'Support anchor',
+      lightNovelTrait: 'Steady contrast.',
+      gender: 'Male',
+      personality: 'Steady',
+      age: '17',
+      occupation: 'Student',
+      characterSummary: 'Core support.',
+      capabilityBoundary: 'Stays in mundane space.',
+      behaviorBoundary: 'Avoids direct danger.',
+      oocRedLine: 'Never identifies the anomaly.',
+      clothing: 'School uniform',
+      propsWeapon: 'Notebook',
+    },
+  ],
+  antagonists: [],
   npcCharacters: '',
   locationPatch: 'location-patch',
 };
@@ -93,6 +130,9 @@ describe('Director Note Layer', () => {
     const directorNote = buildDirectorNote(baseRoundState, baseSceneState, baseWorldBase);
 
     expect(directorNote.optionConstraints).toMatch(/Anti-OOC|Chain-of-Thought/i);
+    expect(directorNote.optionConstraints).toContain('Name: Hero One');
+    expect(directorNote.optionConstraints).toContain('Capability Boundary: Uses only physical action.');
+    expect(directorNote.optionConstraints).not.toContain('Core One');
     expect(directorNote.optionConstraints).toContain(baseSceneState.alpha);
     expect(directorNote.optionConstraints).toContain(baseSceneState.beta);
     expect(directorNote.optionConstraints).toContain(baseRoundState.currentVolume);
@@ -108,6 +148,32 @@ describe('Director Note Layer', () => {
     expect(directorNote.optionConstraints).toContain('本轮 Beat 正文是否符合当前声量要求');
     expect(directorNote.optionConstraints).toMatch(/correct answer must be YES/i);
     expect(directorNote.optionConstraints).toMatch(/materially distinct|orthogonal/i);
+  });
+
+  it('falls back to the default anti-OOC guidance when hero profile fields are blank', () => {
+    const directorNote = buildDirectorNote(baseRoundState, baseSceneState, {
+      ...baseWorldBase,
+      hero: {
+        ...baseWorldBase.hero,
+        name: '',
+        identityRole: '',
+        lightNovelTrait: '',
+        gender: '',
+        personality: '',
+        age: '',
+        occupation: '',
+        characterSummary: '',
+        capabilityBoundary: '',
+        behaviorBoundary: '',
+        oocRedLine: '',
+        clothing: '',
+        propsWeapon: '',
+      },
+    });
+
+    expect(directorNote.optionConstraints).toContain(
+      'No character profile supplied; default to baseline plausibility checks.',
+    );
   });
 
   it('works with minimal required RoundState fields', () => {

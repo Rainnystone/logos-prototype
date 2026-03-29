@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
 import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
+import { renderWorldBaseForPrompt } from '@/engine/modules/world-base-prompt-render';
 
 describe('E2E mock adapter', () => {
   it('supports all five modes with deterministic call tracking', async () => {
@@ -22,7 +23,7 @@ describe('E2E mock adapter', () => {
       availableRouters: storyPackage.routerProfiles,
     });
     const generateResult = await harness.adapter.generate?.({
-      worldBase: storyPackage.worldBase,
+      worldBase: renderWorldBaseForPrompt(storyPackage.worldBase),
       history: [],
       narrative: {
         mainAxis: storyPackage.sceneSpec.mainAxis,

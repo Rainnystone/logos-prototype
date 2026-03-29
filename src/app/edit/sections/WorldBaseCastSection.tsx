@@ -29,8 +29,8 @@ type CharacterField =
 
 type CharacterSelection =
   | { readonly group: 'hero' }
-  | { readonly group: 'coreCast'; readonly draftId: string }
-  | { readonly group: 'antagonists'; readonly draftId: string };
+  | { readonly group: 'coreCast'; readonly characterId: string }
+  | { readonly group: 'antagonists'; readonly characterId: string };
 
 const WORLD_TEXT_FIELDS: readonly {
   readonly key: TextField;
@@ -98,7 +98,7 @@ interface CharacterRailProps {
   readonly subtitle: string;
   readonly cards: readonly WorldBaseCharacterDraft[];
   readonly selection: CharacterSelection;
-  readonly onSelect: (draftId: string) => void;
+  readonly onSelect: (characterId: string) => void;
   readonly onAdd: () => void;
   readonly addLabel: string;
 }
@@ -141,18 +141,18 @@ function CharacterRail({
         <div className="flex min-w-max gap-3">
           {cards.map((character) => {
             const isSelected =
-              selection.group !== 'hero' && selection.draftId === character.draftId;
+              selection.group !== 'hero' && selection.characterId === character.characterId;
 
             return (
               <button
-                key={character.draftId}
+                key={character.characterId}
                 type="button"
                 className={`w-52 shrink-0 rounded-none border-2 p-4 text-left transition ${
                   isSelected
                     ? 'border-black bg-black text-white shadow-brutal'
                     : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
                 }`}
-                onClick={() => onSelect(character.draftId)}
+                onClick={() => onSelect(character.characterId)}
               >
                 <strong className="block text-sm">{summarizeCharacter(character)}</strong>
                 <p className={`mt-3 text-sm ${isSelected ? 'text-white/80' : 'text-black/60'}`}>
@@ -193,7 +193,7 @@ export function WorldBaseCastSection({
     }
 
     const pool = selection.group === 'coreCast' ? value.coreCast : value.antagonists;
-    if (pool.some((character) => character.draftId === selection.draftId)) {
+    if (pool.some((character) => character.characterId === selection.characterId)) {
       return;
     }
 
@@ -206,7 +206,7 @@ export function WorldBaseCastSection({
     }
 
     const pool = selection.group === 'coreCast' ? value.coreCast : value.antagonists;
-    const character = pool.find((entry) => entry.draftId === selection.draftId) ?? pool[0];
+    const character = pool.find((entry) => entry.characterId === selection.characterId) ?? pool[0];
 
     if (!character) {
       return null;
@@ -247,7 +247,7 @@ export function WorldBaseCastSection({
 
     const targetGroup = selectedCharacter.group;
     const nextList = value[targetGroup].map((character) =>
-      character.draftId === selectedCharacter.character.draftId
+      character.characterId === selectedCharacter.character.characterId
         ? {
             ...character,
             [field]: nextValue,
@@ -264,14 +264,13 @@ export function WorldBaseCastSection({
   function addCharacter(group: 'coreCast' | 'antagonists') {
     const nextCharacter = createEmptyWorldBaseCharacterDraft(
       group === 'coreCast' ? 'core' : 'antagonist',
-      value[group].length + 1,
     );
 
     onChange({
       ...value,
       [group]: [...value[group], nextCharacter],
     });
-    setSelection({ group, draftId: nextCharacter.draftId });
+    setSelection({ group, characterId: nextCharacter.characterId });
   }
 
   function removeSelectedCharacter() {
@@ -281,7 +280,7 @@ export function WorldBaseCastSection({
 
     const targetGroup = selectedCharacter.group;
     const nextCharacters = value[targetGroup].filter(
-      (character) => character.draftId !== selectedCharacter.character.draftId,
+      (character) => character.characterId !== selectedCharacter.character.characterId,
     );
 
     onChange({
@@ -291,7 +290,7 @@ export function WorldBaseCastSection({
 
     const fallbackCharacter = nextCharacters[Math.max(0, nextCharacters.length - 1)];
     if (fallbackCharacter) {
-      setSelection({ group: targetGroup, draftId: fallbackCharacter.draftId });
+      setSelection({ group: targetGroup, characterId: fallbackCharacter.characterId });
       return;
     }
 
@@ -363,7 +362,7 @@ export function WorldBaseCastSection({
             subtitle="这里只放摘要卡，完整卡在右侧展开。"
             cards={value.coreCast}
             selection={selection}
-            onSelect={(draftId) => setSelection({ group: 'coreCast', draftId })}
+            onSelect={(characterId) => setSelection({ group: 'coreCast', characterId })}
             onAdd={() => addCharacter('coreCast')}
             addLabel="新增核心角色"
           />
@@ -373,7 +372,7 @@ export function WorldBaseCastSection({
             subtitle="这里只放摘要卡，完整卡在右侧展开。"
             cards={value.antagonists}
             selection={selection}
-            onSelect={(draftId) => setSelection({ group: 'antagonists', draftId })}
+            onSelect={(characterId) => setSelection({ group: 'antagonists', characterId })}
             onAdd={() => addCharacter('antagonists')}
             addLabel="新增反派"
           />

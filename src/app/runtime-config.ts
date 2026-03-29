@@ -144,6 +144,12 @@ export function buildAdapterConfig(
   baseUrl?: string,
   modeOverrides?: ModeOverrides,
 ): AdapterConfig {
+  const routeConfig = buildModeConfig(modeOverrides?.route);
+  const generateConfig = buildModeConfig(modeOverrides?.generate);
+  const auditConfig = buildModeConfig(modeOverrides?.audit);
+  const settlementConfig = buildModeConfig(modeOverrides?.settlement);
+  const collapseConfig = buildModeConfig(modeOverrides?.collapse);
+
   return {
     provider,
     providerConfig: {
@@ -154,11 +160,11 @@ export function buildAdapterConfig(
         : getDefaultBaseUrl(provider)
       ).trim(),
     },
-    ...(modeOverrides?.route ? { routeConfig: buildModeConfig(modeOverrides.route) } : {}),
-    ...(modeOverrides?.generate ? { generateConfig: buildModeConfig(modeOverrides.generate) } : {}),
-    ...(modeOverrides?.audit ? { auditConfig: buildModeConfig(modeOverrides.audit) } : {}),
-    ...(modeOverrides?.settlement ? { settlementConfig: buildModeConfig(modeOverrides.settlement) } : {}),
-    ...(modeOverrides?.collapse ? { collapseConfig: buildModeConfig(modeOverrides.collapse) } : {}),
+    ...(routeConfig ? { routeConfig } : {}),
+    ...(generateConfig ? { generateConfig } : {}),
+    ...(auditConfig ? { auditConfig } : {}),
+    ...(settlementConfig ? { settlementConfig } : {}),
+    ...(collapseConfig ? { collapseConfig } : {}),
   };
 }
 

@@ -9,6 +9,53 @@ import {
   createRecordingAdapter,
   storyPackageFixture,
 } from '@/engine/__tests__/fixtures/audit-loop-fixtures';
+import type { StoryPackage } from '@/types';
+
+const structuredStoryPackageFixture: StoryPackage = {
+  ...storyPackageFixture,
+  worldBase: {
+    worldBaseSetting: 'world-setting',
+    worldRules: 'world-rules',
+    toneBaseline: 'tone-baseline',
+    hero: {
+      characterId: 'chr_hero01',
+      name: 'Hero One',
+      identityRole: 'Lead breaker',
+      lightNovelTrait: 'Calm pressure.',
+      gender: 'Female',
+      personality: 'Reserved',
+      age: '16',
+      occupation: 'Student',
+      characterSummary: 'Primary viewpoint character.',
+      capabilityBoundary: 'Uses only physical action.',
+      behaviorBoundary: 'Never panics under pressure.',
+      oocRedLine: 'Never becomes hesitant.',
+      clothing: 'School uniform',
+      propsWeapon: 'Flashlight',
+    },
+    coreCast: [
+      {
+        characterId: 'chr_core01',
+        name: 'Core One',
+        identityRole: 'Support anchor',
+        lightNovelTrait: 'Steady contrast.',
+        gender: 'Male',
+        personality: 'Steady',
+        age: '17',
+        occupation: 'Student',
+        characterSummary: 'Core support.',
+        capabilityBoundary: 'Stays in mundane space.',
+        behaviorBoundary: 'Avoids direct danger.',
+        oocRedLine: 'Never identifies the anomaly.',
+        clothing: 'School uniform',
+        propsWeapon: 'Notebook',
+      },
+    ],
+    antagonists: [],
+    npcCharacters: 'Support One - steady witness',
+    locationPatch: 'location-patch',
+  },
+};
 
 describe('Orchestrator', () => {
   afterEach(() => {
@@ -27,7 +74,7 @@ describe('Orchestrator', () => {
     });
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
 
     const state = await orchestrator.initScene();
@@ -44,7 +91,7 @@ describe('Orchestrator', () => {
     const { adapter, generateCalls, auditCalls, routeCalls } = createRecordingAdapter();
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
     const callOrder: string[] = [];
     const originalBuildVolumeSequence = phaseGradientModule.buildVolumeSequence;
@@ -79,6 +126,8 @@ describe('Orchestrator', () => {
     expect(state.generationState.directorNoteSummary).toBe('Volume=Low | BeatRules=Active | OptionRules=Active');
     expect(generateCalls[0]?.directorNote.router).toBe(state.roundState.currentRouter);
     expect(generateCalls[0]?.directorNote.verbLexicon).toEqual(state.roundState.verbLexicon);
+    expect(generateCalls[0]?.worldBase.mainCharacters).toContain('Name: Hero One');
+    expect(generateCalls[0]?.worldBase.npcCharacters).toBe('Support One：steady witness');
   });
 
   it('retries with generationControl when audit fails before eventually passing', async () => {
@@ -104,7 +153,7 @@ describe('Orchestrator', () => {
     });
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
     const rewriteSpy = vi.spyOn(promptAssemblerModule, 'assembleRewritePromptObject');
 
@@ -144,7 +193,7 @@ describe('Orchestrator', () => {
     });
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
 
     await orchestrator.initScene();
@@ -174,7 +223,7 @@ describe('Orchestrator', () => {
     });
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
 
     await orchestrator.initScene();
@@ -208,7 +257,7 @@ describe('Orchestrator', () => {
     });
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
 
     await orchestrator.initScene();
@@ -227,7 +276,7 @@ describe('Orchestrator', () => {
     const { adapter } = createRecordingAdapter();
     const orchestrator = createOrchestrator({
       adapter,
-      storyPackage: storyPackageFixture,
+      storyPackage: structuredStoryPackageFixture,
     });
 
     const initialState = await orchestrator.initScene();

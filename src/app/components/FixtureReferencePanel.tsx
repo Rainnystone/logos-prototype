@@ -9,6 +9,15 @@ export function FixtureReferencePanel({
   storyPackage,
   storyPackageName,
 }: FixtureReferencePanelProps) {
+  const castIndex = new Map(
+    [
+      storyPackage.worldBase.hero,
+      ...storyPackage.worldBase.coreCast,
+      ...storyPackage.worldBase.antagonists,
+    ].map((character) => [character.characterId, character.name]),
+  );
+  const sceneCast = storyPackage.sceneSpec.cast ?? [];
+
   return (
     <section className="panel fixture-panel">
       <div className="panel-heading">
@@ -46,12 +55,20 @@ export function FixtureReferencePanel({
           <h3>World Base</h3>
           <div className="stack-list">
             <article>
-              <p className="metric-label">Main Characters</p>
-              <p>{storyPackage.worldBase.mainCharacters}</p>
+              <p className="metric-label">World Base Setting</p>
+              <p>{storyPackage.worldBase.worldBaseSetting}</p>
+            </article>
+            <article>
+              <p className="metric-label">World Rules</p>
+              <p>{storyPackage.worldBase.worldRules}</p>
+            </article>
+            <article>
+              <p className="metric-label">Tone Baseline</p>
+              <p>{storyPackage.worldBase.toneBaseline}</p>
             </article>
             {storyPackage.worldBase.npcCharacters ? (
               <article>
-                <p className="metric-label">NPC Characters</p>
+                <p className="metric-label">Supporting Cast</p>
                 <p>{storyPackage.worldBase.npcCharacters}</p>
               </article>
             ) : null}
@@ -59,6 +76,40 @@ export function FixtureReferencePanel({
               <p className="metric-label">Location Patch</p>
               <p>{storyPackage.worldBase.locationPatch}</p>
             </article>
+          </div>
+        </section>
+
+        <section className="fixture-card">
+          <h3>Cast Reference</h3>
+          <div className="stack-list">
+            <article>
+              <p className="metric-label">Hero</p>
+              <p>{storyPackage.worldBase.hero.name}</p>
+              <p className="panel-note">{storyPackage.worldBase.hero.identityRole}</p>
+            </article>
+
+            {storyPackage.worldBase.coreCast.map((character) => (
+              <article key={character.characterId}>
+                <p className="metric-label">Core Cast</p>
+                <p>{character.name}</p>
+                <p className="panel-note">{character.identityRole}</p>
+              </article>
+            ))}
+
+            {storyPackage.worldBase.antagonists.map((character) => (
+              <article key={character.characterId}>
+                <p className="metric-label">Antagonist</p>
+                <p>{character.name}</p>
+                <p className="panel-note">{character.identityRole}</p>
+              </article>
+            ))}
+
+            {sceneCast.length > 0 ? (
+              <article>
+                <p className="metric-label">Scene Cast</p>
+                <p>{sceneCast.map((characterId) => castIndex.get(characterId) ?? characterId).join(', ')}</p>
+              </article>
+            ) : null}
           </div>
         </section>
 
