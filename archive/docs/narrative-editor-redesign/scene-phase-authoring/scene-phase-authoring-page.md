@@ -11,7 +11,7 @@
 - Visual references:
   - [scene-phase UIUX参考图.png](scene-phase%20UIUX%E5%8F%82%E8%80%83%E5%9B%BE.png)
   - [../../assets/example.png](../../assets/example.png)
-  - [../../../docs/superpowers/specs/2026-03-22-ui-hybrid-logic-design.md](../../../docs/superpowers/specs/2026-03-22-ui-hybrid-logic-design.md)
+  - [../../superpowers/specs/2026-03-22-ui-hybrid-logic-design.md](../../superpowers/specs/2026-03-22-ui-hybrid-logic-design.md)
 
 ## 1. Purpose
 

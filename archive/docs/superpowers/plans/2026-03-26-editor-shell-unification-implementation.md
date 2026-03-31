@@ -45,7 +45,7 @@
 
 ### Spec and plan references
 
-- Reference: `docs/superpowers/specs/2026-03-26-logos-editor-shell-unification-design.md`
+- Reference: `archive/docs/superpowers/specs/2026-03-26-logos-editor-shell-unification-design.md`
 - Reference: `archive/docs/narrative-editor-redesign/uiux rehaul/uiux-rehaul-context.md`
 
 ---
@@ -277,7 +277,7 @@ git commit -m "feat: refit package validation layout"
 **Files:**
 - Verify: `src/app/edit/**`
 - Verify: `src/app/globals.css`
-- Verify: `docs/superpowers/specs/2026-03-26-logos-editor-shell-unification-design.md`
+- Verify: `archive/docs/superpowers/specs/2026-03-26-logos-editor-shell-unification-design.md`
 
 - [ ] **Step 1: Run the full UI test suite**
 

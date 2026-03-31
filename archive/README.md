@@ -9,6 +9,8 @@
 - `archive/vendor/LOGOS-SPEC/`
   过去整理进仓库的 LOGOS 规格快照、契约文档、作者工作流说明、历史 ADR 与样例材料。
 
+其中 `archive/docs/superpowers/` 专门存放已经不再作为当前执行依据、但仍需要保留以便回看和追溯的历史 plan、spec 与相关草稿。
+
 ## 使用说明
 
 这些内容现在统一视为归档记录和参考材料。
