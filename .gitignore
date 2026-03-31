@@ -66,4 +66,5 @@ secrets.json
 *.seed
 
 # Local companion repos / scratch workspaces
+.worktrees/
 LOGOS Sample DEV/
