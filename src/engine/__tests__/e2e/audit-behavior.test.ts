@@ -74,4 +74,34 @@ describe('E2E audit behavior', () => {
     expect(result.state.roundState.historyWindow.length).toBeGreaterThan(0);
     expect(result.state.generationState.currentBeatText).toBe(result.beatResult.beatText);
   });
+
+  it('bypasses audit and accepts immediately when no questions are selected for the phase', async () => {
+    const storyPackage = await loadSampleSceneStoryPackage();
+    const storyPackageWithoutSelectedAuditQuestions = {
+      ...storyPackage,
+      auditQuestionSet: {
+        ...storyPackage.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+    };
+    const harness = createE2EMockAdapter({
+      questionSet: storyPackageWithoutSelectedAuditQuestions.auditQuestionSet,
+      auditBehavior: 'fail-always',
+    });
+    const orchestrator = createOrchestrator({
+      adapter: harness.adapter,
+      storyPackage: storyPackageWithoutSelectedAuditQuestions,
+    });
+
+    await orchestrator.initScene();
+    const result = await orchestrator.runBeat('Player action skip audit');
+
+    expect(result.beatResult.retryCount).toBe(0);
+    expect(result.beatResult.forceAccepted).toBe(false);
+    expect(result.beatResult.auditPassed).toBe(true);
+    expect(harness.generateCalls).toHaveLength(1);
+    expect(harness.auditCalls).toHaveLength(0);
+  });
 });

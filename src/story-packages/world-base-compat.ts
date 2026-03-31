@@ -1,4 +1,5 @@
 import { generateCharacterId } from '@/lib/character-id';
+import { compactWorldBaseCastLists } from '@/lib/world-base-characters';
 
 type CharacterKind = 'hero' | 'core' | 'antagonist';
 
@@ -528,7 +529,7 @@ export function migrateLegacyWorldBase(worldBase: LegacyWorldBaseLike): Structur
     ? parseStructuredWorldBase(worldBase)
     : parseLegacyWorldBase(worldBase);
 
-  return {
+  return compactWorldBaseCastLists({
     worldBaseSetting: parsedWorldBase.worldBaseSetting,
     worldRules: parsedWorldBase.worldRules,
     toneBaseline: parsedWorldBase.toneBaseline,
@@ -539,7 +540,7 @@ export function migrateLegacyWorldBase(worldBase: LegacyWorldBaseLike): Structur
     ),
     npcCharacters: parsedWorldBase.npcCharacters,
     locationPatch: parsedWorldBase.locationPatch,
-  };
+  });
 }
 
 export function filterWorldBaseForSceneCast(

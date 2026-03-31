@@ -24,7 +24,7 @@ export const AuditPacketSchema = z
   .object({
     context: AuditContextSchema,
     generatedContent: GeneratedContentSchema,
-    auditQuestions: z.array(z.string()).min(1),
+    auditQuestions: z.array(z.string()),
   })
   .strict();
 export type AuditPacket = z.infer<typeof AuditPacketSchema>;

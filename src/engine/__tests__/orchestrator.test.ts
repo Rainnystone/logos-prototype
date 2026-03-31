@@ -288,4 +288,32 @@ describe('Orchestrator', () => {
     expect(initialState.generationState.currentBeatText).toBeNull();
     expect(nextState.generationState.currentBeatText).toBe('beat-1');
   });
+
+  it('skips audit entirely when the active phase has no selected audit questions', async () => {
+    const { adapter, generateCalls, auditCalls } = createRecordingAdapter();
+    const orchestrator = createOrchestrator({
+      adapter,
+      storyPackage: {
+        ...structuredStoryPackageFixture,
+        auditQuestionSet: {
+          ...structuredStoryPackageFixture.auditQuestionSet,
+          selectionPolicy: {
+            default: [],
+          },
+        },
+      },
+    });
+
+    await orchestrator.initScene();
+    const { beatResult, state } = await orchestrator.runBeat('player-choice-no-audit');
+
+    expect(generateCalls).toHaveLength(1);
+    expect(auditCalls).toHaveLength(0);
+    expect(beatResult.retryCount).toBe(0);
+    expect(beatResult.auditPassed).toBe(true);
+    expect(beatResult.forceAccepted).toBe(false);
+    expect(state.evaluationState.auditAnswers).toEqual([]);
+    expect(state.evaluationState.blockingFailures).toEqual([]);
+    expect(state.evaluationState.rewriteFeedback).toBeNull();
+  });
 });

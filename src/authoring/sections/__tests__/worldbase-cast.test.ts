@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyWorldBaseCastDraft,
   createEmptyWorldBaseCharacterDraft,
   createWorldBaseCastDraft,
   normalizeSupportingCast,
@@ -163,5 +164,35 @@ describe('createWorldBaseCastDraft', () => {
     });
     expect(draft.supportingCast).toBe('Support One：Steady witness');
     expect(draft.locationPool).toBe('Signal room');
+  });
+});
+
+describe('applyWorldBaseCastDraft', () => {
+  it('drops fully blank cast entries when saving world-base drafts', () => {
+    const draft = createWorldBaseCastDraft(structuredWorldBase);
+
+    const nextWorldBase = applyWorldBaseCastDraft(structuredWorldBase, {
+      ...draft,
+      coreCast: [...draft.coreCast, createEmptyWorldBaseCharacterDraft('core')],
+      antagonists: [...draft.antagonists, createEmptyWorldBaseCharacterDraft('antagonist')],
+    });
+
+    expect(nextWorldBase.coreCast).toHaveLength(1);
+    expect(nextWorldBase.coreCast[0]?.name).toBe('Core One');
+    expect(nextWorldBase.antagonists).toHaveLength(1);
+    expect(nextWorldBase.antagonists[0]?.name).toBe('Villain One');
+  });
+
+  it('keeps cast entries when any field contains input', () => {
+    const draft = createWorldBaseCastDraft(structuredWorldBase);
+    const partialCharacter = createEmptyWorldBaseCharacterDraft('core');
+
+    const nextWorldBase = applyWorldBaseCastDraft(structuredWorldBase, {
+      ...draft,
+      coreCast: [...draft.coreCast, { ...partialCharacter, personality: 'X' }],
+    });
+
+    expect(nextWorldBase.coreCast).toHaveLength(2);
+    expect(nextWorldBase.coreCast[1]?.personality).toBe('X');
   });
 });

@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
@@ -115,6 +116,77 @@ describe('ControlModulesSection', () => {
 
     expect(onSubmit).toHaveBeenCalledWith('auditor-question-set');
     expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the operator clear every default audit selection', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onReset = vi.fn();
+    const onChange = vi.fn();
+    const draft = createControlModulesDraft(storyPackageFixture);
+    const defaultQuestionIds = [
+      ...draft.auditQuestionSet.globalQuestions,
+      ...draft.auditQuestionSet.controlQuestions,
+      ...Object.values(draft.auditQuestionSet.phaseSpecificQuestions ?? {}).flat(),
+    ].map((question) => question.id);
+    const localizedDraft = {
+      ...draft,
+      auditQuestionSet: {
+        ...draft.auditQuestionSet,
+        selectionPolicy: {
+          ...draft.auditQuestionSet.selectionPolicy,
+          default: defaultQuestionIds,
+        },
+      },
+    };
+
+    function Harness() {
+      const [value, setValue] = useState(localizedDraft);
+
+      return (
+        <ControlModulesSection
+          packageName="sample-scene"
+          phaseIds={storyPackageFixture.phasePlans.map((phase) => phase.phaseId)}
+          value={value}
+          onChange={(nextValue) => {
+            setValue(nextValue);
+            onChange(nextValue);
+          }}
+          onSubmit={onSubmit}
+          onReset={onReset}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    await user.click(screen.getByRole('button', { name: '审计问题组' }));
+
+    const defaultSelectionSection = screen.getByText('默认问题').closest('div');
+    expect(defaultSelectionSection).not.toBeNull();
+
+    const defaultSelectionCheckboxes = within(defaultSelectionSection as HTMLElement).getAllByRole(
+      'checkbox',
+    );
+
+    expect(defaultSelectionCheckboxes).toHaveLength(defaultQuestionIds.length);
+
+    for (const checkbox of defaultSelectionCheckboxes) {
+      await user.click(checkbox);
+    }
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        auditQuestionSet: expect.objectContaining({
+          selectionPolicy: expect.objectContaining({
+            default: [],
+          }),
+        }),
+      }),
+    );
+
+    await user.click(screen.getByRole('button', { name: '保存本页' }));
+    expect(onSubmit).toHaveBeenCalledWith('auditor-question-set');
   });
 
   it('shows the localized saving label while a save is in progress', () => {

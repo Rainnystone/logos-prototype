@@ -1,6 +1,6 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import { validateStateSnapshot } from '@/engine/schema-validator';
-import { resolveAudit } from '@/engine/modules/audit-resolver';
+import { resolveAudit, type AuditResolverResult } from '@/engine/modules/audit-resolver';
 import { buildDirectorNote } from '@/engine/modules/director-note-layer';
 import { createLightConeCollapse } from '@/engine/modules/light-cone-collapse';
 import { getHistoryWindow } from '@/engine/modules/memory-placeholder';
@@ -56,6 +56,13 @@ interface AttemptOutcome {
   readonly resolution: ReturnType<typeof resolveAudit>;
   readonly auditAnswers: readonly boolean[];
 }
+
+const PASS_WITHOUT_AUDIT: AuditResolverResult = deepFreeze({
+  pass: true,
+  blockingFailures: [],
+  rewriteFeedback: null,
+  forceAccepted: false,
+});
 
 function cloneHistoryEntry(entry: HistoryEntry): HistoryEntry {
   return {
@@ -203,6 +210,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     workingState: StateSnapshot,
     historyWindow: readonly HistoryEntry[],
     directorNote: DirectorNote,
+    selectedQuestions: readonly AuditQuestion[],
   ): Promise<AttemptOutcome> {
     if (!config.adapter.generate) {
       throw new Error('LLMAdapter.generate is not configured.');
@@ -234,6 +242,16 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           : assemblePromptObject(promptAssemblerInput);
 
       const generationResult = await config.adapter.generate(promptObject);
+      if (selectedQuestions.length === 0) {
+        return {
+          promptObject,
+          generationResult,
+          retryCount,
+          resolution: PASS_WITHOUT_AUDIT,
+          auditAnswers: [],
+        };
+      }
+
       const auditExecution = await executeAudit({
         adapter: config.adapter,
         questionSet: config.storyPackage.auditQuestionSet,
@@ -378,6 +396,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         stateBeforeBeat,
         historyWindow,
         directorNote,
+        selectedQuestions,
       );
 
       acceptedHistory = [

@@ -205,9 +205,26 @@ describe('schema validator', () => {
           beatText: 'beat-text',
           options: ['opt-1', 'opt-2', 'opt-3'],
         },
-        auditQuestions: ['question-1'],
+        auditQuestions: [],
       }),
     ).toThrow(/generatedContent\.options/i);
+  });
+
+  it('accepts an AuditPacket with no audit questions', () => {
+    expect(
+      validateAuditPacket({
+        context: {
+          precedingBeats: [],
+        },
+        generatedContent: {
+          beatText: 'beat-text',
+          options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
+        },
+        auditQuestions: [],
+      }),
+    ).toMatchObject({
+      auditQuestions: [],
+    });
   });
 
   it('rejects a CollapseRequest without phaseConsequences', () => {
@@ -282,6 +299,30 @@ describe('schema validator', () => {
     ).toMatchObject({
       selectionPolicy: {
         default: ['AQ-G-001'],
+      },
+    });
+  });
+
+  it('accepts an AuditQuestionSet with an empty default selection', () => {
+    expect(
+      validateAuditQuestionSet({
+        sceneId: 'scene-id',
+        globalQuestions: [
+          {
+            id: 'AQ-G-001',
+            question: 'Is the output valid?',
+            expected: true,
+            blocking: true,
+          },
+        ],
+        controlQuestions: [],
+        selectionPolicy: {
+          default: [],
+        },
+      }),
+    ).toMatchObject({
+      selectionPolicy: {
+        default: [],
       },
     });
   });

@@ -728,6 +728,49 @@ describe('saveSectionDraft', () => {
     }
   });
 
+  it('preserves an empty default audit selection through save and reload', async () => {
+    prepareTestPackage();
+
+    const currentPackage = await loadStoryPackage(testPackageName);
+
+    const result = await saveSectionDraft({
+      requestId: 'request-empty-audit-default-selection',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'control-modules',
+      moduleScope: 'auditor-question-set',
+      payload: {
+        uiFields: {
+          controlModules: currentPackage.controlModules,
+          routerProfiles: currentPackage.routerProfiles,
+          auditQuestionSet: {
+            ...currentPackage.auditQuestionSet,
+            selectionPolicy: {
+              ...currentPackage.auditQuestionSet.selectionPolicy,
+              default: [],
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    expect(YAML.parse(readFileSync(authoringStatusPath, 'utf8'))).toMatchObject({
+      hasSuccessfulSave: true,
+    });
+
+    const savedAuditQuestions = YAML.parse(readFileSync(path.resolve(testPackagePath, 'audit-questions.yaml'), 'utf8')) as {
+      selectionPolicy: {
+        default: string[];
+      };
+    };
+
+    expect(savedAuditQuestions.selectionPolicy.default).toEqual([]);
+    if (result.kind === 'save_applied') {
+      expect(result.reloadedSectionState.auditQuestionSet.selectionPolicy.default).toEqual([]);
+    }
+  });
+
   it('blocks deleting a router profile that is still referenced by scene-phase data', async () => {
     prepareTestPackage();
 

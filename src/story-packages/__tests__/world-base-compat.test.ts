@@ -131,4 +131,55 @@ Name: Villain One`,
     expect(worldBase.coreCast).toHaveLength(2);
     expect(worldBase.coreCast[1]?.characterId).toBe(coreTwoId);
   });
+
+  it('drops fully blank structured cast entries during legacy migration', () => {
+    const migrated = migrateLegacyWorldBase({
+      mainCharacters: `## Hero
+### Character 1
+Name: Hero One
+
+## Core Cast
+### Character 1
+Name: Core One
+
+### Character 2
+Name:
+
+## Antagonists
+### Character 1
+Name: Villain One
+
+### Character 2
+Name:`,
+      npcCharacters: '',
+      locationPatch: '',
+    });
+
+    expect(migrated.coreCast).toHaveLength(1);
+    expect(migrated.coreCast[0]?.name).toBe('Core One');
+    expect(migrated.antagonists).toHaveLength(1);
+    expect(migrated.antagonists[0]?.name).toBe('Villain One');
+  });
+
+  it('keeps structured cast entries when any field contains input', () => {
+    const migrated = migrateLegacyWorldBase({
+      mainCharacters: `## Hero
+### Character 1
+Name: Hero One
+
+## Core Cast
+### Character 1
+Name: Core One
+
+### Character 2
+Personality: X
+
+## Antagonists`,
+      npcCharacters: '',
+      locationPatch: '',
+    });
+
+    expect(migrated.coreCast).toHaveLength(2);
+    expect(migrated.coreCast[1]?.personality).toBe('X');
+  });
 });

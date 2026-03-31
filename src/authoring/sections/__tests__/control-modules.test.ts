@@ -129,6 +129,24 @@ describe('control-modules', () => {
     expect(result.auditQuestionSet?.globalQuestions[0]?.id).toBe('AQ-G-001');
   });
 
+  it('preserves an empty default audit selection when saving auditor question changes', () => {
+    const draft = createControlModulesDraft(currentStoryPackage);
+    const nextDraft: ControlModulesDraft = {
+      ...draft,
+      auditQuestionSet: {
+        ...draft.auditQuestionSet,
+        selectionPolicy: {
+          ...draft.auditQuestionSet.selectionPolicy,
+          default: [],
+        },
+      },
+    };
+
+    const result = renderControlModulesSave(currentStoryPackage, nextDraft, 'auditor-question-set');
+
+    expect(result.auditQuestionSet?.selectionPolicy.default).toEqual([]);
+  });
+
   it('blocks deleting a router profile that is still referenced by scene-phase data', () => {
     const draft = createControlModulesDraft(currentStoryPackage);
     const nextDraft: ControlModulesDraft = {

@@ -42,6 +42,37 @@ describe('Auditor', () => {
     expect(selectedQuestions.at(-1)?.id).toBe('AQ-P2-001');
   });
 
+  it('returns an empty selection when the policy selects no question IDs', () => {
+    const { selectedQuestions, selectedIds } = selectAuditQuestions(
+      {
+        ...auditQuestionSetFixture,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+      'phase-01',
+    );
+
+    expect(selectedIds).toEqual([]);
+    expect(selectedQuestions).toEqual([]);
+  });
+
+  it('keeps phase-appended questions when the default selection is empty', () => {
+    const { selectedQuestions, selectedIds } = selectAuditQuestions(
+      {
+        ...auditQuestionSetFixture,
+        selectionPolicy: {
+          default: [],
+          phaseOverrides: auditQuestionSetFixture.selectionPolicy.phaseOverrides,
+        },
+      },
+      'phase-02',
+    );
+
+    expect(selectedIds).toEqual(['AQ-P2-001']);
+    expect(selectedQuestions.map((question) => question.id)).toEqual(['AQ-P2-001']);
+  });
+
   it('builds a valid AuditPacket from history, beat text, options, and selected questions', () => {
     const { selectedQuestions } = selectAuditQuestions(auditQuestionSetFixture, 'phase-01');
     const packet = buildAuditPacket(

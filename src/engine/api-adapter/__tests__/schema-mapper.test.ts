@@ -55,20 +55,27 @@ describe('schema mapper', () => {
   describe('generate', () => {
     it('maps PromptObject into a ProviderRequest with world base and narrative in system', () => {
       const request = mapForGenerate(samplePromptObject, 'openai-compatible');
+      const systemPrompt = request.system ?? '';
 
       expect(samplePromptObject.worldBase.mainCharacters).toContain('## Hero');
       expect(samplePromptObject.worldBase.mainCharacters).toContain('Name: Hero One');
-      expect(request.system).toContain(sampleStructuredWorldBase.hero.name);
-      expect(request.system).toContain(samplePromptObject.worldBase.npcCharacters);
-      expect(request.system).toContain(samplePromptObject.worldBase.locationPatch);
-      expect(request.system).toContain(samplePromptObject.narrative.mainAxis);
-      expect(request.system).toContain(samplePromptObject.narrative.endLine);
-      expect(request.system).toContain(samplePromptObject.narrative.phaseGoal);
-      expect(request.system).toContain(samplePromptObject.narrative.alpha);
-      expect(request.system).toContain(samplePromptObject.narrative.beta);
-      expect(request.system).toMatch(/multiple readable paragraphs|natural paragraph breaks/i);
-      expect(request.system).toMatch(/hard failure|unacceptable/i);
-      expect(request.system).toMatch(/prefer more paragraph breaks|shorter paragraphs/i);
+      expect(systemPrompt).toMatch(/severely violates/i);
+      expect(systemPrompt).toMatch(/internal impulse|inner thought|self-directed complaint/i);
+      expect(systemPrompt).toMatch(/must not execute|cannot become.*real action/i);
+      expect(systemPrompt.indexOf('severely violates')).toBeLessThan(
+        systemPrompt.indexOf('[World Base]'),
+      );
+      expect(systemPrompt).toContain(sampleStructuredWorldBase.hero.name);
+      expect(systemPrompt).toContain(samplePromptObject.worldBase.npcCharacters);
+      expect(systemPrompt).toContain(samplePromptObject.worldBase.locationPatch);
+      expect(systemPrompt).toContain(samplePromptObject.narrative.mainAxis);
+      expect(systemPrompt).toContain(samplePromptObject.narrative.endLine);
+      expect(systemPrompt).toContain(samplePromptObject.narrative.phaseGoal);
+      expect(systemPrompt).toContain(samplePromptObject.narrative.alpha);
+      expect(systemPrompt).toContain(samplePromptObject.narrative.beta);
+      expect(systemPrompt).toMatch(/multiple readable paragraphs|natural paragraph breaks/i);
+      expect(systemPrompt).toMatch(/hard failure|unacceptable/i);
+      expect(systemPrompt).toMatch(/prefer more paragraph breaks|shorter paragraphs/i);
     });
 
     it('preserves history order and appends director note as the final user message', () => {

@@ -28,6 +28,12 @@ function formatRouters(request: RouteRequest): string {
 
 export function buildGenerateSystemPrompt(prompt: PromptObject): string {
   return [
+    '[Player Input Boundary]',
+    'If player free input severely violates the established world base, the protagonist characterization, or the protagonist OOC red lines, treat that input only as a fleeting internal impulse, inner thought, or self-directed complaint.',
+    'It must not execute as a real in-world action.',
+    'Instead, infer the protagonist\'s actual outward behavior from the current context and continue the beat with actions that remain fully consistent with the established constraints.',
+    'The blocked impulse may still surface inside the narration as internal monologue or self-directed commentary, but it cannot become enacted behavior.',
+    '',
     '[World Base]',
     `Main characters: ${prompt.worldBase.mainCharacters}`,
     `NPC characters: ${prompt.worldBase.npcCharacters || 'none'}`,

@@ -4,6 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 import { deepFreeze } from '@/lib/deep-freeze';
+import { compactWorldBaseCastLists } from '@/lib/world-base-characters';
 import { parseWithSchema } from '@/lib/validation';
 import { AuditQuestionSetSchema, WorldBaseSchema } from '@/types';
 import {
@@ -44,7 +45,9 @@ async function loadValidatedWorldBase(filePath: string) {
     filePath,
     (data) => {
       const migratedWorldBase = isLegacyWorldBase(data) ? migrateLegacyWorldBase(data) : data;
-      return parseWithSchema(WorldBaseSchema, migratedWorldBase, 'worldBase');
+      return compactWorldBaseCastLists(
+        parseWithSchema(WorldBaseSchema, migratedWorldBase, 'worldBase'),
+      );
     },
     'world base',
   );

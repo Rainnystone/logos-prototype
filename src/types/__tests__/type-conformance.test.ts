@@ -189,7 +189,7 @@ describe('Phase 00 contract types', () => {
     expect(phasePlan.beatCount).toBe(4);
   });
 
-  it('models AuditPacket with exactly four generated options', () => {
+  it('models AuditPacket with an optional audit question selection', () => {
     const auditPacket: AuditPacket = {
       context: {
         precedingBeats: [{ role: 'assistant', content: 'history' }],
@@ -198,10 +198,31 @@ describe('Phase 00 contract types', () => {
         beatText: 'beat-text',
         options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
       },
-      auditQuestions: ['question-1'],
+      auditQuestions: [],
     };
 
     expect(auditPacket.generatedContent.options).toHaveLength(4);
+    expect(auditPacket.auditQuestions).toHaveLength(0);
+  });
+
+  it('models an AuditQuestionSet with an empty default selection', () => {
+    const auditQuestionSet: AuditQuestionSet = {
+      sceneId: 'scene-id',
+      globalQuestions: [
+        {
+          id: 'AQ-G-001',
+          question: 'Is the output valid?',
+          expected: true,
+          blocking: true,
+        },
+      ],
+      controlQuestions: [],
+      selectionPolicy: {
+        default: [],
+      },
+    };
+
+    expect(auditQuestionSet.selectionPolicy.default).toHaveLength(0);
   });
 
   it('models collapse and settlement packets', () => {

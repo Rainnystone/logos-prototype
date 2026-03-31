@@ -20,7 +20,7 @@
 - Test: `src/authoring/sections/__tests__/control-modules.test.ts`
 - Test: `src/engine/__tests__/schema-validator.test.ts`
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Add tests that prove:
 
@@ -28,13 +28,13 @@ Add tests that prove:
 - `AuditPacket.auditQuestions` may be an empty array
 - normalization keeps an empty default selection intact instead of restoring a minimum set
 
-- [ ] **Step 2: Run the targeted tests to verify they fail**
+- [x] **Step 2: Run the targeted tests to verify they fail**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/control-modules.test.ts src/engine/__tests__/schema-validator.test.ts`
 
 Expected: the new empty-selection assertions fail under the current minimum-count rules.
 
-- [ ] **Step 3: Write the minimal contract and normalization changes**
+- [x] **Step 3: Write the minimal contract and normalization changes**
 
 Implement only these changes:
 
@@ -43,13 +43,13 @@ Implement only these changes:
 - keep global question definitions required, but allow selected ID lists to be empty
 - keep `normalizeAuditQuestionSet()` filtering invalid IDs, but do not reintroduce any fallback minimum
 
-- [ ] **Step 4: Run the targeted tests to verify they pass**
+- [x] **Step 4: Run the targeted tests to verify they pass**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/control-modules.test.ts src/engine/__tests__/schema-validator.test.ts`
 
 Expected: all targeted contract and normalization tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/types/audit-question-set.ts src/types/audit-packet.ts src/authoring/sections/control-modules.ts src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/control-modules.test.ts src/engine/__tests__/schema-validator.test.ts
@@ -64,20 +64,20 @@ git commit -m "feat: allow empty audit selections"
 - Test: `src/authoring/persistence/__tests__/bridge.test.ts`
 - Test: `src/app/edit/__tests__/ControlModulesSection.test.tsx`
 
-- [ ] **Step 1: Write the failing authoring tests**
+- [x] **Step 1: Write the failing authoring tests**
 
 Add tests that prove:
 
 - the editor can uncheck all default audit questions and keep the draft empty
 - bridge extraction / normalization / save round-trip preserves the empty default selection
 
-- [ ] **Step 2: Run the targeted tests to verify they fail**
+- [x] **Step 2: Run the targeted tests to verify they fail**
 
 Run: `npm test -- src/authoring/persistence/__tests__/bridge.test.ts src/app/edit/__tests__/ControlModulesSection.test.tsx`
 
 Expected: the new empty-selection persistence assertions fail before implementation.
 
-- [ ] **Step 3: Write the minimal authoring changes**
+- [x] **Step 3: Write the minimal authoring changes**
 
 Keep the UI checkbox model unchanged. Only ensure:
 
@@ -85,13 +85,13 @@ Keep the UI checkbox model unchanged. Only ensure:
 - bridge normalization keeps `selectionPolicy.default: []`
 - no hidden fallback or warning state is introduced
 
-- [ ] **Step 4: Run the targeted tests to verify they pass**
+- [x] **Step 4: Run the targeted tests to verify they pass**
 
 Run: `npm test -- src/authoring/persistence/__tests__/bridge.test.ts src/app/edit/__tests__/ControlModulesSection.test.tsx`
 
 Expected: both authoring suites pass with the empty-selection scenario.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/authoring/persistence/bridge.ts src/app/edit/sections/ControlModulesSection.tsx src/authoring/persistence/__tests__/bridge.test.ts src/app/edit/__tests__/ControlModulesSection.test.tsx
@@ -109,7 +109,7 @@ git commit -m "feat: preserve empty audit selection in authoring"
 - Test: `src/engine/__tests__/e2e/audit-behavior.test.ts`
 - Test: `src/app/__tests__/play.test.tsx`
 
-- [ ] **Step 1: Write the failing runtime tests**
+- [x] **Step 1: Write the failing runtime tests**
 
 Add tests that prove:
 
@@ -118,13 +118,13 @@ Add tests that prove:
 - the beat is accepted directly with empty audit answers, zero retries, and no rewrite feedback
 - workbench tracking does not enter `auditing` status for the empty-selection path
 
-- [ ] **Step 2: Run the targeted tests to verify they fail**
+- [x] **Step 2: Run the targeted tests to verify they fail**
 
 Run: `npm test -- src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/app/__tests__/play.test.tsx`
 
 Expected: the new skip-audit assertions fail before the runtime short-circuit exists.
 
-- [ ] **Step 3: Write the minimal runtime implementation**
+- [x] **Step 3: Write the minimal runtime implementation**
 
 Implement only this flow:
 
@@ -134,13 +134,13 @@ Implement only this flow:
 - keep the existing audit path unchanged when questions are present
 - avoid fake audit packets, fake audit results, or new runtime flags
 
-- [ ] **Step 4: Run the targeted tests to verify they pass**
+- [x] **Step 4: Run the targeted tests to verify they pass**
 
 Run: `npm test -- src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/app/__tests__/play.test.tsx`
 
 Expected: all targeted runtime tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/modules/auditor.ts src/engine/orchestrator.ts src/app/play/runtime.ts src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/app/__tests__/play.test.tsx
@@ -152,25 +152,25 @@ git commit -m "feat: skip audit when no questions are selected"
 **Files:**
 - No new files
 
-- [ ] **Step 1: Run the focused end-to-end verification**
+- [x] **Step 1: Run the focused end-to-end verification**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/control-modules.test.ts src/authoring/persistence/__tests__/bridge.test.ts src/app/edit/__tests__/ControlModulesSection.test.tsx src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/app/__tests__/play.test.tsx`
 
 Expected: all changed-path suites pass together.
 
-- [ ] **Step 2: Run type-check**
+- [x] **Step 2: Run type-check**
 
 Run: `npm run type-check`
 
 Expected: no type errors.
 
-- [ ] **Step 3: Run the full test suite**
+- [x] **Step 3: Run the full test suite**
 
 Run: `npm test`
 
 Expected: no new failures introduced by this feature. If unrelated pre-existing failures remain, record them explicitly before closing the work.
 
-- [ ] **Step 4: Confirm scope discipline**
+- [x] **Step 4: Confirm scope discipline**
 
 Verify that the implementation:
 

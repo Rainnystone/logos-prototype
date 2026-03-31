@@ -1,5 +1,6 @@
 import type { CharacterProfile, WorldBase } from '@/types';
 import { generateCharacterId } from '@/lib/character-id';
+import { compactWorldBaseCastLists } from '@/lib/world-base-characters';
 
 type CharacterKind = 'hero' | 'core' | 'antagonist';
 
@@ -265,7 +266,7 @@ export function applyWorldBaseCastDraft(
 ): WorldBase {
   const nextDraft = normalizeWorldBaseCastDraft(currentWorldBase, draft);
 
-  return {
+  return compactWorldBaseCastLists({
     worldBaseSetting: nextDraft.worldBaseSetting,
     worldRules: nextDraft.worldRules,
     toneBaseline: nextDraft.toneBaseline,
@@ -276,7 +277,7 @@ export function applyWorldBaseCastDraft(
     ),
     npcCharacters: normalizeSupportingCast(nextDraft.supportingCast),
     locationPatch: normalizeBlock(nextDraft.locationPool),
-  };
+  });
 }
 
 export function renderWorldBase(

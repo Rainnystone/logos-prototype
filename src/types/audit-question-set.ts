@@ -23,7 +23,7 @@ export type PhaseOverride = z.infer<typeof PhaseOverrideSchema>;
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/audit-question-set-schema.yaml */
 export const SelectionPolicySchema = z
   .object({
-    default: z.array(z.string()).min(1),
+    default: z.array(z.string()),
     phaseOverrides: z.record(PhaseOverrideSchema).optional(),
   })
   .strict();

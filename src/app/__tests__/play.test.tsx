@@ -14,6 +14,7 @@ type AuditMode = 'pass' | 'fail-once' | 'fail-always';
 interface PlayHarnessConfig {
   readonly auditMode?: AuditMode;
   readonly delayMs?: number;
+  readonly failOnAuditCall?: boolean;
 }
 
 function wait(delayMs: number) {
@@ -95,6 +96,10 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
       } satisfies GenerateResult;
     },
     async audit() {
+      if (config.failOnAuditCall) {
+        throw new Error('Audit should not be called in this test harness.');
+      }
+
       auditCount += 1;
       await wait(delayMs);
 
@@ -146,6 +151,7 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
   return {
     adapter,
     getGenerateCount: () => generateCount,
+    getAuditCount: () => auditCount,
   };
 }
 
@@ -261,6 +267,38 @@ describe('PlayWorkbench', () => {
     await waitFor(() => {
       expect(harness.getGenerateCount()).toBe(4);
     });
+  });
+
+  it('skips auditing status and accepts directly when no audit question is selected', async () => {
+    const harness = createPlayAdapterHarness({ delayMs: 40, failOnAuditCall: true });
+    const user = userEvent.setup();
+    const storyPackageWithoutSelectedQuestions = {
+      ...storyPackageFixture,
+      auditQuestionSet: {
+        ...storyPackageFixture.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageWithoutSelectedQuestions}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+      />,
+    );
+
+    await startRound(user);
+    await user.type(screen.getByLabelText('Free text action'), 'Move fast without audit.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(await screen.findByText('Generating...')).toBeInTheDocument();
+    expect(await screen.findByText('Accepted')).toBeInTheDocument();
+    expect(screen.queryByText('Auditing...')).not.toBeInTheDocument();
+    expect(harness.getAuditCount()).toBe(0);
   });
 
   it('reads the runtime config saved through the shared form path', async () => {
