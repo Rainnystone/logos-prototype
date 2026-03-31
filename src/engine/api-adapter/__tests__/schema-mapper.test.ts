@@ -57,6 +57,10 @@ describe('schema mapper', () => {
       const request = mapForGenerate(samplePromptObject, 'openai-compatible');
       const systemPrompt = request.system ?? '';
 
+      expect(request.system).toContain('You are LOGOS, a controlled interactive fiction storyteller.');
+      expect(request.system).toContain(
+        'Act with narrative initiative inside the supplied boundaries and make full use of the provided story resources.',
+      );
       expect(samplePromptObject.worldBase.mainCharacters).toContain('## Hero');
       expect(samplePromptObject.worldBase.mainCharacters).toContain('Name: Hero One');
       expect(systemPrompt).toMatch(/severely violates/i);
