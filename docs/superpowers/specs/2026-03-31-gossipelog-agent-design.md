@@ -44,6 +44,25 @@ The shell must be able to call:
 
 as named workflow steps inside the agent loop.
 
+## Agent Scope In This Repository
+
+In this repository, an "agent" is a bounded helper that handles tasks requiring
+semantic judgment which deterministic code cannot safely replace.
+
+This does not mean story writing.
+
+Authors still own authored story content, and the main narrative engine remains
+the system that generates beats.
+
+This document therefore treats `gossipelog agent` as an auxiliary semantic
+sidecar, not as a co-author.
+
+The current authoring `coordinator` is also not the storage or taxonomy
+precedent for future agents.
+
+It remains a bridge-facing workflow entrypoint in landed code, not the shared
+agent skeleton this document is defining.
+
 ## Non-Goals
 
 `gossipelog agent` is not intended to do the following in Phase 1:
@@ -62,6 +81,9 @@ as named workflow steps inside the agent loop.
 - decide Scene cast membership
 - perform freeform identity matching outside the current Scene candidate set
 - patch prior prompt injection text incrementally across rounds
+- introduce an agent management page, toggle UI, or any other new UI/UX surface
+  in Phase 1
+- redesign Play Workbench or editor UI while implementing this sidecar
 
 ## System Position
 
@@ -89,6 +111,50 @@ The API adapter only sees raw model requests and raw model outputs.
 `gossipelog agent` needs the accepted beat after audit/rewrite resolution, so
 the accepted-beat handoff belongs near `runBeat()` lifecycle control rather
 than inside provider-facing adapter code.
+
+## Shared Agent Layout
+
+To keep future agent work discoverable, true agent code should converge under
+`src/agents/` rather than being scattered across unrelated runtime folders.
+
+The current recommended layout is:
+
+```text
+src/
+  agents/
+    registry.ts
+    gossipelog/
+      index.ts
+      definition.ts
+      agent.ts
+      repository.ts
+      merge.ts
+      skills/
+        relationship-update/
+        relationship-injection/
+```
+
+`src/agents/registry.ts` is the intended shared listing point for later agent
+management work.
+
+Phase 1 only needs enough structure for later tooling to discover agent
+identity, purpose, owned skills, and package-state paths.
+
+## Management Skeleton Without UI
+
+Phase 1 should leave a management skeleton, not a management surface.
+
+This phase should:
+
+- reserve a shared agent registry entrypoint
+- keep each agent's skill definitions colocated with that agent
+- keep package-owned state discoverable from stable paths
+
+This phase should not:
+
+- design an agent management page
+- add on/off switches to the UI
+- revise Play Workbench or editor UI/UX just because the agent exists
 
 ## Relation To Existing Memory Placeholder
 
@@ -794,7 +860,8 @@ Phase 1 should not treat relationship state as transient runtime memory.
 The approved direction is:
 
 - long-term directional relationship state belongs to the story package
-- each story package stores its own relationship state inside its package folder
+- each story package stores its own `gossipelog agent` state inside
+  `agents/gossipelog/` within that package folder
 - agent code and skills remain system-level, not package-bound
 - the persistence shape should follow the same broad principle as
   `world-base.yaml`:
@@ -802,16 +869,20 @@ The approved direction is:
   - high-granularity internal records
   - stable `characterId` anchors
 
-The current recommended file name is:
+The current recommended package-local files are:
 
-- `character-relationships.yaml`
+- `agents/gossipelog/config.yaml`
+- `agents/gossipelog/character-relationships.yaml`
 
-This file should be separate from `world-base.yaml`.
+`config.yaml` is reserved for package-local enablement or settings.
+
+`agents/gossipelog/character-relationships.yaml` should be separate from
+`world-base.yaml`.
 
 `world-base.yaml` remains static authored role and world definition.
 
-`character-relationships.yaml` holds package-owned long-term dynamic
-relationship state.
+`agents/gossipelog/character-relationships.yaml` holds package-owned long-term
+dynamic relationship state.
 
 The current relationship scope includes:
 
@@ -834,6 +905,9 @@ Phase 1 still does not persist the hero as a full outgoing source-role
 perspective.
 
 ## Relationship State File Structure
+
+The structure in this section refers to the file at
+`agents/gossipelog/character-relationships.yaml` inside each story package.
 
 The current recommended structure for `character-relationships.yaml` is a
 middle-weight layout:
@@ -1108,6 +1182,8 @@ Phase 1 should be considered complete only if all of the following are true:
    for the working set rather than patched incrementally
 9. the orchestrator remains code-owned rather than being replaced by a broad
    new narrative agent
+10. the implementation can operate without a new agent-management UI or any
+    discretionary UI/UX redesign
 
 ## Open Questions
 

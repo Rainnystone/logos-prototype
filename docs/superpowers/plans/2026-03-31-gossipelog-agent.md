@@ -4,26 +4,34 @@
 
 **Goal:** Add the Phase 1 `gossipelog agent` sidecar so each accepted beat can update package-owned directional relationship state and feed a dedicated dynamic relationship layer into the next prompt cycle.
 
-**Architecture:** Keep the runtime boundary strict. Deterministic code owns accepted-beat timing, role bounding, file persistence, merge rules, and prompt handoff; the two gossipelog skills own bounded semantic judgment only. Implement the closed loop end to end: accepted beat enters the orchestrator, the agent shell builds bounded context from current Scene role data plus package-owned relationship state, the update skill returns structured deltas, deterministic code merges and persists them, the injection skill rebuilds prompt-ready relationship text, and the next prompt cycle reads that refreshed `relationshipLayer`. The accepted beat should return to the player immediately when possible, but if the player submits the next action before the pending gossipelog refresh finishes, the orchestrator must wait for that refresh before assembling the next prompt. Phase 1 should not add provider-level streaming for this path.
+**Architecture:** Keep the runtime boundary strict. Deterministic code owns accepted-beat timing, role bounding, file persistence, merge rules, and prompt handoff; the two gossipelog skills own bounded semantic judgment only. Implement the closed loop end to end: accepted beat enters the orchestrator, the agent shell builds bounded context from current Scene role data plus package-owned relationship state, the update skill returns structured deltas, deterministic code merges and persists them, the injection skill rebuilds prompt-ready relationship text, and the next prompt cycle reads that refreshed `relationshipLayer`. The accepted beat should return to the player immediately when possible, but if the player submits the next action before the pending gossipelog refresh finishes, the orchestrator must wait for that refresh before assembling the next prompt. Phase 1 should not add provider-level streaming for this path. New agent-shell code should land under `src/agents/`, while package-owned gossipelog data should land under `src/story-packages/<package>/agents/gossipelog/`.
 
 **Tech Stack:** TypeScript, Zod, YAML-backed story packages, existing LOGOS orchestrator and API adapter pipeline, Vitest.
+
+**Out of Scope For This Plan:** Do not add an agent management page, toggle UI, or opportunistic Play Workbench/editor UI/UX redesign in this phase. This plan only lays the shared agent skeleton and package-local data layout that future management UI can read.
 
 ---
 
 ## File Map
 
 **Create:**
+- `src/agents/registry.ts`
+- `src/agents/gossipelog/definition.ts`
+- `src/agents/gossipelog/index.ts`
 - `src/types/character-relationships.ts`
 - `src/types/gossipelog-skill-packets.ts`
 - `src/types/__tests__/character-relationships.test.ts`
-- `src/engine/gossipelog/repository.ts`
-- `src/engine/gossipelog/merge.ts`
-- `src/engine/gossipelog/agent.ts`
-- `src/engine/gossipelog/__tests__/repository.test.ts`
-- `src/engine/gossipelog/__tests__/merge.test.ts`
-- `src/engine/gossipelog/__tests__/agent.test.ts`
+- `src/agents/gossipelog/skills/relationship-update/`
+- `src/agents/gossipelog/skills/relationship-injection/`
+- `src/agents/gossipelog/repository.ts`
+- `src/agents/gossipelog/merge.ts`
+- `src/agents/gossipelog/agent.ts`
+- `src/agents/gossipelog/__tests__/repository.test.ts`
+- `src/agents/gossipelog/__tests__/merge.test.ts`
+- `src/agents/gossipelog/__tests__/agent.test.ts`
 - `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
-- `src/story-packages/sample-scene/character-relationships.yaml`
+- `src/story-packages/sample-scene/agents/gossipelog/config.yaml`
+- `src/story-packages/sample-scene/agents/gossipelog/character-relationships.yaml`
 
 **Modify:**
 - `src/types/index.ts`
@@ -56,6 +64,43 @@
 - `src/app/play/PlayWorkbench.tsx`
 - `src/story-packages/__tests__/sample-scene.test.ts`
 - `src/engine/__tests__/e2e/full-phase-run.test.ts` (if the existing runtime regression coverage is the cleanest place for the final closed-loop assertion)
+
+### Task 0: Freeze Shared Agent Skeleton
+
+**Files:**
+- Create: `src/agents/registry.ts`
+- Create: `src/agents/gossipelog/definition.ts`
+- Create: `src/agents/gossipelog/index.ts`
+- Create: `src/agents/gossipelog/skills/relationship-update/`
+- Create: `src/agents/gossipelog/skills/relationship-injection/`
+- Create: `src/story-packages/sample-scene/agents/gossipelog/config.yaml`
+
+- [ ] **Step 1: Add the shared agent root and the gossipelog definition entrypoint**
+
+```ts
+export const gossipelogAgentDefinition = {
+  agentId: 'gossipelog',
+  displayName: 'gossipelog agent',
+  skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+  packageConfigPath: 'agents/gossipelog/config.yaml',
+  packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+} as const;
+```
+
+- [ ] **Step 2: Register `gossipelog agent` in `src/agents/registry.ts` so later management work has one stable read point**
+
+- [ ] **Step 3: Create the colocated gossipelog skill folders under `src/agents/gossipelog/skills/` and keep both Phase 1 skills there**
+
+- [ ] **Step 4: Create the package-local gossipelog folder under `src/story-packages/sample-scene/agents/gossipelog/` and reserve `config.yaml` for later per-package enablement or settings**
+
+- [ ] **Step 5: Keep this task structural only; do not add an agent management page, toggle UI, or any other new UI/UX work**
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/agents/registry.ts src/agents/gossipelog/definition.ts src/agents/gossipelog/index.ts src/agents/gossipelog/skills/relationship-update/ src/agents/gossipelog/skills/relationship-injection/ src/story-packages/sample-scene/agents/gossipelog/config.yaml
+git commit -m "feat: add shared gossipelog agent skeleton"
+```
 
 ### Task 1: Freeze Phase 1 Gossipelog Contracts
 
@@ -308,11 +353,11 @@ git commit -m "feat: add gossipelog adapter skill calls"
 ### Task 3: Add Package-Local Relationship Repository And Merge Rules
 
 **Files:**
-- Create: `src/engine/gossipelog/repository.ts`
-- Create: `src/engine/gossipelog/merge.ts`
-- Create: `src/engine/gossipelog/__tests__/repository.test.ts`
-- Create: `src/engine/gossipelog/__tests__/merge.test.ts`
-- Create: `src/story-packages/sample-scene/character-relationships.yaml`
+- Create: `src/agents/gossipelog/repository.ts`
+- Create: `src/agents/gossipelog/merge.ts`
+- Create: `src/agents/gossipelog/__tests__/repository.test.ts`
+- Create: `src/agents/gossipelog/__tests__/merge.test.ts`
+- Create: `src/story-packages/sample-scene/agents/gossipelog/character-relationships.yaml`
 - Modify: `src/story-packages/__tests__/sample-scene.test.ts`
 
 - [ ] **Step 1: Write the failing repository and merge tests**
@@ -394,7 +439,7 @@ it('absorbs a consumed highlighted delta into baseline before applying a later r
 
 - [ ] **Step 2: Run the repository and merge tests to verify they fail**
 
-Run: `npm test -- src/engine/gossipelog/__tests__/repository.test.ts src/engine/gossipelog/__tests__/merge.test.ts`
+Run: `npm test -- src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts`
 
 Expected: FAIL because the repository, sample file, and deterministic merge helpers do not exist yet.
 
@@ -440,22 +485,22 @@ export function mergeRelationshipUpdates(
 
 - [ ] **Step 5: Re-run the repository and merge tests**
 
-Run: `npm test -- src/engine/gossipelog/__tests__/repository.test.ts src/engine/gossipelog/__tests__/merge.test.ts src/story-packages/__tests__/sample-scene.test.ts`
+Run: `npm test -- src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/story-packages/__tests__/sample-scene.test.ts`
 
 Expected: PASS
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/engine/gossipelog/repository.ts src/engine/gossipelog/merge.ts src/engine/gossipelog/__tests__/repository.test.ts src/engine/gossipelog/__tests__/merge.test.ts src/story-packages/sample-scene/character-relationships.yaml src/story-packages/__tests__/sample-scene.test.ts
+git add src/agents/gossipelog/repository.ts src/agents/gossipelog/merge.ts src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/story-packages/sample-scene/agents/gossipelog/character-relationships.yaml src/story-packages/__tests__/sample-scene.test.ts
 git commit -m "feat: add gossipelog relationship repository"
 ```
 
 ### Task 4: Add The Gossipelog Agent Shell
 
 **Files:**
-- Create: `src/engine/gossipelog/agent.ts`
-- Create: `src/engine/gossipelog/__tests__/agent.test.ts`
+- Create: `src/agents/gossipelog/agent.ts`
+- Create: `src/agents/gossipelog/__tests__/agent.test.ts`
 
 - [ ] **Step 1: Write the failing agent-shell tests**
 
@@ -490,7 +535,7 @@ it('completes the update -> merge -> persist -> injection sub-loop and returns p
 
 - [ ] **Step 2: Run the agent-shell tests to verify they fail**
 
-Run: `npm test -- src/engine/gossipelog/__tests__/agent.test.ts`
+Run: `npm test -- src/agents/gossipelog/__tests__/agent.test.ts`
 
 Expected: FAIL because the agent shell and bounded context pack builder do not exist yet.
 
@@ -530,14 +575,14 @@ const injectionResult = await adapter.gossipelogInjection?.(
 
 - [ ] **Step 4: Re-run the agent-shell tests**
 
-Run: `npm test -- src/engine/gossipelog/__tests__/agent.test.ts`
+Run: `npm test -- src/agents/gossipelog/__tests__/agent.test.ts`
 
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/engine/gossipelog/agent.ts src/engine/gossipelog/__tests__/agent.test.ts
+git add src/agents/gossipelog/agent.ts src/agents/gossipelog/__tests__/agent.test.ts
 git commit -m "feat: add gossipelog agent shell"
 ```
 
@@ -811,7 +856,7 @@ it('does not block accepted-beat return on the background relationship refresh, 
 
 - [ ] **Step 2: Run the focused runtime suites**
 
-Run: `npm test -- src/types/__tests__/character-relationships.test.ts src/engine/gossipelog/__tests__/repository.test.ts src/engine/gossipelog/__tests__/merge.test.ts src/engine/gossipelog/__tests__/agent.test.ts src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts`
+Run: `npm test -- src/types/__tests__/character-relationships.test.ts src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts`
 
 Expected: PASS
 
@@ -833,7 +878,7 @@ Run: `npm run dev`
 
 Verify:
 - the first accepted beat completes without waiting for another player action
-- `character-relationships.yaml` updates after an accepted beat
+- `agents/gossipelog/character-relationships.yaml` updates after an accepted beat
 - the next beat is generated with a non-empty `relationshipLayer`
 - the workbench still boots when no provider config is saved, using the deterministic local adapter path
 
