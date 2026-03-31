@@ -1,7 +1,5 @@
 import type { HistoryEntry } from '@/types';
 
-export const DEFAULT_WINDOW_SIZE = 5;
-
 /**
  * Returns the current round's `precedingBeats` window from accepted history.
  *
@@ -9,8 +7,12 @@ export const DEFAULT_WINDOW_SIZE = 5;
  */
 export function getHistoryWindow(
   acceptedHistory: readonly HistoryEntry[],
-  windowSize: number = DEFAULT_WINDOW_SIZE,
+  windowSize?: number,
 ): readonly HistoryEntry[] {
+  if (windowSize === undefined) {
+    return acceptedHistory.slice();
+  }
+
   const normalizedWindowSize = Math.max(0, Math.floor(windowSize));
 
   if (normalizedWindowSize === 0) {

@@ -11,12 +11,12 @@ function buildHistoryEntry(index: number, role: HistoryEntry['role']): HistoryEn
 }
 
 describe('Memory Placeholder', () => {
-  it('returns the last five entries from accepted history', () => {
+  it('returns the full accepted history by default', () => {
     const acceptedHistory = Array.from({ length: 10 }, (_, index) =>
       buildHistoryEntry(index, index % 2 === 0 ? 'assistant' : 'user'),
     );
 
-    expect(getHistoryWindow(acceptedHistory)).toEqual(acceptedHistory.slice(-5));
+    expect(getHistoryWindow(acceptedHistory)).toEqual(acceptedHistory);
   });
 
   it('returns all entries when history has fewer than five items', () => {
@@ -33,12 +33,12 @@ describe('Memory Placeholder', () => {
     expect(getHistoryWindow([])).toEqual([]);
   });
 
-  it('returns all entries when history size matches the default window', () => {
+  it('returns all entries when the explicit window matches history length', () => {
     const acceptedHistory = Array.from({ length: 5 }, (_, index) =>
       buildHistoryEntry(index, index % 2 === 0 ? 'assistant' : 'user'),
     );
 
-    expect(getHistoryWindow(acceptedHistory)).toEqual(acceptedHistory);
+    expect(getHistoryWindow(acceptedHistory, 5)).toEqual(acceptedHistory);
   });
 
   it('supports a custom window size', () => {
@@ -70,12 +70,12 @@ describe('Memory Placeholder', () => {
     ]);
   });
 
-  it('returns entries in chronological order', () => {
+  it('returns entries in chronological order for an explicit window', () => {
     const acceptedHistory = Array.from({ length: 7 }, (_, index) =>
       buildHistoryEntry(index, index % 2 === 0 ? 'assistant' : 'user'),
     );
 
-    expect(getHistoryWindow(acceptedHistory)).toEqual([
+    expect(getHistoryWindow(acceptedHistory, 5)).toEqual([
       buildHistoryEntry(2, 'assistant'),
       buildHistoryEntry(3, 'user'),
       buildHistoryEntry(4, 'assistant'),

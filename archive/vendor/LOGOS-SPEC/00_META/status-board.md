@@ -39,7 +39,7 @@
 | Auditor | 已建立第一版 | `04_MODULES/auditor.md` | 负责是/否判定，不负责最终裁决 |
 | Audit Resolver | 已建立第一版 | `04_MODULES/audit-resolver.md` | 代码层裁决模块，负责把审计布尔结果转化为流程信号 |
 | Option Generator | 已建立第一版 | `04_MODULES/option-generator.md` | 三步约束管线，通过 optionConstraints 嵌入 PromptObject |
-| Memory Placeholder | 已建立第一版 | `04_MODULES/memory-placeholder.md` | 当前仅负责最近 5 Beat 窗口 |
+| Memory Placeholder | 已建立第一版 | `04_MODULES/memory-placeholder.md` | 当前默认读取全部已接受历史，支持显式窗口截断 |
 
 ## 阶段状态
 

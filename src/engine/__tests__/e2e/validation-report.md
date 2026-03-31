@@ -6,5 +6,5 @@
 
 ## Confirmed Drift
 
-- `Memory Placeholder` currently truncates to the last 5 accepted history entries, while the spec prose describes the window as the last 5 accepted beats. The existing implementation and Phase 01 tests are entry-based, so the E2E suite asserts the implemented behavior and records the mismatch here instead of silently redefining it.
+- `Memory Placeholder` now returns the full accepted history by default, while still allowing explicit window sizing for targeted cases. The E2E suite now asserts the full-history behavior instead of carrying the earlier five-entry cap.
 - Force-accept happens after the initial attempt plus 3 retries, which means `generate()` is called 4 times in the `fail-always` scenario. This matches the current `retryCount >= 3` resolver rule, even though some plan prose can be read as 3 total generate attempts.

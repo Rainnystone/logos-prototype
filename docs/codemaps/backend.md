@@ -24,7 +24,7 @@
 | `audit-resolver.ts` | Decide: accept / rewrite / force-accept | AuditResult + RetryCount -> Resolution |
 | `phase-gradient.ts` | Convert gradient type to 4-beat volume sequence | GradientType -> VolumeSequence |
 | `phase-consequence-settlement.ts` | Process end-of-phase consequences | PhaseState -> PhaseConsequences |
-| `memory-placeholder.ts` | Stub for future memory system | (placeholder) |
+| `memory-placeholder.ts` | Default history-window helper for accepted beats | Returns full history unless an explicit window size is provided |
 | `option-generator.ts` | Generate player choice options | BeatContext -> Options[4] |
 
 ## API Adapter (`src/engine/api-adapter/`)

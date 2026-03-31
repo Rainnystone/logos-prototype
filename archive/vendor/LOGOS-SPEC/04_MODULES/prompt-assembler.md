@@ -104,4 +104,4 @@ Prompt Assembler 当前不负责：
 
 ## 当前版本边界
 
-当前 Sample 版本仍然要求全量读取最近 5 个 Beat，不依赖 Header 或长期记忆召回；因此，Prompt Assembler 当前只需要证明其四层结构和装配顺序是稳定的，同时在 retry 时能稳定附加 `generationControl`，而不需要提前支持复杂记忆拼装策略。
+当前 Sample 版本仍然要求默认读取全部已接受历史，不依赖 Header 或长期记忆召回；因此，Prompt Assembler 当前只需要证明其四层结构和装配顺序是稳定的，同时在 retry 时能稳定附加 `generationControl`，而不需要提前支持复杂记忆拼装策略。

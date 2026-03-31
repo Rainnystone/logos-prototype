@@ -60,7 +60,7 @@ describe('E2E full phase run', () => {
 
     expect(beatThree.state.sceneState.currentBeatIndexInPhase).toBe(4);
     expect(beatThree.state.roundState.currentVolume).toBe(phaseOneVolumes[3]);
-    expect(beatThree.state.roundState.historyWindow).toHaveLength(5);
+    expect(beatThree.state.roundState.historyWindow).toHaveLength(6);
 
     expect(beatFour.state.sceneState.currentPhaseIndex).toBe(2);
     expect(beatFour.state.sceneState.currentBeatIndexInPhase).toBe(1);
