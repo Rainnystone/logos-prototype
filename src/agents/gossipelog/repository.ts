@@ -1,4 +1,4 @@
-import { access, readFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import YAML from 'yaml';
@@ -85,4 +85,21 @@ export async function loadOrCreateCharacterRelationships(
       `Failed to load character relationships for "${packageName}" from ${filePath}: ${message}`,
     );
   }
+}
+
+export async function saveCharacterRelationships(
+  packageName: string,
+  file: CharacterRelationshipsFile,
+): Promise<void> {
+  await ensureStoryPackageExists(packageName);
+
+  const validatedFile = parseWithSchema(
+    CharacterRelationshipsFileSchema,
+    file,
+    'characterRelationships',
+  );
+  const filePath = resolveCharacterRelationshipsPath(packageName);
+
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, `${YAML.stringify(validatedFile)}`, 'utf8');
 }
