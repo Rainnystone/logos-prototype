@@ -67,6 +67,10 @@ export const sampleStructuredWorldBase: WorldBase = {
 
 export const samplePromptObject: PromptObject = {
   worldBase: renderWorldBaseForPrompt(sampleStructuredWorldBase),
+  relationshipLayer: {
+    highlightedDeltasText: 'highlighted-deltas',
+    stableBackgroundText: 'stable-background',
+  },
   history: [
     { role: 'assistant', content: 'accepted-beat-1' },
     { role: 'user', content: 'player-choice-1' },
