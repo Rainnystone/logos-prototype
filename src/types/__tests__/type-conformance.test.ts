@@ -163,12 +163,7 @@ describe('Phase 00 contract types', () => {
         {
           sourceRoleId: 'chr_core01',
           targetRoleId: 'chr_hero01',
-          mode: 'delta',
-          replaceBaseline: false,
-          recentDelta: {
-            state: 'trust increased after direct protection',
-            sourceRound: 'round-0009',
-          },
+          mode: 'noop',
         },
       ],
     };
@@ -178,7 +173,7 @@ describe('Phase 00 contract types', () => {
       stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
     };
 
-    expect(updateResult.edgeUpdates[0]?.recentDelta.state).toContain('trust');
+    expect(updateResult.edgeUpdates[0]?.mode).toBe('noop');
     expect(injectionResult.highlightedDeltasText).toContain('chr_core01');
   });
 

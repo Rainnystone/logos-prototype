@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { createMockAdapter } from '@/engine/__mocks__/mock-adapter';
+import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
+import {
+  sampleGossipelogInjectionRequest,
+  sampleGossipelogUpdateRequest,
+} from '@/engine/api-adapter/__tests__/fixtures';
 import { validateCollapseResponse } from '@/engine/schema-validator';
 
 describe('mock adapter', () => {
@@ -52,5 +57,31 @@ describe('mock adapter', () => {
       beta: expect.any(String),
       inferenceTrace: expect.any(String),
     });
+  });
+
+  it('exposes deterministic gossipelog update and injection methods on the mock adapter', async () => {
+    const adapter = createMockAdapter();
+    await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
+      invocationNoOp: false,
+    });
+    await expect(adapter.gossipelogInjection!(sampleGossipelogInjectionRequest)).resolves.toMatchObject(
+      {
+        highlightedDeltasText: expect.any(String),
+        stableBackgroundText: expect.any(String),
+      },
+    );
+  });
+
+  it('exposes deterministic gossipelog update and injection methods on the workbench demo adapter', async () => {
+    const adapter = createWorkbenchDemoAdapter();
+    await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
+      invocationNoOp: false,
+    });
+    await expect(adapter.gossipelogInjection!(sampleGossipelogInjectionRequest)).resolves.toMatchObject(
+      {
+        highlightedDeltasText: expect.any(String),
+        stableBackgroundText: expect.any(String),
+      },
+    );
   });
 });

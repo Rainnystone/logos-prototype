@@ -91,6 +91,22 @@ describe('gossipelog contracts', () => {
     expect(parsed.edgeUpdates[0]?.mode).toBe('delta');
   });
 
+  it('accepts noop edge updates in the update-skill payload', () => {
+    const parsed = GossipelogUpdateResultSchema.parse({
+      involvedRoleIds: ['chr_core01', 'chr_hero01'],
+      invocationNoOp: false,
+      edgeUpdates: [
+        {
+          sourceRoleId: 'chr_core01',
+          targetRoleId: 'chr_hero01',
+          mode: 'noop',
+        },
+      ],
+    });
+
+    expect(parsed.edgeUpdates[0]?.mode).toBe('noop');
+  });
+
   it('rejects no-op update payloads that still carry edge updates', () => {
     expect(() =>
       GossipelogUpdateResultSchema.parse({

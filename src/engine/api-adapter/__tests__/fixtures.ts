@@ -172,6 +172,43 @@ export const sampleInitialCollapseRequest: InitialCollapseRequest = {
   },
 };
 
+const sampleGossipelogRelationshipSubgraph = {
+  meta: {
+    fileType: 'character-relationships',
+    schemaVersion: 1,
+    storyPackage: 'sample-scene',
+  },
+  relationshipsBySource: {},
+} as const;
+
+const sampleGossipelogRoleDefinitions = [
+  sampleStructuredWorldBase.hero,
+  sampleStructuredWorldBase.coreCast[0] ?? sampleStructuredWorldBase.hero,
+] as const;
+
+export const sampleGossipelogUpdateRequest = {
+  acceptedBeatText: 'accepted beat text',
+  roundId: 'round-0009',
+  sceneCastRoleIds: ['chr_hero01', 'chr_core01'],
+  sceneCastFraming: {
+    sceneId: 'scene-fixture',
+    castRoleIds: ['chr_hero01', 'chr_core01'],
+  },
+  candidateRoles: sampleGossipelogRoleDefinitions,
+  roleDefinitions: sampleGossipelogRoleDefinitions,
+  relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
+} as const;
+
+export const sampleGossipelogInjectionRequest = {
+  sceneCastRoleIds: ['chr_hero01', 'chr_core01'],
+  sceneCastFraming: {
+    sceneId: 'scene-fixture',
+    castRoleIds: ['chr_hero01', 'chr_core01'],
+  },
+  roleDefinitions: sampleGossipelogRoleDefinitions,
+  relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
+} as const;
+
 export const sampleProviderRequest: ProviderRequest = {
   system: 'system-instructions',
   messages: [

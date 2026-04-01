@@ -133,6 +133,28 @@ describe('schema validator', () => {
     });
   });
 
+  it('accepts a noop gossipelog edge update', () => {
+    expect(
+      validateGossipelogUpdateResult({
+        involvedRoleIds: ['chr_core01', 'chr_hero01'],
+        invocationNoOp: false,
+        edgeUpdates: [
+          {
+            sourceRoleId: 'chr_core01',
+            targetRoleId: 'chr_hero01',
+            mode: 'noop',
+          },
+        ],
+      }),
+    ).toMatchObject({
+      edgeUpdates: [
+        {
+          mode: 'noop',
+        },
+      ],
+    });
+  });
+
   it('accepts a valid gossipelog injection result', () => {
     expect(
       validateGossipelogInjectionResult({

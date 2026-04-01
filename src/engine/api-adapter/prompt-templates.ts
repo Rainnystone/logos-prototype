@@ -1,4 +1,9 @@
-import type { CollapseInput, RouteRequest } from '@/engine/types/adapter-interface';
+import type {
+  CollapseInput,
+  GossipelogInjectionRequest,
+  GossipelogUpdateRequest,
+  RouteRequest,
+} from '@/engine/types/adapter-interface';
 import type { AuditPacket, HistoryEntry, PhaseConsequenceRequest, PromptObject } from '@/types';
 
 function formatHistory(entries: readonly HistoryEntry[]): string {
@@ -15,6 +20,32 @@ function formatConsequences(consequences: readonly string[] | undefined): string
   }
 
   return consequences.map((item, index) => `${index + 1}. ${item}`).join('\n');
+}
+
+function formatRoleDefinitions(roleDefinitions: GossipelogUpdateRequest['roleDefinitions']): string {
+  if (roleDefinitions.length === 0) {
+    return 'No role definitions were supplied.';
+  }
+
+  return roleDefinitions
+    .map(
+      (role, index) =>
+        `${index + 1}. ${role.characterId} | ${role.name} | ${role.identityRole}\n   Trait: ${role.lightNovelTrait}\n   Boundaries: capability=${role.capabilityBoundary}; behavior=${role.behaviorBoundary}; ooc=${role.oocRedLine}`,
+    )
+    .join('\n');
+}
+
+function formatRelationshipSubgraph(subgraph: GossipelogUpdateRequest['relationshipSubgraph']): string {
+  return JSON.stringify(subgraph, null, 2);
+}
+
+function formatSceneCastFraming(
+  framing: GossipelogUpdateRequest['sceneCastFraming'],
+): string {
+  return [
+    `Scene ID: ${framing.sceneId}`,
+    `Cast role IDs: ${framing.castRoleIds.join(', ') || 'none'}`,
+  ].join('\n');
 }
 
 function formatRouters(request: RouteRequest): string {
@@ -223,5 +254,65 @@ export function buildCollapseUserPrompt(request: CollapseInput): string {
     formatConsequences(request.phaseConsequences),
     '',
     'Re-infer the next reachable alpha and beta boundaries using the definition lock.',
+  ].join('\n');
+}
+
+export function buildGossipelogUpdateSystemPrompt(): string {
+  return [
+    'You are the LOGOS gossipelog relationship-update skill.',
+    'Return JSON only with keys "involvedRoleIds", "invocationNoOp", and "edgeUpdates".',
+    'Use only the supplied scene cast, role definitions, accepted beat text, and relationship subgraph.',
+    'Do not invent new role IDs or update edges outside the provided candidate set.',
+    'Set invocationNoOp to true only when the beat does not justify any relationship change.',
+    'When invocationNoOp is true, edgeUpdates must be an empty array.',
+    'When invocationNoOp is false, edgeUpdates must contain one or more structured edge updates.',
+    'For any new edge, provide a thin baseline and a recent delta.',
+  ].join('\n');
+}
+
+export function buildGossipelogUpdateUserPrompt(request: GossipelogUpdateRequest): string {
+  return [
+    '[Accepted Beat]',
+    `Round ID: ${request.roundId}`,
+    `Beat text: ${request.acceptedBeatText}`,
+    '',
+    '[Scene Cast]',
+    `Scene cast role IDs: ${request.sceneCastRoleIds.join(', ') || 'none'}`,
+    formatSceneCastFraming(request.sceneCastFraming),
+    '',
+    '[Candidate Roles]',
+    formatRoleDefinitions(request.candidateRoles),
+    '',
+    '[Role Definitions]',
+    formatRoleDefinitions(request.roleDefinitions),
+    '',
+    '[Relationship Subgraph]',
+    formatRelationshipSubgraph(request.relationshipSubgraph),
+  ].join('\n');
+}
+
+export function buildGossipelogInjectionSystemPrompt(): string {
+  return [
+    'You are the LOGOS gossipelog relationship-injection skill.',
+    'Return JSON only with keys "highlightedDeltasText" and "stableBackgroundText".',
+    'Use the supplied relationship subgraph and role definitions to rebuild prompt-ready relationship text.',
+    'Keep highlighted deltas concise and current.',
+    'Keep stable background focused on long-term baseline context.',
+  ].join('\n');
+}
+
+export function buildGossipelogInjectionUserPrompt(
+  request: GossipelogInjectionRequest,
+): string {
+  return [
+    '[Scene Cast]',
+    `Scene cast role IDs: ${request.sceneCastRoleIds.join(', ') || 'none'}`,
+    formatSceneCastFraming(request.sceneCastFraming),
+    '',
+    '[Role Definitions]',
+    formatRoleDefinitions(request.roleDefinitions),
+    '',
+    '[Relationship Subgraph]',
+    formatRelationshipSubgraph(request.relationshipSubgraph),
   ].join('\n');
 }

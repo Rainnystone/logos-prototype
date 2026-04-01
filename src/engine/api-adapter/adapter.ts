@@ -6,6 +6,8 @@ import {
   parseAuditResult,
   parseCollapseResult,
   parseGenerateResult,
+  parseGossipelogInjectionResult,
+  parseGossipelogUpdateResult,
   parseRouteResult,
   parseSettlementResult,
 } from '@/engine/api-adapter/response-parsers';
@@ -13,6 +15,8 @@ import {
   mapForAudit,
   mapForCollapse,
   mapForGenerate,
+  mapForGossipelogInjection,
+  mapForGossipelogUpdate,
   mapForRoute,
   mapForSettlement,
 } from '@/engine/api-adapter/schema-mapper';
@@ -34,6 +38,10 @@ import type {
   InitialCollapseRequest,
   LLMAdapter,
 } from '@/engine/types/adapter-interface';
+import {
+  CharacterProfileSchema,
+  CharacterRelationshipsFileSchema,
+} from '@/types';
 
 const InitialCollapseRequestSchema = z
   .object({
@@ -46,6 +54,34 @@ const InitialCollapseRequestSchema = z
       })
       .strict(),
     phaseConsequences: z.array(z.string()).min(1).optional(),
+  })
+  .strict();
+
+const GossipelogSceneCastFramingSchema = z
+  .object({
+    sceneId: z.string(),
+    castRoleIds: z.array(z.string()),
+  })
+  .strict();
+
+const GossipelogUpdateRequestSchema = z
+  .object({
+    acceptedBeatText: z.string(),
+    roundId: z.string(),
+    sceneCastRoleIds: z.array(z.string()),
+    sceneCastFraming: GossipelogSceneCastFramingSchema,
+    candidateRoles: z.array(CharacterProfileSchema),
+    roleDefinitions: z.array(CharacterProfileSchema),
+    relationshipSubgraph: CharacterRelationshipsFileSchema,
+  })
+  .strict();
+
+const GossipelogInjectionRequestSchema = z
+  .object({
+    sceneCastRoleIds: z.array(z.string()),
+    sceneCastFraming: GossipelogSceneCastFramingSchema,
+    roleDefinitions: z.array(CharacterProfileSchema),
+    relationshipSubgraph: CharacterRelationshipsFileSchema,
   })
   .strict();
 
@@ -82,6 +118,18 @@ function validateCollapseInput(request: CollapseInput): CollapseInput {
     request,
     'initialCollapseRequest',
   ) as InitialCollapseRequest;
+}
+
+function validateGossipelogUpdateInput(request: unknown) {
+  return parseWithSchema(GossipelogUpdateRequestSchema, request, 'gossipelogUpdateRequest');
+}
+
+function validateGossipelogInjectionInput(request: unknown) {
+  return parseWithSchema(
+    GossipelogInjectionRequestSchema,
+    request,
+    'gossipelogInjectionRequest',
+  );
 }
 
 export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
@@ -144,6 +192,34 @@ export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
       const response = await provider.call(request);
 
       return deepFreeze(parseCollapseResult(response.content, response.usage));
+    },
+
+    async gossipelogUpdate(requestInput) {
+      const request = attachModel(
+        mapForGossipelogUpdate(
+          validateGossipelogUpdateInput(requestInput),
+          config.provider,
+          config.gossipelogUpdateConfig,
+        ),
+        config.providerConfig.model,
+      );
+      const response = await provider.call(request);
+
+      return deepFreeze(parseGossipelogUpdateResult(response.content, response.usage));
+    },
+
+    async gossipelogInjection(requestInput) {
+      const request = attachModel(
+        mapForGossipelogInjection(
+          validateGossipelogInjectionInput(requestInput),
+          config.provider,
+          config.gossipelogInjectionConfig,
+        ),
+        config.providerConfig.model,
+      );
+      const response = await provider.call(request);
+
+      return deepFreeze(parseGossipelogInjectionResult(response.content, response.usage));
     },
   };
 }

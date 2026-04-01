@@ -1,6 +1,8 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import {
   validateCollapseResponse,
+  validateGossipelogInjectionResult,
+  validateGossipelogUpdateResult,
   validatePhaseConsequenceResponse,
 } from '@/engine/schema-validator';
 import type { CollapseInput, GenerateResult, LLMAdapter } from '@/engine/types/adapter-interface';
@@ -33,6 +35,16 @@ function resolveCollapseSeed(request: CollapseInput): string {
   return request.phaseConsequences?.[0] ?? request.context.mainAxis;
 }
 
+function resolveRelationshipPair(roleIds: readonly string[]) {
+  const [sourceRoleId, targetRoleId] = [...new Set(roleIds)].slice(0, 2);
+
+  if (!sourceRoleId || !targetRoleId || sourceRoleId === targetRoleId) {
+    return null;
+  }
+
+  return { sourceRoleId, targetRoleId };
+}
+
 /**
  * Deterministic local adapter for the workbench UI when no provider config is saved yet.
  */
@@ -53,6 +65,55 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
             completionTokens: 24,
             totalTokens: 96,
           },
+        }),
+      );
+    },
+
+    async gossipelogUpdate(request) {
+      const pair = resolveRelationshipPair(request.sceneCastRoleIds);
+      const involvedRoleIds = [...new Set(request.sceneCastRoleIds)].slice(0, 2);
+
+      return deepFreeze(
+        validateGossipelogUpdateResult(
+          pair
+            ? {
+                involvedRoleIds,
+                invocationNoOp: false,
+                edgeUpdates: [
+                  {
+                    sourceRoleId: pair.sourceRoleId,
+                    targetRoleId: pair.targetRoleId,
+                    mode: 'delta',
+                    replaceBaseline: false,
+                    recentDelta: {
+                      state: `Demo update grounded in ${request.sceneCastFraming.sceneId} and ${request.acceptedBeatText.length} characters of accepted beat text.`,
+                      sourceRound: request.roundId,
+                    },
+                  },
+                ],
+              }
+            : {
+                involvedRoleIds,
+                invocationNoOp: true,
+                edgeUpdates: [],
+              },
+        ),
+      );
+    },
+
+    async gossipelogInjection(request) {
+      const roleSummary =
+        request.roleDefinitions
+          .slice(0, 2)
+          .map((role) => role.identityRole)
+          .join(', ') || 'no role definitions';
+
+      return deepFreeze(
+        validateGossipelogInjectionResult({
+          highlightedDeltasText: `Demo deltas for ${request.sceneCastRoleIds.join(
+            ' -> ',
+          ) || 'an empty cast'} inside ${request.sceneCastFraming.sceneId}.`,
+          stableBackgroundText: `Demo background for ${request.relationshipSubgraph.meta.storyPackage} with ${roleSummary}.`,
         }),
       );
     },

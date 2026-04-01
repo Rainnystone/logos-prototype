@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import {
+  sampleGossipelogInjectionRequest,
+  sampleGossipelogUpdateRequest,
   sampleAuditPacket,
   sampleCollapseRequest,
   sampleInitialCollapseRequest,
@@ -9,6 +11,7 @@ import {
   sampleRouteRequest,
   sampleSettlementRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
+import { DEFAULT_MODE_CONFIGS } from '@/engine/api-adapter/schema-mapper';
 import {
   validateCollapseResponse,
   validatePhaseConsequenceResponse,
@@ -50,6 +53,8 @@ describe('api adapter', () => {
       generate: expect.any(Function),
       audit: expect.any(Function),
       settlement: expect.any(Function),
+      gossipelogUpdate: expect.any(Function),
+      gossipelogInjection: expect.any(Function),
     });
   });
 
@@ -506,5 +511,296 @@ describe('api adapter', () => {
     });
 
     expect(maxOutputTokens).toEqual([4096, 36864, 4096, 8192, 36864]);
+  });
+
+  it('gossipelogUpdate rejects invalid input', async () => {
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await expect(
+      adapter.gossipelogUpdate!({
+        acceptedBeatText: 'accepted beat text',
+      } as never),
+    ).rejects.toThrow(/gossipelogUpdateRequest/i);
+  });
+
+  it('gossipelogInjection rejects invalid input', async () => {
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await expect(
+      adapter.gossipelogInjection!({
+        sceneCastRoleIds: ['chr_hero01'],
+      } as never),
+    ).rejects.toThrow(/gossipelogInjectionRequest/i);
+  });
+
+  it('gossipelogUpdate returns a frozen gossipelog update result', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        createOpenAIResponse({
+          involvedRoleIds: ['chr_core01', 'chr_hero01'],
+          invocationNoOp: false,
+          edgeUpdates: [
+            {
+              sourceRoleId: 'chr_core01',
+              targetRoleId: 'chr_hero01',
+              mode: 'delta',
+              replaceBaseline: false,
+              recentDelta: {
+                state: 'trust increased after direct protection',
+                sourceRound: 'round-0009',
+              },
+            },
+          ],
+        }),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest);
+
+    expect(result).toEqual({
+      involvedRoleIds: ['chr_core01', 'chr_hero01'],
+      invocationNoOp: false,
+      edgeUpdates: [
+        {
+          sourceRoleId: 'chr_core01',
+          targetRoleId: 'chr_hero01',
+          mode: 'delta',
+          replaceBaseline: false,
+          recentDelta: {
+            state: 'trust increased after direct protection',
+            sourceRound: 'round-0009',
+          },
+        },
+      ],
+      usage: {
+        promptTokens: 11,
+        completionTokens: 7,
+        totalTokens: 18,
+      },
+    });
+    expect(Object.isFrozen(result)).toBe(true);
+  });
+
+  it('gossipelogInjection returns a frozen gossipelog injection result', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        createOpenAIResponse({
+          highlightedDeltasText: 'delta',
+          stableBackgroundText: 'background',
+        }),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.gossipelogInjection!(sampleGossipelogInjectionRequest);
+
+    expect(result).toEqual({
+      highlightedDeltasText: 'delta',
+      stableBackgroundText: 'background',
+      usage: {
+        promptTokens: 11,
+        completionTokens: 7,
+        totalTokens: 18,
+      },
+    });
+    expect(Object.isFrozen(result)).toBe(true);
+  });
+
+  it('uses default gossipelog config values when none are overridden', async () => {
+    const observedBodies: Array<{ temperature: number; max_tokens: number }> = [];
+    const fetchMock = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      if (!init?.body) {
+        throw new Error('expected fetch body');
+      }
+
+      observedBodies.push(JSON.parse(String(init.body)) as { temperature: number; max_tokens: number });
+
+      if (observedBodies.length === 1) {
+        return createOpenAIResponse({
+          involvedRoleIds: ['chr_core01', 'chr_hero01'],
+          invocationNoOp: false,
+          edgeUpdates: [
+            {
+              sourceRoleId: 'chr_core01',
+              targetRoleId: 'chr_hero01',
+              mode: 'delta',
+              replaceBaseline: false,
+              recentDelta: {
+                state: 'trust increased after direct protection',
+                sourceRound: 'round-0009',
+              },
+            },
+          ],
+        });
+      }
+
+      return createOpenAIResponse({
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest);
+    await adapter.gossipelogInjection!(sampleGossipelogInjectionRequest);
+
+    expect(observedBodies[0]).toMatchObject({
+      temperature: DEFAULT_MODE_CONFIGS.gossipelogUpdate.temperature,
+      max_tokens: DEFAULT_MODE_CONFIGS.gossipelogUpdate.maxOutputTokens,
+    });
+    expect(observedBodies[1]).toMatchObject({
+      temperature: DEFAULT_MODE_CONFIGS.gossipelogInjection.temperature,
+      max_tokens: DEFAULT_MODE_CONFIGS.gossipelogInjection.maxOutputTokens,
+    });
+  });
+
+  it('honors gossipelog config overrides on the adapter path', async () => {
+    const observedBodies: Array<{ temperature: number; max_tokens: number }> = [];
+    const fetchMock = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      if (!init?.body) {
+        throw new Error('expected fetch body');
+      }
+
+      observedBodies.push(JSON.parse(String(init.body)) as { temperature: number; max_tokens: number });
+
+      if (observedBodies.length === 1) {
+        return createOpenAIResponse({
+          involvedRoleIds: ['chr_core01', 'chr_hero01'],
+          invocationNoOp: false,
+          edgeUpdates: [
+            {
+              sourceRoleId: 'chr_core01',
+              targetRoleId: 'chr_hero01',
+              mode: 'delta',
+              replaceBaseline: false,
+              recentDelta: {
+                state: 'trust increased after direct protection',
+                sourceRound: 'round-0009',
+              },
+            },
+          ],
+        });
+      }
+
+      return createOpenAIResponse({
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+      gossipelogUpdateConfig: {
+        temperature: 0.77,
+        maxOutputTokens: 1234,
+      },
+      gossipelogInjectionConfig: {
+        temperature: 0.45,
+        maxOutputTokens: 2222,
+      },
+    });
+
+    await adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest);
+    await adapter.gossipelogInjection!(sampleGossipelogInjectionRequest);
+
+    expect(observedBodies[0]).toMatchObject({
+      temperature: 0.77,
+      max_tokens: 1234,
+    });
+    expect(observedBodies[1]).toMatchObject({
+      temperature: 0.45,
+      max_tokens: 2222,
+    });
+  });
+
+  it('rejects gossipelogUpdate responses that include a baseline when replaceBaseline is false', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        createOpenAIResponse({
+          involvedRoleIds: ['chr_core01', 'chr_hero01'],
+          invocationNoOp: false,
+          edgeUpdates: [
+            {
+              sourceRoleId: 'chr_core01',
+              targetRoleId: 'chr_hero01',
+              mode: 'delta',
+              replaceBaseline: false,
+              baseline: {
+                state: 'should-not-exist',
+                lastAbsorbedRound: 'round-0008',
+              },
+              recentDelta: {
+                state: 'trust increased after direct protection',
+                sourceRound: 'round-0009',
+              },
+            },
+          ],
+        }),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).rejects.toThrow(
+      /gossipelogUpdateResult/i,
+    );
   });
 });

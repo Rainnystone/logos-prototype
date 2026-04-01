@@ -5,8 +5,16 @@ import {
   RelationshipDeltaSchema,
 } from '@/types/character-relationships';
 
-export const GossipelogRelationshipModeSchema = z.enum(['delta', 'new_edge']);
+export const GossipelogRelationshipModeSchema = z.enum(['noop', 'delta', 'new_edge']);
 export type GossipelogRelationshipMode = z.infer<typeof GossipelogRelationshipModeSchema>;
+
+const GossipelogEdgeNoOpUpdateSchema = z
+  .object({
+    sourceRoleId: z.string(),
+    targetRoleId: z.string(),
+    mode: z.literal('noop'),
+  })
+  .strict();
 
 const GossipelogEdgeDeltaUpdateSchema = z
   .object({
@@ -41,6 +49,7 @@ const GossipelogNewEdgeUpdateSchema = z
   .strict();
 
 export const GossipelogEdgeUpdateSchema = z.union([
+  GossipelogEdgeNoOpUpdateSchema,
   GossipelogEdgeDeltaUpdateSchema,
   GossipelogEdgeDeltaWithReplacementSchema,
   GossipelogNewEdgeUpdateSchema,
