@@ -48,6 +48,17 @@
 - UI / UX 复核不是附属工作，而是每个阶段的正式检查项。
 - 如果某个阶段引入了新的对象边界、操作路径或页面职责变化，应默认重新审视对应页面结构与交互。
 
+### C-2. Storage / Repository Substrate 责任边界
+
+- 当后续正式进入故事包 / 故事线 / 多进展管理时，应先补一层很薄的 `Storage / Repository Substrate`。
+- 这一层至少负责三件事：
+  - 明确 `package definition` 与 `mutable state` 的分层
+  - 抽出 `package root / repository seam`
+  - 明确 storyline / checkpoint / session / agent state 的仓储模型
+- 这属于产品层能力，不应伪装成 simulation toolset 的临时补丁。
+- 原因是 simulation 当前只是消费正式 seam 做 cloud-friendly 验证；它不是定义长期存储边界的地方。
+- 相关背景与当前 toolset 边界可参考 [simulation-toolset/README.md](simulation-toolset/README.md)。
+
 ### D. Storyline v1 范围
 
 - 第一版功能集合完整包含：
@@ -107,6 +118,13 @@
 ### Phase 3: Package & Storyline Layer
 
 目标：把检查点组织成真正可管理的故事线分支体系。
+
+前置基础层：
+
+- 在故事包管理 UI 之前，先冻结 `Storage / Repository Substrate`
+- 先把 `package definition` 与 `mutable state` 分开
+- 先明确 `package root / repository seam`
+- 先明确 storyline / checkpoint / session / agent state 的落点
 
 包含：
 

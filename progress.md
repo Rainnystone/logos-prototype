@@ -48,3 +48,7 @@
   - 该区域允许为空态且不报错
   - 不为第一阶段增加临时数据桥接方案
   - 等 `Phase 2` 的连续会话能力落地后再显示非空关系状态
+- 已补一条与 simulation toolset 兼容性直接相关的 roadmap 结论：
+  - 后续进入故事包 / 故事线层时，应先冻结 `Storage / Repository Substrate`
+  - `package root / repository seam` 属于产品层能力，不应作为 simulation 的临时补丁先落地
+  - 已把这条边界同步进根目录 `task_plan.md` 与 `findings.md`

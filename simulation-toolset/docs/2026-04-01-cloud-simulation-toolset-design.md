@@ -33,7 +33,7 @@
 
 作者侧最稳定、最正式的模拟注入点是：
 
-- [bridge.ts](F:/vibe%20coding/LOGOS-Narrative-Editor/src/authoring/persistence/bridge.ts) 中的 `saveSectionDraft()`
+- [bridge.ts](../../src/authoring/persistence/bridge.ts) 中的 `saveSectionDraft()`
 
 原因：
 
@@ -49,7 +49,7 @@
 
 玩家侧最稳定、最正式的模拟注入点是：
 
-- [orchestrator.ts](F:/vibe%20coding/LOGOS-Narrative-Editor/src/engine/orchestrator.ts) 中的 `createOrchestrator()`
+- [orchestrator.ts](../../src/engine/orchestrator.ts) 中的 `createOrchestrator()`
 - 以及返回实例上的 `initScene()` 与 `runBeat()`
 
 原因：
@@ -64,7 +64,7 @@
 
 adapter 层最适合做 fake / loopback seam 的位置是：
 
-- [adapter-interface.ts](F:/vibe%20coding/LOGOS-Narrative-Editor/src/engine/types/adapter-interface.ts) 中的 `LLMAdapter`
+- [adapter-interface.ts](../../src/engine/types/adapter-interface.ts) 中的 `LLMAdapter`
 
 原因：
 
@@ -84,7 +84,7 @@ adapter 层最适合做 fake / loopback seam 的位置是：
 
 `gossipelog agent` 或未来 sidecar agent 的生命周期，当前最适合通过以下两层观测：
 
-1. [agent.ts](F:/vibe%20coding/LOGOS-Narrative-Editor/src/agents/gossipelog/agent.ts) 的结构化返回值
+1. [agent.ts](../../src/agents/gossipelog/agent.ts) 的结构化返回值
 2. package-owned state 文件副作用
 
 当前 gossipelog 已暴露出足够清晰的生命周期证据：
@@ -281,3 +281,108 @@ adapter 层最适合做 fake / loopback seam 的位置是：
 2. 逐步抽取已有分散 helper
 3. 保持现有单元测试与边界测试原位
 4. 让 simulation layer 消费这些已有 seam，而不是替换它们
+
+## 12. Forward Compatibility Best Practices
+
+这一节不是要求当前立刻重构产品架构，而是给 simulation toolset 规定未来适配原则，确保它能跟随后续的多故事包、storyline、checkpoint、session 与 repository substrate 一起演进。
+
+### 12.1 Toolset Should Target Stable Domain Boundaries, Not Today’s Folder Shape
+
+当前 toolset 之所以会临时依赖 `src/story-packages/`，不是因为这是理想形态，而是因为当前正式 seam 仍然绑定这个目录。
+
+未来 best practice 应明确为：
+
+- toolset 优先依赖 `package definition / mutable state / repository seam`
+- 不把“故事包一定在 `src/story-packages/<name>` 下”当成长久前提
+- 当前目录复制式 fixture 只应被视为过渡适配层
+
+### 12.2 Package Definition And Mutable State Must Be Modeled Separately
+
+一旦 roadmap 进入多故事包、storyline 和 continuity，toolset 不应继续把所有东西都当成“一个可复制目录”。
+
+未来应该显式区分：
+
+- `Package Definition`
+  - 世界、角色、场景、控制模块等作者定义
+- `Mutable State`
+  - storyline
+  - checkpoint
+  - session
+  - agent state
+  - relationship layer snapshots
+
+toolset 的场景与 trace 也应逐步按这条分层来表达，而不是只围绕 `packageName`。
+
+### 12.3 Simulation Inputs Should Evolve Toward Scoped Targets
+
+当前很多入口还是：
+
+- `packageName`
+
+未来更稳的方向应是：
+
+- `packageName`
+- `storylineId`
+- `checkpointId`
+- `sessionId`
+- `repositoryRoot` 或 repository handle
+
+也就是说，toolset 未来应逐步支持“在某个 package 下、某条 storyline 上、从某个 checkpoint 恢复并继续推进”的目标定位，而不是只支持“加载一个包然后跑”。
+
+### 12.4 Recorder And Report Must Be Ready For New Scope IDs
+
+当前 report 已经有结构化雏形，但后续不应把顶层身份长期锁死在 `packageName`。
+
+best practice 是逐步扩成：
+
+- `packageName`
+- `storylineId`
+- `checkpointId`
+- `sessionId`
+- `agentScope`
+
+这样 cloud 批跑完成后，人类才能快速分辨：
+
+- 这是哪一个故事包
+- 哪一条故事线
+- 从哪个检查点分叉
+- 属于哪个连续会话
+- 哪个 sidecar scope 产生了副作用
+
+### 12.5 Assertions Should Prefer State Semantics Over File Path Semantics
+
+当前阶段因为正式 seam 限制，部分测试仍会观察文件系统结果。
+
+但长期 best practice 应是：
+
+- 优先断言领域状态是否正确
+- 文件路径与目录结构只作为底层证据，不作为高层语义
+
+例如未来更推荐断言：
+
+- checkpoint 是否建立
+- storyline 是否切换成功
+- session 是否绑定到正确 storyline
+- agent state 是否写入正确 scope
+
+而不是长期断言某个 YAML 文件恰好位于某个目录。
+
+### 12.6 Fake Adapter And Sidecar Simulation Should Stay Boundary-First
+
+即使以后引入 callback source、import agent、更多 provider，toolset 也不应退化成“专门模拟某家 provider SDK 的细节”。
+
+best practice 仍然是：
+
+- adapter 层测正式 `LLMAdapter` seam
+- sidecar 层测正式 sidecar lifecycle seam
+- callback / webhook / provider 差异只在需要时再为边界层加 loopback seam
+
+### 12.7 Phase 4 Should Prefer Repository Substrate Readiness Over More UI Smoke
+
+对 simulation toolset 来说，未来最值钱的不是再加很多 UI smoke，而是跟随后续产品层补出一个更正式的 `Storage / Repository Substrate`：
+
+- `package definition` 与 `mutable state` 分层
+- `package root / repository` seam
+- storyline / checkpoint / session / agent state 的正式仓储模型
+
+一旦这层出现，toolset 应优先迁移去消费它；这比继续堆目录复制和路径约定更符合长期 best practice。

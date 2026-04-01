@@ -26,6 +26,7 @@
 | 7 | complete | 收口文档与残余风险，明确 no-audit 分支、cloud 批跑前的并发隔离与时序模拟缺口 |
 | 8 | complete | 推进并完成 Phase 3：补并发安全 fixture、延迟型 scripted adapter、批量 scenario runner、timing report contract 与 report 落盘入口 |
 | 9 | pending | Phase 4 候选：并发 batch orchestration、真实 callback-source seam、少量 route/UI smoke、长期治理 |
+| 10 | pending | 等产品层开始 Storage / Repository Substrate 设计后，让 simulation toolset 对齐新的 package definition / mutable state / repository seam |
 
 ## Phase 3 Scope
 

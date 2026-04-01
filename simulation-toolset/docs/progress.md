@@ -126,3 +126,8 @@
 - 已完成本轮 subagent 收口：
   - 两个 explorer 已产出有效建议并关闭
   - 两个 review subagent 未返回有效审查结果，已主动关闭，不作为结论依据
+- 已补一次 risk clarification：
+  - 确认 temp fixture 当前仍写入 `src/story-packages/.tmp-simulation-*`
+  - fresh targeted simulation 测试前后比对显示：成功运行不会继续增加残余目录
+  - 现存残余目录来自历史中断/失败运行，说明当前缺少 out-of-process scavenging
+  - 已将该问题定性为 Phase 4 治理项，而不是本轮阶段 3 的 blocker

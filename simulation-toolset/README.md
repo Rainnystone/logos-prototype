@@ -54,3 +54,5 @@ This keeps the first cloud-facing version boundary-first:
 - no browser automation requirement
 - no direct file writes outside the formal authoring bridge
 - no story-specific logic baked into the harness
+
+For a cloud-agent operational workflow, see [agent-guide.md](agent-guide.md).

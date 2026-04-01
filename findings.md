@@ -248,6 +248,18 @@
 - 用户已经把 rollback 定义成“从某个已接受 beat 的检查点重新开跑”，这使得 `Phase 2` 可以形成明确交付，而不必等待故事线层先落地。
 - 一旦有了可靠检查点，`Phase 3` 的故事线管理就不再是空壳，而是对检查点的组织与分叉。
 
+### 为什么 package root / repository seam 不该先作为 simulation 补丁落地
+
+- 这个 seam 最终一定要有，但它的责任属于产品层，不属于 simulation toolset。
+- 原因不是 simulation 不需要它，而是：
+  - seam 一旦引入，就会同时影响 package 加载、保存、storyline、checkpoint、session、agent state 的正式边界
+  - 这已经超出“测试基础设施”范围，属于产品存储模型本身
+- 因此更稳的顺序应是：
+  - simulation toolset 先继续做 boundary-first 的验证基础设施
+  - 产品层在正式进入 `Storage / Repository Substrate` 时，再引入 `package root / repository seam`
+- 这也解释了为什么 simulation 当前 README 明确把自己定位为“消费正式 seam 的独立 workspace”，而不是定义长期目录契约的地方。
+- 相关边界说明可直接参考 [simulation-toolset/README.md](simulation-toolset/README.md)。
+
 ### 为什么新 agent 放最后
 
 - 导入 agent 需要明确的落点。

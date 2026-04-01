@@ -6,7 +6,7 @@
   - Runtime Loop 走 `Player Input -> Orchestrator -> Adapter -> Audit/Accept`
   - Authoring Loop 走 `Structured Save Request -> Bridge -> Validation -> Writeback -> Reload`
 - `coordinator` 不是 sidecar agent，也不是文件写回边界。
-- 正式写回边界在 [bridge.ts](F:/vibe%20coding/LOGOS-Narrative-Editor/src/authoring/persistence/bridge.ts)。
+- 正式写回边界在 [bridge.ts](../../src/authoring/persistence/bridge.ts)。
 - 第一个真正落地的 sidecar agent 是 `gossipelog agent`。
 
 ## Confirmed Stable Seams
@@ -96,6 +96,27 @@
   - 更稳的阶段 3 路线是先补 delay / timeout / report persistence / per-fixture cleanup。
   - 真正的 callback-source loopback 如果后续需要，应作为阶段 4 的扩展 seam 再引入。
 
+## Temp Fixture Risk Clarification
+
+- Aquinas 提到的担忧成立一半，不是误报。
+- 当前 temp fixture 确实会在 `src/story-packages/` 下创建 `.tmp-simulation-*` 目录。
+  - 直接原因不是 harness 偷懒，而是当前正式 seam 本身就把 package 解析根目录固定在 `src/story-packages/`。
+  - [story-loader.ts](../../src/engine/story-loader.ts) 通过 `process.cwd()/src/story-packages/<packageName>` 加载 package。
+  - authoring bridge / reload 路径因此也天然依赖这个目录。
+- 这意味着：如果坚持“不接触 product src/”的字面约束，现有 Phase 2/3 authoring-loop 系统模拟实际上还做不到完全满足；要彻底避开，只能新增 package root 注入 seam 或独立镜像工作区。
+- 风险级别应定义为：
+  - 不是当前功能正确性的主风险
+  - 是 repo hygiene / cloud workspace hygiene 风险
+  - 在进程异常退出、测试中断、或共享 workspace 批跑时会留下残余目录
+- 已补证据：
+  - fresh 通过的 targeted simulation 测试前后，`.tmp-simulation-*` 目录列表没有继续增长
+  - 说明当前 `fixture.cleanup()` 对正常完成的场景是有效的
+  - 但历史残余目录仍然存在，证明异常中断时没有 out-of-process scavenging
+- 结论：
+  - 这是一个真实但可控的已知风险
+  - 不构成“当前阶段 3 失效”
+  - 应作为阶段 4 的优先治理项，而不是在阶段 3 内临时硬改产品主 seam
+
 ## Final Shape
 
 - 最终不应是临时脚本集合。
@@ -104,3 +125,19 @@
   - 新增根目录独立的 simulation workspace
   - 输出结构化 JSON report
   - 补少量 smoke，而不是用浏览器点击承担主回归职责
+
+## Best Practice For Future Feature Compatibility
+
+- toolset 的长期目标不应只是“能跑当前 sample-scene”，而应是“能跟随后续产品边界扩展而不重写一套测试方法”。
+- 结合根目录 roadmap，最重要的前瞻兼容点是：
+  - 多故事包管理
+  - storyline 分支
+  - checkpoint 恢复
+  - session continuity
+  - agent state scope
+  - storage / repository substrate
+- 因此 best practice 应明确为：
+  - 不把当前 `src/story-packages/` 目录形态当长期契约
+  - 不把“复制整个故事包目录”当成 storyline 或 session 的长期模拟方式
+  - 尽早让 scenario / trace / assertions 从只认 `packageName` 进化为可挂 `storylineId`、`checkpointId`、`sessionId`
+  - 等产品层出现正式 repository seam 后，simulation toolset 应优先迁移到 seam 上，而不是继续直接碰目录
