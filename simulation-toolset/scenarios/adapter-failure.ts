@@ -45,28 +45,21 @@ export function createAdapterFailureScenario(): ExecutableSimulationScenario {
         recorder.recordAction({
           kind: 'agent.observe.failure',
         });
-        recorder.recordAgentTrace({
-          highlightedDeltasText: result.agentTrace.relationshipLayer.highlightedDeltasText,
-          stableBackgroundText: result.agentTrace.relationshipLayer.stableBackgroundText,
-          usedFallbackSource: result.agentTrace.usedFallbackSource,
-          usedFallbackLayer: result.agentTrace.usedFallbackLayer,
-        });
+        recorder.recordAgentTrace(result.agentTrace);
         recorder.recordAssertion({
           name: 'fallback-layer-used',
           pass: result.agentTrace.usedFallbackLayer === 'last-stable-layer',
         });
         recorder.recordAssertion({
           name: 'stable-layer-preserved',
-          pass:
-            result.agentTrace.relationshipLayer.stableBackgroundText ===
-            lastStableRelationshipLayer.stableBackgroundText,
+          pass: result.agentTrace.stableBackgroundText === lastStableRelationshipLayer.stableBackgroundText,
         });
 
         return {
           finalState: {
             packageName: fixture.packageName,
             usedFallbackLayer: result.agentTrace.usedFallbackLayer,
-            stableBackgroundText: result.agentTrace.relationshipLayer.stableBackgroundText,
+            stableBackgroundText: result.agentTrace.stableBackgroundText,
           },
         };
       } finally {

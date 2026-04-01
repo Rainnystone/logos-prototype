@@ -7,6 +7,7 @@ import type {
   SimulationReport,
   SimulationRuntimeTrace,
 } from '@simulation/contracts';
+import { SIMULATION_SCHEMA_VERSION } from '@simulation/contracts';
 
 type RecorderMeta = {
   readonly scenarioId: string;
@@ -56,6 +57,7 @@ export function createSimulationRecorder(meta: RecorderMeta): SimulationRecorder
     },
     buildReport(input) {
       return {
+        schemaVersion: SIMULATION_SCHEMA_VERSION,
         scenarioMeta: {
           scenarioId: meta.scenarioId,
           packageName: meta.packageName,

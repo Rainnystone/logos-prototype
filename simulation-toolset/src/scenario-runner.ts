@@ -1,12 +1,20 @@
 import path from 'node:path';
 
-import type { SimulationReport } from '@simulation/contracts';
-import { SimulationReportSchema } from '@simulation/contracts';
+import type { SimulationReport, SimulationRunIndex } from '@simulation/contracts';
+import {
+  SIMULATION_SCHEMA_VERSION,
+  SimulationReportSchema,
+  SimulationRunIndexSchema,
+} from '@simulation/contracts';
 import {
   createSimulationRecorder,
   type SimulationRecorder,
 } from '@simulation/recorder';
-import { writeSimulationReport } from '@simulation/report-writer';
+import {
+  writeSimulationReport,
+  writeSimulationRunIndex,
+} from '@simulation/report-writer';
+import { getScenarioManifestEntry } from '@simulation/scenario-manifest';
 
 type ScenarioRunResult = {
   readonly finalState: SimulationReport['finalState'];
@@ -21,11 +29,16 @@ export type ExecutableSimulationScenario = {
 export type SimulationScenarioBatchResult = {
   readonly reports: readonly SimulationReport[];
   readonly writtenReportPaths: readonly string[];
+  readonly writtenIndexPath?: string;
 };
 
 function buildBatchReportPath(outputDir: string, report: SimulationReport, index: number): string {
   const fileName = `${String(index + 1).padStart(2, '0')}-${report.scenarioMeta.scenarioId}.json`;
   return path.resolve(outputDir, fileName);
+}
+
+function buildBatchIndexPath(outputDir: string): string {
+  return path.resolve(outputDir, 'run-index.json');
 }
 
 export async function runSimulationScenario(
@@ -62,8 +75,33 @@ export async function runSimulationScenarioBatch(input: {
     }
   }
 
+  let writtenIndexPath: string | undefined;
+
+  if (input.outputDir) {
+    const runIndex = SimulationRunIndexSchema.parse({
+      schemaVersion: SIMULATION_SCHEMA_VERSION,
+      generatedAt: new Date().toISOString(),
+      reports: reports.map((report, index) => {
+        const manifestEntry = getScenarioManifestEntry(report.scenarioMeta.scenarioId);
+
+        return {
+          scenarioId: report.scenarioMeta.scenarioId,
+          packageName: report.scenarioMeta.packageName,
+          reportPath: writtenReportPaths[index] ?? buildBatchReportPath(input.outputDir as string, report, index),
+          ...(manifestEntry ? { title: manifestEntry.title, tags: [...manifestEntry.tags] } : {}),
+        };
+      }),
+    } satisfies SimulationRunIndex);
+
+    writtenIndexPath = await writeSimulationRunIndex(
+      buildBatchIndexPath(input.outputDir),
+      runIndex,
+    );
+  }
+
   return {
     reports,
     writtenReportPaths,
+    ...(writtenIndexPath ? { writtenIndexPath } : {}),
   };
 }

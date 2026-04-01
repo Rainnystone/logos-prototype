@@ -27,6 +27,7 @@ describe('simulation contracts', () => {
 
   it('accepts a minimal simulation report', () => {
     const parsed = SimulationReportSchema.parse({
+      schemaVersion: 1,
       scenarioMeta: {
         scenarioId: 'happy-path',
         packageName: 'sample-scene',
@@ -37,6 +38,33 @@ describe('simulation contracts', () => {
     });
 
     expect(parsed.scenarioMeta.packageName).toBe('sample-scene');
+  });
+
+  it('accepts a normalized sidecar agent trace', () => {
+    const parsed = SimulationReportSchema.parse({
+      schemaVersion: 1,
+      scenarioMeta: {
+        scenarioId: 'agent-trace',
+        packageName: 'sample-scene',
+      },
+      actions: [],
+      assertions: [],
+      finalState: {},
+      agentTrace: [
+        {
+          agentId: 'gossipelog',
+          stage: 'cycle',
+          outcome: 'fallback',
+          stableBackgroundText: 'stable background',
+          sideEffectSummary: ['update:no-op'],
+        },
+      ],
+    });
+
+    expect(parsed.agentTrace?.[0]).toMatchObject({
+      agentId: 'gossipelog',
+      outcome: 'fallback',
+    });
   });
 
   it('builds a report-ready snapshot from recorded actions and assertions', () => {
@@ -62,6 +90,7 @@ describe('simulation contracts', () => {
 
     expect(report.actions).toHaveLength(1);
     expect(report.assertions).toHaveLength(1);
+    expect(report.schemaVersion).toBeGreaterThan(0);
     expect(report.finalState.status).toBe('done');
   });
 
@@ -125,6 +154,7 @@ describe('simulation contracts', () => {
       'scenario-runner-test-report.json',
     );
     const report = SimulationReportSchema.parse({
+      schemaVersion: 1,
       scenarioMeta: {
         scenarioId: 'writer-test',
         packageName: 'sample-scene',
@@ -175,6 +205,7 @@ describe('simulation contracts', () => {
 
     expect(batchResult.reports).toHaveLength(2);
     expect(batchResult.writtenReportPaths).toHaveLength(2);
+    expect(batchResult.writtenIndexPath).toBeDefined();
     const [firstReportPath, secondReportPath] = batchResult.writtenReportPaths;
 
     expect(firstReportPath).toBeDefined();

@@ -34,9 +34,18 @@ describe('gossipelog observer', () => {
       roundId: 'round-0001',
     });
 
-    expect(result.agentTrace.updateRequest.sceneCastRoleIds.length).toBeGreaterThan(0);
-    expect(result.agentTrace.updateResult.invocationNoOp).toBe(true);
-    expect(result.agentTrace.relationshipLayer.stableBackgroundText).toBe('stable background');
+    expect(result.result.updateRequest.sceneCastRoleIds.length).toBeGreaterThan(0);
+    expect(result.result.updateResult.invocationNoOp).toBe(true);
+    expect(result.agentTrace).toMatchObject({
+      agentId: 'gossipelog',
+      stage: 'cycle',
+      outcome: 'no-op',
+      stableBackgroundText: 'stable background',
+      sideEffectSummary: expect.arrayContaining([
+        'update:no-op',
+        'relationship-layer:stable-background',
+      ]),
+    });
 
     await fixture.cleanup();
   });

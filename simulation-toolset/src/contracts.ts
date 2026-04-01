@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const SIMULATION_SCHEMA_VERSION = 1;
+
 export const SimulationActionSchema = z.object({
   kind: z.string(),
   details: z.unknown().optional(),
@@ -37,10 +39,14 @@ export const SimulationAdapterTraceSchema = z.object({
 });
 
 export const SimulationAgentTraceSchema = z.object({
+  agentId: z.string(),
+  stage: z.string(),
+  outcome: z.string(),
   stableBackgroundText: z.string().optional(),
   highlightedDeltasText: z.string().optional(),
   usedFallbackSource: z.string().optional(),
   usedFallbackLayer: z.string().optional(),
+  sideEffectSummary: z.array(z.string()).optional(),
 });
 
 export const SimulationScenarioSchema = z.object({
@@ -50,6 +56,7 @@ export const SimulationScenarioSchema = z.object({
 });
 
 export const SimulationReportSchema = z.object({
+  schemaVersion: z.number().int().positive(),
   scenarioMeta: z.object({
     scenarioId: z.string(),
     packageName: z.string(),
@@ -63,6 +70,20 @@ export const SimulationReportSchema = z.object({
   agentTrace: z.array(SimulationAgentTraceSchema).optional(),
 });
 
+export const SimulationRunIndexSchema = z.object({
+  schemaVersion: z.number().int().positive(),
+  generatedAt: z.string(),
+  reports: z.array(
+    z.object({
+      scenarioId: z.string(),
+      packageName: z.string(),
+      reportPath: z.string(),
+      title: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+    }),
+  ),
+});
+
 export type SimulationAction = z.infer<typeof SimulationActionSchema>;
 export type SimulationAssertion = z.infer<typeof SimulationAssertionSchema>;
 export type SimulationAuthoringTrace = z.infer<typeof SimulationAuthoringTraceSchema>;
@@ -71,3 +92,4 @@ export type SimulationAdapterTrace = z.infer<typeof SimulationAdapterTraceSchema
 export type SimulationAgentTrace = z.infer<typeof SimulationAgentTraceSchema>;
 export type SimulationScenario = z.infer<typeof SimulationScenarioSchema>;
 export type SimulationReport = z.infer<typeof SimulationReportSchema>;
+export type SimulationRunIndex = z.infer<typeof SimulationRunIndexSchema>;

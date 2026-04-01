@@ -4,9 +4,12 @@ import type {
   RunGossipelogCycleResult,
 } from '@/agents/gossipelog/contracts';
 
+import type { SimulationAgentTrace } from '@simulation/contracts';
+import { createGossipelogAgentTrace } from '@simulation/sidecar-trace';
+
 export type GossipelogObservation = {
   readonly result: RunGossipelogCycleResult;
-  readonly agentTrace: RunGossipelogCycleResult;
+  readonly agentTrace: SimulationAgentTrace;
 };
 
 export async function observeGossipelogCycle(
@@ -16,6 +19,6 @@ export async function observeGossipelogCycle(
 
   return {
     result,
-    agentTrace: result,
+    agentTrace: createGossipelogAgentTrace(result),
   };
 }

@@ -1,159 +1,124 @@
 # Findings
 
-## Phase 4A Route Smoke Decision
-
-- 绗竴涓?phase 4 鍒囩墖搴斿厛鍋?route smoke锛屼笉搴旂洿鎺ヨ烦鍒?UI automation銆?
-- 鐞嗙敱鏄幇鏈?route 宸茬粡鏄寮忓叆鍙ｏ紝鑰?UI 层浠嶆湁鏇村琛ㄩ潰鍙樺姩鍜屾祻瑙堝櫒鍣煶銆?
-- 绗竴鎵归€夊畾鐨?route 鏄細
-  - authoring `sections/[sectionId]`
-  - authoring `diagnostics`
-  - play `gossipelog`
-- 杩欎笁鏉¤矾寰勫垎鍒鐩栵細
-  - authoring 姝ｅ紡 save entry
-  - reload 鍚庣殑 diagnostics entry
-  - runtime accepted-beat 鍚庣殑 server-side sidecar bridge
-- 鏆備笉绾冲叆绗竴鎵筼oute smoke 鐨勬湁锛?
-  - coordinator chat path锛氭洿閫傚悎缁х画鐢?simulation author seam 鍜屽崟鍏冭矾鐢辨祴璇曠粍鍚堣鐩?  - `api/llm/proxy`锛氭洿鍍?provider plumbing锛屼笉鏄?simulation toolset 鐨勭涓€鎵?system smoke 鐩稿叧璺緞
-  - heavy UI click flow锛氬簲鐣欏埌鍚庣画鏋佽杽 UI smoke锛屼笉搴旀姠杩欎竴灞傜殑涓绘€ц兘
-
 ## Confirmed Boundaries
 
 - LOGOS 当前是严格双链路系统：
-  - Runtime Loop 走 `Player Input -> Orchestrator -> Adapter -> Audit/Accept`
-  - Authoring Loop 走 `Structured Save Request -> Bridge -> Validation -> Writeback -> Reload`
-- `coordinator` 不是 sidecar agent，也不是文件写回边界。
-- 正式写回边界在 [bridge.ts](../../src/authoring/persistence/bridge.ts)。
-- 第一个真正落地的 sidecar agent 是 `gossipelog agent`。
+  - Runtime Loop：`Player Input -> Orchestrator -> Adapter -> Audit/Accept`
+  - Authoring Loop：`Structured Save Request -> Bridge -> Validation -> Writeback -> Reload`
+- `coordinator` 不是 sidecar agent，也不是文件写回边界
+- 正式写回边界在 `src/authoring/persistence/bridge.ts`
+- 当前第一个真实落地的 sidecar agent 是 `gossipelog agent`
 
 ## Confirmed Stable Seams
 
-- 作者侧最稳定正式注入点是 `saveSectionDraft()`：
-  - 页面 route 和 coordinator route 都汇入这条共享链路。
-- 玩家侧最稳定正式注入点是 `createOrchestrator(...).initScene()` 与 `runBeat()`。
-- runtime 中的 auditor 不是强制步骤。
-  - 当前结构允许作者不勾选任何 audit question，从而让 runtime 合法地不触发 `audit()`。
-  - simulation toolset 不能把 auditor 误建模成必经节点。
-- 外部 provider / callback 的最佳 fake seam 是 `LLMAdapter`。
-- sidecar 生命周期的最佳观测点是 `runGossipelogCycle()` 返回的结构化结果与其 package-state 文件副作用。
-
-## Existing Test Reality
-
-- 现有关键边界已经有较强测试覆盖：
-  - authoring bridge
-  - orchestrator
-  - gossipelog agent
-  - play runtime wrapper
-- 已验证关键回归测试 52/52 通过，说明这些 seam 当前可作为第一版 simulation harness 的落点。
-
-## Current Documentation Reality
-
-- 仓库当前不存在实际可用的 `docs/superpowers/plans/` 与 `docs/superpowers/specs/` 目录。
-- 当前可依赖的活边界主要来自：
-  - `README.md`
-  - `AGENTS.md`
-  - `archive/docs/narrative-editor-redesign/master-record.md`
-  - 相关归档 superpowers 文档
-- 因此本线程不应伪造“已有 active 计划目录”这一前提。
+- 作者侧最稳定的正式注入点是 `saveSectionDraft()`
+- 玩家侧最稳定的正式注入点是 `createOrchestrator(...).initScene()` 与 `runBeat()`
+- adapter / provider 的最佳 fake seam 是 `LLMAdapter`
+- sidecar 生命周期的最佳观测点是 `runGossipelogCycle()` 的结构化结果与其 side effects
+- runtime 里的 auditor 不是强制步骤：
+  - 如果作者没有勾选任何 audit question，runtime 不触发 `audit()` 仍是合法行为
 
 ## MVP Direction
 
-- 第一版不应以浏览器自动化为主。
-- 第一版应该是“边界注入式 harness + 结构化 trace/report + 少量 route/UI smoke”。
-- 最小闭环建议定义为：
+- 第一版不应以浏览器自动化为主
+- 第一版应采用：
+  - 边界注入式 harness
+  - 结构化 trace / report
+  - 少量 route / UI smoke
+- 最小闭环应覆盖：
   - 作者 structured save
-  - bridge validation/writeback/reload
+  - bridge validation / writeback / reload
   - runtime package load
   - player runBeat
-  - adapter outbound/inbound
+  - adapter outbound / inbound
   - accepted beat
   - gossipelog refresh 或 fallback
-  - trace/assertions/report
+  - trace / assertions / report
 
-## What Should Be Centralized
+## Phase 4 Route Smoke Decision
 
-- 应集中的是“simulation 基础设施”：
-  - temp package fixture
-  - scripted adapter
-  - author simulator
-  - player simulator
-  - sidecar observer
-  - recorder / trace / report writer
-  - scenario runner
-- 不建议第一步就把现有散落单元测试整体搬家。
-- 更合理的做法是把 simulation toolset 升格为根目录独立工作区 `simulation-toolset/`，然后逐步吸收重复 helper。
-- 为避免污染主仓库边界，toolset 更适合拥有自己的最小 `tsconfig`、`vitest` 配置与脚本入口，而不是直接把主配置粗暴扩到根目录全部文件。
+- route smoke 应直接验证正式 server route 是否仍接在共享链路上
+- 它的职责是检查入口是否还连着正式边界，不承担重 UI 回归职责
+- 本阶段覆盖：
+  - authoring `sections/[sectionId]`
+  - authoring `diagnostics`
+  - play `gossipelog`
 
-## Highest-Value Failure Risks
+## Phase 4 UI Smoke Decision
 
-- validation failure
-- writeback 后 reload drift
-- adapter timeout / malformed response / provider error
-- accepted beat 后的 gossipelog fallback
-- 下一拍 prompt 吃到过期 relationship layer
-- authoring state 与 runtime state desync
+- UI smoke 可以做，但必须很轻
+- 第一版选择 `jsdom + Testing Library`，不引入 browser-first automation
+- edit UI smoke 只验证：
+  - workbench 仍把保存动作发到共享 save route path
+- play UI smoke 只验证：
+  - `Start Round` 仍能进入正式 runtime loop
+  - sidecar hook 仍会在 UI 驱动下被调用
+- 由于 isolated workspace 需要直接执行真实 `.tsx` 页面，toolset 自己的 `vitest.config.ts` 必须接入 React plugin
 
-## Proposed Post-Design Phases
+## Phase 4 Sidecar Extension Decision
 
-- 阶段 2：MVP harness 落地
-- 阶段 3：场景扩展与 cloud 批跑
-- 阶段 4：基础设施化与可持续复用
+- sidecar 扩展层第一版的重点不是“支持更多 agent 名字”，而是建立统一观测 contract
+- gossipelog 先作为第一种 sidecar，被归一化到：
+  - `agentId`
+  - `stage`
+  - `outcome`
+  - `sideEffectSummary`
+- raw gossipelog result 仍然保留在 observer 返回值里，作为底层证据
+- scenario 与 report 层优先消费统一 trace，而不是继续绑死 gossipelog-specific nested payload
 
-## Phase 3 Focus
+## Phase 4 Governance Decision
 
-- 现阶段最值得优先补的不是更多故事场景，而是 cloud 运行必需的三个基础能力：
-  - fixture isolation
-  - batch execution
-  - delayed response simulation
-- Phase 3 目前采用的是“顺序 batch + 自动落盘 + 最小时序元数据”的路线：
-  - `runSimulationScenarioBatch(...)` 先保持顺序执行，避免把并发调度和 fixture 生命周期问题绑在一起
-  - `delay` 模式只模拟 pull-style `LLMAdapter` promise 延迟，不重定义 callback source
-  - timing 元数据进入 simulation report contract，便于 cloud 复盘
-- `duplicate / out-of-order` 在当前 pull-style `LLMAdapter` 接口下，不适合一开始就硬做成复杂 callback 框架。
-  - 更稳的阶段 3 路线是先补 delay / timeout / report persistence / per-fixture cleanup。
-  - 真正的 callback-source loopback 如果后续需要，应作为阶段 4 的扩展 seam 再引入。
+- governance / reuse 的第一版只做最小必要项：
+  - built-in scenario manifest
+  - report `schemaVersion`
+  - batch `run-index.json`
+  - temp package scavenger
+- 这些能力属于 simulation toolset 自己的基础设施，不需要等待产品架构调整
+- 但 `package root / repository seam` 不应在 toolset 里临时发明
+- 正式 repository seam 仍应留给后续产品层的 `Storage / Repository Substrate`
 
 ## Temp Fixture Risk Clarification
 
-- Aquinas 提到的担忧成立一半，不是误报。
-- 当前 temp fixture 确实会在 `src/story-packages/` 下创建 `.tmp-simulation-*` 目录。
-  - 直接原因不是 harness 偷懒，而是当前正式 seam 本身就把 package 解析根目录固定在 `src/story-packages/`。
-  - [story-loader.ts](../../src/engine/story-loader.ts) 通过 `process.cwd()/src/story-packages/<packageName>` 加载 package。
-  - authoring bridge / reload 路径因此也天然依赖这个目录。
-- 这意味着：如果坚持“不接触 product src/”的字面约束，现有 Phase 2/3 authoring-loop 系统模拟实际上还做不到完全满足；要彻底避开，只能新增 package root 注入 seam 或独立镜像工作区。
-- 风险级别应定义为：
-  - 不是当前功能正确性的主风险
+- 当前 temp fixture 的确会在 `src/story-packages/` 下创建 `.tmp-simulation-*`
+- 这不是 harness 偷懒，而是当前正式 seam 本身仍把 package root 固定在 `src/story-packages/`
+- 因此该问题的性质是：
+  - 不是当前 authoring/runtime correctness blocker
   - 是 repo hygiene / cloud workspace hygiene 风险
-  - 在进程异常退出、测试中断、或共享 workspace 批跑时会留下残余目录
-- 已补证据：
-  - fresh 通过的 targeted simulation 测试前后，`.tmp-simulation-*` 目录列表没有继续增长
-  - 说明当前 `fixture.cleanup()` 对正常完成的场景是有效的
-  - 但历史残余目录仍然存在，证明异常中断时没有 out-of-process scavenging
-- 结论：
-  - 这是一个真实但可控的已知风险
-  - 不构成“当前阶段 3 失效”
-  - 应作为阶段 4 的优先治理项，而不是在阶段 3 内临时硬改产品主 seam
+- 成功运行时，`fixture.cleanup()` 已能阻止新残留继续增长
+- 但异常退出或共享 workspace 批跑时，仍需要 scavenger 和隔离工作区治理
 
-## Final Shape
+## Future Compatibility Rule
 
-- 最终不应是临时脚本集合。
-- 最终应是一层位于单元测试与浏览器回归之间的正式系统级 simulation 基础设施：
-  - 保留现有模块测试
-  - 新增根目录独立的 simulation workspace
-  - 输出结构化 JSON report
-  - 补少量 smoke，而不是用浏览器点击承担主回归职责
-
-## Best Practice For Future Feature Compatibility
-
-- toolset 的长期目标不应只是“能跑当前 sample-scene”，而应是“能跟随后续产品边界扩展而不重写一套测试方法”。
-- 结合根目录 roadmap，最重要的前瞻兼容点是：
+- toolset 的长期目标不是“只会跑当前 sample package”
+- 它应准备适配未来产品边界：
   - 多故事包管理
-  - storyline 分支
-  - checkpoint 恢复
+  - storyline
+  - checkpoint
   - session continuity
   - agent state scope
   - storage / repository substrate
-- 因此 best practice 应明确为：
-  - 不把当前 `src/story-packages/` 目录形态当长期契约
-  - 不把“复制整个故事包目录”当成 storyline 或 session 的长期模拟方式
-  - 尽早让 scenario / trace / assertions 从只认 `packageName` 进化为可挂 `storylineId`、`checkpointId`、`sessionId`
-  - 等产品层出现正式 repository seam 后，simulation toolset 应优先迁移到 seam 上，而不是继续直接碰目录
+- 因此 best practice 是：
+  - 不把 `src/story-packages/` 当长期契约
+  - 不把“复制整包目录”当 storyline / session 的长期方案
+  - 让 scenario / trace / assertions 未来能挂上 `storylineId`、`checkpointId`、`sessionId`
+  - 等正式 repository seam 出现后，toolset 优先迁移到 seam，而不是继续直接碰目录
+
+## 2026-04-02 Agent Guide Best Practice
+
+- The best shape for `agent-guide.md` is a workflow-first runbook, not a short quickstart and not a raw tool inventory.
+- The real purpose of this toolset is to let cloud Codex spend time on structured regression, boundary tracing, and evidence capture while the human is doing other work.
+- Therefore the guide must explain:
+  - why a run is being executed
+  - which toolset layer to use for which kind of verification
+  - how to create and maintain run artifacts
+  - how to record debug evidence
+  - how to write modification suggestions without editing code
+  - how to clean up temp artifacts at the end of the run
+- The most reusable guidance from `systematic-debugging` for this workflow is:
+  - root-cause-first investigation
+  - backward tracing across boundaries
+  - evidence collection before suggestions
+  - one hypothesis at a time
+- Two supporting patterns are also worth carrying into the guide:
+  - prefer condition-based waiting over arbitrary sleeps when a cloud run needs async investigation
+  - suggest defense-in-depth directions when a product bug clearly needs stronger boundary validation, but keep that as a recommendation rather than an in-run implementation

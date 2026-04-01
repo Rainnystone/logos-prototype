@@ -23,6 +23,9 @@ describe('happy path scenario', () => {
     );
     expect(report.adapterTrace?.map((item) => item.operation)).not.toContain('audit');
     expect(report.agentTrace?.[0]).toMatchObject({
+      agentId: 'gossipelog',
+      stage: 'cycle',
+      outcome: 'no-op',
       stableBackgroundText: 'stable background',
     });
   });

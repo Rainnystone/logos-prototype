@@ -52,3 +52,34 @@
   - 后续进入故事包 / 故事线层时，应先冻结 `Storage / Repository Substrate`
   - `package root / repository seam` 属于产品层能力，不应作为 simulation 的临时补丁先落地
   - 已把这条边界同步进根目录 `task_plan.md` 与 `findings.md`
+- Added `.github/workflows/ci.yml` as the first GitHub Actions layer for `branch/narrative-editor` pull requests and pushes.
+- Used TDD for the workflow contract:
+  - added `src/__tests__/ci-workflow.test.ts`
+  - verified RED on missing workflow file
+  - added the workflow and verified GREEN
+- Ran a second RED/GREEN cycle after local verification showed the initial main-CI command list was too strict for the current repository state:
+  - confirmed `npm run format:check` fails on large pre-existing repo-wide formatting drift
+  - fresh verification reported formatting issues in 484 files across docs, archive materials, and source files
+  - updated the workflow contract to exclude format-check from the first required CI layer
+  - synced that decision back into `task_plan.md` and `findings.md`
+- Synced the later CI rollout into root planning files:
+  - Step 2: simulation batch workflow
+  - Step 3: nightly scheduled simulation runs
+  - Step 4: repository-seam-aware CI upgrade after `Storage / Repository Substrate`
+- Refreshed the root `README.md` for GitHub-facing release use:
+  - clarified the directory/workspace map
+  - added the cloud-friendly simulation toolset section
+  - updated the project structure tree
+  - rewrote the coding-agent guidance around the dual-loop architecture and simulation workflow
+- Ran the release verification gate:
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm run type-check:simulation`
+  - `npm test`
+  - `npm run test:simulation`
+  - `npm run build`
+- All release verification commands passed in this session.
+- Re-checked the working tree after verification and confirmed that simulation runs still leave `.tmp-simulation-*` directories under `src/story-packages/`.
+- A direct shell cleanup attempt for those temporary directories was blocked by platform policy, so the release will exclude them by explicit staging rather than by assuming local deletion succeeded.
+- Attempted to push the release commit and found the only blocker was GitHub refusing updates to `.github/workflows/ci.yml` without `workflow` scope.
+- User chose the smallest unblock path: roll back only the CI portion from this release while keeping the simulation toolset, README, and agent-guide work.

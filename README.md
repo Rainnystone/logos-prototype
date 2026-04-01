@@ -16,14 +16,18 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 
 从产品定位上看，LOGOS 可以理解成“面向文字叙事的 RPG Maker”，只是它的基本单位不是地图块和事件树，而是 `Scene`、`Phase`、`Beat`、`Volume`、`Router`、`Alpha/Beta` 和 `Director Note` 这些叙事控制对象。当前仓库已经把这套对象拆进了页面、模块、故事包和测试里，能够同时被人类作者和 AI coding agent 理解与使用。
 
-## 文档位置
+## 文档与工作区
 
 - `docs/`
-  当前仍在使用的运行说明、贡献说明和代码地图。
-- `docs/superpowers/`
-  仅用于尚未完成、仍在推进中的 plan 和 spec。
-- `archive/docs/superpowers/`
-  已完成并合入主线的 superpowers 计划、设计稿、review notes 和过程记录。
+  GitHub 面向的运行说明、贡献说明、代码地图和通用项目文档。
+- `docs/superpowers/plans/` 与 `docs/superpowers/specs/`
+  当前仍在推进中的正式执行计划与设计规格。新功能以这里为准，而不是以归档材料为准。
+- `simulation-toolset/`
+  独立的 cloud-friendly simulation workspace，承载 scenario、harness、route/UI smoke、structured reports 和给云端 Codex 使用的 `agent-guide.md`。
+- `archive/docs/` 与 `archive/vendor/LOGOS-SPEC/`
+  已归档的历史设计记录与规格快照。它们是参考资料，不高于当前人类指令、当前代码和当前测试。
+- `src/story-packages/` 与 `story-packages/`
+  故事包、样例内容和 fixture 内容所在位置。故事文本和角色设定应始终留在这里，而不是写入产品代码。
 
 ## 当前已完成
 
@@ -81,6 +85,29 @@ LOGOS 引入了第一个侧边代理 `gossipelog agent`，专门负责维护**�
 
 对于作者而言，这套系统意味着：角色关系会随着故事推进自然演变，无需手动维护关系文本，且变化结果会自动影响后续生成。
 
+### 7. Cloud-Friendly Simulation Toolset
+
+仓库现在还包含一套独立的 `simulation-toolset/` 工作区，用于替代大量人肉回归，特别服务于：
+
+- 作者链路模拟：
+  - `structured save -> bridge validation -> writeback -> reload -> diagnostics`
+- 玩家链路模拟：
+  - `runtime start/runBeat -> adapter outbound/inbound -> accept -> state update`
+- adapter / sidecar 验证：
+  - scripted adapter
+  - gossipelog observation
+  - structured reports
+- 轻量入口验证：
+  - route smoke
+  - UI smoke
+
+这套 toolset 默认面向 cloud 环境下的 Codex 使用，强调：
+
+- 沿正式边界模拟，而不是浏览器优先
+- 结构化 trace / report，而不是只看 console log
+- 留下 `summary.md`、`commands.log`、`debug.log`、`suggested-changes.md`
+- 默认产出证据和修改建议，而不是直接改产品代码
+
 ## 版本历程
 
 | 版本 | 发布日期 | 标志性进展 |
@@ -88,9 +115,10 @@ LOGOS 引入了第一个侧边代理 `gossipelog agent`，专门负责维护**�
 | v1.0.0-stable | 2026-03-21 | 运行时闭环稳定，首版可用系统 |
 | v1.2.0-neue-brutalism | 2026-03-26 | Neue Brutalism 视觉重塑 |
 | v1.3.0-narrative-editor-zh | 2026-03-29 | 编辑器全界面中文化 |
-| v1.3.1 | 当前 | 已接入 gossipelog agent 第一阶段关系侧边流程 |
+| v1.3.1 | 2026-04-01 | 已接入 gossipelog agent 第一阶段关系侧边流程 |
+| v1.3.2 | 2026-04-02 | 新增 cloud-friendly simulation toolset、route/UI smoke 与 cloud Codex guide |
 
-### 7. 角色结构与场景出场控制
+### 8. 角色结构与场景出场控制
 
 - `world-base.yaml` 已经把主角、核心角色和反派拆成独立结构，而不是继续混在一整段人物文本里。
 - 每个正式角色都有稳定身份标记，后续可以作为记忆系统和跨场景引用的锚点。
@@ -339,10 +367,19 @@ LOGOS-Narrative-Editor/
 │   ├── story-packages/         # 嵌入样例包
 │   └── types/                  # Zod schemas + TypeScript types
 ├── story-packages/             # 外层故事包目录
-├── docs/                       # 当前设计文档
-├── archive/                    # 归档材料
-│   ├── docs/                   # 归档设计说明
-│   └── vendor/LOGOS-SPEC/      # 归档规格快照
+├── docs/                       # GitHub 面向文档与当前通用说明
+│   └── superpowers/            # 当前有效的计划与规格
+├── simulation-toolset/         # 独立 simulation workspace
+│   ├── docs/                   # toolset 设计、计划、发现与进度
+│   ├── src/                    # simulators、adapter、recorder、runner
+│   ├── scenarios/              # 可复用系统级场景
+│   ├── tests/                  # toolset 自己的测试
+│   ├── reports/                # 结构化运行产物
+│   ├── README.md
+│   └── agent-guide.md          # 云端 Codex 运行手册
+├── archive/                    # 归档材料与历史规格
+│   ├── docs/
+│   └── vendor/LOGOS-SPEC/
 └── README.md
 ```
 
@@ -439,21 +476,53 @@ LOGOS 使用 Neue Brutalism 设计风格：
 
 它们分别对应作者的四种工作：设定基底、编排结构、定义控制、检查整包。
 
-## 面向 AI 的说明
+## 面向 Coding Agent 的说明
 
-如果你是 AI coding agent，理解这个仓库时可以先抓住三件事：
+如果你是 coding agent，先抓住这几条，不要一上来就按习惯改代码：
 
-1. 运行时和作者编辑链路是分开的，不要把“生成故事”和“写回故事包”混成一套逻辑。
-2. 故事内容必须留在 story package 里，代码不能写死具体故事文本。
-3. `archive/` 里的材料现在是归档参考，不是高于当前人类要求、当前代码和当前测试的唯一主规范。
+1. LOGOS 是双链路系统。
+   Runtime Loop 和 Authoring Loop 严格分离，不要把“生成故事”和“写回故事包”混成一套逻辑。
+
+2. 作者正式写回边界在 deterministic bridge。
+   正式链路是：
+   `Page Draft / Author Intent -> Structured Save Request -> Coordinator / Bridge -> Deterministic Validation -> Writeback -> Reload -> Diagnostics`
+
+3. `coordinator` 不是可越权写文件的 agent。
+   它是作者链路里的窄协调角色。当前仓库里第一个真正落地的 sidecar agent 是 `gossipelog agent`。
+
+4. 故事内容必须留在 story packages。
+   角色、世界观、场景文本和故事设定不应写死在 TypeScript 代码里。
+
+5. `docs/superpowers/` 是当前计划层，`archive/` 是归档参考层。
+   如果当前代码、当前测试、当前人类指令和 archive 材料冲突，先以当前代码/测试/人类指令为准，再决定如何同步文档。
+
+6. 如果任务是系统级回归、长链路验证或 cloud 批跑，不要先走浏览器自动化。
+   优先看 `simulation-toolset/`，它已经提供：
+   - author / player simulator
+   - scripted adapter
+   - sidecar trace
+   - route smoke
+   - light UI smoke
+   - structured report writer
+   - `agent-guide.md`
 
 建议阅读顺序：
 
 1. 本 README
-2. [AGENTS.md](./AGENTS.md)
-3. [archive/docs/narrative-editor-branch.md](./archive/docs/narrative-editor-branch.md)
-4. 当前涉及页面或模块的实现代码
-5. `archive/` 中对应的历史说明
+2. `AGENTS.md`
+3. `archive/docs/narrative-editor-redesign/master-record.md`
+4. `docs/superpowers/plans/` 与 `docs/superpowers/specs/` 中和当前任务直接相关的文件
+5. 当前涉及的代码区域：
+   - `src/authoring/`
+   - `src/engine/`
+   - `src/app/edit/`
+   - `src/app/play/`
+   - `src/agents/`
+   - `src/testing/`
+   - `src/types/`
+6. 如果任务是验证或调查，再读：
+   - `simulation-toolset/README.md`
+   - `simulation-toolset/agent-guide.md`
 
 ## 相关材料
 

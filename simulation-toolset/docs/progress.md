@@ -1,140 +1,79 @@
 # Progress
 
 ## 2026-04-01
-- 宸插紑濮?Phase 4A锛屽厛钀芥渶灏?route smoke锛岃€屼笉鏄洿鎺ヨ繘鍏?UI automation銆?
-- 鏂板 `simulation-toolset/src/route-smoke.ts`锛屾妸 official route smoke 鏀舵暃涓哄彲绋嬪簭鍖栬皟鐢ㄧ殑 toolset helper銆?
-- 鏂板 `simulation-toolset/tests/route-smoke.test.ts`锛岀洰鍓嶈鐩栦袱鏉℃渶灏?route smoke锛?  - authoring `sections/[sectionId] -> bridge -> reload -> diagnostics`
-  - play `/api/play/gossipelog -> server-side cycle -> demo adapter`
- - Verification: `npm run test:simulation` passed with 9 files and 24 tests.
- - Verification: `npm run type-check:simulation` passed.
- - Verification: `npm test -- src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts src/app/api/authoring/packages/[packageName]/diagnostics/route.test.ts src/app/api/play/gossipelog/route.test.ts src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts` passed with 7 files and 55 tests.
 
-- 读取并核对了 `README.md`、`AGENTS.md`、`archive/docs/narrative-editor-redesign/master-record.md`。
-- 阅读了与本任务直接相关的核心代码：
-  - `src/authoring/persistence/*`
-  - `src/authoring/coordinator/*`
-  - `src/engine/orchestrator.ts`
-  - `src/engine/api-adapter/*`
-  - `src/app/edit/*`
-  - `src/app/play/*`
-  - `src/agents/gossipelog/*`
-  - `src/app/api/authoring/*`
-  - `src/app/api/play/gossipelog/*`
-- 确认当前仓库不存在实际可用的 `docs/superpowers/plans/` 与 `docs/superpowers/specs/` 目录，因此本线程不写入正式计划目录。
-- 运行了关键验证测试，确认正式边界当前稳定可用：
-  - `src/authoring/persistence/__tests__/bridge.test.ts`
-  - `src/engine/__tests__/orchestrator.test.ts`
-  - `src/agents/gossipelog/__tests__/agent.test.ts`
-  - `src/app/play/runtime.test.ts`
-- 形成初步结论：
-  - 作者侧以 bridge 为主 seam
-  - 玩家侧以 orchestrator 为主 seam
-  - 外部 adapter 以 `LLMAdapter` 为主 seam
-  - sidecar 以 `runGossipelogCycle()` 为主观测面
-- 根据用户要求，先新建独立目录 `docs/simulation-toolset/` 维护线程文档，随后进一步提升为根目录独立工作区 `simulation-toolset/`。
-- 已将设计、实施计划和线程跟踪文件迁移到 `simulation-toolset/docs/`，为后续独立实现留出清晰边界。
-- 已确认主仓库当前 `tsconfig.json`、`vitest.config.ts`、`package.json` 默认不会自动覆盖 `simulation-toolset/`，后续实现需给该工作区补最小独立配置与脚本入口。
-- 已完成 Phase 2A：
-  - 新增 `simulation-toolset/README.md`
-  - 新增 `simulation-toolset/tsconfig.json`
-  - 新增 `simulation-toolset/vitest.config.ts`
-  - 在根 `package.json` 增加 `test:simulation` 与 `type-check:simulation`
-  - 实际验证 `npm run test:simulation` 与 `npm run type-check:simulation` 可通过
-- 已开始 Phase 2B，并完成第一批 TDD 闭环：
-  - 新增 `simulation-toolset/tests/scenario-runner.test.ts`
-  - 新增 `simulation-toolset/tests/scripted-adapter.test.ts`
-  - 新增 `simulation-toolset/tests/author-simulator.test.ts`
-  - 在 RED 阶段发现并修正 `simulation-toolset/vitest.config.ts` 的 workspace root 问题
-  - 新增 `simulation-toolset/src/contracts.ts`
-  - 新增 `simulation-toolset/src/scripted-adapter.ts`
-  - 新增 `simulation-toolset/src/temp-package.ts`
-  - 补齐 `simulation-toolset/src/recorder.ts` recorder skeleton
-  - 补齐 scripted adapter 的 `malformed`、`error`、`duplicate`、`out-of-order` 测试覆盖
-  - 移除 bootstrap 期专用的 `passWithNoTests`
-  - 已验证 focused suite 10 个测试通过
-  - 已验证 `npm run type-check:simulation` 通过
-- 已完成两路只读 review：
-  - 一路确认当前切片已打通 Phase 2A，且 Phase 2B 在补齐 recorder 与失败模式覆盖后可视为完成
-  - 一路指出后续需优先补强的残余风险：temp package cleanup 的并发隔离、scripted adapter 对重复/乱序回包的真实时序模拟
-- 已完成 Phase 2C：
-  - 新增 `simulation-toolset/src/author-simulator.ts`
-  - 新增 `simulation-toolset/src/player-simulator.ts`
-  - 扩展 `simulation-toolset/tests/author-simulator.test.ts`
-  - 新增 `simulation-toolset/tests/player-simulator.test.ts`
-  - 已验证 author simulator 通过 `worldbase-cast -> saveSectionDraft()` 走正式 authoring bridge
-  - 已验证 player simulator 通过 `createOrchestrator -> initScene -> runBeat` 走正式 runtime loop
-  - 已验证 player 侧可以走“未选中任何 audit question，因此不触发 auditor”的正式允许分支
-  - 已验证 `npm run test:simulation` 全部 12 个测试通过
-  - 已验证 `npm run type-check:simulation` 通过
-- 已完成 Phase 2D：
-  - 新增 `simulation-toolset/src/gossipelog-observer.ts`
-  - 新增 `simulation-toolset/src/report-writer.ts`
-  - 新增 `simulation-toolset/src/scenario-runner.ts`
-  - 新增 `simulation-toolset/tests/gossipelog-observer.test.ts`
-  - 已验证 observer 与 scenario runner 可以输出结构化 report
-- 已完成 Phase 2E：
-  - 新增 `simulation-toolset/scenarios/happy-path.ts`
-  - 新增 `simulation-toolset/scenarios/validation-failure.ts`
-  - 新增 `simulation-toolset/scenarios/adapter-failure.ts`
-  - 新增三条 MVP 场景测试：
-    - `simulation-toolset/tests/happy-path-scenario.test.ts`
-    - `simulation-toolset/tests/validation-failure-scenario.test.ts`
-    - `simulation-toolset/tests/adapter-failure-scenario.test.ts`
-  - happy path 现已显式记录并断言“未选中任何 audit question，因此 auditor 不触发”的合法分支
-- 已完成 Phase 2F：
-  - 已验证 `npm run test:simulation` 8 个测试文件、18 个测试全部通过
-  - 已验证 `npm run type-check:simulation` 通过
-  - 已验证跨边界关键套件通过：
-    - `src/authoring/persistence/__tests__/bridge.test.ts`
-    - `src/engine/__tests__/orchestrator.test.ts`
-    - `src/agents/gossipelog/__tests__/agent.test.ts`
-    - `src/app/play/runtime.test.ts`
-  - 已验证 `npm run test:core` 通过
-  - 已验证全量 `npm test` 68 个测试文件、449 个测试全部通过
-- 当前进入 Phase 3 收口：
-  - 同步设计/计划文档与已实现事实
-  - 保留两项已知缺口供后续阶段处理：
-    - `temp-package.ts` 当前 registry cleanup 仍不是面向未来 cloud 并发批跑的最终方案
-    - `scripted-adapter.ts` 对 duplicate / out-of-order 仍是结构化结果模拟，不是真实时序回包模拟
-- 已收口 Phase 7：
-  - 已把 no-audit 分支同步进设计文档、实施计划、workspace README 与 happy-path 显式断言
-  - 已重新验证 `npm run test:simulation` 与 `npm run type-check:simulation` 通过
-- 已开始 Phase 8 / Phase 3 执行准备：
-  - 把阶段 3 范围收敛为三个最小切片：
-    - fixture isolation
-    - delayed scripted adapter
-    - batch runner / persisted reports
-  - 明确不在这一轮引入浏览器自动化，也不在这一轮强行把 `duplicate / out-of-order` 扩成独立 callback 框架
-- 已完成 Phase 8 的第一轮实现：
-  - `temp-package.ts` 改为返回 fixture-owned `cleanup()`，并保留 `cleanupTempStoryPackages()` 作为兼容包装
-  - `author-simulator.ts` 新增 `simulator.cleanup()`，避免隐藏 fixture 的调用方只能做全局清理
-  - `scripted-adapter.ts` 新增 `delay` 模式，并记录 `delayMs` / `elapsedMs`
-  - `scenario-runner.ts` 新增 `runSimulationScenarioBatch(...)`，支持批量执行和按场景落盘 report
-  - `README.md` 新增阶段 3 能力与 programmatic cloud usage 说明
-- 已完成 Phase 8 的第二轮收口：
-  - `contracts.ts` 中的 `SimulationAdapterTraceSchema` 现已支持 `delayMs`、`startedAtMs`、`completedAtMs`、`elapsedMs`
-  - `scripted-adapter.test.ts` 现已断言 delay trace 的时间戳与耗时字段
-  - `scenario-runner.test.ts` 现已断言 adapter timing metadata 能进入结构化 report
-- 已完成 Phase 8 的 TDD 与验证：
-  - RED：
-    - `author-simulator.test.ts` 先失败于缺少 `fixture.cleanup()` / `simulator.cleanup()`
-    - `scripted-adapter.test.ts` 先失败于缺少 `delay` 模式
-    - `scenario-runner.test.ts` 先失败于缺少 batch runner
-    - 第二轮 `scripted-adapter.test.ts` 先失败于缺少 `startedAtMs` / `completedAtMs`
-    - 第二轮 `scenario-runner.test.ts` 先失败于 adapter timing metadata 尚未进入 report contract
-  - GREEN：
-    - `npm run test:simulation` 当前 8 个测试文件、21 个测试全部通过
-    - `npm run type-check:simulation` 通过
-    - `npm test -- src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts` 通过，共 52 个测试
-- 已完成 Phase 8 的 fresh verification：
-  - `npm run test:simulation` 当前 8 个测试文件、22 个测试全部通过
-  - `npm run type-check:simulation` 通过
-  - `npm test -- src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts` 再次通过，共 52 个测试
-- 已完成本轮 subagent 收口：
-  - 两个 explorer 已产出有效建议并关闭
-  - 两个 review subagent 未返回有效审查结果，已主动关闭，不作为结论依据
-- 已补一次 risk clarification：
-  - 确认 temp fixture 当前仍写入 `src/story-packages/.tmp-simulation-*`
-  - fresh targeted simulation 测试前后比对显示：成功运行不会继续增加残余目录
-  - 现存残余目录来自历史中断/失败运行，说明当前缺少 out-of-process scavenging
-  - 已将该问题定性为 Phase 4 治理项，而不是本轮阶段 3 的 blocker
+- 完成仓库边界梳理，确认 LOGOS 当前是严格的双链路系统：
+  - Runtime Loop
+  - Authoring Loop
+- 确认首批正式 seam：
+  - `saveSectionDraft()`
+  - `createOrchestrator(...).initScene()` / `runBeat()`
+  - `LLMAdapter`
+  - `runGossipelogCycle()`
+- 建立独立工作区 `simulation-toolset/`，把本线程文档迁入 `simulation-toolset/docs/`
+- 落地 Phase 2 MVP：
+  - `simulation-toolset/src/contracts.ts`
+  - `simulation-toolset/src/recorder.ts`
+  - `simulation-toolset/src/scripted-adapter.ts`
+  - `simulation-toolset/src/temp-package.ts`
+  - `simulation-toolset/src/author-simulator.ts`
+  - `simulation-toolset/src/player-simulator.ts`
+  - `simulation-toolset/src/gossipelog-observer.ts`
+  - `simulation-toolset/src/report-writer.ts`
+  - `simulation-toolset/src/scenario-runner.ts`
+- 落地 3 个 MVP 场景：
+  - `simulation-toolset/scenarios/happy-path.ts`
+  - `simulation-toolset/scenarios/validation-failure.ts`
+  - `simulation-toolset/scenarios/adapter-failure.ts`
+- 明确并验证 no-audit 合法分支：
+  - 作者不勾选任何 audit question 时，runtime 不触发 auditor 仍属于正式允许行为
+- 完成 Phase 3：
+  - fixture-owned cleanup
+  - delayed scripted adapter
+  - batch scenario runner
+  - timing trace 进入 report contract
+- 当日验证记录：
+  - `npm run test:simulation`
+  - `npm run type-check:simulation`
+  - 关键跨边界回归
+
+## 2026-04-02
+
+- 完成 Phase 4B：sidecar extension layer
+  - 新增 `simulation-toolset/src/sidecar-trace.ts`
+  - 将 gossipelog observer 输出归一化为 `agentId / stage / outcome / sideEffectSummary`
+  - 保留 raw gossipelog result 供底层证据使用，但 scenario/report 使用统一 trace
+- 完成 Phase 4C：governance / reuse minimums
+  - 新增 `simulation-toolset/src/scenario-manifest.ts`
+  - 新增 `simulation-toolset/src/temp-package-scavenger.ts`
+  - `simulation-toolset/src/contracts.ts` 增加 `schemaVersion` 与 `SimulationRunIndexSchema`
+  - `simulation-toolset/src/scenario-runner.ts` 增加 `run-index.json` 落盘
+- 完成 Phase 4D：轻量 UI smoke
+  - 新增 `simulation-toolset/src/ui-smoke.ts`
+  - 新增 `simulation-toolset/tests/ui-smoke.test.ts`
+  - `simulation-toolset/vitest.config.ts` 接入 React plugin，以便 isolated workspace 可以执行真实 `.tsx` 页面 smoke
+- 轻量 UI smoke 覆盖：
+  - edit workbench `保存本页 -> shared save route path`
+  - play workbench `Start Round -> runtime loop -> sidecar hook`
+- 当日 fresh verification：
+  - `npm run type-check:simulation` passed
+  - `npm run test:simulation` passed with 11 files and 30 tests
+  - `npm test -- src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts src/app/api/authoring/packages/[packageName]/diagnostics/route.test.ts src/app/api/play/gossipelog/route.test.ts src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts` passed with 7 files and 55 tests
+- 本轮没有修改 product 主链路实现，只扩展了 `simulation-toolset/` workspace
+- 当前没有悬挂的 subagent
+- Rewrote `simulation-toolset/agent-guide.md` as a cloud Codex runbook instead of a lightweight quickstart.
+- The new guide now explains:
+  - why the toolset exists
+  - which simulation layers exist and what each one is for
+  - how to run inside an isolated workspace or branch
+  - how to create `summary.md`, `commands.log`, `debug.log`, and `suggested-changes.md`
+  - what a complete run should look like from intent to cleanup
+- Folded the most reusable parts of `systematic-debugging` into the guide:
+  - root-cause-first
+  - backward tracing
+  - evidence collection at boundaries
+  - one hypothesis at a time
+  - condition-based waiting
+  - defense-in-depth as suggestion guidance
+- Updated `simulation-toolset/README.md` so the guide is explicitly the cloud Codex operational entry point.
+- This round is documentation-only and does not change harness code or test behavior.

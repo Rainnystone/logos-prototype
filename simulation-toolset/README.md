@@ -28,11 +28,18 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
 - Per-fixture temp story package isolation with fixture-owned `cleanup()`
 - Author simulator cleanup via `simulator.cleanup()`
 - Scripted adapter modes for result, timeout, malformed, provider error, duplicate, delayed, and out-of-order simulation
+- Normalized sidecar trace via `agentId`, `stage`, `outcome`, and `sideEffectSummary`
 - Batch scenario execution through `runSimulationScenarioBatch(...)`
+- Built-in scenario manifest plus batch `run-index.json`
+- Report `schemaVersion` for artifact evolution
+- Temp package scavenging for list / dry-run / remove cleanup flows
 - Programmatic route smoke through:
   - authoring `sections/[sectionId]`
   - authoring `diagnostics`
   - play `gossipelog`
+- Lightweight UI smoke through:
+  - edit workbench `保存本页 -> shared save route path`
+  - play workbench `Start Round -> runtime loop -> sidecar hook`
 - Optional JSON report persistence under `simulation-toolset/reports/` or a caller-provided output directory
 
 ## Cloud Usage Direction
@@ -59,4 +66,4 @@ This keeps the first cloud-facing version boundary-first:
 - no direct file writes outside the formal authoring bridge
 - no story-specific logic baked into the harness
 
-For a cloud-agent operational workflow, see [agent-guide.md](agent-guide.md).
+For the cloud Codex run workflow, artifact discipline, debugging protocol, and cleanup expectations, see [agent-guide.md](agent-guide.md).

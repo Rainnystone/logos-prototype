@@ -223,3 +223,75 @@
 - `gossipelog agent` 的 Phase 1 已经完成并合入主线。
 - 它会在 accepted beat 之后刷新关系状态，并把动态关系层送入下一轮生成。
 - 这次 roadmap 讨论是在 `gossipelog agent` 已经存在的前提上继续扩展，不是假设系统从零开始。
+
+## 2026-04-02 CI Rollout
+
+### Step 1: Main CI
+
+- Status: deferred
+- Workflow rollout is intentionally postponed from this release
+- Scope:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm run type-check:simulation`
+  - `npm run test:core`
+  - `npm run test:ui`
+  - `npm run test:simulation`
+- Note:
+  - `npm run format:check` is intentionally excluded from the first required CI layer because the current repository still has large pre-existing formatting drift.
+  - Formatting can return later as a required check after the repository-wide debt is cleaned up, but it should not block adoption when CI is reintroduced.
+
+### Step 2: Simulation Batch Workflow
+
+- Status: pending
+- Add a separate GitHub Actions workflow for simulation batch execution
+- Trigger recommendation:
+  - `workflow_dispatch`
+- Artifact recommendation:
+  - `run-index.json`
+  - scenario JSON reports
+  - summary/debug artifacts when present
+
+### Step 3: Scheduled Simulation Runs
+
+- Status: pending
+- After the batch workflow becomes stable, add nightly scheduled runs
+- Goal:
+  - catch long-flow regressions without slowing every PR
+
+### Step 4: Repository-Seam Upgrade
+
+- Status: pending
+- Revisit CI targets after product work formally enters `Storage / Repository Substrate`
+- Important:
+  - repository seam is product-layer work
+  - CI should consume that seam after it exists
+  - CI should not invent a simulation-only repository model ahead of product architecture
+
+## 2026-04-02 Release Wrap-up
+
+### Scope
+
+- Status: in_progress
+- Release target:
+  - root `README.md` refresh for GitHub readers
+  - `simulation-toolset/` documentation hardening
+  - phase 4 simulation infrastructure already implemented in the workspace
+- Planned release version:
+  - `v1.3.2`
+
+### Verification Gate
+
+- Required before release:
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm run type-check:simulation`
+  - `npm test`
+  - `npm run test:simulation`
+  - `npm run build`
+
+### Workspace Hygiene Note
+
+- Temporary `.tmp-simulation-*` directories under `src/story-packages/` are run artifacts and must stay out of the release commit.
+- If local cleanup is blocked by shell policy, the release can still proceed by staging only intended files and excluding those temporary directories.

@@ -360,3 +360,46 @@
   - 不制造一次性的技术债
   - 不把“最近保存关系”和“当前会话关系”混成两套语义
   - 不会为了填满界面而破坏阶段边界
+
+## 2026-04-02 CI Recommendation
+
+- A two-layer GitHub Actions design is the current best-fit recommendation.
+- Layer 1 should be the required main CI:
+  - fast
+  - branch-protectable
+  - uses existing package scripts directly
+- Layer 2 should be a separate simulation batch workflow:
+  - manual trigger first
+  - artifact upload first
+  - nightly only after the batch path becomes stable
+- This split matters because simulation reports are evidence-heavy and should not slow every PR.
+- The current main CI scope should stop at:
+  - lint
+  - type-check
+  - type-check:simulation
+  - test:core
+  - test:ui
+  - test:simulation
+- `npm run format:check` should stay out of the first required CI layer for now.
+- Reason:
+  - the current repository already has large pre-existing formatting drift
+  - fresh local verification on 2026-04-02 reported `Code style issues found in 484 files`
+  - making format-check required immediately would turn the new CI red for unrelated historical debt
+  - that would block adoption of the workflow without improving signal on new regressions
+- `npm test` full-suite and heavy batch orchestration are intentionally not part of the first required check set.
+- The later repository seam upgrade still belongs to product architecture, not to simulation CI inventing its own storage contract.
+
+## 2026-04-02 Release Readiness
+
+- The root `README.md` now needs to explain two things more explicitly for GitHub readers:
+  - the project directory/workspace split, especially `docs/superpowers/`, `simulation-toolset/`, and archive materials
+  - a coding-agent reading order that matches the dual-loop architecture and the current simulation workflow
+- For this release, `v1.3.2` is the smallest coherent version boundary because it groups together:
+  - the cloud-friendly simulation toolset
+  - route/UI smoke coverage
+  - the cloud Codex agent guide
+- Local verification for the release should include both product and toolset checks.
+- Temporary `.tmp-simulation-*` directories are still generated during simulation runs.
+- A direct shell cleanup attempt was blocked by platform policy in this session, so release hygiene must rely on explicit staging instead of assuming the working tree can be made empty first.
+- The GitHub Actions workflow itself is deferred from this release because the current GitHub auth path available in-session cannot reliably obtain `workflow` scope for pushing `.github/workflows/ci.yml`.
+- This is a release-ops constraint, not a code-quality blocker in the simulation toolset.

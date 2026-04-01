@@ -9,6 +9,9 @@ describe('adapter failure scenario', () => {
     const report = await runSimulationScenario(createAdapterFailureScenario());
 
     expect(report.agentTrace?.[0]).toMatchObject({
+      agentId: 'gossipelog',
+      stage: 'cycle',
+      outcome: 'fallback',
       usedFallbackLayer: 'last-stable-layer',
     });
     expect(report.assertions.every((item) => item.pass)).toBe(true);

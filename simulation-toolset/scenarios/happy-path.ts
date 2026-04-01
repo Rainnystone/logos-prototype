@@ -126,15 +126,10 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
         recorder.recordAction({
           kind: 'agent.observe',
         });
-        recorder.recordAgentTrace({
-          highlightedDeltasText: agentResult.agentTrace.relationshipLayer.highlightedDeltasText,
-          stableBackgroundText: agentResult.agentTrace.relationshipLayer.stableBackgroundText,
-          usedFallbackSource: agentResult.agentTrace.usedFallbackSource,
-          usedFallbackLayer: agentResult.agentTrace.usedFallbackLayer,
-        });
+        recorder.recordAgentTrace(agentResult.agentTrace);
         recorder.recordAssertion({
           name: 'agent-layer-produced',
-          pass: agentResult.agentTrace.relationshipLayer.stableBackgroundText === 'stable background',
+          pass: agentResult.agentTrace.stableBackgroundText === 'stable background',
         });
 
         return {
@@ -143,7 +138,7 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
             heroName: authorResult.reloadedStoryPackage.worldBase.hero.name,
             beatText: beat.beatResult.beatText,
             auditorInvoked,
-            stableBackgroundText: agentResult.agentTrace.relationshipLayer.stableBackgroundText,
+            stableBackgroundText: agentResult.agentTrace.stableBackgroundText,
           },
         };
       } finally {
