@@ -68,10 +68,18 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 
 ### 6. Gossipelog Agent
 
-- 第一阶段 `gossipelog agent` 已经合入主线。
-- 它不是新的主引擎，而是运行在叙事引擎旁边的一条关系侧边流程。
-- 每轮 accepted beat 之后，它会读取当前场景工作集、更新 story package 里的长期关系状态，并为下一轮生成准备动态关系层。
-- 它当前已经具备等待后台刷新、no-op、失败回退和超时回退这些基础保护，不会把不确定关系状态直接带进下一轮。
+LOGOS 引入了第一个侧边代理 `gossipelog agent`，专门负责维护**方向性角色关系状态**。
+
+它的核心定位是：**关系是第一类对象**。角色间的记忆痕迹作为解释关系变化的支撑材料，而非主角本身。
+
+当前第一阶段已经合入主线，具备以下能力：
+
+- 每个 accepted beat 之后异步刷新当前场景的角色关系状态
+- 维护 `A → B` 与 `B → A` 分开存储的方向性关系记录
+- 将动态关系层送入下一轮生成的 prompt 组装
+- 提供失败回退、超时回退和空层兜底保护
+
+对于作者而言，这套系统意味着：角色关系会随着故事推进自然演变，无需手动维护关系文本，且变化结果会自动影响后续生成。
 
 ## 版本历程
 
@@ -263,6 +271,38 @@ npm run test:e2e
 - 失败时会返回阻塞信息，而不是静默写坏故事包
 - 角色主档和场景出场边界已经分开写回，不再依赖一整段混合人物文本
 
+### 侧边代理
+
+除了两条主链，LOGOS 还引入了**侧边代理**机制，用于处理需要语义判断但不应放入确定性代码的任务。
+
+当前已实现的侧边代理：
+
+#### gossipelog agent
+
+`gossipelog agent` 是第一个侧边代理，专门维护**方向性角色关系状态**。
+
+核心设计：
+
+- **关系是第一类对象**：角色记忆作为解释关系变化的支撑，而非主角
+- **方向性存储**：`A → B` 与 `B → A` 分开记录，不假设对称性
+- **场景工作集边界**：每轮只处理当前场景出场角色，由 `scene.yaml.cast` 界定
+- **异步刷新 + 阻塞保护**：accepted beat 后异步启动；若下一轮输入先到达则阻塞等待
+
+运行时生命周期：
+
+```
+accepted beat → 加载场景角色集 → 调用 relationship-update-skill → 合并更新 → 持久化 → 调用 relationship-injection-skill → 输出关系层
+```
+
+输出关系层包含两部分：
+
+- `highlightedDeltasText`：近期关系变化（高亮）
+- `stableBackgroundText`：稳定关系背景
+
+代码位置：`src/agents/gossipelog/`
+
+状态持久化：`story-packages/{package}/agents/gossipelog/character-relationships.yaml`
+
 ## 项目结构
 
 ```text
@@ -285,6 +325,9 @@ LOGOS-Narrative-Editor/
 │   │   ├── coordinator/
 │   │   ├── persistence/
 │   │   └── sections/           # 四页草稿逻辑
+│   ├── agents/                 # 侧边代理
+│   │   ├── registry.ts         # 代理注册表
+│   │   └── gossipelog/         # 角色关系代理
 │   ├── lib/                    # 工具函数 (deep-freeze 等)
 │   ├── testing/                # 测试工具
 │   ├── story-packages/         # 嵌入样例包
