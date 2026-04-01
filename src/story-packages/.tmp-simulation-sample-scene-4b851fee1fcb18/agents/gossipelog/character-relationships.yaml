@@ -1,0 +1,15 @@
+meta:
+  fileType: character-relationships
+  schemaVersion: 1
+  storyPackage: sample-scene
+relationshipsBySource:
+  chr_core01:
+    targets:
+      chr_hero01:
+        sourceRoleId: chr_core01
+        targetRoleId: chr_hero01
+        baseline:
+          state: trust increased after direct protection
+          lastAbsorbedRound: session-mng5fhzm-f3x5rdve-round-0001
+        recentDelta: null
+        highlightNextPrompt: false

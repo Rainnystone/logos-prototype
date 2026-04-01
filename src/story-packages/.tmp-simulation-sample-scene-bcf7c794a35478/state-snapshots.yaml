@@ -1,0 +1,159 @@
+sceneId: sample-yanshang-live-room
+description: >
+  供 sample-scene 使用的参考状态快照集合。每个快照都对应一个典型阶段位置，
+  用来帮助后续实现和测试理解系统在不同节点应该携带怎样的最小状态。
+snapshots:
+  - snapshotId: ss-phase01-beat01
+    purpose: 开场序章，日常尚未断裂，但异常预感已经开始积聚。
+    sceneState:
+      sceneId: sample-yanshang-live-room
+      currentPhaseIndex: 1
+      currentBeatIndexInPhase: 1
+      mainAxis: 日常教室突发路人手机自燃事件 -> 雾间凪暗中脱离人群并围绕异常事故展开调查 -> 在校园中逐步发现灰谷烈留下的电子陷阱与痕迹 -> 突入并锁定灰谷烈的直播据点 -> 识破并切断其直播观众来源 -> 物理击溃反派并回归日常
+      endLine: 灰谷烈的直播间观众被彻底清零，其肉体被雾间凪彻底击倒，学校恢复表面的平静，宫下藤花对刚才的致命危机一无所知
+      alpha: 允许雾间凪快速进入异常追踪状态，但不得让藤花暴露于危机中心
+      beta: 允许雾间凪暂时旁观与判断，但不得因拖延而错失事件起点
+      sceneProgress: 日常表层仍然完整，异常尚处于前奏阶段
+    roundState:
+      phaseGoal: 展现平静校园日常并铺设第一波异常
+      currentVolume: Low
+      currentRouter: 日常/闲暇
+      verbLexicon:
+        - 闲散
+        - 漫谈
+        - 介入
+        - 独处
+      historyWindow: []
+      directorConstraints: 强调日常纯度与藤花的安全，不提前泄露完整敌情
+    generationState:
+      directorNoteSummary: 开场镜头必须冷静克制，先建立日常锚点，再逐步露出异常征兆
+      promptObject: {}
+      currentBeatText: null
+      currentOptions: []
+    evaluationState:
+      auditAnswers: []
+      blockingFailures: []
+      retryCount: 0
+      rewriteFeedback: null
+
+  - snapshotId: ss-phase02-beat02
+    purpose: 逆向排查阶段中段，凪已经离开教室并开始排查异常事故痕迹。
+    sceneState:
+      sceneId: sample-yanshang-live-room
+      currentPhaseIndex: 2
+      currentBeatIndexInPhase: 2
+      mainAxis: 日常教室突发路人手机自燃事件 -> 雾间凪暗中脱离人群并围绕异常事故展开调查 -> 在校园中逐步发现灰谷烈留下的电子陷阱与痕迹 -> 突入并锁定灰谷烈的直播据点 -> 识破并切断其直播观众来源 -> 物理击溃反派并回归日常
+      endLine: 灰谷烈的直播间观众被彻底清零，其肉体被雾间凪彻底击倒，学校恢复表面的平静，宫下藤花对刚才的致命危机一无所知
+      alpha: 允许凪主动干预设备、冒险勘查与快速推进，但不得直接提前找到终局据点
+      beta: 允许凪谨慎潜行与逻辑推演，但不得退回教室恢复日常
+      phaseConsequences:
+        - 路人学生手机自燃事件已发生，教室陷入短暂恐慌后恢复表面秩序
+        - 雾间凪已借混乱脱离教室，开始独立排查异常事故的来源
+        - 宫下藤花仍留在教室内，对异常事件的真实性质一无所知
+        - 校园走廊与广播系统中检测到电子噪声残留，异常范围初步收缩
+      sceneProgress: 凪已经确认异常不是偶发事故，而是带有指向性的外部操控
+    roundState:
+      phaseGoal: 在校园内围绕“炎上”异能留下的痕迹展开排查
+      currentVolume: Med
+      currentRouter: 悬疑/探案
+      verbLexicon:
+        - 勘查
+        - 演绎
+        - 潜伏
+        - 干预
+      historyWindow:
+        - role: assistant
+          content: 路人学生手机突然发出异常高频蜂鸣并爆炸，教室陷入短暂恐慌。
+        - role: user
+          content: 趁混乱脱离教室，顺着现场痕迹排查异常事故来源。
+        - role: assistant
+          content: 雾间凪借混乱脱离教室，在走廊与广播死角发现电子噪声残留。
+      directorConstraints: 保持追踪逻辑清楚，不要提前转成纯战斗段
+    generationState:
+      directorNoteSummary: 当前轮应保持现实可执行的排查推进，持续收束异常来源并避免提前跳成终局对决
+      promptObject: {}
+      currentBeatText: null
+      currentOptions: []
+    evaluationState:
+      auditAnswers: []
+      blockingFailures: []
+      retryCount: 0
+      rewriteFeedback: null
+
+  - snapshotId: ss-phase05-beat03
+    purpose: 高潮阶段后段，凪已经逼近灰谷烈异能来源，必须执行破局动作。
+    sceneState:
+      sceneId: sample-yanshang-live-room
+      currentPhaseIndex: 5
+      currentBeatIndexInPhase: 3
+      mainAxis: 日常教室突发路人手机自燃事件 -> 雾间凪暗中脱离人群并围绕异常事故展开调查 -> 在校园中逐步发现灰谷烈留下的电子陷阱与痕迹 -> 突入并锁定灰谷烈的直播据点 -> 识破并切断其直播观众来源 -> 物理击溃反派并回归日常
+      endLine: 灰谷烈的直播间观众被彻底清零，其肉体被雾间凪彻底击倒，学校恢复表面的平静，宫下藤花对刚才的致命危机一无所知
+      alpha: 允许凪以高风险高压方式物理突进并强制切断“节目效果”来源
+      beta: 允许凪短暂周旋与拆解心理战，但不得放弃摧毁观众幻觉机制
+      sceneProgress: 凪已进入灰谷烈直播据点核心，节目效果与现实攻击开始崩塌到同一平面
+    roundState:
+      phaseGoal: 在持续高压中摧毁灰谷烈的观众幻觉与直播异能来源
+      currentVolume: High
+      currentRouter: 动作/战斗
+      verbLexicon:
+        - 强攻
+        - 牵制
+        - 器物
+        - 脱离
+      historyWindow:
+        - role: assistant
+          content: 灰谷烈通过广播与屏幕对凪进行表演式挑衅，试图把她纳入节目叙事。
+        - role: user
+          content: 强行突入据点，确认环境中存在伪造观众反馈。
+        - role: assistant
+          content: 交锋中灰谷烈不断对空气解说，试图把凪当成节目素材，但凪已逼近其异能核心。
+      directorConstraints: 必须维持持续高压，选项应围绕切断观众来源与压制反派展开
+    generationState:
+      directorNoteSummary: 这一轮必须像慢镜头般高压推进，并把“社会性死亡”机制推到前景
+      promptObject: {}
+      currentBeatText: null
+      currentOptions: []
+    evaluationState:
+      auditAnswers: []
+      blockingFailures: []
+      retryCount: 0
+      rewriteFeedback: null
+
+  - snapshotId: ss-phase06-beat04
+    purpose: 终局收尾，灰谷烈已失去节目效果支撑，系统需要完成击倒与表面回归。
+    sceneState:
+      sceneId: sample-yanshang-live-room
+      currentPhaseIndex: 6
+      currentBeatIndexInPhase: 4
+      mainAxis: 日常教室突发路人手机自燃事件 -> 雾间凪暗中脱离人群并围绕异常事故展开调查 -> 在校园中逐步发现灰谷烈留下的电子陷阱与痕迹 -> 突入并锁定灰谷烈的直播据点 -> 识破并切断其直播观众来源 -> 物理击溃反派并回归日常
+      endLine: 灰谷烈的直播间观众被彻底清零，其肉体被雾间凪彻底击倒，学校恢复表面的平静，宫下藤花对刚才的致命危机一无所知
+      alpha: 允许凪进行最后的物理压制与现场处理，但不得制造新的异常扩散
+      beta: 允许凪谨慎收尾与确认目标失能，但不得让灰谷烈重新取得行动能力
+      sceneProgress: 敌人的节目效果已被摧毁，终局只剩最后的肉体击倒与痕迹清理
+    roundState:
+      phaseGoal: 完成最终击倒并恢复学校表面的平静
+      currentVolume: Low
+      currentRouter: 日常/闲暇
+      verbLexicon:
+        - 琐事
+        - 独处
+        - 介入
+        - 漫谈
+      historyWindow:
+        - role: assistant
+          content: 灰谷烈的观众幻觉来源被切断，直播间数据暴露为 0 在线。
+        - role: user
+          content: 对失去能力的灰谷烈实施最后物理压制。
+        - role: assistant
+          content: 凪在近身压制中已让其失去主要反抗能力，现场开始恢复安静。
+      directorConstraints: 回落不等于松弛，必须确认敌人彻底失能且藤花仍未察觉全貌
+    generationState:
+      directorNoteSummary: 收尾应兼具终局确认与表面日常回归，不要把叙事重新抬回高潮
+      promptObject: {}
+      currentBeatText: null
+      currentOptions: []
+    evaluationState:
+      auditAnswers: []
+      blockingFailures: []
+      retryCount: 0
+      rewriteFeedback: null

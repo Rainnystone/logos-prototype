@@ -1,0 +1,31 @@
+sceneId: sample-yanshang-live-room
+source: story-source/control-modules.md
+lightConeCustomization:
+  boundaryGuidance: Keep the current player state as the light-cone apex and the
+    current end line as the far convergence target.需要考虑每一个
+    phasegoal，并逐步拓宽。光锥的边界是到达 endline
+    情况下，玩家行为所允许的最激进和最消极（被故事和环境推着走）的推演，需要详细考虑如何经过每个 phase 并最重到达 endline ，alpha 和
+    beta 不能写成一个句宽泛的描述，要有边界和约束感。
+  convergenceGuidance: Let the cone remain wide early, then narrow more sharply as
+    the route closes in on the signal source.必须根据 phase settlement
+    的情况推演玩家行为产生的后果，从而收拢光锥，以反应玩家需要为自己的行为和选择负责的理念。
+  phaseSettlementGuidance: Re-evaluate the boundaries only after each phase
+    settlement is complete; do not collapse the space beat by beat。必须考虑玩家在这个
+    phase 的行为对周遭环境、人际关系的影响和因果
+directorNoteAdditions:
+  beatConstraintsAdditions: Keep every beat local, physical, and explainable as a
+    contained campus incident.每一轮不得少于 1000
+    字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切
+    OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致
+    OOC，则主角必须只能以内心活动的方式吐槽而非直接执行
+beatVolumeDefinitions:
+  Low:
+    beatConstraints: "**时间加速流转**。侧重结果、环境大局、因果总结。禁止进行冗长的单次动作描写，鼓励使用叙述性蒙太奇。"
+    optionFormatting: "**场景平稳/转场**。角色在一段较长时间内的常态表现。虽然细节少，但文字应具有“史诗感”或“文学性”的宏观美。"
+  Med:
+    beatConstraints: "**时间匀速同步**。侧重标准对话、即时反应、空间移动。AI 应保持连贯的因果链条，模拟人类正常的实时感知速度。"
+    optionFormatting: "**标准交互/推进**。故事的骨架。对话流畅，动作清晰。这是逻辑推进最稳健的档位，也是最常用的默认状态。"
+  High:
+    beatConstraints: "**时间拉伸**。**“叙事慢镜头”**。强制切入感官碎片的细颗粒度扫描（心跳、眼神/表情/微表情、微颤、材质、动作/小动\
+      作、心理活动侧写）。一轮选择仅对应物理世界较短的时间。"
+    optionFormatting: "**高潮/冲突/转折**。极度放大的情感压力或物理张力。必须挖掘当前瞬间的“ subtext (潜台词) ”或极微小的环境反馈。"

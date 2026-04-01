@@ -1,0 +1,58 @@
+sceneId: sample-yanshang-live-room
+sceneName: 烈焰小丑
+source: story-source/phase-outline.md
+phasePlans:
+  - phaseId: phase-01-prologue
+    phaseIndex: 1
+    phaseName: 序章
+    phaseGoal: 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。
+    phaseEndPoint: 凪锁定异常事故并判断它不是普通电池故障，同时仍未直接暴露幕后元凶。
+    gradientType: Rising
+    beatCount: 4
+    routerHint: 日常/闲暇
+    notes: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。
+  - phaseId: phase-02-hunt
+    phaseIndex: 2
+    phaseName: 走廊追踪
+    phaseGoal: 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。
+    phaseEndPoint: 凪确认异常源正沿旧校舍方向延伸，并找到进入核心区域的线索。
+    gradientType: Steady
+    beatCount: 4
+    routerHint: 悬疑/探案
+    notes: 禁止发生正面高强度战斗；追踪手段必须保持物理性，而非感知类超自然侦测。
+  - phaseId: phase-03-first-contact
+    phaseIndex: 3
+    phaseName: 初次接触
+    phaseGoal: 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。
+    phaseEndPoint: 凪被迫在高热封锁中站稳脚跟，并正式确认灰谷烈的作战方式。
+    gradientType: Rising
+    beatCount: 4
+    routerHint: 惊悚/恐怖
+    notes: 必须先建立灰谷烈的表演型人格与高热封锁，再进入极限闪避；本阶段不得直接秒杀反派。
+  - phaseId: phase-04-streamer-domain
+    phaseIndex: 4
+    phaseName: 直播领域
+    phaseGoal: 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。
+    phaseEndPoint: 观众注意力与设备链路开始被凪反向压制，灰谷烈逐渐失去主场优势。
+    gradientType: Pulse
+    beatCount: 4
+    routerHint: 博弈/谈判
+    notes: 这里的博弈不等于坐下来辩论；凪的语言必须简短致命，主导动作应是砸毁路由器、摄像头和主控设备。
+  - phaseId: phase-05-climax
+    phaseIndex: 5
+    phaseName: 终局压制
+    phaseGoal: 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。
+    phaseEndPoint: 灰谷烈彻底失去异能依托并遭到近身击溃，直播局面终止。
+    gradientType: Static High
+    beatCount: 4
+    routerHint: 动作/战斗
+    notes: 必须先完成断网或观众清零，再进入近身击溃；战斗应呈现单方面碾压感，不允许不吉波普介入。
+  - phaseId: phase-06-resolution
+    phaseIndex: 6
+    phaseName: 余波回落
+    phaseGoal: 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。
+    phaseEndPoint: 学校重新回到表层和平，藤花保持无知，凪带着余波回到日常线。
+    gradientType: Falling
+    beatCount: 4
+    routerHint: 日常/闲暇
+    notes: 终局必须完成三项收束：灰谷烈已败、学校表面和平、藤花毫不知情，并保留惊险过后回到乏味日常的余韵。

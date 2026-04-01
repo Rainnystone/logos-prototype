@@ -1,0 +1,180 @@
+sceneId: sample-yanshang-live-room
+source: story-source/audit-rules.md
+globalQuestions:
+  - id: AQ-G-001
+    question: 宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？
+    expected: false
+    blocking: true
+    rationale: 藤花必须维持“异常绝缘体”状态，这是样例的核心世界约束。
+
+  - id: AQ-G-002
+    question: 宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？
+    expected: false
+    blocking: true
+    rationale: 藤花必须始终停留在表层日常位面，不能被当作剧情破局筹码。
+
+  - id: AQ-G-003
+    question: 雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？
+    expected: false
+    blocking: true
+    rationale: 雾间凪的战斗基础是身体强化、格斗与药剂，不是魔法体系。
+
+  - id: AQ-G-005
+    question: 是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？
+    expected: false
+    blocking: true
+    rationale: 这是本样例明确禁止的表现形态，会直接破坏世界观边界。
+
+  - id: AQ-G-006
+    question: 当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？
+    expected: false
+    blocking: true
+    rationale: 样例必须维持可被表层日常合理化的事件尺度，不能升级为失控灾难片。
+
+  - id: AQ-G-007
+    question: 在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？
+    expected: false
+    blocking: true
+    rationale: 不吉波普在此样例中只能作为兜底机制存在。
+
+  - id: AQ-G-008
+    question: 雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？
+    expected: false
+    blocking: true
+    rationale: 雾间凪必须维持冷硬执行者姿态，不能滑向热血或示弱表演。
+
+controlQuestions:
+  - id: AQ-C-001
+    question: 本轮 Beat 正文是否符合当前声量要求？
+    expected: true
+    blocking: false
+    rationale: 声量不匹配会损伤节奏控制，但当前可作为非阻塞问题记录。
+
+  - id: AQ-C-002
+    question: 本轮四个选项是否具有明显区分度？
+    expected: true
+    blocking: false
+    rationale: 区分度不足会削弱交互质量，但不必在 sample 阶段一律阻塞。
+
+phaseSpecificQuestions:
+  phase-01-prologue:
+    - id: AQ-P1-001
+      question: 灰谷烈是否已经被击败、失去异能？
+      expected: false
+      blocking: true
+      rationale: Phase 1 只能建立异常前奏，不能提前结束反派威胁。
+
+    - id: AQ-P1-002
+      question: 本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？
+      expected: false
+      blocking: true
+      rationale: Phase 1 必须保留逐步探索和发现灰谷烈存在的过程，不能直接摊开完整敌情。
+
+    - id: AQ-P1-003
+      question: 雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？
+      expected: false
+      blocking: true
+      rationale: Phase 1 只能推进到异常调查与发现阶段，不能提前进入正面对抗。
+
+  phase-02-hunt:
+    - id: AQ-P2-001
+      question: 灰谷烈是否已经被击败、失去异能？
+      expected: false
+      blocking: true
+      rationale: Phase 2 仍处于追踪与逼近阶段，反派不能提前失去威胁。
+
+    - id: AQ-P2-002
+      question: 雾间凪的追踪与排查手段是否依赖了超自然感知？
+      expected: false
+      blocking: true
+      rationale: Phase 2 的推进必须建立在物理调查与破解上，不能借超自然感知直接锁定目标。
+
+    - id: AQ-P2-003
+      question: 故事是否已经提前转入与灰谷烈的正面高强度战斗？
+      expected: false
+      blocking: true
+      rationale: Phase 2 仍应保持追踪、排查与逼近，不应提前升级为正面战斗段。
+
+  phase-03-first-contact:
+    - id: AQ-P3-000
+      question: 灰谷烈是否已经被击败、失去异能？
+      expected: false
+      blocking: true
+      rationale: Phase 3 必须保留灰谷烈的有效压制力，不能提前结束交锋。
+
+    - id: AQ-P3-001
+      question: 雾间凪应对火焰和高热的手段，是否仅限于物理闪避、寻找掩体、破坏设备或利用灭火器等现实手段？
+      expected: true
+      blocking: true
+      rationale: Phase 3 的高压冲突必须保持现实破局路径，不能滑向超自然对轰。
+
+  phase-04-streamer-domain:
+    - id: AQ-P4-000
+      question: 灰谷烈是否已经被击败、失去异能？
+      expected: false
+      blocking: true
+      rationale: Phase 4 仍是灰谷烈的主场压力阶段，反派不能提前被清场。
+
+    - id: AQ-P4-001
+      question: 雾间凪应对火焰和高热的手段，是否仅限于物理闪避、寻找掩体、破坏设备或利用灭火器等现实手段？
+      expected: true
+      blocking: true
+      rationale: Phase 4 仍处于高压交锋阶段，火焰与高热对抗必须保持现实手段。
+
+  phase-05-climax:
+    - id: AQ-P5-001
+      question: 在直播间观众归零、网络被切断后，灰谷烈是否仍然具有释放超自然高热的能力？
+      expected: false
+      blocking: true
+      rationale: 反派能力必须在观众归零后失效，这是最终物理击溃的前提。
+
+    - id: AQ-P5-002
+      question: 雾间凪最终击倒灰谷烈的手段，是否是纯粹的近战格斗（如关节技、物理打击、注射药剂）？
+      expected: true
+      blocking: true
+      rationale: Phase 5 的胜负方式必须保持纯物理收束，不允许临时引入其他破局法。
+
+  phase-06-resolution:
+    - id: AQ-P6-001
+      question: 故事是否成功收束到了终点线：反派被物理击倒，日常表层恢复平静，且宫下藤花对危机毫不知情？
+      expected: true
+      blocking: true
+      rationale: 这是终局阶段必须满足的总收束条件，缺失任一部分都说明样例未正确闭环。
+
+selectionPolicy:
+  default:
+    - AQ-G-001
+    - AQ-G-002
+    - AQ-G-003
+    - AQ-G-005
+    - AQ-G-006
+    - AQ-G-007
+    - AQ-G-008
+    - AQ-C-001
+    - AQ-C-002
+  phaseOverrides:
+    phase-01-prologue:
+      append:
+        - AQ-P1-001
+        - AQ-P1-002
+        - AQ-P1-003
+    phase-02-hunt:
+      append:
+        - AQ-P2-001
+        - AQ-P2-002
+        - AQ-P2-003
+    phase-03-first-contact:
+      append:
+        - AQ-P3-000
+        - AQ-P3-001
+    phase-04-streamer-domain:
+      append:
+        - AQ-P4-000
+        - AQ-P4-001
+    phase-05-climax:
+      append:
+        - AQ-P5-001
+        - AQ-P5-002
+    phase-06-resolution:
+      append:
+        - AQ-P6-001

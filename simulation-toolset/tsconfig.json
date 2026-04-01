@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../src/*"],
+      "@simulation/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./scenarios/**/*.ts",
+    "./tests/**/*.ts",
+    "./vitest.config.ts",
+    "../src/**/*.ts",
+    "../src/**/*.tsx",
+    "../src/**/*.d.ts",
+    "../vitest.setup.ts"
+  ],
+  "exclude": ["../node_modules", "../.next", "../coverage"]
+}
