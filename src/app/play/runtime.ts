@@ -5,7 +5,15 @@ import { resolveAudit } from '@/engine/modules/audit-resolver';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
-import type { AuditQuestion, AuditQuestionSet, PhasePlan, StoryPackage, UsageInfo } from '@/types';
+import type {
+  AuditQuestion,
+  AuditQuestionSet,
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
+  PhasePlan,
+  StoryPackage,
+  UsageInfo,
+} from '@/types';
 
 export type WorkbenchStatus =
   | 'initializing'
@@ -43,6 +51,25 @@ export interface WorkbenchReporter {
   onUsage(operation: WorkbenchOperation, usage: UsageInfo | null): void;
 }
 
+type GossipelogFallbackFunction = {
+  readonly __logosGossipelogFallback?: true;
+};
+
+function defaultNoOpUpdate(): GossipelogUpdateResult {
+  return {
+    involvedRoleIds: [],
+    invocationNoOp: true,
+    edgeUpdates: [],
+  };
+}
+
+function defaultEmptyInjection(): GossipelogInjectionResult {
+  return {
+    highlightedDeltasText: '',
+    stableBackgroundText: '',
+  };
+}
+
 function buildQuestionMap(questionSet: AuditQuestionSet): Map<string, AuditQuestion> {
   const phaseSpecificQuestions = Object.values(questionSet.phaseSpecificQuestions ?? {}).flat();
   const questions = [
@@ -65,6 +92,16 @@ export function createTrackedWorkbenchAdapter(
 ): LLMAdapter {
   const questionMap = buildQuestionMap(questionSet);
   let retryCount = 0;
+  const gossipelogUpdate: NonNullable<LLMAdapter['gossipelogUpdate']> =
+    adapter.gossipelogUpdate ??
+    Object.assign(async () => defaultNoOpUpdate(), {
+      __logosGossipelogFallback: true as const,
+    } satisfies GossipelogFallbackFunction);
+  const gossipelogInjection: NonNullable<LLMAdapter['gossipelogInjection']> =
+    adapter.gossipelogInjection ??
+    Object.assign(async () => defaultEmptyInjection(), {
+      __logosGossipelogFallback: true as const,
+    } satisfies GossipelogFallbackFunction);
 
   return {
     async collapse(request) {
@@ -136,6 +173,8 @@ export function createTrackedWorkbenchAdapter(
       reporter.onUsage('settlement', result.usage ?? null);
       return result;
     },
+    gossipelogUpdate,
+    gossipelogInjection,
   };
 }
 

@@ -1,13 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
-import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
+import {
+  cleanupTempSampleSceneFixtures,
+  createE2EMockAdapter,
+  createTempSampleSceneFixture,
+} from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
 import { createOrchestrator } from '@/engine/orchestrator';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 
 describe('E2E phase-end processing', () => {
+  afterEach(() => {
+    cleanupTempSampleSceneFixtures();
+  });
+
   it('runs settlement before collapse and wires the result into the next phase state', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const settlementResponse = {
       phaseConsequences: ['settled-fact-1', 'settled-fact-2', 'settled-fact-3'],
       settlementTrace: 'settlement-trace',
@@ -31,6 +38,7 @@ describe('E2E phase-end processing', () => {
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
     });
 

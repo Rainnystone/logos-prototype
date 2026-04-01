@@ -1,11 +1,17 @@
+import { cpSync, rmSync } from 'node:fs';
+import path from 'node:path';
+
 import { deepFreeze } from '@/lib/deep-freeze';
 import {
   validateAuditPacket,
   validateCollapseResponse,
+  validateGossipelogInjectionResult,
+  validateGossipelogUpdateResult,
   validatePhaseConsequenceRequest,
   validatePhaseConsequenceResponse,
   validatePromptObject,
 } from '@/engine/schema-validator';
+import { loadStoryPackage } from '@/engine/story-loader';
 import type {
   AuditResult,
   CollapseInput,
@@ -18,9 +24,11 @@ import type {
   AuditQuestion,
   AuditQuestionSet,
   CollapseResponse,
+  GossipelogInjectionResult,
   PhaseConsequenceRequest,
   PhaseConsequenceResponse,
   PromptObject,
+  StoryPackage,
 } from '@/types';
 
 export type AuditBehavior = 'pass' | 'fail-once' | 'fail-always';
@@ -44,6 +52,10 @@ export interface E2EMockAdapterHarness {
   readonly routeCalls: RouteRequest[];
   getCallCounts(): Readonly<Record<AdapterMode, number>>;
 }
+
+const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
+const samplePackagePath = path.resolve(storyPackagesRoot, 'sample-scene');
+const tempPackagePaths: string[] = [];
 
 function buildQuestionMap(questionSet?: AuditQuestionSet): Map<string, AuditQuestion> {
   if (!questionSet) {
@@ -106,6 +118,42 @@ function resolveGenerateResult(
   }
 
   return responses[Math.min(index, responses.length - 1)] ?? defaultGenerateResult(index);
+}
+
+function resolveRelationshipPair(roleIds: readonly string[]) {
+  const [sourceRoleId, targetRoleId] = [...new Set(roleIds)].slice(0, 2);
+
+  if (!sourceRoleId || !targetRoleId || sourceRoleId === targetRoleId) {
+    return null;
+  }
+
+  return { sourceRoleId, targetRoleId };
+}
+
+export async function createTempSampleSceneFixture(): Promise<{
+  readonly packageName: string;
+  readonly storyPackage: StoryPackage;
+}> {
+  const packageName = `tmp-gossipelog-e2e-${Math.random().toString(16).slice(2)}`;
+  const packagePath = path.resolve(storyPackagesRoot, packageName);
+
+  tempPackagePaths.push(packagePath);
+  cpSync(samplePackagePath, packagePath, { recursive: true });
+
+  return {
+    packageName,
+    storyPackage: await loadStoryPackage(packageName),
+  };
+}
+
+export function cleanupTempSampleSceneFixtures(): void {
+  while (tempPackagePaths.length > 0) {
+    const packagePath = tempPackagePaths.pop();
+
+    if (packagePath) {
+      rmSync(packagePath, { recursive: true, force: true });
+    }
+  }
 }
 
 function buildAuditAnswers(
@@ -231,6 +279,56 @@ export function createE2EMockAdapter(config: E2EMockAdapterConfig = {}): E2EMock
         collapseCallCount += 1;
 
         return deepFreeze(validateCollapseResponse(response));
+      },
+
+      async gossipelogUpdate(request) {
+        const pair = resolveRelationshipPair(request.sceneCastRoleIds);
+        const involvedRoleIds = [...new Set(request.sceneCastRoleIds)].slice(0, 2);
+
+        return deepFreeze(
+          validateGossipelogUpdateResult(
+            pair
+              ? {
+                  involvedRoleIds,
+                  invocationNoOp: false,
+                  edgeUpdates: [
+                    {
+                      sourceRoleId: pair.sourceRoleId,
+                      targetRoleId: pair.targetRoleId,
+                      mode: 'delta',
+                      replaceBaseline: false,
+                      recentDelta: {
+                        state: `E2E refresh for ${request.roundId}.`,
+                        sourceRound: request.roundId,
+                      },
+                    },
+                  ],
+                }
+              : {
+                  involvedRoleIds,
+                  invocationNoOp: true,
+                  edgeUpdates: [],
+                },
+          ),
+        );
+      },
+
+      async gossipelogInjection(request) {
+        const firstEdgeSource = Object.keys(request.relationshipSubgraph.relationshipsBySource)[0];
+        const firstEdgeTarget = firstEdgeSource
+          ? Object.keys(request.relationshipSubgraph.relationshipsBySource[firstEdgeSource]?.targets ?? {})[0]
+          : null;
+        const highlightedDeltasText =
+          firstEdgeSource && firstEdgeTarget
+            ? `${firstEdgeSource} -> ${firstEdgeTarget} refreshed for ${request.sceneCastFraming.sceneId}.`
+            : `No refreshed edges for ${request.sceneCastFraming.sceneId}.`;
+
+        return deepFreeze(
+          validateGossipelogInjectionResult({
+            highlightedDeltasText,
+            stableBackgroundText: `Stable relationship background for ${request.relationshipSubgraph.meta.storyPackage}.`,
+          } satisfies GossipelogInjectionResult),
+        );
       },
     },
     callLog,

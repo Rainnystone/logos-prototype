@@ -1,13 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
-import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
+import {
+  cleanupTempSampleSceneFixtures,
+  createE2EMockAdapter,
+  createTempSampleSceneFixture,
+} from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
 import { createOrchestrator } from '@/engine/orchestrator';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 
 describe('E2E full phase run', () => {
+  afterEach(() => {
+    cleanupTempSampleSceneFixtures();
+  });
+
   it('runs sample-scene phase 1 through all four beats and enters phase 2', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'pass',
@@ -30,6 +37,7 @@ describe('E2E full phase run', () => {
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
     });
     const phaseOne = storyPackage.phasePlans[0]!;
@@ -57,6 +65,12 @@ describe('E2E full phase run', () => {
     expect(beatTwo.state.sceneState.currentBeatIndexInPhase).toBe(3);
     expect(beatTwo.state.roundState.currentVolume).toBe(phaseOneVolumes[2]);
     expect(beatTwo.state.roundState.historyWindow).toHaveLength(4);
+    expect(beatTwo.state.generationState.promptObject).toMatchObject({
+      relationshipLayer: {
+        highlightedDeltasText: expect.any(String),
+        stableBackgroundText: expect.any(String),
+      },
+    });
 
     expect(beatThree.state.sceneState.currentBeatIndexInPhase).toBe(4);
     expect(beatThree.state.roundState.currentVolume).toBe(phaseOneVolumes[3]);

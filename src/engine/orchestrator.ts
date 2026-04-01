@@ -1,4 +1,5 @@
 import { deepFreeze } from '@/lib/deep-freeze';
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import { resolveAudit, type AuditResolverResult } from '@/engine/modules/audit-resolver';
 import { buildDirectorNote } from '@/engine/modules/director-note-layer';
@@ -26,12 +27,14 @@ import type {
   DirectorNote,
   RoundState,
   SceneState,
+  GossipelogInjectionResult,
 } from '@/types';
 import type { GenerateResult, LLMAdapter } from '@/engine/types/adapter-interface';
 
 export interface OrchestratorConfig {
   readonly adapter: LLMAdapter;
   readonly storyPackage: StoryPackage;
+  readonly storyPackageName: string;
 }
 
 export interface BeatResult {
@@ -57,6 +60,12 @@ interface AttemptOutcome {
   readonly auditAnswers: readonly boolean[];
 }
 
+interface PendingRelationshipRefresh {
+  promise: Promise<void>;
+  readonly fallbackLayer: GossipelogInjectionResult;
+  invalidated: boolean;
+}
+
 const PASS_WITHOUT_AUDIT: AuditResolverResult = deepFreeze({
   pass: true,
   blockingFailures: [],
@@ -64,10 +73,25 @@ const PASS_WITHOUT_AUDIT: AuditResolverResult = deepFreeze({
   forceAccepted: false,
 });
 
+const EMPTY_RELATIONSHIP_LAYER: GossipelogInjectionResult = deepFreeze({
+  highlightedDeltasText: '',
+  stableBackgroundText: '',
+});
+const GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS = 2_000;
+
 function cloneHistoryEntry(entry: HistoryEntry): HistoryEntry {
   return {
     role: entry.role,
     content: entry.content,
+  };
+}
+
+function cloneRelationshipLayer(
+  relationshipLayer: GossipelogInjectionResult,
+): GossipelogInjectionResult {
+  return {
+    highlightedDeltasText: relationshipLayer.highlightedDeltasText,
+    stableBackgroundText: relationshipLayer.stableBackgroundText,
   };
 }
 
@@ -127,9 +151,11 @@ function buildPromptAssemblerInput(
   state: StateSnapshot,
   historyWindow: readonly HistoryEntry[],
   directorNote: DirectorNote,
+  relationshipLayer: GossipelogInjectionResult,
 ): PromptAssemblerInput {
   return {
     worldBase: storyPackage.worldBase,
+    relationshipLayer,
     precedingBeats: historyWindow,
     mainAxis: state.sceneState.mainAxis,
     endLine: state.sceneState.endLine,
@@ -186,16 +212,46 @@ function buildRoundState(
   };
 }
 
+function countAcceptedBeats(history: readonly HistoryEntry[]): number {
+  return history.filter((entry) => entry.role === 'assistant').length;
+}
+
+function createRoundIdSessionPrefix(): string {
+  return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function formatRoundId(sessionPrefix: string, acceptedBeatCount: number): string {
+  return `${sessionPrefix}-round-${String(acceptedBeatCount).padStart(4, '0')}`;
+}
+
+function isFallbackGossipelogMethod(method: unknown): boolean {
+  return Boolean(
+    method &&
+      typeof method === 'function' &&
+      '__logosGossipelogFallback' in method &&
+      (method as { __logosGossipelogFallback?: boolean }).__logosGossipelogFallback === true,
+  );
+}
+
 export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   const lightConeCollapse = createLightConeCollapse(
     config.adapter,
     config.storyPackage.controlModules.lightConeCustomization,
   );
   const narrativeRouter = createNarrativeRouter(config.adapter);
+  const gossipelogEnabled = Boolean(
+    config.adapter.gossipelogUpdate &&
+      config.adapter.gossipelogInjection &&
+      !isFallbackGossipelogMethod(config.adapter.gossipelogUpdate) &&
+      !isFallbackGossipelogMethod(config.adapter.gossipelogInjection),
+  );
   let currentState: StateSnapshot | null = null;
   let sceneComplete = false;
   let acceptedHistory: HistoryEntry[] = [];
   let currentPhaseTranscript: HistoryEntry[] = [];
+  const roundIdSessionPrefix = createRoundIdSessionPrefix();
+  let queuedRelationshipLayer = cloneRelationshipLayer(EMPTY_RELATIONSHIP_LAYER);
+  let pendingRelationshipRefresh: PendingRelationshipRefresh | null = null;
 
   function requireState(): StateSnapshot {
     if (!currentState) {
@@ -203,6 +259,81 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     }
 
     return currentState;
+  }
+
+  async function waitForPendingRelationshipRefresh(): Promise<void> {
+    const refresh = pendingRelationshipRefresh;
+
+    if (!refresh) {
+      return;
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    try {
+      const result = await Promise.race([
+        refresh.promise.then(() => 'completed' as const),
+        new Promise<'timeout'>((resolve) => {
+          timeoutId = setTimeout(() => {
+            resolve('timeout');
+          }, GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS);
+        }),
+      ]);
+
+      if (result === 'timeout' && pendingRelationshipRefresh === refresh) {
+        refresh.invalidated = true;
+        queuedRelationshipLayer = cloneRelationshipLayer(refresh.fallbackLayer);
+        pendingRelationshipRefresh = null;
+      }
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
+
+  function scheduleRelationshipRefresh(acceptedBeatText: string, roundId: string): void {
+    if (!gossipelogEnabled) {
+      return;
+    }
+
+    const lastStableRelationshipLayer = cloneRelationshipLayer(queuedRelationshipLayer);
+
+    const refresh: PendingRelationshipRefresh = {
+      promise: Promise.resolve(),
+      fallbackLayer: lastStableRelationshipLayer,
+      invalidated: false,
+    };
+
+    refresh.promise = runGossipelogCycle({
+      adapter: config.adapter,
+      storyPackageName: config.storyPackageName,
+      storyPackage: config.storyPackage,
+      acceptedBeatText,
+      roundId,
+      lastStableRelationshipLayer,
+    })
+      .then((result) => {
+        if (refresh.invalidated) {
+          return;
+        }
+
+        queuedRelationshipLayer = cloneRelationshipLayer(result.relationshipLayer);
+      })
+      .catch(() => {
+        if (refresh.invalidated) {
+          return;
+        }
+
+        queuedRelationshipLayer = lastStableRelationshipLayer;
+      })
+      .finally(() => {
+        if (pendingRelationshipRefresh === refresh) {
+          pendingRelationshipRefresh = null;
+        }
+      });
+
+    pendingRelationshipRefresh = refresh;
   }
 
   async function generateAcceptedBeat(
@@ -216,12 +347,15 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       throw new Error('LLMAdapter.generate is not configured.');
     }
 
+    await waitForPendingRelationshipRefresh();
+
     const promptAssemblerInput = buildPromptAssemblerInput(
       config.storyPackage,
       phasePlan,
       workingState,
       historyWindow,
       directorNote,
+      cloneRelationshipLayer(queuedRelationshipLayer),
     );
 
     let retryCount = 0;
@@ -323,6 +457,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       acceptedHistory = [];
       currentPhaseTranscript = [];
       sceneComplete = false;
+      queuedRelationshipLayer = cloneRelationshipLayer(EMPTY_RELATIONSHIP_LAYER);
+      pendingRelationshipRefresh = null;
       currentState = freezeState({
         sceneState: initialSceneState,
         roundState: initialRoundState,
@@ -545,6 +681,11 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           rewriteFeedback: attemptOutcome.resolution.rewriteFeedback,
         },
       });
+
+      scheduleRelationshipRefresh(
+        attemptOutcome.generationResult.beatText,
+        formatRoundId(roundIdSessionPrefix, countAcceptedBeats(acceptedHistory)),
+      );
 
       return {
         beatResult: deepFreeze({

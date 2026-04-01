@@ -121,6 +121,7 @@ export function PlayWorkbench({
         );
         const orchestrator = createOrchestrator({
           adapter: trackedAdapter,
+          storyPackageName,
           storyPackage,
         });
         const initialState = await orchestrator.initScene();
@@ -152,7 +153,7 @@ export function PlayWorkbench({
     return () => {
       cancelled = true;
     };
-  }, [adapterConfig, adapterFactory, bootstrapped, storyPackage]);
+  }, [adapterConfig, adapterFactory, bootstrapped, storyPackage, storyPackageName]);
 
   const currentPhasePlan = useMemo(() => {
     if (!currentState) {
