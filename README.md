@@ -16,6 +16,15 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 
 从产品定位上看，LOGOS 可以理解成“面向文字叙事的 RPG Maker”，只是它的基本单位不是地图块和事件树，而是 `Scene`、`Phase`、`Beat`、`Volume`、`Router`、`Alpha/Beta` 和 `Director Note` 这些叙事控制对象。当前仓库已经把这套对象拆进了页面、模块、故事包和测试里，能够同时被人类作者和 AI coding agent 理解与使用。
 
+## 文档位置
+
+- `docs/`
+  当前仍在使用的运行说明、贡献说明和代码地图。
+- `docs/superpowers/`
+  仅用于尚未完成、仍在推进中的 plan 和 spec。
+- `archive/docs/superpowers/`
+  已完成并合入主线的 superpowers 计划、设计稿、review notes 和过程记录。
+
 ## 当前已完成
 
 ### 1. 标题页与统一入口

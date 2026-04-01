@@ -70,9 +70,9 @@ Phase 1 should only leave the structural foundation for later management work.
 
 These points came from a direct review of:
 
-- `docs/superpowers/specs/2026-03-31-gossipelog-agent-design.md`
-- `docs/superpowers/specs/2026-03-31-gossipelog-agent-log.md`
-- `docs/superpowers/plans/2026-03-31-gossipelog-agent.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-design.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-log.md`
+- `archive/docs/superpowers/plans/2026-03-31-gossipelog-agent.md`
 
 ### A. The Workflow Is Mostly Present, But Not Fully Closed Yet
 

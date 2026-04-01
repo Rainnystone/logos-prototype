@@ -19,3 +19,11 @@
   当时为并行执行或拆分任务产生的中间草稿
 
 如果后续还有新的 superpowers 文档需要退役，优先按这个结构继续归档，而不是混放到别的 archive 目录。
+
+最近完成并已归档的一组材料是：
+
+- `archive/docs/superpowers/plans/2026-03-31-gossipelog-agent.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-design.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-log.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-review-notes.md`
+- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-session-summary.md`
