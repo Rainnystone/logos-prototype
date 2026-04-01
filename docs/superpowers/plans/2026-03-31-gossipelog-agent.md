@@ -383,6 +383,11 @@ it('keeps the current file unchanged on invocation-level no-op', () => {
   expect(merged).toEqual(existingFile);
 });
 
+it('still returns a valid next-round layer input after invocation-level no-op lifecycle processing', () => {
+  const settled = absorbConsumedDeltas(existingFileWithConsumedHighlight, 'round-0011');
+  expect(settled.relationshipsBySource.chr_core01.targets.chr_hero01.baseline.state).toBeTruthy();
+});
+
 it('creates a thin baseline plus current delta for a genuine new_edge', () => {
   const merged = mergeRelationshipUpdates(existingFile, {
     involvedRoleIds: ['chr_core01', 'chr_ant01'],
@@ -531,6 +536,22 @@ it('completes the update -> merge -> persist -> injection sub-loop and returns p
   const result = await runGossipelogCycle(validFixture);
   expect(result.relationshipLayer.highlightedDeltasText.length).toBeGreaterThan(0);
 });
+
+it('treats invocation-level no-op as a full sidecar cycle rather than a short-circuit', async () => {
+  const result = await runGossipelogCycle(noOpFixture);
+  expect(result.updateResult.invocationNoOp).toBe(true);
+  expect(result.relationshipLayer.stableBackgroundText.length).toBeGreaterThanOrEqual(0);
+});
+
+it('falls back to persisted stable state when update output is invalid', async () => {
+  const result = await runGossipelogCycle(invalidUpdateFixture);
+  expect(result.usedFallbackSource).toBe('persisted-relationship-state');
+});
+
+it('falls back to the last stable relationship layer when injection fails', async () => {
+  const result = await runGossipelogCycle(injectionFailureFixture);
+  expect(result.usedFallbackLayer).toBe('last-stable-layer');
+});
 ```
 
 - [ ] **Step 2: Run the agent-shell tests to verify they fail**
@@ -571,6 +592,13 @@ const injectionResult = await adapter.gossipelogInjection?.(
     relationshipSubgraph: selectRelationshipSubgraph(mergedFile, candidateRoles),
   }),
 );
+
+// If update output is invalid or update/writeback fails, do not promote
+// speculative state. Continue from the last successfully persisted
+// relationship state.
+
+// If injection fails, fall back to the last successfully produced stable
+// relationship layer. If none exists yet, use an explicit empty layer.
 ```
 
 - [ ] **Step 4: Re-run the agent-shell tests**
@@ -670,6 +698,23 @@ it('waits for a still-running gossipelog refresh when the player submits the nex
     },
   });
 });
+
+it('uses the prior stable relationship layer when the background refresh fails before the next prompt', async () => {
+  const orchestrator = createOrchestrator({
+    adapter: failingRefreshAdapter,
+    storyPackageName: 'sample-scene',
+    storyPackage,
+  });
+
+  await orchestrator.initScene();
+  await orchestrator.runBeat('opening action');
+  const nextResult = await orchestrator.runBeat('follow-up action');
+
+  expect(nextResult.state.generationState.promptObject).toHaveProperty('relationshipLayer');
+  expect(nextResult.state.generationState.promptObject.relationshipLayer).toMatchObject(
+    lastStableRelationshipLayer,
+  );
+});
 ```
 
 - [ ] **Step 2: Run the prompt/orchestrator tests to verify they fail**
@@ -731,6 +776,11 @@ await waitForPendingRelationshipRefresh();
 // This wait is the explicit fallback rule for fast-clicking players:
 // accepted-beat return stays non-blocking when possible,
 // but the next submitted action must not assemble a prompt against stale relationship state.
+
+// Resolved outcome requirement:
+// next prompt assembly may proceed only after the refresh either
+// 1) persisted new state and built a new relationship layer, or
+// 2) selected a defined fallback from the last stable state/layer.
 
 // After the current beat is accepted and state is ready to return:
 scheduleRelationshipRefresh({
@@ -851,6 +901,39 @@ it('does not block accepted-beat return on the background relationship refresh, 
   releaseGossipelogRefresh();
   const secondResult = await orchestrator.runBeat('follow-up action');
   expect(secondResult.state.generationState.promptObject).toHaveProperty('relationshipLayer');
+});
+
+it('keeps a valid next-round relationship layer on invocation-level no-op without writing noise', async () => {
+  const orchestrator = createOrchestrator({
+    adapter: noOpRefreshAdapter,
+    storyPackageName: 'sample-scene',
+    storyPackage,
+  });
+
+  await orchestrator.initScene();
+  await orchestrator.runBeat('opening action');
+  const secondResult = await orchestrator.runBeat('follow-up action');
+
+  expect(secondResult.state.generationState.promptObject.relationshipLayer).toMatchObject({
+    highlightedDeltasText: expect.any(String),
+    stableBackgroundText: expect.any(String),
+  });
+});
+
+it('falls back to a resolved stable outcome instead of consuming indeterminate state after background refresh failure', async () => {
+  const orchestrator = createOrchestrator({
+    adapter: failingRefreshAdapter,
+    storyPackageName: 'sample-scene',
+    storyPackage,
+  });
+
+  await orchestrator.initScene();
+  await orchestrator.runBeat('opening action');
+  const nextResult = await orchestrator.runBeat('follow-up action');
+
+  expect(nextResult.state.generationState.promptObject.relationshipLayer).toMatchObject(
+    lastStableRelationshipLayer,
+  );
 });
 ```
 

@@ -256,6 +256,19 @@ This lifecycle needs one explicit fallback rule for player experience:
 This keeps the accepted beat responsive while still guaranteeing that the next
 prompt cycle never runs against stale relationship state.
 
+Before the next prompt is assembled, the sidecar refresh must therefore reach a
+resolved outcome.
+
+A resolved outcome means one of the following:
+
+- refreshed relationship state was persisted successfully and a new prompt layer
+  was produced
+- the refresh failed cleanly and the system selected an explicit fallback layer
+  from the last stable state
+
+The next prompt cycle must not proceed while the relationship layer is still in
+an indeterminate half-failed state.
+
 This means the accepted beat can be pushed into the sidecar directly by code at
 the orchestrator stage.
 
@@ -781,6 +794,19 @@ Rules:
 - `replaceBaseline: true` explicitly signals a fundamental directional shift
   that should replace the stable baseline
 
+`invocationNoOp: true` does not mean the entire sidecar lifecycle disappears.
+
+It means:
+
+- no new durable relationship write is produced for that accepted beat
+- prior stable relationship state remains the source of truth
+- deterministic highlight aging and absorption still run
+- prompt injection still rebuilds a valid next-round relationship layer from
+  the resolved current state
+
+No-op therefore means "no new durable relationship change," not "skip the
+whole sidecar loop."
+
 Prompt injection material should distinguish:
 
 - recent highlighted deltas
@@ -1152,8 +1178,6 @@ loop catastrophically.
 The current intended degradation principles are:
 
 - if no confident relationship change is available, keep prior stable state
-- if the update path fails, the next beat may fall back to the last known
-  stable relationship layer
 - the system should prefer omission over fabricated certainty
 - dynamic relationship injection should remain removable without breaking the
   baseline prompt structure
@@ -1161,6 +1185,35 @@ The current intended degradation principles are:
   invalid selection rather than silently widening scope
 - if update output is invalid, keep prior persisted relationship state rather
   than writing partial speculative corruption
+- the currently accepted beat may still return to the player, but the next
+  prompt must wait until the sidecar resolves to either a successful refresh or
+  an explicit fallback layer
+
+Phase 1 should freeze the failure fallback chain as follows:
+
+1. if `relationship-update-skill` fails or returns invalid output:
+   - do not write any new relationship state
+   - keep the last successfully persisted relationship state as the source of
+     truth
+   - continue by falling back from that stable state
+2. if relationship-state writeback fails:
+   - treat the refresh as failed
+   - do not treat speculative in-memory updates as committed state
+   - fall back from the last successfully persisted relationship state
+3. if `relationship-injection-skill` fails:
+   - fall back to the last successfully produced stable relationship layer
+   - if no prior stable relationship layer exists yet, fall back to an
+     explicit empty relationship layer rather than fabricating content
+4. if the player submits the next action before the background refresh has
+   resolved:
+   - wait for that refresh to either succeed or cleanly fall back
+   - then assemble the next prompt from that resolved outcome
+
+This means the next round must never consume:
+
+- partially merged but unpersisted relationship state
+- invalid skill output
+- speculative prompt-layer text without a resolved backing state
 
 Detailed retry policy and timeout behavior remain open.
 
@@ -1184,6 +1237,10 @@ Phase 1 should be considered complete only if all of the following are true:
    new narrative agent
 10. the implementation can operate without a new agent-management UI or any
     discretionary UI/UX redesign
+11. `invocationNoOp` still produces a valid next-round relationship-layer
+    outcome instead of short-circuiting the sidecar lifecycle
+12. failure fallback resolves to prior stable state or an explicit empty layer
+    rather than letting the next prompt consume indeterminate state
 
 ## Open Questions
 
