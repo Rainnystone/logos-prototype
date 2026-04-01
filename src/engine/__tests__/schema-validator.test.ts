@@ -4,8 +4,11 @@ import { renderWorldBaseForPrompt } from '@/engine/modules/world-base-prompt-ren
 import {
   validateAuditPacket,
   validateAuditQuestionSet,
+  validateCharacterRelationshipsFile,
   validateCollapseRequest,
   validateCollapseResponse,
+  validateGossipelogInjectionResult,
+  validateGossipelogUpdateResult,
   validatePhasePlan,
   validatePhaseConsequenceRequest,
   validatePhaseConsequenceResponse,
@@ -45,6 +48,10 @@ describe('schema validator', () => {
     expect(
       validatePromptObject({
         worldBase: renderWorldBaseForPrompt(structuredWorldBase),
+        relationshipLayer: {
+          highlightedDeltasText: 'chr_core01 -> chr_hero01: trust has risen this round.',
+          stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
+        },
         history: [],
         narrative: {
           mainAxis: 'main-axis',
@@ -68,6 +75,72 @@ describe('schema validator', () => {
       directorNote: {
         volume: 'Low',
       },
+    });
+  });
+
+  it('accepts a valid character relationships file', () => {
+    expect(
+      validateCharacterRelationshipsFile({
+        meta: {
+          fileType: 'character-relationships',
+          schemaVersion: 1,
+          storyPackage: 'sample-scene',
+        },
+        relationshipsBySource: {
+          chr_core01: {
+            targets: {
+              chr_hero01: {
+                sourceRoleId: 'chr_core01',
+                targetRoleId: 'chr_hero01',
+                baseline: {
+                  state: 'guarded trust',
+                  lastAbsorbedRound: 'round-0008',
+                },
+                recentDelta: null,
+                highlightNextPrompt: true,
+              },
+            },
+          },
+        },
+      }),
+    ).toMatchObject({
+      meta: {
+        storyPackage: 'sample-scene',
+      },
+    });
+  });
+
+  it('accepts a valid gossipelog update result', () => {
+    expect(
+      validateGossipelogUpdateResult({
+        involvedRoleIds: ['chr_core01', 'chr_hero01'],
+        invocationNoOp: false,
+        edgeUpdates: [
+          {
+            sourceRoleId: 'chr_core01',
+            targetRoleId: 'chr_hero01',
+            mode: 'delta',
+            replaceBaseline: false,
+            recentDelta: {
+              state: 'trust increased after direct protection',
+              sourceRound: 'round-0009',
+            },
+          },
+        ],
+      }),
+    ).toMatchObject({
+      invocationNoOp: false,
+    });
+  });
+
+  it('accepts a valid gossipelog injection result', () => {
+    expect(
+      validateGossipelogInjectionResult({
+        highlightedDeltasText: 'chr_core01 -> chr_hero01: trust has risen this round.',
+        stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
+      }),
+    ).toMatchObject({
+      highlightedDeltasText: expect.stringContaining('chr_core01'),
     });
   });
 

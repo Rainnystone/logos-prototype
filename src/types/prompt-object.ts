@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { HistoryEntrySchema, VolumeSchema } from '@/types/common';
+import { RelationshipLayerSchema } from '@/types/gossipelog-skill-packets';
 
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const CharacterProfileSchema = z
@@ -107,6 +108,7 @@ export type GenerationControl = z.infer<typeof GenerationControlSchema>;
 export const PromptObjectSchema = z
   .object({
     worldBase: PromptWorldBaseSchema,
+    relationshipLayer: RelationshipLayerSchema.optional(),
     history: z.array(HistoryEntrySchema),
     narrative: NarrativeSchema,
     directorNote: PromptDirectorNoteSchema,

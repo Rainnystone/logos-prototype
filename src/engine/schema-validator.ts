@@ -1,8 +1,11 @@
 import {
   AuditPacketSchema,
   AuditQuestionSetSchema,
+  CharacterRelationshipsFileSchema,
   CollapseRequestSchema,
   CollapseResponseSchema,
+  GossipelogInjectionResultSchema,
+  GossipelogUpdateResultSchema,
   PhaseConsequenceRequestSchema,
   PhaseConsequenceResponseSchema,
   PhasePlanSchema,
@@ -10,8 +13,11 @@ import {
   StateSnapshotSchema,
   type AuditPacket,
   type AuditQuestionSet,
+  type CharacterRelationshipsFile,
   type CollapseRequest,
   type CollapseResponse,
+  type GossipelogInjectionResult,
+  type GossipelogUpdateResult,
   type PhaseConsequenceRequest,
   type PhaseConsequenceResponse,
   type PhasePlan,
@@ -22,6 +28,22 @@ import { parseWithSchema } from '@/lib/validation';
 
 export function validatePromptObject(data: unknown): PromptObject {
   return parseWithSchema(PromptObjectSchema, data, 'promptObject');
+}
+
+export function validateCharacterRelationshipsFile(data: unknown): CharacterRelationshipsFile {
+  return parseWithSchema(
+    CharacterRelationshipsFileSchema,
+    data,
+    'characterRelationshipsFile',
+  );
+}
+
+export function validateGossipelogUpdateResult(data: unknown): GossipelogUpdateResult {
+  return parseWithSchema(GossipelogUpdateResultSchema, data, 'gossipelogUpdateResult');
+}
+
+export function validateGossipelogInjectionResult(data: unknown): GossipelogInjectionResult {
+  return parseWithSchema(GossipelogInjectionResultSchema, data, 'gossipelogInjectionResult');
 }
 
 export function validateStateSnapshot(data: unknown): StateSnapshot {
