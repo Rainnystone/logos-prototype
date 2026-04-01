@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import {
   cleanupTempSampleSceneFixtures,
   createE2EMockAdapter,
@@ -23,6 +24,7 @@ describe('E2E state transitions', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     const initialState = await orchestrator.initScene();
@@ -52,6 +54,7 @@ describe('E2E state transitions', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
     const states = [await orchestrator.initScene()];
 
@@ -82,6 +85,7 @@ describe('E2E state transitions', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();

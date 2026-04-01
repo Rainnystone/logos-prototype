@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import {
   cleanupTempSampleSceneFixtures,
   createE2EMockAdapter,
@@ -40,6 +41,7 @@ describe('E2E phase-end processing', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();

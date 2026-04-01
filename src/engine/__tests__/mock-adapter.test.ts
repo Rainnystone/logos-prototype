@@ -63,6 +63,16 @@ describe('mock adapter', () => {
     const adapter = createMockAdapter();
     await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
       invocationNoOp: false,
+      edgeUpdates: [
+        expect.objectContaining({
+          sourceRoleId: 'chr_core01',
+          targetRoleId: 'chr_hero01',
+          mode: 'new_edge',
+          baseline: expect.objectContaining({
+            lastAbsorbedRound: sampleGossipelogUpdateRequest.roundId,
+          }),
+        }),
+      ],
     });
     await expect(adapter.gossipelogInjection!(sampleGossipelogInjectionRequest)).resolves.toMatchObject(
       {
@@ -76,6 +86,16 @@ describe('mock adapter', () => {
     const adapter = createWorkbenchDemoAdapter();
     await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
       invocationNoOp: false,
+      edgeUpdates: [
+        expect.objectContaining({
+          sourceRoleId: 'chr_core01',
+          targetRoleId: 'chr_hero01',
+          mode: 'new_edge',
+          baseline: expect.objectContaining({
+            lastAbsorbedRound: sampleGossipelogUpdateRequest.roundId,
+          }),
+        }),
+      ],
     });
     await expect(adapter.gossipelogInjection!(sampleGossipelogInjectionRequest)).resolves.toMatchObject(
       {

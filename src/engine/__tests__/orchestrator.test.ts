@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import { createOrchestrator } from '@/engine/orchestrator';
@@ -20,6 +21,15 @@ import type { GossipelogInjectionResult, GossipelogUpdateResult, StoryPackage } 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const samplePackagePath = path.resolve(storyPackagesRoot, 'sample-scene');
 const tempPackagePaths: string[] = [];
+
+function createNodeOrchestrator(
+  config: Parameters<typeof createOrchestrator>[0],
+): ReturnType<typeof createOrchestrator> {
+  return createOrchestrator({
+    ...config,
+    gossipelogCycleRunner: runGossipelogCycle,
+  });
+}
 
 const structuredStoryPackageFixture: StoryPackage = {
   ...storyPackageFixture,
@@ -107,7 +117,7 @@ describe('Orchestrator', () => {
         },
       ],
     });
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -125,7 +135,7 @@ describe('Orchestrator', () => {
 
   it('runs a beat generation cycle in the expected module order and accepts on audit pass', async () => {
     const { adapter, generateCalls, auditCalls, routeCalls } = createRecordingAdapter();
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -188,7 +198,7 @@ describe('Orchestrator', () => {
         },
       ],
     });
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -229,7 +239,7 @@ describe('Orchestrator', () => {
         { answers: [false, true] },
       ],
     });
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -260,7 +270,7 @@ describe('Orchestrator', () => {
         },
       ],
     });
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -295,7 +305,7 @@ describe('Orchestrator', () => {
         },
       ],
     });
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -315,7 +325,7 @@ describe('Orchestrator', () => {
 
   it('returns new immutable state objects without mutating earlier snapshots', async () => {
     const { adapter } = createRecordingAdapter();
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: structuredStoryPackageFixture,
@@ -333,7 +343,7 @@ describe('Orchestrator', () => {
 
   it('skips audit entirely when the active phase has no selected audit questions', async () => {
     const { adapter, generateCalls, auditCalls } = createRecordingAdapter();
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: 'sample-scene',
       storyPackage: {
@@ -372,49 +382,132 @@ describe('Orchestrator', () => {
       },
     };
     const { adapter: baseAdapter, generateCalls } = createRecordingAdapter();
-    let injectionCallCount = 0;
+    const sourceRoleId = storyPackage.worldBase.coreCast[0]!.characterId;
+    const targetRoleId = storyPackage.worldBase.hero.characterId;
+    const firstRelationshipLayer: GossipelogInjectionResult = {
+      highlightedDeltasText: 'delta layer 1',
+      stableBackgroundText: 'background layer 1',
+    };
+    let updateCallCount = 0;
+    let releaseFirstRefresh: (() => void) | null = null;
+    let releaseSecondRefresh: (() => void) | null = null;
+    const firstRefresh = new Promise<GossipelogInjectionResult>((resolve) => {
+      releaseFirstRefresh = () => resolve(firstRelationshipLayer);
+    });
+    const secondRefresh = new Promise<GossipelogInjectionResult>((_resolve, reject) => {
+      releaseSecondRefresh = () => reject(new Error('refresh failed'));
+    });
+    secondRefresh.catch(() => undefined);
     const adapter: LLMAdapter = {
       ...baseAdapter,
       async gossipelogUpdate(request) {
-        const targetRoleId = request.sceneCastRoleIds[0]!;
-        const sourceRoleId =
-          request.sceneCastRoleIds.find((roleId) => roleId !== targetRoleId) ?? targetRoleId;
+        updateCallCount += 1;
+
+        if (updateCallCount === 1) {
+          return {
+            involvedRoleIds: [sourceRoleId, targetRoleId],
+            invocationNoOp: false,
+            edgeUpdates: [
+              {
+                sourceRoleId,
+                targetRoleId,
+                mode: 'new_edge',
+                replaceBaseline: false,
+                baseline: {
+                  state: 'baseline relationship before refresh',
+                  lastAbsorbedRound: request.roundId,
+                },
+                recentDelta: {
+                  state: `relationship update for ${request.roundId}`,
+                  sourceRound: request.roundId,
+                },
+              },
+            ],
+          };
+        }
 
         return {
-          involvedRoleIds: [sourceRoleId!],
+          involvedRoleIds: [sourceRoleId],
           invocationNoOp: true,
           edgeUpdates: [],
         };
       },
       async gossipelogInjection() {
-        injectionCallCount += 1;
+        if (updateCallCount === 1) {
+          return firstRefresh;
+        }
 
-        return {
-          highlightedDeltasText: `delta layer ${injectionCallCount}`,
-          stableBackgroundText: `background layer ${injectionCallCount}`,
-        };
+        if (updateCallCount === 2) {
+          return secondRefresh;
+        }
+
+        return firstRelationshipLayer;
       },
     };
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
     });
 
-    await orchestrator.initScene();
-    await orchestrator.runBeat('opening action');
-    const second = await orchestrator.runBeat('follow-up action');
+    await gossipelogRepository.saveCharacterRelationships(
+      packageName,
+      gossipelogRepository.createEmptyCharacterRelationshipsFile(packageName),
+    );
 
-    expect(generateCalls[1]?.relationshipLayer).toEqual({
-      highlightedDeltasText: 'delta layer 1',
-      stableBackgroundText: 'background layer 1',
-    });
-    expect(second.state.generationState.promptObject).toMatchObject({
-      relationshipLayer: {
-        highlightedDeltasText: 'delta layer 1',
-        stableBackgroundText: 'background layer 1',
+    await orchestrator.initScene();
+    const firstBeatPromise = orchestrator.runBeat('opening action');
+    await expect(firstBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
       },
     });
+    await vi.waitFor(async () => {
+      expect(await gossipelogRepository.loadCharacterRelationships(packageName)).toMatchObject({
+        relationshipsBySource: {
+          [sourceRoleId]: {
+            targets: {
+              [targetRoleId]: {
+                baseline: {
+                  state: 'baseline relationship before refresh',
+                },
+                recentDelta: {
+                  state: expect.stringContaining('relationship update for'),
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    const secondBeatPromise = orchestrator.runBeat('follow-up action');
+    await Promise.resolve();
+    expect(generateCalls).toHaveLength(1);
+
+    expect(releaseFirstRefresh).not.toBeNull();
+    releaseFirstRefresh!();
+    await expect(secondBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+    expect(generateCalls).toHaveLength(2);
+    expect(generateCalls[1]?.relationshipLayer).toEqual(firstRelationshipLayer);
+
+    const thirdBeatPromise = orchestrator.runBeat('third action');
+    await Promise.resolve();
+    expect(generateCalls).toHaveLength(2);
+
+    expect(releaseSecondRefresh).not.toBeNull();
+    releaseSecondRefresh!();
+    await expect(thirdBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+    expect(generateCalls).toHaveLength(3);
+    expect(generateCalls[2]?.relationshipLayer).toEqual(firstRelationshipLayer);
   });
 
   it('returns the accepted beat before the background gossipelog refresh finishes', async () => {
@@ -457,7 +550,7 @@ describe('Orchestrator', () => {
         return refreshGate;
       },
     };
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
@@ -515,7 +608,7 @@ describe('Orchestrator', () => {
         return refreshGate;
       },
     };
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
@@ -524,9 +617,15 @@ describe('Orchestrator', () => {
     await orchestrator.initScene();
     await orchestrator.runBeat('opening action');
     const secondBeatPromise = orchestrator.runBeat('follow-up action');
+    let secondBeatResolved = false;
+    void secondBeatPromise.then(() => {
+      secondBeatResolved = true;
+    });
 
     await Promise.resolve();
+    await Promise.resolve();
     expect(generateCalls).toHaveLength(1);
+    expect(secondBeatResolved).toBe(false);
 
     expect(releaseGossipelogRefresh).not.toBeNull();
     releaseGossipelogRefresh!();
@@ -590,7 +689,7 @@ describe('Orchestrator', () => {
         };
       },
     };
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
@@ -612,6 +711,82 @@ describe('Orchestrator', () => {
     expect(thirdResult.state.generationState.promptObject).toMatchObject({
       relationshipLayer: lastStableRelationshipLayer,
     });
+  });
+
+  it('keeps invocation-level no-op beats from producing noisy writes while still carrying forward a stable relationship layer', async () => {
+    const { packageName, storyPackage } = await createTempStoryPackageFixture();
+    const storyPackageWithoutAudit = {
+      ...storyPackage,
+      auditQuestionSet: {
+        ...storyPackage.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+    };
+    const { adapter: baseAdapter, generateCalls } = createRecordingAdapter();
+    const stableRelationshipLayer: GossipelogInjectionResult = {
+      highlightedDeltasText: 'stable delta layer',
+      stableBackgroundText: 'stable background layer',
+    };
+    let releaseRefresh: (() => void) | null = null;
+    const refreshGate = new Promise<GossipelogInjectionResult>((resolve) => {
+      releaseRefresh = () => resolve(stableRelationshipLayer);
+    });
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      async gossipelogUpdate() {
+        return {
+          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
+          invocationNoOp: true,
+          edgeUpdates: [],
+        };
+      },
+      async gossipelogInjection() {
+        return refreshGate;
+      },
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: packageName,
+      storyPackage: storyPackageWithoutAudit,
+    });
+    const saveSpy = vi.spyOn(gossipelogRepository, 'saveCharacterRelationships');
+
+    const emptyRelationshipsFile = gossipelogRepository.createEmptyCharacterRelationshipsFile(packageName);
+    await gossipelogRepository.saveCharacterRelationships(
+      packageName,
+      emptyRelationshipsFile,
+    );
+    saveSpy.mockClear();
+
+    await orchestrator.initScene();
+    const firstBeatPromise = orchestrator.runBeat('opening action');
+    await expect(firstBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(await gossipelogRepository.loadCharacterRelationships(packageName)).toEqual(
+      emptyRelationshipsFile,
+    );
+
+    expect(releaseRefresh).not.toBeNull();
+    releaseRefresh!();
+
+    const secondBeatPromise = orchestrator.runBeat('follow-up action');
+    await expect(secondBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+
+    expect(generateCalls[1]?.relationshipLayer).toEqual(stableRelationshipLayer);
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(await gossipelogRepository.loadCharacterRelationships(packageName)).toEqual(
+      emptyRelationshipsFile,
+    );
   });
 
   it('keeps round ids unique across orchestrator sessions that share persisted gossipelog state', async () => {
@@ -660,7 +835,7 @@ describe('Orchestrator', () => {
         };
       },
     };
-    const firstSession = createOrchestrator({
+    const firstSession = createNodeOrchestrator({
       adapter: firstSessionAdapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
@@ -702,7 +877,7 @@ describe('Orchestrator', () => {
         };
       },
     };
-    const secondSession = createOrchestrator({
+    const secondSession = createNodeOrchestrator({
       adapter: secondSessionAdapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,
@@ -764,7 +939,7 @@ describe('Orchestrator', () => {
         });
       },
     };
-    const orchestrator = createOrchestrator({
+    const orchestrator = createNodeOrchestrator({
       adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutAudit,

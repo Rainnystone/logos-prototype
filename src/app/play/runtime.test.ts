@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createTrackedWorkbenchAdapter } from '@/app/play/runtime';
+import {
+  createBrowserGossipelogCycleRunner,
+  createTrackedWorkbenchAdapter,
+} from '@/app/play/runtime';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 
@@ -76,6 +79,86 @@ describe('createTrackedWorkbenchAdapter', () => {
     await expect(trackedAdapter.gossipelogInjection?.({} as never)).resolves.toEqual({
       highlightedDeltasText: '',
       stableBackgroundText: '',
+    });
+  });
+});
+
+describe('createBrowserGossipelogCycleRunner', () => {
+  it('posts the accepted beat and adapter config to the server bridge', async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          updateRequest: {
+            acceptedBeatText: 'Accepted beat text',
+          },
+          updateResult: {
+            involvedRoleIds: [],
+            invocationNoOp: true,
+            edgeUpdates: [],
+          },
+          injectionRequest: {
+            sceneCastRoleIds: [],
+          },
+          relationshipLayer: {
+            highlightedDeltasText: 'delta',
+            stableBackgroundText: 'background',
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    });
+    const adapterConfig = {
+      provider: 'openai-compatible' as const,
+      providerConfig: {
+        apiKey: 'test-key',
+        baseUrl: 'https://api.example.com/v1',
+        model: 'demo-model',
+      },
+    };
+    const runner = createBrowserGossipelogCycleRunner({
+      adapterConfig,
+      fetchImpl: fetchMock,
+    });
+
+    const result = await runner({
+      adapter: {
+        gossipelogUpdate: vi.fn(),
+        gossipelogInjection: vi.fn(),
+      },
+      storyPackageName: 'sample-scene',
+      storyPackage: storyPackageFixture,
+      acceptedBeatText: 'Accepted beat text',
+      roundId: 'round-1',
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'previous delta',
+        stableBackgroundText: 'previous background',
+      },
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/play/gossipelog', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        storyPackageName: 'sample-scene',
+        adapterConfig,
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-1',
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: 'previous delta',
+          stableBackgroundText: 'previous background',
+        },
+      }),
+    });
+    expect(result.relationshipLayer).toEqual({
+      highlightedDeltasText: 'delta',
+      stableBackgroundText: 'background',
     });
   });
 });

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import {
   cleanupTempSampleSceneFixtures,
   createE2EMockAdapter,
@@ -39,6 +40,7 @@ describe('E2E full phase run', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
     const phaseOne = storyPackage.phasePlans[0]!;
     const phaseTwo = storyPackage.phasePlans[1]!;

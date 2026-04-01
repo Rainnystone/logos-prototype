@@ -2,16 +2,16 @@ import {
   validateGossipelogInjectionResult,
   validateGossipelogUpdateResult,
 } from '@/engine/schema-validator';
-import type {
-  GossipelogInjectionRequest,
-  GossipelogUpdateRequest,
-  LLMAdapter,
-} from '@/engine/types/adapter-interface';
+import type { GossipelogInjectionRequest, GossipelogUpdateRequest } from '@/engine/types/adapter-interface';
 import {
   absorbConsumedDeltas,
   mergeRelationshipUpdates,
 } from '@/agents/gossipelog/merge';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
+import type {
+  RunGossipelogCycleInput,
+  RunGossipelogCycleResult,
+} from '@/agents/gossipelog/contracts';
 import type {
   CharacterProfile,
   CharacterRelationshipsFile,
@@ -19,24 +19,6 @@ import type {
   GossipelogUpdateResult,
   StoryPackage,
 } from '@/types';
-
-export interface RunGossipelogCycleInput {
-  readonly adapter: Pick<LLMAdapter, 'gossipelogInjection' | 'gossipelogUpdate'>;
-  readonly storyPackageName: string;
-  readonly storyPackage: StoryPackage;
-  readonly acceptedBeatText: string;
-  readonly roundId: string;
-  readonly lastStableRelationshipLayer?: GossipelogInjectionResult;
-}
-
-export interface RunGossipelogCycleResult {
-  readonly updateRequest: GossipelogUpdateRequest;
-  readonly updateResult: GossipelogUpdateResult;
-  readonly injectionRequest: GossipelogInjectionRequest;
-  readonly relationshipLayer: GossipelogInjectionResult;
-  readonly usedFallbackSource?: 'persisted-relationship-state';
-  readonly usedFallbackLayer?: 'last-stable-layer' | 'empty-layer';
-}
 
 const EMPTY_RELATIONSHIP_LAYER: GossipelogInjectionResult = {
   highlightedDeltasText: '',

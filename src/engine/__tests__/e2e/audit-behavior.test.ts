@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import {
   cleanupTempSampleSceneFixtures,
   createE2EMockAdapter,
@@ -22,6 +23,7 @@ describe('E2E audit behavior', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -43,6 +45,7 @@ describe('E2E audit behavior', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -73,6 +76,7 @@ describe('E2E audit behavior', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -104,6 +108,7 @@ describe('E2E audit behavior', () => {
       adapter: harness.adapter,
       storyPackageName: packageName,
       storyPackage: storyPackageWithoutSelectedAuditQuestions,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();

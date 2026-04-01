@@ -16,14 +16,51 @@ function resolveCollapseSeed(request: CollapseInput): string {
   return `${request.context.mainAxis} -> ${request.context.endLine}`;
 }
 
-function resolveRelationshipPair(roleIds: readonly string[]) {
-  const [sourceRoleId, targetRoleId] = [...new Set(roleIds)].slice(0, 2);
+function resolveRelationshipPair(
+  roleIds: readonly string[],
+  heroRoleId: string | null,
+) {
+  const uniqueRoleIds = [...new Set(roleIds)];
+
+  if (uniqueRoleIds.length < 2) {
+    return null;
+  }
+
+  const nonHeroRoleIds = heroRoleId
+    ? uniqueRoleIds.filter((roleId) => roleId !== heroRoleId)
+    : uniqueRoleIds;
+
+  const preferredSourceRoleId = nonHeroRoleIds[0];
+  const preferredTargetRoleId = heroRoleId ?? uniqueRoleIds.find((roleId) => roleId !== preferredSourceRoleId);
+
+  if (
+    preferredSourceRoleId &&
+    preferredTargetRoleId &&
+    preferredSourceRoleId !== preferredTargetRoleId
+  ) {
+    return {
+      sourceRoleId: preferredSourceRoleId,
+      targetRoleId: preferredTargetRoleId,
+    };
+  }
+
+  const [sourceRoleId, targetRoleId] = uniqueRoleIds.slice(0, 2);
 
   if (!sourceRoleId || !targetRoleId || sourceRoleId === targetRoleId) {
     return null;
   }
 
   return { sourceRoleId, targetRoleId };
+}
+
+function hasExistingRelationshipEdge(
+  relationshipSubgraph: Parameters<NonNullable<LLMAdapter['gossipelogUpdate']>>[0]['relationshipSubgraph'],
+  sourceRoleId: string,
+  targetRoleId: string,
+): boolean {
+  return Boolean(
+    relationshipSubgraph.relationshipsBySource[sourceRoleId]?.targets[targetRoleId],
+  );
 }
 
 export function createMockAdapter(): LLMAdapter {
@@ -40,7 +77,8 @@ export function createMockAdapter(): LLMAdapter {
     },
 
     async gossipelogUpdate(request) {
-      const pair = resolveRelationshipPair(request.sceneCastRoleIds);
+      const heroRoleId = request.candidateRoles[0]?.characterId ?? null;
+      const pair = resolveRelationshipPair(request.sceneCastRoleIds, heroRoleId);
 
       return deepFreeze(
         validateGossipelogUpdateResult(
@@ -52,8 +90,26 @@ export function createMockAdapter(): LLMAdapter {
                   {
                     sourceRoleId: pair.sourceRoleId,
                     targetRoleId: pair.targetRoleId,
-                    mode: 'delta',
+                    mode: hasExistingRelationshipEdge(
+                      request.relationshipSubgraph,
+                      pair.sourceRoleId,
+                      pair.targetRoleId,
+                    )
+                      ? 'delta'
+                      : 'new_edge',
                     replaceBaseline: false,
+                    ...(hasExistingRelationshipEdge(
+                      request.relationshipSubgraph,
+                      pair.sourceRoleId,
+                      pair.targetRoleId,
+                    )
+                      ? {}
+                      : {
+                          baseline: {
+                            state: `[Mock] Baseline for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
+                            lastAbsorbedRound: request.roundId,
+                          },
+                        }),
                     recentDelta: {
                       state: `[Mock] ${request.acceptedBeatText.length} chars absorbed for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
                       sourceRound: request.roundId,

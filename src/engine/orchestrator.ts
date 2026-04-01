@@ -1,5 +1,5 @@
 import { deepFreeze } from '@/lib/deep-freeze';
-import { runGossipelogCycle } from '@/agents/gossipelog/agent';
+import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import { resolveAudit, type AuditResolverResult } from '@/engine/modules/audit-resolver';
 import { buildDirectorNote } from '@/engine/modules/director-note-layer';
@@ -35,6 +35,7 @@ export interface OrchestratorConfig {
   readonly adapter: LLMAdapter;
   readonly storyPackage: StoryPackage;
   readonly storyPackageName: string;
+  readonly gossipelogCycleRunner?: GossipelogCycleRunner;
 }
 
 export interface BeatResult {
@@ -240,9 +241,10 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   );
   const narrativeRouter = createNarrativeRouter(config.adapter);
   const gossipelogEnabled = Boolean(
+    config.gossipelogCycleRunner &&
     config.adapter.gossipelogUpdate &&
-      config.adapter.gossipelogInjection &&
-      !isFallbackGossipelogMethod(config.adapter.gossipelogUpdate) &&
+    config.adapter.gossipelogInjection &&
+    !isFallbackGossipelogMethod(config.adapter.gossipelogUpdate) &&
       !isFallbackGossipelogMethod(config.adapter.gossipelogInjection),
   );
   let currentState: StateSnapshot | null = null;
@@ -293,7 +295,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   }
 
   function scheduleRelationshipRefresh(acceptedBeatText: string, roundId: string): void {
-    if (!gossipelogEnabled) {
+    if (!gossipelogEnabled || !config.gossipelogCycleRunner) {
       return;
     }
 
@@ -305,7 +307,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       invalidated: false,
     };
 
-    refresh.promise = runGossipelogCycle({
+    refresh.promise = config.gossipelogCycleRunner({
       adapter: config.adapter,
       storyPackageName: config.storyPackageName,
       storyPackage: config.storyPackage,
