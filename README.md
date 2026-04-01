@@ -40,6 +40,7 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 - 支持从本地运行配置启动真实 provider，或在未配置时回落到 demo adapter。
 - 支持 Scene 初始化、开场 Hook、Beat 推进、选项选择、自由输入、审计重写和状态更新。
 - 支持查看 Prompt 状态、当前 Beat、历史记录、运行诊断和状态面板。
+- 已经接入第一阶段 `gossipelog agent` 侧边流程，会在 accepted beat 之后刷新 story package 自己的关系状态，并把动态关系层送入下一轮生成。
 
 ### 3. LOGOS Narrative Editor
 
@@ -65,6 +66,13 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 - 测试覆盖：50+ 测试文件，覆盖阈值 80%。
 - 测试域：核心引擎、模块、API 适配、E2E、作者链路、UI 组件、页面。
 
+### 6. Gossipelog Agent
+
+- 第一阶段 `gossipelog agent` 已经合入主线。
+- 它不是新的主引擎，而是运行在叙事引擎旁边的一条关系侧边流程。
+- 每轮 accepted beat 之后，它会读取当前场景工作集、更新 story package 里的长期关系状态，并为下一轮生成准备动态关系层。
+- 它当前已经具备等待后台刷新、no-op、失败回退和超时回退这些基础保护，不会把不确定关系状态直接带进下一轮。
+
 ## 版本历程
 
 | 版本 | 发布日期 | 标志性进展 |
@@ -72,9 +80,9 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 | v1.0.0-stable | 2026-03-21 | 运行时闭环稳定，首版可用系统 |
 | v1.2.0-neue-brutalism | 2026-03-26 | Neue Brutalism 视觉重塑 |
 | v1.3.0-narrative-editor-zh | 2026-03-29 | 编辑器全界面中文化 |
-| v1.3.1 | 当前 | 角色系统重构前的稳定基线 |
+| v1.3.1 | 当前 | 已接入 gossipelog agent 第一阶段关系侧边流程 |
 
-### 6. 角色结构与场景出场控制
+### 7. 角色结构与场景出场控制
 
 - `world-base.yaml` 已经把主角、核心角色和反派拆成独立结构，而不是继续混在一整段人物文本里。
 - 每个正式角色都有稳定身份标记，后续可以作为记忆系统和跨场景引用的锚点。
@@ -88,6 +96,8 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 ### 正在设计阶段
 
 - **角色系统重构**：将 WorldBase 中的角色拆分为结构化对象，支持 stable character ID，为后续 memory system 做准备
+- **Agent 管理页**：为后续多个 sidecar agent 提供统一管理入口
+- **编辑器页面再拆分**：将当前 `WorldBase & Cast` 拆成两个更清晰的管理页面
 
 ### 新模块（未来）
 
@@ -96,6 +106,7 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 3. 存档系统（故事包存取）
 4. 多 Scene 编排
 5. Sparkii 创意写作助手（AI agent 辅助）
+6. Agent 管理与观察能力
 
 ### 功能改进（未来）
 
