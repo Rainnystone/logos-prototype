@@ -4,7 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { describe, expect, it } from 'vitest';
 
-import { AuditQuestionSetSchema } from '@/types';
+import { AuditQuestionSetSchema, CharacterRelationshipsFileSchema } from '@/types';
 import {
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
@@ -236,6 +236,18 @@ describe('sample-scene story package', () => {
     expect(worldBase.npcCharacters).toContain('末真和子：');
     expect(worldBase.npcCharacters).toContain('新刻敬：');
     expect(worldBase.locationPatch.length).toBeGreaterThan(0);
+  });
+
+  it('stores package-local gossipelog relationships under the agent-owned path', () => {
+    const relationshipFile = CharacterRelationshipsFileSchema.parse(
+      readYamlFile(path.resolve(projectFixtureRoot, 'agents/gossipelog/character-relationships.yaml')),
+    );
+
+    expect(relationshipFile.meta.storyPackage).toBe('sample-scene');
+    expect(relationshipFile.relationshipsBySource.chr_core01?.targets.chr_hero01).toMatchObject({
+      sourceRoleId: 'chr_core01',
+      targetRoleId: 'chr_hero01',
+    });
   });
 
   it('copies reference state snapshots into a valid fixture file', () => {
