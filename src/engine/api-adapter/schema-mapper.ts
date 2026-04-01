@@ -5,6 +5,10 @@ import {
   buildCollapseUserPrompt,
   buildGenerateFinalUserMessage,
   buildGenerateSystemPrompt,
+  buildGossipelogInjectionSystemPrompt,
+  buildGossipelogInjectionUserPrompt,
+  buildGossipelogUpdateSystemPrompt,
+  buildGossipelogUpdateUserPrompt,
   buildRouteSystemPrompt,
   buildRouteUserPrompt,
   buildSettlementSystemPrompt,
@@ -16,7 +20,12 @@ import type {
   ProviderResponseFormat,
   ProviderType,
 } from '@/engine/api-adapter/providers/provider-interface';
-import type { CollapseInput, RouteRequest } from '@/engine/types/adapter-interface';
+import type {
+  CollapseInput,
+  GossipelogInjectionRequest,
+  GossipelogUpdateRequest,
+  RouteRequest,
+} from '@/engine/types/adapter-interface';
 import type { AuditPacket, PhaseConsequenceRequest, PromptObject } from '@/types';
 
 const MODE_DEFAULTS = {
@@ -39,6 +48,14 @@ const MODE_DEFAULTS = {
   collapse: {
     temperature: 0.5,
     maxOutputTokens: 36864,
+  },
+  gossipelogUpdate: {
+    temperature: 0.3,
+    maxOutputTokens: 8192,
+  },
+  gossipelogInjection: {
+    temperature: 0.2,
+    maxOutputTokens: 4096,
   },
 } as const;
 
@@ -152,6 +169,179 @@ const COLLAPSE_RESPONSE_FORMAT: ProviderResponseFormat = {
   },
 };
 
+const GOSSIPELOG_EDGE_UPDATE_SCHEMA = {
+  anyOf: [
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['sourceRoleId', 'targetRoleId', 'mode'],
+      properties: {
+        sourceRoleId: { type: 'string' },
+        targetRoleId: { type: 'string' },
+        mode: { type: 'string', enum: ['noop'] },
+      },
+    },
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['sourceRoleId', 'targetRoleId', 'mode', 'replaceBaseline', 'recentDelta'],
+      properties: {
+        sourceRoleId: { type: 'string' },
+        targetRoleId: { type: 'string' },
+        mode: { type: 'string', enum: ['delta'] },
+        replaceBaseline: { type: 'boolean', enum: [false] },
+        recentDelta: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['state', 'sourceRound'],
+          properties: {
+            state: { type: 'string' },
+            sourceRound: { type: 'string' },
+          },
+        },
+      },
+    },
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'sourceRoleId',
+        'targetRoleId',
+        'mode',
+        'replaceBaseline',
+        'baseline',
+        'recentDelta',
+      ],
+      properties: {
+        sourceRoleId: { type: 'string' },
+        targetRoleId: { type: 'string' },
+        mode: { type: 'string', enum: ['delta'] },
+        replaceBaseline: { type: 'boolean', enum: [true] },
+        baseline: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['state', 'lastAbsorbedRound'],
+          properties: {
+            state: { type: 'string' },
+            lastAbsorbedRound: { type: 'string' },
+          },
+        },
+        recentDelta: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['state', 'sourceRound'],
+          properties: {
+            state: { type: 'string' },
+            sourceRound: { type: 'string' },
+          },
+        },
+      },
+    },
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['sourceRoleId', 'targetRoleId', 'mode', 'replaceBaseline', 'baseline', 'recentDelta'],
+      properties: {
+        sourceRoleId: { type: 'string' },
+        targetRoleId: { type: 'string' },
+        mode: { type: 'string', enum: ['new_edge'] },
+        replaceBaseline: { type: 'boolean', enum: [false] },
+        baseline: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['state', 'lastAbsorbedRound'],
+          properties: {
+            state: { type: 'string' },
+            lastAbsorbedRound: { type: 'string' },
+          },
+        },
+        recentDelta: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['state', 'sourceRound'],
+          properties: {
+            state: { type: 'string' },
+            sourceRound: { type: 'string' },
+          },
+        },
+      },
+    },
+  ],
+} as const;
+
+const GOSSIPELOG_UPDATE_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_gossipelog_update_result',
+  strict: true,
+  schema: {
+    oneOf: [
+      {
+        type: 'object',
+        additionalProperties: false,
+        required: ['involvedRoleIds', 'invocationNoOp', 'edgeUpdates'],
+        properties: {
+          involvedRoleIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          invocationNoOp: {
+            type: 'boolean',
+            enum: [true],
+          },
+          edgeUpdates: {
+            type: 'array',
+            maxItems: 0,
+            items: GOSSIPELOG_EDGE_UPDATE_SCHEMA,
+          },
+        },
+      },
+      {
+        type: 'object',
+        additionalProperties: false,
+        required: ['involvedRoleIds', 'invocationNoOp', 'edgeUpdates'],
+        properties: {
+          involvedRoleIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          invocationNoOp: {
+            type: 'boolean',
+            enum: [false],
+          },
+          edgeUpdates: {
+            type: 'array',
+            minItems: 1,
+            items: GOSSIPELOG_EDGE_UPDATE_SCHEMA,
+          },
+        },
+      },
+    ],
+  },
+};
+
+const GOSSIPELOG_INJECTION_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_gossipelog_injection_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['highlightedDeltasText', 'stableBackgroundText'],
+    properties: {
+      highlightedDeltasText: {
+        type: 'string',
+      },
+      stableBackgroundText: {
+        type: 'string',
+      },
+    },
+  },
+};
+
 function resolveModeConfig(
   mode: keyof typeof MODE_DEFAULTS,
   override?: ModeConfig,
@@ -253,5 +443,41 @@ export function mapForCollapse(
     ],
     responseFormat: COLLAPSE_RESPONSE_FORMAT,
     ...resolveModeConfig('collapse', override),
+  };
+}
+
+export function mapForGossipelogUpdate(
+  request: GossipelogUpdateRequest,
+  _provider: ProviderType,
+  override?: ModeConfig,
+): ProviderRequest {
+  return {
+    system: buildGossipelogUpdateSystemPrompt(),
+    messages: [
+      {
+        role: 'user',
+        content: buildGossipelogUpdateUserPrompt(request),
+      },
+    ],
+    responseFormat: GOSSIPELOG_UPDATE_RESPONSE_FORMAT,
+    ...resolveModeConfig('gossipelogUpdate', override),
+  };
+}
+
+export function mapForGossipelogInjection(
+  request: GossipelogInjectionRequest,
+  _provider: ProviderType,
+  override?: ModeConfig,
+): ProviderRequest {
+  return {
+    system: buildGossipelogInjectionSystemPrompt(),
+    messages: [
+      {
+        role: 'user',
+        content: buildGossipelogInjectionUserPrompt(request),
+      },
+    ],
+    responseFormat: GOSSIPELOG_INJECTION_RESPONSE_FORMAT,
+    ...resolveModeConfig('gossipelogInjection', override),
   };
 }

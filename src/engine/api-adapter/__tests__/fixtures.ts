@@ -67,6 +67,10 @@ export const sampleStructuredWorldBase: WorldBase = {
 
 export const samplePromptObject: PromptObject = {
   worldBase: renderWorldBaseForPrompt(sampleStructuredWorldBase),
+  relationshipLayer: {
+    highlightedDeltasText: 'highlighted-deltas',
+    stableBackgroundText: 'stable-background',
+  },
   history: [
     { role: 'assistant', content: 'accepted-beat-1' },
     { role: 'user', content: 'player-choice-1' },
@@ -171,6 +175,43 @@ export const sampleInitialCollapseRequest: InitialCollapseRequest = {
     completedPhaseGoal: 'completed-phase-goal',
   },
 };
+
+const sampleGossipelogRelationshipSubgraph = {
+  meta: {
+    fileType: 'character-relationships',
+    schemaVersion: 1,
+    storyPackage: 'sample-scene',
+  },
+  relationshipsBySource: {},
+} as const;
+
+const sampleGossipelogRoleDefinitions = [
+  sampleStructuredWorldBase.hero,
+  sampleStructuredWorldBase.coreCast[0] ?? sampleStructuredWorldBase.hero,
+] as const;
+
+export const sampleGossipelogUpdateRequest = {
+  acceptedBeatText: 'accepted beat text',
+  roundId: 'round-0009',
+  sceneCastRoleIds: ['chr_hero01', 'chr_core01'],
+  sceneCastFraming: {
+    sceneId: 'scene-fixture',
+    castRoleIds: ['chr_hero01', 'chr_core01'],
+  },
+  candidateRoles: sampleGossipelogRoleDefinitions,
+  roleDefinitions: sampleGossipelogRoleDefinitions,
+  relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
+} as const;
+
+export const sampleGossipelogInjectionRequest = {
+  sceneCastRoleIds: ['chr_hero01', 'chr_core01'],
+  sceneCastFraming: {
+    sceneId: 'scene-fixture',
+    castRoleIds: ['chr_hero01', 'chr_core01'],
+  },
+  roleDefinitions: sampleGossipelogRoleDefinitions,
+  relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
+} as const;
 
 export const sampleProviderRequest: ProviderRequest = {
   system: 'system-instructions',

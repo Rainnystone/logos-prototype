@@ -1,6 +1,6 @@
 # Gossipelog Agent Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add the Phase 1 `gossipelog agent` sidecar so each accepted beat can update package-owned directional relationship state and feed a dedicated dynamic relationship layer into the next prompt cycle.
 
@@ -75,7 +75,7 @@
 - Create: `src/agents/gossipelog/skills/relationship-injection/`
 - Create: `src/story-packages/sample-scene/agents/gossipelog/config.yaml`
 
-- [ ] **Step 1: Add the shared agent root and the gossipelog definition entrypoint**
+- [x] **Step 1: Add the shared agent root and the gossipelog definition entrypoint**
 
 ```ts
 export const gossipelogAgentDefinition = {
@@ -87,15 +87,15 @@ export const gossipelogAgentDefinition = {
 } as const;
 ```
 
-- [ ] **Step 2: Register `gossipelog agent` in `src/agents/registry.ts` so later management work has one stable read point**
+- [x] **Step 2: Register `gossipelog agent` in `src/agents/registry.ts` so later management work has one stable read point**
 
-- [ ] **Step 3: Create the colocated gossipelog skill folders under `src/agents/gossipelog/skills/` and keep both Phase 1 skills there**
+- [x] **Step 3: Create the colocated gossipelog skill folders under `src/agents/gossipelog/skills/` and keep both Phase 1 skills there**
 
-- [ ] **Step 4: Create the package-local gossipelog folder under `src/story-packages/sample-scene/agents/gossipelog/` and reserve `config.yaml` for later per-package enablement or settings**
+- [x] **Step 4: Create the package-local gossipelog folder under `src/story-packages/sample-scene/agents/gossipelog/` and reserve `config.yaml` for later per-package enablement or settings**
 
-- [ ] **Step 5: Keep this task structural only; do not add an agent management page, toggle UI, or any other new UI/UX work**
+- [x] **Step 5: Keep this task structural only; do not add an agent management page, toggle UI, or any other new UI/UX work**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/agents/registry.ts src/agents/gossipelog/definition.ts src/agents/gossipelog/index.ts src/agents/gossipelog/skills/relationship-update/ src/agents/gossipelog/skills/relationship-injection/ src/story-packages/sample-scene/agents/gossipelog/config.yaml
@@ -114,7 +114,7 @@ git commit -m "feat: add shared gossipelog agent skeleton"
 - Modify: `src/engine/schema-validator.ts`
 - Modify: `src/engine/__tests__/schema-validator.test.ts`
 
-- [ ] **Step 1: Write the failing schema tests**
+- [x] **Step 1: Write the failing schema tests**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -215,13 +215,13 @@ describe('gossipelog contracts', () => {
 });
 ```
 
-- [ ] **Step 2: Run the schema tests to verify they fail**
+- [x] **Step 2: Run the schema tests to verify they fail**
 
 Run: `npm test -- src/types/__tests__/character-relationships.test.ts src/types/__tests__/type-conformance.test.ts src/engine/__tests__/schema-validator.test.ts`
 
 Expected: FAIL because the new relationship file schema, skill packet schemas, and `PromptObject.relationshipLayer` do not exist yet.
 
-- [ ] **Step 3: Add the new schemas and prompt contract**
+- [x] **Step 3: Add the new schemas and prompt contract**
 
 ```ts
 export const RelationshipBaselineSchema = z
@@ -246,20 +246,20 @@ export const RelationshipLayerSchema = z
   .strict();
 ```
 
-- [ ] **Step 4: Export and validate the new contracts**
+- [x] **Step 4: Export and validate the new contracts**
 
 ```ts
 export * from '@/types/character-relationships';
 export * from '@/types/gossipelog-skill-packets';
 ```
 
-- [ ] **Step 5: Re-run the schema tests**
+- [x] **Step 5: Re-run the schema tests**
 
 Run: `npm test -- src/types/__tests__/character-relationships.test.ts src/types/__tests__/type-conformance.test.ts src/engine/__tests__/schema-validator.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/types/character-relationships.ts src/types/gossipelog-skill-packets.ts src/types/__tests__/character-relationships.test.ts src/types/prompt-object.ts src/types/index.ts src/types/__tests__/type-conformance.test.ts src/engine/schema-validator.ts src/engine/__tests__/schema-validator.test.ts
@@ -282,7 +282,7 @@ git commit -m "feat: add gossipelog runtime contracts"
 - Modify: `src/engine/__mocks__/workbench-demo-adapter.ts`
 - Modify: `src/engine/__tests__/mock-adapter.test.ts`
 
-- [ ] **Step 1: Write the failing adapter and local-adapter tests**
+- [x] **Step 1: Write the failing adapter and local-adapter tests**
 
 ```ts
 it('maps the relationship-update skill request to a strict JSON schema response', () => {
@@ -304,13 +304,13 @@ it('demo and mock adapters expose deterministic gossipelog skill methods', async
 });
 ```
 
-- [ ] **Step 2: Run the adapter tests to verify they fail**
+- [x] **Step 2: Run the adapter tests to verify they fail**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts src/engine/__tests__/mock-adapter.test.ts`
 
 Expected: FAIL because the new skill request mappers, response parsers, and adapter entry points do not exist yet.
 
-- [ ] **Step 3: Extend the adapter interface and provider mapping**
+- [x] **Step 3: Extend the adapter interface and provider mapping**
 
 ```ts
 export interface LLMAdapter {
@@ -324,7 +324,7 @@ export interface LLMAdapter {
 }
 ```
 
-- [ ] **Step 4: Wire the new methods through the API adapter and deterministic local adapters**
+- [x] **Step 4: Wire the new methods through the API adapter and deterministic local adapters**
 
 ```ts
 async gossipelogUpdate(requestInput) {
@@ -337,13 +337,13 @@ async gossipelogUpdate(requestInput) {
 }
 ```
 
-- [ ] **Step 5: Re-run the adapter tests**
+- [x] **Step 5: Re-run the adapter tests**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts src/engine/__tests__/mock-adapter.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/engine/types/adapter-interface.ts src/engine/api-adapter/prompt-templates.ts src/engine/api-adapter/schema-mapper.ts src/engine/api-adapter/response-parsers.ts src/engine/api-adapter/adapter.ts src/engine/api-adapter/__tests__/adapter.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/fixtures.ts src/engine/__mocks__/mock-adapter.ts src/engine/__mocks__/workbench-demo-adapter.ts src/engine/__tests__/mock-adapter.test.ts
@@ -360,7 +360,7 @@ git commit -m "feat: add gossipelog adapter skill calls"
 - Create: `src/story-packages/sample-scene/agents/gossipelog/character-relationships.yaml`
 - Modify: `src/story-packages/__tests__/sample-scene.test.ts`
 
-- [ ] **Step 1: Write the failing repository and merge tests**
+- [x] **Step 1: Write the failing repository and merge tests**
 
 ```ts
 it('loads an existing package-local character-relationships file', async () => {
@@ -442,13 +442,13 @@ it('absorbs a consumed highlighted delta into baseline before applying a later r
 });
 ```
 
-- [ ] **Step 2: Run the repository and merge tests to verify they fail**
+- [x] **Step 2: Run the repository and merge tests to verify they fail**
 
 Run: `npm test -- src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts`
 
 Expected: FAIL because the repository, sample file, and deterministic merge helpers do not exist yet.
 
-- [ ] **Step 3: Create the package-local repository and sample relationship file**
+- [x] **Step 3: Create the package-local repository and sample relationship file**
 
 ```ts
 export async function loadOrCreateCharacterRelationships(
@@ -464,7 +464,7 @@ export async function loadOrCreateCharacterRelationships(
 }
 ```
 
-- [ ] **Step 4: Implement deterministic merge helpers**
+- [x] **Step 4: Implement deterministic merge helpers**
 
 ```ts
 export function absorbConsumedDeltas(
@@ -488,13 +488,13 @@ export function mergeRelationshipUpdates(
 }
 ```
 
-- [ ] **Step 5: Re-run the repository and merge tests**
+- [x] **Step 5: Re-run the repository and merge tests**
 
 Run: `npm test -- src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/story-packages/__tests__/sample-scene.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/agents/gossipelog/repository.ts src/agents/gossipelog/merge.ts src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/story-packages/sample-scene/agents/gossipelog/character-relationships.yaml src/story-packages/__tests__/sample-scene.test.ts
@@ -507,7 +507,7 @@ git commit -m "feat: add gossipelog relationship repository"
 - Create: `src/agents/gossipelog/agent.ts`
 - Create: `src/agents/gossipelog/__tests__/agent.test.ts`
 
-- [ ] **Step 1: Write the failing agent-shell tests**
+- [x] **Step 1: Write the failing agent-shell tests**
 
 ```ts
 it('builds a bounded update context from accepted beat, current role definitions, and current relationship subgraph', async () => {
@@ -554,13 +554,13 @@ it('falls back to the last stable relationship layer when injection fails', asyn
 });
 ```
 
-- [ ] **Step 2: Run the agent-shell tests to verify they fail**
+- [x] **Step 2: Run the agent-shell tests to verify they fail**
 
 Run: `npm test -- src/agents/gossipelog/__tests__/agent.test.ts`
 
 Expected: FAIL because the agent shell and bounded context pack builder do not exist yet.
 
-- [ ] **Step 3: Implement the shell exactly along the spec boundary**
+- [x] **Step 3: Implement the shell exactly along the spec boundary**
 
 ```ts
 const currentFile = await loadOrCreateCharacterRelationships(storyPackageName);
@@ -601,13 +601,13 @@ const injectionResult = await adapter.gossipelogInjection?.(
 // relationship layer. If none exists yet, use an explicit empty layer.
 ```
 
-- [ ] **Step 4: Re-run the agent-shell tests**
+- [x] **Step 4: Re-run the agent-shell tests**
 
 Run: `npm test -- src/agents/gossipelog/__tests__/agent.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/agents/gossipelog/agent.ts src/agents/gossipelog/__tests__/agent.test.ts
@@ -630,7 +630,7 @@ git commit -m "feat: add gossipelog agent shell"
 - Modify: `src/app/play/runtime.ts`
 - Modify: `src/app/play/PlayWorkbench.tsx`
 
-- [ ] **Step 1: Write the failing prompt-assembler and orchestrator tests**
+- [x] **Step 1: Write the failing prompt-assembler and orchestrator tests**
 
 ```ts
 it('includes relationshipLayer in the assembled prompt object', () => {
@@ -717,13 +717,13 @@ it('uses the prior stable relationship layer when the background refresh fails b
 });
 ```
 
-- [ ] **Step 2: Run the prompt/orchestrator tests to verify they fail**
+- [x] **Step 2: Run the prompt/orchestrator tests to verify they fail**
 
 Run: `npm test -- src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/engine/__tests__/e2e/phase-end-processing.test.ts src/engine/__tests__/e2e/state-transitions.test.ts`
 
 Expected: FAIL because `PromptObject`, `PromptAssemblerInput`, and the orchestrator do not yet carry the new relationship layer.
 
-- [ ] **Step 3: Thread story-package identity and next-round relationship state through the runtime**
+- [x] **Step 3: Thread story-package identity and next-round relationship state through the runtime**
 
 ```ts
 export interface OrchestratorConfig {
@@ -736,7 +736,7 @@ let queuedRelationshipLayer: RelationshipLayer = createEmptyRelationshipLayer();
 let pendingRelationshipRefresh: Promise<void> | null = null;
 ```
 
-- [ ] **Step 4: Keep tracked workbench adapters from dropping the new skill methods**
+- [x] **Step 4: Keep tracked workbench adapters from dropping the new skill methods**
 
 ```ts
 async gossipelogUpdate(request) {
@@ -750,7 +750,7 @@ async gossipelogInjection(request) {
 },
 ```
 
-- [ ] **Step 5: Enforce the non-blocking accepted-beat handoff**
+- [x] **Step 5: Enforce the non-blocking accepted-beat handoff**
 
 ```ts
 async function waitForPendingRelationshipRefresh() {
@@ -792,13 +792,13 @@ scheduleRelationshipRefresh({
 return { beatResult, state };
 ```
 
-- [ ] **Step 6: Re-run the prompt/orchestrator tests**
+- [x] **Step 6: Re-run the prompt/orchestrator tests**
 
 Run: `npm test -- src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/engine/__tests__/e2e/phase-end-processing.test.ts src/engine/__tests__/e2e/state-transitions.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/engine/modules/prompt-assembler.ts src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/orchestrator.ts src/engine/__tests__/fixtures/audit-loop-fixtures.ts src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/helpers/e2e-mock-adapter.ts src/engine/__tests__/e2e/audit-behavior.test.ts src/engine/__tests__/e2e/phase-end-processing.test.ts src/engine/__tests__/e2e/state-transitions.test.ts src/engine/__tests__/e2e/full-phase-run.test.ts src/app/play/runtime.ts src/app/play/PlayWorkbench.tsx
@@ -812,7 +812,7 @@ git commit -m "feat: wire gossipelog through orchestrator runtime flow"
 - Create: `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 - Modify: `src/engine/api-adapter/__tests__/fixtures.ts`
 
-- [ ] **Step 1: Write the failing prompt-template tests**
+- [x] **Step 1: Write the failing prompt-template tests**
 
 ```ts
 it('renders the dynamic relationship layer in the system prompt after world base content', () => {
@@ -830,13 +830,13 @@ it('keeps history as message entries while relationshipLayer stays in the system
 });
 ```
 
-- [ ] **Step 2: Run the prompt-template tests to verify they fail**
+- [x] **Step 2: Run the prompt-template tests to verify they fail**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts`
 
 Expected: FAIL because the generate prompt currently ignores `relationshipLayer`.
 
-- [ ] **Step 3: Insert the new relationship section without collapsing it into world base or director note**
+- [x] **Step 3: Insert the new relationship section without collapsing it into world base or director note**
 
 ```ts
 '[Dynamic Relationship Layer]',
@@ -844,13 +844,13 @@ Expected: FAIL because the generate prompt currently ignores `relationshipLayer`
 `Stable background: ${prompt.relationshipLayer.stableBackgroundText || 'none'}`,
 ```
 
-- [ ] **Step 4: Re-run the prompt-template tests**
+- [x] **Step 4: Re-run the prompt-template tests**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/api-adapter/prompt-templates.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/fixtures.ts
@@ -863,7 +863,7 @@ git commit -m "feat: render gossipelog relationship layer in prompts"
 - Modify: `src/engine/__tests__/orchestrator.test.ts`
 - Modify: `src/engine/__tests__/e2e/full-phase-run.test.ts` (if this is the cleanest home for the final regression)
 
-- [ ] **Step 1: Add one regression that proves the full loop is closed**
+- [x] **Step 1: Add one regression that proves the full loop is closed**
 
 ```ts
 it('completes accepted beat -> role data load -> relationship update -> persistence -> prompt injection for the next beat', async () => {
@@ -937,25 +937,25 @@ it('falls back to a resolved stable outcome instead of consuming indeterminate s
 });
 ```
 
-- [ ] **Step 2: Run the focused runtime suites**
+- [x] **Step 2: Run the focused runtime suites**
 
 Run: `npm test -- src/types/__tests__/character-relationships.test.ts src/agents/gossipelog/__tests__/repository.test.ts src/agents/gossipelog/__tests__/merge.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/engine/modules/__tests__/prompt-assembler.test.ts src/engine/__tests__/orchestrator.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 3: Run the broader core suite**
+- [x] **Step 3: Run the broader core suite**
 
 Run: `npm run test:core`
 
 Expected: PASS
 
-- [ ] **Step 4: Run the full repository suite**
+- [x] **Step 4: Run the full repository suite**
 
 Run: `npm test`
 
 Expected: PASS
 
-- [ ] **Step 5: Launch the play workbench and verify the runtime manually**
+- [x] **Step 5: Launch the play workbench and verify the runtime manually**
 
 Run: `npm run dev`
 
@@ -965,7 +965,7 @@ Verify:
 - the next beat is generated with a non-empty `relationshipLayer`
 - the workbench still boots when no provider config is saved, using the deterministic local adapter path
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/full-phase-run.test.ts

@@ -5,6 +5,7 @@ import type { DirectorNote, HistoryEntry, PreviousDraft, PromptObject, WorldBase
 
 export interface PromptAssemblerInput {
   readonly worldBase: WorldBase;
+  readonly relationshipLayer?: PromptObject['relationshipLayer'];
   readonly precedingBeats: readonly HistoryEntry[];
   readonly mainAxis: string;
   readonly endLine: string;
@@ -27,6 +28,14 @@ function buildBasePromptObject(input: PromptAssemblerInput): PromptObject {
 
   return {
     worldBase: promptWorldBase,
+    ...(input.relationshipLayer
+      ? {
+          relationshipLayer: {
+            highlightedDeltasText: input.relationshipLayer.highlightedDeltasText,
+            stableBackgroundText: input.relationshipLayer.stableBackgroundText,
+          },
+        }
+      : {}),
     history: input.precedingBeats.map((entry) => ({
       role: entry.role,
       content: entry.content,

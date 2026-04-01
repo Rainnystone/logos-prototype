@@ -1,19 +1,29 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
-import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
+import {
+  cleanupTempSampleSceneFixtures,
+  createE2EMockAdapter,
+  createTempSampleSceneFixture,
+} from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
 import { createOrchestrator } from '@/engine/orchestrator';
 
 describe('E2E audit behavior', () => {
+  afterEach(() => {
+    cleanupTempSampleSceneFixtures();
+  });
+
   it('accepts the beat on the first attempt when audit passes', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'pass',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -26,14 +36,16 @@ describe('E2E audit behavior', () => {
   });
 
   it('retries once with generationControl when the first audit fails', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'fail-once',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -55,14 +67,16 @@ describe('E2E audit behavior', () => {
   });
 
   it('force-accepts after three failed retries and still writes the beat into history', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'fail-always',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();
@@ -76,7 +90,7 @@ describe('E2E audit behavior', () => {
   });
 
   it('bypasses audit and accepts immediately when no questions are selected for the phase', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const storyPackageWithoutSelectedAuditQuestions = {
       ...storyPackage,
       auditQuestionSet: {
@@ -92,7 +106,9 @@ describe('E2E audit behavior', () => {
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage: storyPackageWithoutSelectedAuditQuestions,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();

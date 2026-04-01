@@ -5,10 +5,14 @@ import {
   mapForAudit,
   mapForCollapse,
   mapForGenerate,
+  mapForGossipelogInjection,
+  mapForGossipelogUpdate,
   mapForRoute,
   mapForSettlement,
 } from '@/engine/api-adapter/schema-mapper';
 import {
+  sampleGossipelogInjectionRequest,
+  sampleGossipelogUpdateRequest,
   sampleAuditPacket,
   sampleCollapseRequest,
   sampleInitialCollapseRequest,
@@ -253,6 +257,72 @@ describe('schema mapper', () => {
         type: 'json_schema',
         name: 'logos_collapse_result',
       });
+    });
+  });
+
+  describe('gossipelog', () => {
+    it('maps the relationship-update skill request to a strict JSON schema response', () => {
+      const request = mapForGossipelogUpdate(sampleGossipelogUpdateRequest, 'openai-compatible');
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_gossipelog_update_result',
+      });
+    });
+
+    it('uses the gossipelog update default temperature and token limit', () => {
+      const request = mapForGossipelogUpdate(sampleGossipelogUpdateRequest, 'openai-compatible');
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.gossipelogUpdate.temperature);
+      expect(request.maxOutputTokens).toBe(DEFAULT_MODE_CONFIGS.gossipelogUpdate.maxOutputTokens);
+    });
+
+    it('honors gossipelog update override config values', () => {
+      const request = mapForGossipelogUpdate(sampleGossipelogUpdateRequest, 'openai-compatible', {
+        temperature: 0.77,
+        maxOutputTokens: 1234,
+      });
+
+      expect(request.temperature).toBe(0.77);
+      expect(request.maxOutputTokens).toBe(1234);
+    });
+
+    it('maps the relationship-injection skill request to a strict JSON schema response', () => {
+      const request = mapForGossipelogInjection(
+        sampleGossipelogInjectionRequest,
+        'openai-compatible',
+      );
+
+      expect(request.responseFormat).toMatchObject({
+        type: 'json_schema',
+        name: 'logos_gossipelog_injection_result',
+      });
+    });
+
+    it('uses the gossipelog injection default temperature and token limit', () => {
+      const request = mapForGossipelogInjection(
+        sampleGossipelogInjectionRequest,
+        'openai-compatible',
+      );
+
+      expect(request.temperature).toBe(DEFAULT_MODE_CONFIGS.gossipelogInjection.temperature);
+      expect(request.maxOutputTokens).toBe(
+        DEFAULT_MODE_CONFIGS.gossipelogInjection.maxOutputTokens,
+      );
+    });
+
+    it('honors gossipelog injection override config values', () => {
+      const request = mapForGossipelogInjection(
+        sampleGossipelogInjectionRequest,
+        'openai-compatible',
+        {
+          temperature: 0.45,
+          maxOutputTokens: 2222,
+        },
+      );
+
+      expect(request.temperature).toBe(0.45);
+      expect(request.maxOutputTokens).toBe(2222);
     });
   });
 });

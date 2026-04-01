@@ -5,6 +5,8 @@ import type {
   AuditQuestionSet,
   CollapseRequest,
   CollapseResponse,
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
   PhaseConsequenceRequest,
   PhaseConsequenceResponse,
   PhasePlan,
@@ -13,6 +15,20 @@ import type {
 } from '@/types';
 
 describe('Phase 00 contract types', () => {
+  it('registers gossipelog agent metadata in the shared agent entrypoint', async () => {
+    const { agentRegistry } = await import('@/agents/registry');
+    const { gossipelogAgentDefinition } = await import('@/agents/gossipelog');
+
+    expect(agentRegistry.gossipelog).toMatchObject({
+      agentId: 'gossipelog',
+      displayName: 'gossipelog agent',
+      skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+      packageConfigPath: 'agents/gossipelog/config.yaml',
+      packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+    });
+    expect(gossipelogAgentDefinition).toBe(agentRegistry.gossipelog);
+  });
+
   it('exports a structured runtime character schema and world-base schema', async () => {
     const types = await import('@/types');
 
@@ -102,6 +118,10 @@ describe('Phase 00 contract types', () => {
         npcCharacters: 'npc-characters',
         locationPatch: 'location-patch',
       },
+      relationshipLayer: {
+        highlightedDeltasText: 'chr_core01 -> chr_hero01: trust has risen this round.',
+        stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
+      },
       history: [
         { role: 'assistant', content: 'previous beat' },
         { role: 'user', content: 'player input' },
@@ -133,6 +153,28 @@ describe('Phase 00 contract types', () => {
 
     expect(promptObject.directorNote.volume).toBe('Low');
     expect(promptObject.generationControl?.previousDraft?.options).toHaveLength(4);
+  });
+
+  it('models gossipelog skill packet results with the dynamic relationship layer', () => {
+    const updateResult: GossipelogUpdateResult = {
+      involvedRoleIds: ['chr_core01', 'chr_hero01'],
+      invocationNoOp: false,
+      edgeUpdates: [
+        {
+          sourceRoleId: 'chr_core01',
+          targetRoleId: 'chr_hero01',
+          mode: 'noop',
+        },
+      ],
+    };
+
+    const injectionResult: GossipelogInjectionResult = {
+      highlightedDeltasText: 'chr_core01 -> chr_hero01: trust has risen this round.',
+      stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
+    };
+
+    expect(updateResult.edgeUpdates[0]?.mode).toBe('noop');
+    expect(injectionResult.highlightedDeltasText).toContain('chr_core01');
   });
 
   it('models StateSnapshot with scene, round, generation, and evaluation state', () => {

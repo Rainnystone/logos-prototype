@@ -128,6 +128,21 @@ describe('Prompt Assembler', () => {
     expect(promptObject.history).toEqual([]);
   });
 
+  it('includes relationshipLayer in the assembled prompt object', () => {
+    const promptObject = assemblePromptObject({
+      ...baseInput,
+      relationshipLayer: {
+        highlightedDeltasText: 'delta block',
+        stableBackgroundText: 'background block',
+      },
+    });
+
+    expect(promptObject.relationshipLayer).toEqual({
+      highlightedDeltasText: 'delta block',
+      stableBackgroundText: 'background block',
+    });
+  });
+
   it('maps layer 3 narrative fields exactly', () => {
     const promptObject = assemblePromptObject(baseInput);
 

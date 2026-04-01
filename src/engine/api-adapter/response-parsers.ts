@@ -7,8 +7,12 @@ import {
   validatePhaseConsequenceResponse,
 } from '@/engine/schema-validator';
 import type { AuditResult, GenerateResult, RouteResult } from '@/engine/types/adapter-interface';
-import type { UsageInfo } from '@/types';
-import { UsageInfoSchema } from '@/types';
+import type {
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
+  UsageInfo,
+} from '@/types';
+import { GossipelogInjectionResultSchema, UsageInfoSchema } from '@/types';
 
 const GenerateResultSchema = z
   .object({
@@ -32,6 +36,102 @@ const RouteResultSchema = z
     usage: UsageInfoSchema.optional(),
   })
   .strict();
+
+const GossipelogEdgeNoOpResponseSchema = z
+  .object({
+    sourceRoleId: z.string(),
+    targetRoleId: z.string(),
+    mode: z.literal('noop'),
+  })
+  .strict();
+
+const GossipelogEdgeDeltaResponseSchema = z
+  .object({
+    sourceRoleId: z.string(),
+    targetRoleId: z.string(),
+    mode: z.literal('delta'),
+    replaceBaseline: z.boolean(),
+    recentDelta: z
+      .object({
+        state: z.string(),
+        sourceRound: z.string(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const GossipelogEdgeDeltaWithReplacementResponseSchema = z
+  .object({
+    sourceRoleId: z.string(),
+    targetRoleId: z.string(),
+    mode: z.literal('delta'),
+    replaceBaseline: z.literal(true),
+    baseline: z
+      .object({
+        state: z.string(),
+        lastAbsorbedRound: z.string(),
+      })
+      .strict(),
+    recentDelta: z
+      .object({
+        state: z.string(),
+        sourceRound: z.string(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const GossipelogNewEdgeResponseSchema = z
+  .object({
+    sourceRoleId: z.string(),
+    targetRoleId: z.string(),
+    mode: z.literal('new_edge'),
+    replaceBaseline: z.literal(false),
+    baseline: z
+      .object({
+        state: z.string(),
+        lastAbsorbedRound: z.string(),
+      })
+      .strict(),
+    recentDelta: z
+      .object({
+        state: z.string(),
+        sourceRound: z.string(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const GossipelogEdgeUpdateResponseSchema = z.union([
+  GossipelogEdgeNoOpResponseSchema,
+  GossipelogEdgeDeltaResponseSchema.extend({
+    replaceBaseline: z.literal(false),
+  }),
+  GossipelogEdgeDeltaWithReplacementResponseSchema,
+  GossipelogNewEdgeResponseSchema,
+]);
+
+const GossipelogUpdateResultNoOpResponseSchema = z
+  .object({
+    involvedRoleIds: z.array(z.string()),
+    invocationNoOp: z.literal(true),
+    edgeUpdates: z.array(GossipelogEdgeUpdateResponseSchema).length(0),
+    usage: UsageInfoSchema.optional(),
+  })
+  .strict();
+
+const GossipelogUpdateResultAppliedResponseSchema = z
+  .object({
+    involvedRoleIds: z.array(z.string()),
+    invocationNoOp: z.literal(false),
+    edgeUpdates: z.array(GossipelogEdgeUpdateResponseSchema).min(1),
+    usage: UsageInfoSchema.optional(),
+  })
+  .strict();
+
+const GossipelogInjectionResultResponseSchema = GossipelogInjectionResultSchema.extend({
+  usage: UsageInfoSchema.optional(),
+}).strict();
 
 function stripCodeFence(value: string): string {
   return value
@@ -647,4 +747,30 @@ export function parseCollapseResult(content: string, usage?: UsageInfo) {
   }
 
   throw new Error('Provider response failed validation for collapseResponse');
+}
+
+export function parseGossipelogUpdateResult(
+  content: string,
+  usage?: UsageInfo,
+): GossipelogUpdateResult & { readonly usage?: UsageInfo | undefined } {
+  return deepFreeze(
+    parseBySchema(
+      z.union([
+        GossipelogUpdateResultNoOpResponseSchema,
+        GossipelogUpdateResultAppliedResponseSchema,
+      ]),
+      content,
+      'gossipelogUpdateResult',
+      usage,
+    ),
+  );
+}
+
+export function parseGossipelogInjectionResult(
+  content: string,
+  usage?: UsageInfo,
+): GossipelogInjectionResult & { readonly usage?: UsageInfo | undefined } {
+  return deepFreeze(
+    parseBySchema(GossipelogInjectionResultResponseSchema, content, 'gossipelogInjectionResult', usage),
+  );
 }

@@ -4,6 +4,8 @@ import {
   parseAuditResult,
   parseCollapseResult,
   parseGenerateResult,
+  parseGossipelogInjectionResult,
+  parseGossipelogUpdateResult,
   parseRouteResult,
   parseSettlementResult,
 } from '@/engine/api-adapter/response-parsers';
@@ -133,5 +135,56 @@ describe('response parsers', () => {
 
   it('can hit the array-extraction fallback before failing schema validation', () => {
     expect(() => parseGenerateResult('prefix ["a","b"] suffix')).toThrow(/generateResult/i);
+  });
+
+  it('parses gossipelog update results and preserves usage', () => {
+    const result = parseGossipelogUpdateResult(
+      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"delta","replaceBaseline":false,"recentDelta":{"state":"trust increased after direct protection","sourceRound":"round-0009"}}]}',
+      {
+        promptTokens: 4,
+        completionTokens: 2,
+        totalTokens: 6,
+      },
+    );
+
+    expect(result.involvedRoleIds).toEqual(['chr_core01', 'chr_hero01']);
+    expect(result.usage).toEqual({
+      promptTokens: 4,
+      completionTokens: 2,
+      totalTokens: 6,
+    });
+  });
+
+  it('parses gossipelog noop edge updates', () => {
+    const result = parseGossipelogUpdateResult(
+      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"noop"}]}',
+    );
+
+    expect(result.edgeUpdates).toEqual([
+      {
+        sourceRoleId: 'chr_core01',
+        targetRoleId: 'chr_hero01',
+        mode: 'noop',
+      },
+    ]);
+  });
+
+  it('rejects a delta update that carries a baseline while replaceBaseline is false', () => {
+    expect(() =>
+      parseGossipelogUpdateResult(
+        '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"delta","replaceBaseline":false,"baseline":{"state":"should-not-exist","lastAbsorbedRound":"round-0008"},"recentDelta":{"state":"trust increased","sourceRound":"round-0009"}}]}',
+      ),
+    ).toThrow(/gossipelogUpdateResult/i);
+  });
+
+  it('parses gossipelog injection results from fenced JSON', () => {
+    const result = parseGossipelogInjectionResult(
+      '```json\n{"highlightedDeltasText":"delta","stableBackgroundText":"background"}\n```',
+    );
+
+    expect(result).toEqual({
+      highlightedDeltasText: 'delta',
+      stableBackgroundText: 'background',
+    });
   });
 });

@@ -14,14 +14,17 @@ import { PromptStatusPanel } from '@/app/components/PromptStatusPanel';
 import { StateInspector } from '@/app/components/StateInspector';
 import {
   createEmptyWorkbenchDiagnostics,
+  createBrowserGossipelogCycleRunner,
   createTrackedWorkbenchAdapter,
   createWorkbenchAdapter,
   getActivePhasePlan,
   getGradientSequence,
   getReadyMessage,
+  shouldUseServerGossipelogBridge,
   type WorkbenchDiagnostics,
   type WorkbenchStatus,
 } from '@/app/play/runtime';
+import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
 import { createOrchestrator, type Orchestrator } from '@/engine/orchestrator';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
@@ -35,6 +38,7 @@ interface PlayWorkbenchProps {
     config: AdapterConfig | null,
     storyPackage: StoryPackage,
   ) => LLMAdapter;
+  readonly gossipelogCycleRunner?: GossipelogCycleRunner;
 }
 
 export function PlayWorkbench({
@@ -42,6 +46,7 @@ export function PlayWorkbench({
   storyPackageName,
   initialConfig = null,
   adapterFactory,
+  gossipelogCycleRunner,
 }: PlayWorkbenchProps) {
   const orchestratorRef = useRef<Orchestrator | null>(null);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
@@ -119,9 +124,18 @@ export function PlayWorkbench({
             },
           },
         );
+        const resolvedGossipelogCycleRunner =
+          gossipelogCycleRunner ??
+          (shouldUseServerGossipelogBridge(trackedAdapter)
+            ? createBrowserGossipelogCycleRunner({
+                adapterConfig,
+              })
+            : undefined);
         const orchestrator = createOrchestrator({
           adapter: trackedAdapter,
+          storyPackageName,
           storyPackage,
+          ...(resolvedGossipelogCycleRunner ? { gossipelogCycleRunner: resolvedGossipelogCycleRunner } : {}),
         });
         const initialState = await orchestrator.initScene();
 
@@ -152,7 +166,7 @@ export function PlayWorkbench({
     return () => {
       cancelled = true;
     };
-  }, [adapterConfig, adapterFactory, bootstrapped, storyPackage]);
+  }, [adapterConfig, adapterFactory, bootstrapped, gossipelogCycleRunner, storyPackage, storyPackageName]);
 
   const currentPhasePlan = useMemo(() => {
     if (!currentState) {

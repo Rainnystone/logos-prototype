@@ -2,6 +2,10 @@ import type {
   AuditPacket,
   CollapseRequest,
   CollapseResponse,
+  CharacterProfile,
+  CharacterRelationshipsFile,
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
   HistoryEntry,
   PhaseConsequenceRequest,
   PhaseConsequenceResponse,
@@ -26,6 +30,36 @@ export interface InitialCollapseRequest {
 }
 
 export type CollapseInput = CollapseRequest | InitialCollapseRequest;
+
+export interface GossipelogSceneCastFraming {
+  readonly sceneId: string;
+  readonly castRoleIds: readonly string[];
+}
+
+export interface GossipelogUpdateRequest {
+  readonly acceptedBeatText: string;
+  readonly roundId: string;
+  readonly sceneCastRoleIds: readonly string[];
+  readonly sceneCastFraming: GossipelogSceneCastFraming;
+  readonly candidateRoles: readonly CharacterProfile[];
+  readonly roleDefinitions: readonly CharacterProfile[];
+  readonly relationshipSubgraph: CharacterRelationshipsFile;
+}
+
+export interface GossipelogInjectionRequest {
+  readonly sceneCastRoleIds: readonly string[];
+  readonly sceneCastFraming: GossipelogSceneCastFraming;
+  readonly roleDefinitions: readonly CharacterProfile[];
+  readonly relationshipSubgraph: CharacterRelationshipsFile;
+}
+
+export type GossipelogUpdateResponse = GossipelogUpdateResult & {
+  readonly usage?: UsageInfo | undefined;
+};
+
+export type GossipelogInjectionResponse = GossipelogInjectionResult & {
+  readonly usage?: UsageInfo | undefined;
+};
 
 export interface GenerateResult {
   readonly beatText: string;
@@ -66,4 +100,6 @@ export interface LLMAdapter {
   generate?(request: PromptObject): Promise<GenerateResult>;
   audit?(request: AuditPacket): Promise<AuditResult>;
   settlement?(request: PhaseConsequenceRequest): Promise<PhaseConsequenceResponse>;
+  gossipelogUpdate?(request: GossipelogUpdateRequest): Promise<GossipelogUpdateResponse>;
+  gossipelogInjection?(request: GossipelogInjectionRequest): Promise<GossipelogInjectionResponse>;
 }

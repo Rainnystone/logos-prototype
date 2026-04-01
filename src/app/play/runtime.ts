@@ -1,11 +1,23 @@
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
+import type {
+  GossipelogCycleRunner,
+  RunGossipelogCycleResult,
+} from '@/agents/gossipelog/contracts';
 import { parseAuditResult } from '@/engine/modules/auditor';
 import { resolveAudit } from '@/engine/modules/audit-resolver';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
-import type { AuditQuestion, AuditQuestionSet, PhasePlan, StoryPackage, UsageInfo } from '@/types';
+import type {
+  AuditQuestion,
+  AuditQuestionSet,
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
+  PhasePlan,
+  StoryPackage,
+  UsageInfo,
+} from '@/types';
 
 export type WorkbenchStatus =
   | 'initializing'
@@ -43,6 +55,30 @@ export interface WorkbenchReporter {
   onUsage(operation: WorkbenchOperation, usage: UsageInfo | null): void;
 }
 
+type GossipelogFallbackFunction = {
+  readonly __logosGossipelogFallback?: true;
+};
+
+interface BrowserGossipelogCycleRunnerOptions {
+  readonly adapterConfig: AdapterConfig | null;
+  readonly fetchImpl?: typeof fetch;
+}
+
+function defaultNoOpUpdate(): GossipelogUpdateResult {
+  return {
+    involvedRoleIds: [],
+    invocationNoOp: true,
+    edgeUpdates: [],
+  };
+}
+
+function defaultEmptyInjection(): GossipelogInjectionResult {
+  return {
+    highlightedDeltasText: '',
+    stableBackgroundText: '',
+  };
+}
+
 function buildQuestionMap(questionSet: AuditQuestionSet): Map<string, AuditQuestion> {
   const phaseSpecificQuestions = Object.values(questionSet.phaseSpecificQuestions ?? {}).flat();
   const questions = [
@@ -54,8 +90,45 @@ function buildQuestionMap(questionSet: AuditQuestionSet): Map<string, AuditQuest
   return new Map(questions.map((question) => [question.question, question]));
 }
 
+function isFallbackGossipelogMethod(method: unknown): boolean {
+  return Boolean(
+    method &&
+      typeof method === 'function' &&
+      '__logosGossipelogFallback' in method &&
+      (method as GossipelogFallbackFunction).__logosGossipelogFallback === true,
+  );
+}
+
 export function createWorkbenchAdapter(config: AdapterConfig | null): LLMAdapter {
   return config ? createAPIAdapter(config) : createWorkbenchDemoAdapter();
+}
+
+export function createBrowserGossipelogCycleRunner(
+  options: BrowserGossipelogCycleRunnerOptions,
+): GossipelogCycleRunner {
+  const fetchImpl = options.fetchImpl ?? fetch;
+
+  return async (input) => {
+    const response = await fetchImpl('/api/play/gossipelog', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        storyPackageName: input.storyPackageName,
+        adapterConfig: options.adapterConfig,
+        acceptedBeatText: input.acceptedBeatText,
+        roundId: input.roundId,
+        lastStableRelationshipLayer: input.lastStableRelationshipLayer,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gossipelog bridge request failed with status ${response.status}.`);
+    }
+
+    return (await response.json()) as RunGossipelogCycleResult;
+  };
 }
 
 export function createTrackedWorkbenchAdapter(
@@ -65,6 +138,16 @@ export function createTrackedWorkbenchAdapter(
 ): LLMAdapter {
   const questionMap = buildQuestionMap(questionSet);
   let retryCount = 0;
+  const gossipelogUpdate: NonNullable<LLMAdapter['gossipelogUpdate']> =
+    adapter.gossipelogUpdate ??
+    Object.assign(async () => defaultNoOpUpdate(), {
+      __logosGossipelogFallback: true as const,
+    } satisfies GossipelogFallbackFunction);
+  const gossipelogInjection: NonNullable<LLMAdapter['gossipelogInjection']> =
+    adapter.gossipelogInjection ??
+    Object.assign(async () => defaultEmptyInjection(), {
+      __logosGossipelogFallback: true as const,
+    } satisfies GossipelogFallbackFunction);
 
   return {
     async collapse(request) {
@@ -136,7 +219,18 @@ export function createTrackedWorkbenchAdapter(
       reporter.onUsage('settlement', result.usage ?? null);
       return result;
     },
+    gossipelogUpdate,
+    gossipelogInjection,
   };
+}
+
+export function shouldUseServerGossipelogBridge(adapter: LLMAdapter): boolean {
+  return Boolean(
+    adapter.gossipelogUpdate &&
+      adapter.gossipelogInjection &&
+      !isFallbackGossipelogMethod(adapter.gossipelogUpdate) &&
+      !isFallbackGossipelogMethod(adapter.gossipelogInjection),
+  );
 }
 
 export function getActivePhasePlan(storyPackage: StoryPackage, phaseIndex: number): PhasePlan {

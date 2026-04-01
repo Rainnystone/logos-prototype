@@ -1,20 +1,30 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load-sample-scene';
-import { createE2EMockAdapter } from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
+import { runGossipelogCycle } from '@/agents/gossipelog/agent';
+import {
+  cleanupTempSampleSceneFixtures,
+  createE2EMockAdapter,
+  createTempSampleSceneFixture,
+} from '@/engine/__tests__/e2e/helpers/e2e-mock-adapter';
 import { createOrchestrator } from '@/engine/orchestrator';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 
 describe('E2E state transitions', () => {
+  afterEach(() => {
+    cleanupTempSampleSceneFixtures();
+  });
+
   it('returns new immutable state objects and keeps older snapshots unchanged', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'pass',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     const initialState = await orchestrator.initScene();
@@ -35,14 +45,16 @@ describe('E2E state transitions', () => {
   });
 
   it('keeps valid volume and role enums at every beat and cycles phase indices at the boundary', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'pass',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
     const states = [await orchestrator.initScene()];
 
@@ -64,14 +76,16 @@ describe('E2E state transitions', () => {
   });
 
   it('marks the scene complete after all six phases are consumed', async () => {
-    const storyPackage = await loadSampleSceneStoryPackage();
+    const { packageName, storyPackage } = await createTempSampleSceneFixture();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'pass',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
+      storyPackageName: packageName,
       storyPackage,
+      gossipelogCycleRunner: runGossipelogCycle,
     });
 
     await orchestrator.initScene();

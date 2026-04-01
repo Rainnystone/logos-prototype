@@ -1,6 +1,8 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import {
   validateCollapseResponse,
+  validateGossipelogInjectionResult,
+  validateGossipelogUpdateResult,
   validatePhaseConsequenceResponse,
 } from '@/engine/schema-validator';
 import type { CollapseInput, GenerateResult, LLMAdapter } from '@/engine/types/adapter-interface';
@@ -33,6 +35,53 @@ function resolveCollapseSeed(request: CollapseInput): string {
   return request.phaseConsequences?.[0] ?? request.context.mainAxis;
 }
 
+function resolveRelationshipPair(
+  roleIds: readonly string[],
+  heroRoleId: string | null,
+) {
+  const uniqueRoleIds = [...new Set(roleIds)];
+
+  if (uniqueRoleIds.length < 2) {
+    return null;
+  }
+
+  const nonHeroRoleIds = heroRoleId
+    ? uniqueRoleIds.filter((roleId) => roleId !== heroRoleId)
+    : uniqueRoleIds;
+
+  const preferredSourceRoleId = nonHeroRoleIds[0];
+  const preferredTargetRoleId = heroRoleId ?? uniqueRoleIds.find((roleId) => roleId !== preferredSourceRoleId);
+
+  if (
+    preferredSourceRoleId &&
+    preferredTargetRoleId &&
+    preferredSourceRoleId !== preferredTargetRoleId
+  ) {
+    return {
+      sourceRoleId: preferredSourceRoleId,
+      targetRoleId: preferredTargetRoleId,
+    };
+  }
+
+  const [sourceRoleId, targetRoleId] = uniqueRoleIds.slice(0, 2);
+
+  if (!sourceRoleId || !targetRoleId || sourceRoleId === targetRoleId) {
+    return null;
+  }
+
+  return { sourceRoleId, targetRoleId };
+}
+
+function hasExistingRelationshipEdge(
+  relationshipSubgraph: Parameters<NonNullable<LLMAdapter['gossipelogUpdate']>>[0]['relationshipSubgraph'],
+  sourceRoleId: string,
+  targetRoleId: string,
+): boolean {
+  return Boolean(
+    relationshipSubgraph.relationshipsBySource[sourceRoleId]?.targets[targetRoleId],
+  );
+}
+
 /**
  * Deterministic local adapter for the workbench UI when no provider config is saved yet.
  */
@@ -53,6 +102,74 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
             completionTokens: 24,
             totalTokens: 96,
           },
+        }),
+      );
+    },
+
+    async gossipelogUpdate(request) {
+      const heroRoleId = request.candidateRoles[0]?.characterId ?? null;
+      const pair = resolveRelationshipPair(request.sceneCastRoleIds, heroRoleId);
+      const involvedRoleIds = [...new Set(request.sceneCastRoleIds)].slice(0, 2);
+
+      return deepFreeze(
+        validateGossipelogUpdateResult(
+          pair
+            ? {
+                involvedRoleIds,
+                invocationNoOp: false,
+                edgeUpdates: [
+                  {
+                    sourceRoleId: pair.sourceRoleId,
+                    targetRoleId: pair.targetRoleId,
+                    mode: hasExistingRelationshipEdge(
+                      request.relationshipSubgraph,
+                      pair.sourceRoleId,
+                      pair.targetRoleId,
+                    )
+                      ? 'delta'
+                      : 'new_edge',
+                    replaceBaseline: false,
+                    ...(hasExistingRelationshipEdge(
+                      request.relationshipSubgraph,
+                      pair.sourceRoleId,
+                      pair.targetRoleId,
+                    )
+                      ? {}
+                      : {
+                          baseline: {
+                            state: `Demo baseline for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
+                            lastAbsorbedRound: request.roundId,
+                          },
+                        }),
+                    recentDelta: {
+                      state: `Demo update grounded in ${request.sceneCastFraming.sceneId} and ${request.acceptedBeatText.length} characters of accepted beat text.`,
+                      sourceRound: request.roundId,
+                    },
+                  },
+                ],
+              }
+            : {
+                involvedRoleIds,
+                invocationNoOp: true,
+                edgeUpdates: [],
+              },
+        ),
+      );
+    },
+
+    async gossipelogInjection(request) {
+      const roleSummary =
+        request.roleDefinitions
+          .slice(0, 2)
+          .map((role) => role.identityRole)
+          .join(', ') || 'no role definitions';
+
+      return deepFreeze(
+        validateGossipelogInjectionResult({
+          highlightedDeltasText: `Demo deltas for ${request.sceneCastRoleIds.join(
+            ' -> ',
+          ) || 'an empty cast'} inside ${request.sceneCastFraming.sceneId}.`,
+          stableBackgroundText: `Demo background for ${request.relationshipSubgraph.meta.storyPackage} with ${roleSummary}.`,
         }),
       );
     },
