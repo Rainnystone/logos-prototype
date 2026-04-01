@@ -29,6 +29,10 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
 - Author simulator cleanup via `simulator.cleanup()`
 - Scripted adapter modes for result, timeout, malformed, provider error, duplicate, delayed, and out-of-order simulation
 - Batch scenario execution through `runSimulationScenarioBatch(...)`
+- Programmatic route smoke through:
+  - authoring `sections/[sectionId]`
+  - authoring `diagnostics`
+  - play `gossipelog`
 - Optional JSON report persistence under `simulation-toolset/reports/` or a caller-provided output directory
 
 ## Cloud Usage Direction

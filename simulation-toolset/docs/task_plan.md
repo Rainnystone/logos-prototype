@@ -25,7 +25,7 @@
 | 6 | complete | 按实施计划完成 Phase 2 MVP：workspace 配置、contracts、最小 harness、三类场景与回归验证 |
 | 7 | complete | 收口文档与残余风险，明确 no-audit 分支、cloud 批跑前的并发隔离与时序模拟缺口 |
 | 8 | complete | 推进并完成 Phase 3：补并发安全 fixture、延迟型 scripted adapter、批量 scenario runner、timing report contract 与 report 落盘入口 |
-| 9 | pending | Phase 4 候选：并发 batch orchestration、真实 callback-source seam、少量 route/UI smoke、长期治理 |
+| 9 | in_progress | Phase 4A 先落最小 route smoke；并发 batch orchestration、真实 callback-source seam、UI smoke、长期治理继续后置 |
 | 10 | pending | 等产品层开始 Storage / Repository Substrate 设计后，让 simulation toolset 对齐新的 package definition / mutable state / repository seam |
 
 ## Phase 3 Scope
@@ -42,6 +42,26 @@
 - 新增并通过 batch scenario runner 测试，证明可以批量执行 scenario 并落盘 report
 - `npm run test:simulation` 与 `npm run type-check:simulation` 通过
 - 至少一组跨边界现有测试重新通过，确认未破坏正式主链路
+
+## Phase 4A Scope
+
+- 先补 programmatic route smoke，不引入 browser-first UI automation
+- 只覆盖最稳定、最正式的 server route：
+  - authoring `sections/[sectionId]`
+  - authoring `diagnostics`
+  - play `gossipelog`
+- route smoke 目标是确认 route 仍然接在正式 bridge / diagnostics / server-side gossipelog cycle 上
+- 不把 coordinator chat path、llm proxy、重型 UI 点击流纳入这一轮
+
+## Phase 4A Done Criteria
+
+- 新增 route smoke helper，可被 cloud 环境程序化调用
+- 新增并通过 route smoke 测试，覆盖：
+  - authoring save -> diagnostics
+  - play gossipelog server bridge
+- `npm run test:simulation` 通过
+- `npm run type-check:simulation` 通过
+- 一组现有跨边界回归重新通过
 
 ## Thread Rules
 

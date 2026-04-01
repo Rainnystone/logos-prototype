@@ -1,6 +1,13 @@
 # Progress
 
 ## 2026-04-01
+- 宸插紑濮?Phase 4A锛屽厛钀芥渶灏?route smoke锛岃€屼笉鏄洿鎺ヨ繘鍏?UI automation銆?
+- 鏂板 `simulation-toolset/src/route-smoke.ts`锛屾妸 official route smoke 鏀舵暃涓哄彲绋嬪簭鍖栬皟鐢ㄧ殑 toolset helper銆?
+- 鏂板 `simulation-toolset/tests/route-smoke.test.ts`锛岀洰鍓嶈鐩栦袱鏉℃渶灏?route smoke锛?  - authoring `sections/[sectionId] -> bridge -> reload -> diagnostics`
+  - play `/api/play/gossipelog -> server-side cycle -> demo adapter`
+ - Verification: `npm run test:simulation` passed with 9 files and 24 tests.
+ - Verification: `npm run type-check:simulation` passed.
+ - Verification: `npm test -- src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts src/app/api/authoring/packages/[packageName]/diagnostics/route.test.ts src/app/api/play/gossipelog/route.test.ts src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts` passed with 7 files and 55 tests.
 
 - 读取并核对了 `README.md`、`AGENTS.md`、`archive/docs/narrative-editor-redesign/master-record.md`。
 - 阅读了与本任务直接相关的核心代码：

@@ -1,5 +1,21 @@
 # Findings
 
+## Phase 4A Route Smoke Decision
+
+- 绗竴涓?phase 4 鍒囩墖搴斿厛鍋?route smoke锛屼笉搴旂洿鎺ヨ烦鍒?UI automation銆?
+- 鐞嗙敱鏄幇鏈?route 宸茬粡鏄寮忓叆鍙ｏ紝鑰?UI 层浠嶆湁鏇村琛ㄩ潰鍙樺姩鍜屾祻瑙堝櫒鍣煶銆?
+- 绗竴鎵归€夊畾鐨?route 鏄細
+  - authoring `sections/[sectionId]`
+  - authoring `diagnostics`
+  - play `gossipelog`
+- 杩欎笁鏉¤矾寰勫垎鍒鐩栵細
+  - authoring 姝ｅ紡 save entry
+  - reload 鍚庣殑 diagnostics entry
+  - runtime accepted-beat 鍚庣殑 server-side sidecar bridge
+- 鏆備笉绾冲叆绗竴鎵筼oute smoke 鐨勬湁锛?
+  - coordinator chat path锛氭洿閫傚悎缁х画鐢?simulation author seam 鍜屽崟鍏冭矾鐢辨祴璇曠粍鍚堣鐩?  - `api/llm/proxy`锛氭洿鍍?provider plumbing锛屼笉鏄?simulation toolset 鐨勭涓€鎵?system smoke 鐩稿叧璺緞
+  - heavy UI click flow锛氬簲鐣欏埌鍚庣画鏋佽杽 UI smoke锛屼笉搴旀姠杩欎竴灞傜殑涓绘€ц兘
+
 ## Confirmed Boundaries
 
 - LOGOS 当前是严格双链路系统：
