@@ -31,7 +31,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 The editor runs a coordinator-first structured authoring loop:
 `Page Draft / Author Intent` → `Structured Save Request` → `Coordinator / Bridge` → `Deterministic Validation` → `Writeback` → `Reload` → `Diagnostics`
 
-**Key Redesign Principle:** The `Coordinator` agent routes semantic intent, but file writing and validation are handled by a **deterministic code bridge** (`src/authoring/persistence/bridge.ts`). AI skills must **never** directly write to filesystem or bypass schema validation. 
+**Key Redesign Principle:** The `Coordinator` is a narrow authoring coordinator role, not a first-class sidecar agent. It routes semantic intent, but file writing and validation are handled by a **deterministic code bridge** (`src/authoring/persistence/bridge.ts`). AI skills must **never** directly write to filesystem or bypass schema validation. The first true sidecar agent currently in the repo is `gossipelog agent`.
 
 See `archive/docs/narrative-editor-redesign/master-record.md` for the current canonical authoring architecture.
 

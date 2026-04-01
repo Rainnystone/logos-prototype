@@ -16,10 +16,16 @@ The redesign is now `coordinator-first`, not `page-first`.
 
 This means the current design priority is:
 
-- define the `coordinator` agent
+- define the `coordinator` role and contract
 - define the section skill inventory around that coordinator
 - define the validation, repair, writeback, and reload flow
 - only then revisit section pages as downstream surfaces
+
+Important terminology note:
+
+- `coordinator-first` does **not** mean `coordinator` is part of the product's sidecar agent roster
+- in code and architecture, `coordinator` is a narrow authoring coordinator role
+- the first true sidecar agent currently in the repo is `gossipelog agent`
 
 ## What Coding Agents Should Read
 

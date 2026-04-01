@@ -17,10 +17,17 @@ The current approved direction is now `coordinator-first`.
 This document exists to keep AI coding agents from guessing:
 
 - what the primary redesign target now is
-- what the coordinator agent is responsible for
+- what the coordinator role is responsible for
 - what must stay deterministic in code
 - how section skills relate to section pages
 - how validation and repair should work before any file write happens
+
+Important terminology reset for current code and future planning:
+
+- `coordinator-first` describes the authoring architecture, not the sidecar agent roster
+- `coordinator` should be treated as a narrow authoring coordinator role / state machine in code
+- `coordinator` is not counted as a first-class sidecar agent
+- the first true sidecar agent currently implemented in this repo is `gossipelog agent`
 
 ## 1.1 Active Document Index
 
@@ -48,7 +55,7 @@ Current active redesign documents:
 - [acceptance-patch-todo.md](acceptance-patch-todo.md)
 - [TODO.zh-CN.md](TODO.zh-CN.md)
 
-Coding agents should start from this file, then read the coordinator agent design
+Coding agents should start from this file, then read the coordinator design document
 before attempting implementation planning.
 
 The first refreshed page + skill pair is now the `世界与角色 (WorldBase & Cast)` section.
@@ -86,7 +93,7 @@ The reason for this reset is simple:
 - the real core problem is not page layout
 - the real core problem is how author intent becomes safe, structured, runtime-compatible package data
 
-That means the first-class design object is now the coordinator agent, not the
+That means the first-class design object is now the coordinator role, not the
 individual section pages.
 
 Section pages will still exist later, but they are now downstream consumers of
@@ -109,7 +116,7 @@ The following assumptions remain approved:
 
 The approved redesign shape is:
 
-- `1` coordinator agent: `coordinator`
+- `1` coordinator role: `coordinator`
 - `4` section skills / skill families
 - `1` built-in cross-section reconciliation policy inside `coordinator`
 - `1` deterministic authoring runtime bridge
@@ -131,7 +138,7 @@ Important clarification:
 - cross-section reconciliation stays inside `coordinator`
 - the bridge validates, persists, projects, and reloads
 
-## 5. Coordinator Agent
+## 5. Coordinator
 
 ### 5.1 Name
 
@@ -166,7 +173,7 @@ The coordinator must not:
 
 ### 5.4 Coordinator Design Principle
 
-Treat the coordinator as a small state machine, not as a personality-heavy agent.
+Treat the coordinator as a small state machine, not as a personality-heavy agent-like role.
 
 The best mental model is:
 

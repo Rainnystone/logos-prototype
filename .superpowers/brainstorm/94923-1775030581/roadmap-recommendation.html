@@ -1,0 +1,94 @@
+<h2>Recommended Roadmap</h2>
+<p class="subtitle">基于当前仓库现状，我建议把原来的 4 条路线重组成 4 个阶段，而不是继续把 3 / 4 / 5 / 6 / 7 生硬地并列。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">先回答你的核心判断</div>
+    <div class="mockup-body">
+      <p><strong>角色关系可视化</strong> 横跨两层。</p>
+      <p><strong>3a 关系状态查看</strong> 属于 <strong>角色模型 / 角色页</strong>，因为它依赖角色 ID 和关系文件读取。</p>
+      <p><strong>3b 关系变化连续性</strong> 属于 <strong>session continuity</strong>，因为它要把 workbench 里刚跑出来的状态无损带到 editor。</p>
+      <p>所以不建议把“关系”整包塞进 C；最好拆成 <strong>静态查看</strong> 和 <strong>运行中连续性</strong> 两部分。</p>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-body">
+      <h3>Phase 1: Model & Surface</h3>
+      <p><strong>先做</strong></p>
+      <p>1. `世界与角色` 拆成 `世界` / `角色` 两页</p>
+      <p>2. 地点结构化，给地点稳定 ID</p>
+      <p>3. scene 能选择可调用地点</p>
+      <p>4. 角色页显示当前持久化的关系状态</p>
+      <p>5. agent 管理窗口先做只读外壳，至少能看见 `gossipelog agent` 和 skills</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>Phase 2: Session Continuity</h3>
+      <p><strong>第二步</strong></p>
+      <p>1. workbench 切到 editor 不清零</p>
+      <p>2. 增加显式 `Reset Workbench`</p>
+      <p>3. 把“作者上次离开处继续”做成 session 恢复</p>
+      <p>4. 把关系变化的“当前进度视图”接到角色页</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>Phase 3: Package & Storyline</h3>
+      <p><strong>第三步</strong></p>
+      <p>1. 故事包管理</p>
+      <p>2. 一个故事包内多条故事线 / 多份进展</p>
+      <p>3. workbench session 与 storyline 绑定</p>
+      <p>4. 作者恢复点不再只是“最后编辑页”，而是“回到对应故事线进度”</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>Phase 4: New Agents</h3>
+      <p><strong>最后扩展</strong></p>
+      <p>1. 外部前序故事导入 agent</p>
+      <p>2. agent 管理窗口从只读外壳升级到真正管理面</p>
+      <p>3. 导入结果落到选定故事线，而不是污染主样例包</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>为什么我不建议先做 C / D</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>C 的真实难点</h4>
+      <ul>
+        <li>当前 workbench 状态几乎都在页面内存里</li>
+        <li>要保留的不只是文本，还包括状态快照、阶段位置、beat 历史、关系层、可能的后台刷新</li>
+        <li>如果先做，而角色 / 地点模型还没稳定，后面 session 结构很容易返工</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>D 的真实难点</h4>
+      <ul>
+        <li>它不是多一个页面，而是引入新的顶层对象</li>
+        <li>会碰目录结构、加载逻辑、保存目标、故事线身份、导入落点</li>
+        <li>这是当前 7 项里牵扯面最广的一块</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">我的推荐顺序</div>
+    <div class="mockup-body">
+      <p><strong>先稳定数据模型与表面</strong>，再做 <strong>跨页连续性</strong>，然后才做 <strong>多故事线</strong>，最后再把 <strong>新 agent</strong> 接进来。</p>
+      <p>换成一句话就是：<strong>先让世界对象和角色对象长稳，再让故事跑得不断，再让同一包里能有多条进度，最后才让导入 agent 有可靠落点。</strong></p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">下一步只确认一个问题</p>
+  <p>如果你认可这次重组，我下一步就不再问“先做 A/B/C/D 哪个”，而是改问：<strong>Phase 1 里，`世界/角色拆页 + 地点结构化` 和 `agent 管理只读外壳`，你想先把哪个放在最前面？</strong></p>
+</div>

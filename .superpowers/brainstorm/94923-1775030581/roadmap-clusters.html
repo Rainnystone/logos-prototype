@@ -1,0 +1,73 @@
+<h2>Roadmap Clusters</h2>
+<p class="subtitle">先把 7 个方向压成 4 条路线，再决定第一阶段围绕哪条主线展开。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">已冻结的前提</div>
+    <div class="mockup-body">
+      <p><strong>Coordinator</strong> 是作者链路里的窄协调角色，不计入 agent 体系。</p>
+      <p><strong>gossipelog agent</strong> 是当前第一个真正落地的 sidecar agent。</p>
+      <p>这意味着 agent 管理、导入 agent 和关系展示都应该围绕 <strong>真实 agent 体系</strong> 展开，而不是把 coordinator 混进去。</p>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Agent Surface</h3>
+      <p>对应 1、3、7 的一部分</p>
+      <p>先搭 agent 管理窗口，显示已注册 agent、skills、状态和入口，为后续更多 agent 预留统一外壳。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>World Model Rebuild</h3>
+      <p>对应 2、3 的基础部分</p>
+      <p>拆分世界与角色页面，把地点从整块文本提升为带稳定 ID 的对象，并让 scene 能调用地点。关系展示可建立在这轮模型重构之上。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Session Continuity</h3>
+      <p>对应 4、6</p>
+      <p>让 workbench 和 editor 之间共享一个暂存运行态，切页不清零，同时补上明确的 reset 和“从上次离开处继续”。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="d" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Package & Storyline Layer</h3>
+      <p>对应 5、7 的另一部分</p>
+      <p>把“故事包”提升成真正的管理对象，并在包内引入多条故事线、多份进展和导入落点，为续接与导入打底。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我当前看到的依赖链</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">偏稳路线</div>
+      <div class="mockup-body">
+        <p><strong>B 世界模型</strong> → <strong>C 运行态连续</strong> → <strong>D 故事包/故事线</strong> → <strong>A agent 外壳与导入</strong></p>
+        <p>优点是基础更稳，后面不会反复推翻数据结构。</p>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">偏产品感路线</div>
+      <div class="mockup-body">
+        <p><strong>A agent 外壳</strong> → <strong>B 世界模型</strong> → <strong>C 运行态连续</strong> → <strong>D 故事包/故事线</strong></p>
+        <p>优点是很快能看到“多 agent 系统”的表面形态，但后面更容易返工。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">下一步只讨论一个问题</p>
+  <p>你更希望第一阶段优先围绕哪条主线来定 roadmap 重心？可以直接在页面上点一个，也可以回终端说理由。</p>
+</div>

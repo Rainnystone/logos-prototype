@@ -266,7 +266,7 @@ npm run test:e2e
 当前已经落地的关键点：
 
 - 页面上的编辑内容先整理成结构化字段，而不是直接写文件
-- coordinator 负责解释请求和组织保存
+- coordinator 负责解释请求和组织保存，但它是作者链路里的窄协调角色，不计入 sidecar agent 体系
 - bridge / persistence 负责验证、写回和重载
 - 失败时会返回阻塞信息，而不是静默写坏故事包
 - 角色主档和场景出场边界已经分开写回，不再依赖一整段混合人物文本
@@ -279,7 +279,13 @@ npm run test:e2e
 
 #### gossipelog agent
 
-`gossipelog agent` 是第一个侧边代理，专门维护**方向性角色关系状态**。
+`gossipelog agent` 是当前仓库里第一个真正落地的侧边代理，专门维护**方向性角色关系状态**。
+
+补充边界说明：
+
+- `coordinator-first` 指的是作者链路的协调方式，不等于把 `coordinator` 视作 sidecar agent
+- `coordinator` 仍然只是作者保存链路中的窄协调角色
+- 当前 agent 体系的起点是 `gossipelog agent`
 
 核心设计：
 
