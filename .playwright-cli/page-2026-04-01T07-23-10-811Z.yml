@@ -1,0 +1,159 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - paragraph [ref=e8]: Unified Editor Shell
+        - heading "LOGOS Narrative Editor" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Move across the four authoring pages from one compact shell while keeping page-level save and reset actions local to the active page.
+      - complementary "Page helper" [ref=e11]:
+        - paragraph [ref=e12]: Page helper
+        - heading "Shell status" [level=2] [ref=e13]
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - term [ref=e16]: Package
+            - definition [ref=e17]: sample-scene
+          - generic [ref=e18]:
+            - term [ref=e19]: State source
+            - definition [ref=e20]: latest-saved
+          - generic [ref=e21]:
+            - term [ref=e22]: Active section
+            - definition [ref=e23]: 世界与角色
+    - generic [ref=e24]:
+      - generic [ref=e25]: sample-scene
+      - generic [ref=e26]: 烈焰小丑
+      - generic [ref=e27]: latest-saved
+    - navigation "Editor sections" [ref=e28]:
+      - link "世界与角色" [ref=e29] [cursor=pointer]:
+        - /url: /edit?storyPackage=sample-scene&section=worldbase-cast
+      - link "场景与阶段" [ref=e30] [cursor=pointer]:
+        - /url: /edit?storyPackage=sample-scene&section=scene-phase-authoring
+      - link "控制模块" [ref=e31] [cursor=pointer]:
+        - /url: /edit?storyPackage=sample-scene&section=control-modules
+      - link "控制台" [ref=e32] [cursor=pointer]:
+        - /url: /edit?storyPackage=sample-scene&section=package-wiring-validation
+  - generic [ref=e33]:
+    - link "返回标题" [ref=e34] [cursor=pointer]:
+      - /url: /
+    - link "打开场景" [ref=e35] [cursor=pointer]:
+      - /url: /play?storyPackage=sample-scene
+  - generic [ref=e37]:
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: 当前页
+        - heading "世界与角色" [level=2] [ref=e41]
+        - paragraph [ref=e42]: 编辑世界文本块、角色轨道和右侧当前卡片。
+      - paragraph [ref=e43]: sample-scene
+    - generic [ref=e44]:
+      - region "WorldBase workspace" [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: 世界基础
+            - heading "世界文本块" [level=3] [ref=e49]
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: 世界基础设定
+              - generic [ref=e53]: 用一块文本写清世界底座。
+              - textbox "世界基础设定" [ref=e54]: 不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。
+            - generic [ref=e55]:
+              - generic [ref=e56]: 世界规则 / 禁忌 / 异常性质
+              - generic [ref=e57]: 把硬规则、禁忌和异常表现放在这里。
+              - textbox "世界规则 / 禁忌 / 异常性质" [ref=e58]: 严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。 所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。
+            - generic [ref=e59]:
+              - generic [ref=e60]: 文风基线
+              - generic [ref=e61]: 保持后续内容的语气和笔调一致。
+              - textbox "文风基线" [ref=e62]: 日式轻小说本格风格。
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: 主角
+            - paragraph [ref=e66]: 固定主角卡，右侧编辑完整卡。
+          - button "主角 雾间凪" [ref=e67] [cursor=pointer]:
+            - strong [ref=e68]: 雾间凪
+            - paragraph [ref=e69]: 女 / 冷峻
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - paragraph [ref=e72]: 核心角色
+            - paragraph [ref=e73]: 这里只放摘要卡，完整卡在右侧展开。
+          - generic "核心角色 scrollbar" [ref=e74]:
+            - generic [ref=e75]:
+              - button "宫下藤花 女 / 温和" [ref=e76] [cursor=pointer]:
+                - strong [ref=e77]: 宫下藤花
+                - paragraph [ref=e78]: 女 / 温和
+              - button "不吉波普 未知 / 冷静" [ref=e79] [cursor=pointer]:
+                - strong [ref=e80]: 不吉波普
+                - paragraph [ref=e81]: 未知 / 冷静
+              - button "新增核心角色" [ref=e82] [cursor=pointer]: + 新增核心角色
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - paragraph [ref=e85]: 反派
+            - paragraph [ref=e86]: 这里只放摘要卡，完整卡在右侧展开。
+          - generic "反派 scrollbar" [ref=e87]:
+            - generic [ref=e88]:
+              - button "灰谷烈 男 / 张扬" [ref=e89] [cursor=pointer]:
+                - strong [ref=e90]: 灰谷烈
+                - paragraph [ref=e91]: 男 / 张扬
+              - button "新增反派" [ref=e92] [cursor=pointer]: + 新增反派
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - paragraph [ref=e95]: 杂项块
+            - heading "普通配角与地点" [level=3] [ref=e96]
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - generic [ref=e99]: 普通配角
+              - textbox "普通配角" [ref=e100]: 竹田启司：稳重的男友 末真和子：敏锐的线索人 新刻敬：正义感强
+            - generic [ref=e101]:
+              - generic [ref=e102]: 地点词池 / 场景元素
+              - textbox "地点词池 / 场景元素" [ref=e103]: "# Location Pool: 场景地点与交互物件池 这份文档定义了当前 Scene（炎上直播间）发生的空间舞台。本样例的叙事空间呈现出从“明亮的绝对日常”向“封闭的高热死角”迅速收束的过程。 ## 1. 主要地点与环境特征 ### A. 2年C班教室 (表层日常的起点) - **环境特征**：午后的阳光、粉笔灰的微弱气味、百叶窗的阴影、昏昏欲睡的学生。绝对和平的领域。 - **叙事作用**：提供日常与异常对撞的基底。宫下藤花绝对安全的锚点。 - **空间元素与物件**： - 排列整齐的木质课桌与椅子。 - 记满数学公式的黑板。 - **起火点**：邻座学生发烫、膨胀直至爆裂的智能手机（带融化的塑料外壳与挂件）。 - 半开的推拉窗（雾间凪翻窗脱离的路线）。 ### B. 午后的走廊与楼梯间 (向异常过渡的边界) - **环境特征**：阳光与阴影切割的过渡地带。大部分区域安静无人，偶尔有风纪委员或去洗手间的学生经过。空气中开始出现若有若无的焦糊味。 - **叙事作用**：提供潜行、追踪信号、躲避普通人视线的拉扯感。 - **空间元素与物件**： - **追踪线索**：温度异常升高的墙壁内线缆、闪烁着诡异雪花屏的走廊电子公告牌、发出过载电流声的头顶监控探头。 - **物理掩体**：铁皮储物柜、保洁用具间、楼梯转角的视觉死角。 - **交互设施**：墙上的消防警报器、灭火器箱。 ### C. 旧校舍废弃视听室/机房 (异常核心领域/Boss 房) - **环境特征**：封闭、昏暗、极度闷热。空气中弥漫着臭氧、硅胶燃烧和机箱散热排风的焦躁气味。这里是灰谷烈的“直播巢穴”。 - **叙事作用**：高压战斗与流量博弈的最终舞台。一个将网络暴力实体化的幽闭空间。 ## 2. 核心地点词池 (Keyword Pool) - **日常词池**：午后阳光、蝉鸣、粉笔摩擦声、翻书声、平静的呼吸、百叶窗的分割线。 - **异常前兆词池**：高频蜂鸣、不自然的过热、焦糊味、闪烁的红灯、雪花屏、扭曲的空气（热浪）。 - **废弃机房词池**：盘根错节的线缆、散热风扇的轰鸣、幽暗的荧幕光、疯狂滚动的弹幕、废弃的电子元件、幽闭空间、臭氧气味。"
+      - region "Character editor column" [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e107]:
+            - paragraph [ref=e108]: 当前角色
+            - heading "雾间凪" [level=3] [ref=e109]
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - paragraph [ref=e112]: 当前条目
+              - generic [ref=e113]:
+                - generic [ref=e114]:
+                  - generic [ref=e115]: 角色名
+                  - textbox "角色名" [ref=e116]: 雾间凪
+                - generic [ref=e117]:
+                  - generic [ref=e118]: 身份 / 叙事定位
+                  - textbox "身份 / 叙事定位" [ref=e119]: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者
+                - generic [ref=e120]:
+                  - generic [ref=e121]: 轻小说特征
+                  - textbox "轻小说特征" [ref=e122]: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。
+                - generic [ref=e123]:
+                  - generic [ref=e124]: 性别
+                  - textbox "性别" [ref=e125]: 女
+                - generic [ref=e126]:
+                  - generic [ref=e127]: 性格
+                  - textbox "性格" [ref=e128]: 冷峻
+                - generic [ref=e129]:
+                  - generic [ref=e130]: 年龄
+                  - textbox "年龄" [ref=e131]: "17"
+                - generic [ref=e132]:
+                  - generic [ref=e133]: 身份职业
+                  - textbox "身份职业" [ref=e134]: 高中生
+                - generic [ref=e135]:
+                  - generic [ref=e136]: 角色概述
+                  - textbox "角色概述" [ref=e137]: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。
+            - generic [ref=e138]:
+              - paragraph [ref=e139]: 完整卡片
+              - generic [ref=e140]:
+                - generic [ref=e141]:
+                  - generic [ref=e142]: 能力边界
+                  - textbox "能力边界" [ref=e143]: 绝对禁止使用任何魔法、法术或超自然异能。 战斗全部基于极高的人类身体机能与街头格斗术。 武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。 轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。
+                - generic [ref=e144]:
+                  - generic [ref=e145]: 行为边界
+                  - textbox "行为边界" [ref=e146]: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。
+                - generic [ref=e147]:
+                  - generic [ref=e148]: OOC 红线
+                  - textbox "OOC 红线" [ref=e149]: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。
+                - generic [ref=e150]:
+                  - generic [ref=e151]: 外观 / 穿着
+                  - textbox "外观 / 穿着" [ref=e152]: 制服下藏有便于行动的战术装备。
+                - generic [ref=e153]:
+                  - generic [ref=e154]: 道具 / 武器
+                  - textbox "道具 / 武器" [ref=e155]: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。
+            - generic [ref=e156]:
+              - button "重置本页" [ref=e157] [cursor=pointer]
+              - button "保存本页" [ref=e158] [cursor=pointer]

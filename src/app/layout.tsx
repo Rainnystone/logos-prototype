@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 
 import { AppShell } from '@/app/AppShell';
 import './globals.css';
@@ -15,11 +15,17 @@ type RootLayoutProps = Readonly<{
 
 export { AppShell };
 
+function AppShellFallback({ children }: RootLayoutProps) {
+  return <div className="app-shell"><div className="app-content">{children}</div></div>;
+}
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <Suspense fallback={<AppShellFallback>{children}</AppShellFallback>}>
+          <AppShell>{children}</AppShell>
+        </Suspense>
       </body>
     </html>
   );

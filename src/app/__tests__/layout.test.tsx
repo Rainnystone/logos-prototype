@@ -1,7 +1,8 @@
+import { Suspense } from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AppShell } from '@/app/layout';
+import RootLayout, { AppShell } from '@/app/layout';
 
 const { usePathname } = vi.hoisted(() => ({
   usePathname: vi.fn(() => '/'),
@@ -70,5 +71,16 @@ describe('RootLayout', () => {
     expect(screen.queryByRole('banner')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Workbench' })).not.toBeInTheDocument();
     expect(screen.getByText('Runtime Child')).toBeInTheDocument();
+  });
+
+  it('wraps the app shell in suspense so production prerender can resolve search params safely', () => {
+    const result = RootLayout({
+      children: <div>Layout Child</div>,
+    });
+
+    expect(result.type).toBe('html');
+    expect(result.props.children.type).toBe('body');
+    expect(result.props.children.props.children.type).toBe(Suspense);
+    expect(result.props.children.props.children.props.children.type).toBe(AppShell);
   });
 });
