@@ -218,6 +218,26 @@
 - 按当前仓库结构，最现实的两档实现是：
   - 近档：先做“现有故事包内新故事线”脚手架，再让导入 agent 导入到这条新故事线
   - 远档：再补“新建故事包”脚手架
+
+## 2026-04-02 Phase 1 实施完成结论
+
+- `Phase 1` 的实现现在已经完整落地，边界仍然保持在我们冻结的范围内：
+  - `世界` / `角色` 已拆成两个可见页面，但继续共用 `worldbase-cast` 保存边界
+  - 地点已成为结构化对象，并能在 scene 中做可选引用
+  - 角色页保留了关系区，而且空态表达与第一阶段约束一致
+  - `控制台` 继续承载整包诊断，并新增了只读 sidecar agent 信息面
+- 只读 sidecar 面板最终收口到以下边界：
+  - 只显示真实启用的 sidecar agent
+  - sidecar 配置缺失或显式关闭时不展示卡片
+  - sidecar 配置不可安全读取时展示 bounded unreadable 状态，而不是静默隐藏
+  - “重新检查”成功时同时刷新 diagnostics 与 sidecar 卡片，失败时一起回退，不保留误导性的旧远端结果
+  - bounded summary 约束已经前移到数据生成侧，展示层只保留轻量防御
+- `simulation-toolset` 也已经补齐当前 `EditWorkbench` 的新合同，因此 `type-check:simulation` 重新恢复为绿色。
+- 本轮桌面端 UI / UX 复核结论：
+  - 世界页、角色页与控制台页都保持了现有新粗野主义视觉语言
+  - 关系区在角色页中是“诚实地空着”，没有假内容，也没有报错
+  - 控制台中的 sidecar 面板是信息面，不是操作台
+  - 浏览器控制台里唯一看到的是开发环境下 `favicon.ico` 的 404，不属于功能回归
 - 具体落地时，应由服务端提供受控入口，按固定模板生成允许的文件，而不是开放任意路径写入。
 
 ## 2026-04-01 最终采用的路线排序理由
@@ -267,6 +287,67 @@
   - 缺失 `section` 时，不能因为带了 `surface=character` 就误进“角色”页
   - 非法 `section` 时，也不能让 `surface` 抢走入口语义
 - 这条入口约束已经通过补测和修复冻结，后续任务可以把它当成既定合同继续往下做。
+
+## 2026-04-02 Phase 1 Task 2 执行补充结论
+
+- `Task 2` 的真实边界不是“同包 continuity”，而是更窄的“`worldbase-cast` 内部两个 visible surface 共享同一份未保存草稿”。
+- 首版实现一度把 guard 写得过宽，导致同包下新的初始状态被整体忽略；这与 spec 中“只为 world / character 共享草稿，不扩展成更广的 continuity”相冲突。
+- 最终回修后，真正冻结下来的行为是：
+  - 只有 `section=worldbase-cast` 且 world / character 两个 surface 互切时，未保存草稿会被保留
+  - 如果 active surface 没变，则新的同包初始状态仍然会接管
+  - 如果离开 `worldbase-cast` 这组共享 surface，再回来时仍然按照原有页面族重载逻辑处理
+- 这条边界已经被测试锁住，后续继续拆 `WorldSection` / `CharacterSection` 时可以直接把它当成既定合同使用。
+
+## 2026-04-02 subagent 派单边界补充
+
+- 本轮执行暴露出一个流程问题：审查型 subagent 如果没有被明确告知自身身份与边界，可能会把“审查”误做成“直接改代码”。
+- 因此后续派单需要固定包含四条信息：
+  - 你是 subagent，不是主 agent
+  - 你是只读审查还是可写执行
+  - 你只被授权处理哪些文件
+  - 你被明确禁止做什么，例如编辑、提交、再派遣 subagent
+- 这条规则属于执行纪律，不改变产品 spec，但会直接影响后续 task-level delegation 的安全性和可控性。
+
+## 2026-04-02 Phase 1 Task 3 执行补充结论
+
+- `Task 3` 的第一版实现虽然把结构化地点合同落进了 `worldBase.locations[]`，但一开始没有把它稳定投影回 runtime 仍然消费的 `locationPatch`，因此不能直接算完成。
+- 这轮执行最终冻结下来的正确边界是：
+  - `worldBase.locations[]` 是 authored source of truth
+  - `locationPatch` 仍保留，但不再只覆盖“单个 description-only imported location”的特例
+  - 对命名地点、多地点、以及补充了额外字段的地点集合，也必须稳定地产生 deterministic projection
+- legacy 兼容规则现在已经被正式锁住：
+  - 没有结构化地点时，只水合 1 个 imported location
+  - hydration 阶段不提前暴露 durable `loc_` id
+  - 第一次成功保存时才 mint 正式地点 ID
+  - 如果仍然是 untouched imported location，则 `locationPatch` 继续把 description 原样规范化写回
+- 这轮回修还顺手收住了一个容易潜伏到后面的问题：
+  - 只有当 `locations` 仍等同于初始 hydration 结果时，旧 `locationPool / locationPatch` 才会去对齐 imported description
+  - 一旦地点草稿本身已经改动，就不再允许旧字段把它覆盖回去
+- 当前这组规则已经通过主线程验证、spec review 和 code quality review 三层确认，可以作为后续 scene 引用地点的既定基础继续往下走。
+
+## 2026-04-02 Phase 1 Task 5 执行补充结论
+
+- `Task 5` 的第一版实现虽然把 scene `locationIds`、多选 UI 和“删除被引用地点时阻止 worldbase 保存”这条路径接通了，但一开始仍然保留了一个阻塞级缺口：
+  - 如果请求里带了未知地点编号，保存桥接会把它静默过滤掉，然后继续返回成功
+  - 这会造成“作者看到保存成功，但引用已被悄悄丢失”的隐藏数据回退
+- 两轮只读复审都把这个问题判定为真实违约，而不是建议项：
+  - spec review 认为它违反了 `when present, every referenced location ID must resolve`
+  - code quality review 认为它破坏了 deterministic bridge 应承担的引用完整性边界
+- 这轮执行最后冻结下来的正确边界是：
+  - scene `locationIds` 仍然是可选字段
+  - 空选择继续被省略，不写入 YAML
+  - 已删除但仍被 scene 引用的地点，会阻止 `worldbase-cast` 保存
+  - 直接提交未知地点编号到 `scene-phase-authoring` 时，也必须 `save_blocked`
+  - 阻塞信息必须明确指出无效地点编号，而不是静默吞掉
+- 这次回修还顺手收住了一批结构化地点引入后的编译尾项：
+  - 多个测试夹具与兼容分支现在都显式补齐 `locations: []`
+  - `world-base-compat.ts` 的 legacy / structured 迁移返回值已与新合同重新对齐
+  - `SectionTabs.tsx` 的 `surface` 分支现在用显式收窄处理，不再依赖宽松联合访问
+- 当前这组规则已经通过主线程验证：
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm test`
+  - 结果全部通过，可以作为后续 Task 4 / Task 6 的稳定基础继续往下走。
 
 ## 2026-04-02 Phase 1 spec 收口后的三条实施边界
 
@@ -460,3 +541,19 @@
   - 保持黑色粗边框、硬切块、低装饰、桌面端高信息密度
   - 不引入更柔和、更圆润、更现代 SaaS 化的漂移
   - 不因为新页拆分就擅自换字体、换配色、换交互语气
+
+## 2026-04-02 Phase 1 地点收尾结论
+
+- `sample-scene` 里的旧地点长文已经不再保留为一个笼统块，而是被彻底转译成正式地点条目，并同步写回场景地点引用。
+- `Scene Location` 现在不再使用复选框网格，而是改成与 `Scene Cast` 同一套壳子：
+  - 可收起 / 展开
+  - 收起态显示已选地点标签
+  - 已选标签本身可直接移除
+  - 保持当前编辑器的新粗野主义视觉语言
+- 这次用户明确把地点选择从“仅 authoring 元数据”升级成了“真实运行边界”：
+  - `sceneSpec.locationIds` 现在会进入 runtime projection
+  - 未被选择的地点不会进入场景运行时地点上下文
+  - 当没有显式地点时，最终 prompt 文本中不再保留空的地点栏位
+- 地点选择器还补了一条恢复路径：
+  - 当场景里带着失效地点编号时，作者可以直接用 `清空显式地点` 清掉显式选择
+  - 不会再出现“界面看得到坏编号，但作者没有任何自救出口”的情况

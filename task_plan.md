@@ -21,7 +21,9 @@
 | 4 | complete | 冻结高层顺序：先模型与表面，再连续性，再故事线层，最后新 agent |
 | 5 | complete | 把已批准的路线正式写回规划文件，并拆出第一阶段的交付节点 |
 | 6 | complete | 已写出 `Phase 1` implementation plan，并完成独立 plan review loop，当前计划已进入可执行状态 |
-| 7 | in_progress | 已按 task 拆给 subagent 执行；隔离 worktree 已建立并完成基线测试；`Task 1` 已完成并通过独立复审；`Task 2` 第一版已完成但主线程复核发现范围过宽，当前正在回修“仅 surface 切换共享草稿”的边界 |
+| 7 | complete | 已按 task 拆给 subagent 执行并全部收口；`Task 1` 到 `Task 8` 均已完成主线程复核，其中 `Task 7` 额外完成了 sidecar 配置可见性、刷新失败回退、按需加载与 simulation toolset 对齐等质量回修。 |
+| 8 | complete | 已完成 `Phase 1` 全量验证、桌面端 UI / UX 复核与规划文件同步；当前仓库已可在此基础上进入下一阶段讨论。 |
+| 9 | complete | 已完成 `Phase 1` 的地点收尾回修：样例地点已从旧长文彻底转译为正式地点，场景地点选择器已与场景阵容对齐，并且 `locationIds` 已真实进入运行时组装链。 |
 
 ## Frozen Product Decisions
 
