@@ -1,7 +1,7 @@
 # Phase 1 Model & Surface Design
 
 Date: 2026-04-02
-Status: Draft for review
+Status: Ready for implementation planning
 Scope: `Phase 1: Model & Surface`
 
 ## 1. Goal
@@ -125,6 +125,38 @@ This means:
 - the shell grows from four visible tabs to five visible workspaces only because `worldbase-cast` is decomposed into two UI routes
 
 This is a routing and surface change, not a coordinator-family or bridge-family expansion.
+
+### 5.1.2 Route and Shared-Draft Contract
+
+Phase 1 should make the route contract explicit instead of overloading the visible workspace split into new save families.
+
+Canonical rule:
+
+- `section` remains the authoritative deterministic boundary selector
+- `世界` and `角色` both remain under `section=worldbase-cast`
+- a secondary UI selector such as `surface=world|character` may be used for deep-linking the visible subpage
+- if `surface` is omitted, Phase 1 defaults to `world`
+- if `section` is not `worldbase-cast`, the `surface` selector is ignored
+
+Canonical examples:
+
+- `/edit?storyPackage=<pkg>&section=worldbase-cast&surface=world`
+- `/edit?storyPackage=<pkg>&section=worldbase-cast&surface=character`
+- `/edit?storyPackage=<pkg>&section=scene-phase-authoring`
+
+Draft-state rule:
+
+- `世界` and `角色` share one in-memory `worldbase-cast` draft
+- switching between `世界` and `角色` must not clear unsaved edits inside that shared draft
+- explicit `Save` and `Reset` continue to act on the full shared `worldbase-cast` boundary, not just the visible half
+- leaving `worldbase-cast` entirely still follows the existing page-family navigation model; Phase 1 does not add broader continuity semantics beyond the shared world/character draft
+
+This keeps the product truthful:
+
+- separate visible pages
+- one authored boundary
+- one save/reset boundary
+- no fake fifth contract family
 
 #### 世界
 
@@ -272,6 +304,34 @@ For existing story packages that only have `locationPatch`:
 - the first save writes the structured location collection plus the derived compatibility projection
 
 Phase 1 therefore remains backward-compatible without requiring an all-at-once runtime migration.
+
+### 6.3.5 Deterministic Legacy Hydration Rule
+
+Phase 1 should not use heuristics to guess multiple structured locations out of a legacy freeform blob.
+
+Required rule for packages that have legacy `locationPatch` content but no structured `locations[]` yet:
+
+- hydrate exactly one structured location entry
+- store the normalized legacy `locationPatch` text in `description`
+- initialize `name`, `environmentAppearance`, `atmosphereDescription`, and `humanContextDescription` as empty strings
+- use a draft-only UI key before the first successful structured save rather than exposing a provisional persisted `locationId`
+
+Important lossiness rule:
+
+- initial hydration must preserve the legacy text content rather than trying to reinterpret it
+- the first structured save may normalize the compatibility projection format and does not need to be byte-for-byte identical to the original legacy blob
+- however, no pre-existing legacy location text may be silently discarded during hydration
+
+ID rule:
+
+- hydrated legacy content receives its durable persisted `locationId` on the first successful structured save, not before
+- once saved, that `locationId` becomes the durable identity used by scene references
+- implementation should use the same random-ID product pattern as character IDs while keeping the location namespace distinct
+
+Compatibility projection rule for untouched legacy content:
+
+- if the structured collection still represents one imported location whose only non-empty authored field is `description`, the derived `locationPatch` should write that `description` back unchanged after normalization
+- once authors split that imported content into multiple locations or start filling the additional structured fields, Phase 1 only guarantees deterministic projection rather than byte-for-byte legacy preservation
 
 ### 6.4 NPC / Supporting Cast
 
@@ -440,6 +500,14 @@ It should not expand into:
 - freeform state inspection
 - editable operational controls
 
+Bounded summary contract:
+
+- `statePresence`: present / missing / unreadable
+- `lastUpdatedAt`: optional timestamp, typically from filesystem metadata when available
+- `statusLine`: one compact human-readable line derived from parsed state or a bounded fallback
+
+For the current `gossipelog agent`, `statusLine` may summarize high-level relationship coverage, such as whether tracked links exist, but it must stay to a compact single-line summary rather than exposing raw YAML payloads.
+
 ### 10.2 Scope of the Agent Surface
 
 The Phase 1 agent surface shows only true sidecar agents.
@@ -460,6 +528,17 @@ Planning should assume the read-only agent surface is assembled from bounded exi
 - associated skills from the agent definition / linked metadata
 - config path and state path from registered package-relative metadata
 - latest state summary from the existing agent state file, if present, rendered as a bounded summary rather than raw file content
+
+Minimum Phase 1 metadata contract per surfaced agent:
+
+- `agentId`
+- `displayName`
+- `responsibilitySummary`
+- `skillIds`
+- `packageConfigPath`
+- `packageStatePath`
+
+Planning should assume `latestStateSummary` is derived view data rather than static registry metadata.
 
 ## 11. Persistence and Save Flow
 
@@ -494,6 +573,12 @@ Planning should assume:
 - page routing may split while the save contract family stays shared
 
 This is the intended scope-control move for Phase 1.
+
+Shared-draft consequence:
+
+- a save triggered from either `世界` or `角色` persists the current shared `worldbase-cast` draft
+- a reset triggered from either `世界` or `角色` restores the latest saved version of that same shared draft
+- Phase 1 should not fork separate reset semantics or separate unsaved buffers for the two visible subpages
 
 ### 11.3 Reset Principles
 

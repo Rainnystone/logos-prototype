@@ -20,7 +20,8 @@
 | 3 | complete | 吸收用户提出的 7 个方向并整理成问题空间 |
 | 4 | complete | 冻结高层顺序：先模型与表面，再连续性，再故事线层，最后新 agent |
 | 5 | complete | 把已批准的路线正式写回规划文件，并拆出第一阶段的交付节点 |
-| 6 | in_progress | 已写出 `Phase 1` 设计 spec，已根据两轮独立审阅补齐关键歧义，当前等待用户 review 后再进入 implementation plan |
+| 6 | complete | 已写出 `Phase 1` implementation plan，并完成独立 plan review loop，当前计划已进入可执行状态 |
+| 7 | pending | 等待选择执行方式：按 task 拆给 subagent 执行，或在当前线程内按计划逐步实现 |
 
 ## Frozen Product Decisions
 

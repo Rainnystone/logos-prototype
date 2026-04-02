@@ -136,3 +136,30 @@
   - spec 已写出
   - 前两轮真正会影响 implementation plan 的问题都已被吸收并修正
   - 现在进入用户 review 这份 spec 的节点
+- 用户确认下一步进入 `writing-plans`，并提醒复杂任务要按复杂度选择合适的 subagent 模型，而不是无脑上高强度推理。
+- 已按 `dispatching-parallel-agents` 派出 3 个只读 explorer subagent，分别核对：
+  - `世界` / `角色` 拆分后的路由与共享保存边界
+  - `locationPatch` 到结构化地点的 deterministic 迁移规则
+  - 只读 agent 面板的最小元数据合同
+- 在等待并行核对结果期间，已先根据当前代码与已知审阅意见把 spec 收口到可写计划的状态：
+  - 把 `世界` / `角色` 明确成 `worldbase-cast` 下的共享草稿子页，并冻结 `view=world|character` 这一层可见子页合同
+  - 明确 `世界` / `角色` 切换时不应清空共享未保存草稿，但 `Save` / `Reset` 仍作用于整份共享草稿
+  - 明确旧 `locationPatch` 不做多地点猜测，只水合出一个结构化地点，并把旧文本完整保存在 `description`
+  - 明确地点 ID 采用与角色相同的随机产品模式，但使用独立地点命名空间
+  - 明确只读 agent 面板的最小合同至少包含 `agentId`、显示名、职责摘要、技能、配置路径、状态路径
+  - 明确“最近状态”必须是有边界的摘要对象，而不是原始 YAML 浏览
+- 已同步更新 `task_plan.md` 与 `findings.md`，把当前节点从“等待 spec review”改成“implementation plan 编写中”。
+- 已把 `view` / `surface` 这一层次级分页命名统一为 `surface`，避免 spec、plan 和后续实现里出现两套说法。
+- 已创建正式 implementation plan：
+  - `docs/superpowers/plans/2026-04-02-phase-1-model-surface-implementation.md`
+- 计划编写阶段同时吸收了三份并行只读核对结果：
+  - `世界` / `角色` 继续共用 `worldbase-cast`，只新增 UI 级 `surface`
+  - 旧 `locationPatch` 首次结构化迁移时只水合一个 imported location，且正式 `locationId` 在第一次成功保存时才固定下来
+  - 只读 agent 面板继续挂在当前“控制台”，数据必须先在服务端汇总成有边界的摘要，再交给编辑器
+- 已按 `writing-plans` 要求发起 plan review loop，并完成多轮修订：
+  - 第一轮补齐世界页必须保留世界规则/文风基线，以及删除地点时要把引用场景回馈给作者
+  - 第二轮补齐世界页显式删除地点动作，以及 `EditWorkbench -> ScenePhaseAuthoringSection` 的地点传递链
+  - 第三轮修正了计划里误写的桥接函数名
+- 最新 plan review 结论已通过：
+  - `Status: Approved`
+- 已关闭所有为这一步服务的 subagent，包括 3 个并行核对 explorer 和 1 个 plan reviewer。

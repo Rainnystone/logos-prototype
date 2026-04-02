@@ -258,6 +258,35 @@
   - simulation toolset 先继续做 boundary-first 的验证基础设施
   - 产品层在正式进入 `Storage / Repository Substrate` 时，再引入 `package root / repository seam`
 - 这也解释了为什么 simulation 当前 README 明确把自己定位为“消费正式 seam 的独立 workspace”，而不是定义长期目录契约的地方。
+
+## 2026-04-02 Phase 1 spec 收口后的三条实施边界
+
+- `世界` / `角色` 的拆分现在已经明确成“一个保存边界、两个可见子页”：
+  - 仍共用 `worldbase-cast`
+  - 允许用次级 `surface` 选择可见子页
+  - 在 `世界` 与 `角色` 之间切换时，共享同一份未保存草稿，不应被清空
+  - `Save` / `Reset` 仍作用于整个共享草稿，而不是各管一半
+- 旧的 `locationPatch` 到结构化地点的迁移，现已冻结为“保守、不猜测”的 deterministic 规则：
+  - 不尝试从 freeform blob 猜多个地点
+  - 只水合出 1 个结构化地点
+  - 原始文本完整落进 `description`
+  - 其它地点字段先置空
+  - 首次结构化保存后允许兼容投影被规范化，但不允许静默丢失旧文本
+- 只读 agent 面板的最小合同也已冻结：
+  - 只展示真正的 sidecar agent
+  - 每个 agent 至少有 `agentId`、显示名、职责摘要、技能、配置路径、状态路径
+  - “最近状态”必须是有边界的摘要，不允许变成原始状态文件浏览器
+
+## 2026-04-02 Phase 1 implementation plan 完成状态
+
+- 已写出正式 implementation plan：
+  - `docs/superpowers/plans/2026-04-02-phase-1-model-surface-implementation.md`
+- 这份计划已经过独立 plan review loop，当前审阅结论为通过。
+- 审阅过程中补齐并冻结了几条容易在执行时卡住的实施细节：
+  - 世界页不仅要有地点区，也必须明确保留世界规则与文风基线
+  - 世界页的地点区必须有显式删除动作，否则“删除阻塞”规则无法真正被执行和验证
+  - 场景页拿地点列表的传递链必须从 `EditWorkbench` 明确接进 `ScenePhaseAuthoringSection`
+  - 场景删除阻塞不仅要阻止保存，还要把仍在引用该地点的场景名或场景 ID 明确反馈给作者
 - 相关边界说明可直接参考 [simulation-toolset/README.md](simulation-toolset/README.md)。
 
 ### 为什么新 agent 放最后
