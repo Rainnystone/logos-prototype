@@ -20,11 +20,12 @@ describe('EditWorkbench', () => {
     renderScenePhaseAuthoringSection.mockReset();
   });
 
-  it('renders the shared shell copy in Chinese while keeping the shell chrome English', () => {
+  it('renders five visible workspaces while keeping four save families', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
-        activeSection="control-modules"
+        activeSection="worldbase-cast"
+        activeSurface="character"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -34,11 +35,18 @@ describe('EditWorkbench', () => {
 
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '世界与角色' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
     );
-    expect(screen.getByRole('link', { name: '场景与阶段' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
+    );
+    expect(screen.getByRole('link', { name: '场景与阶段' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=scene-phase-authoring',
+    );
     expect(screen.getByRole('link', { name: '控制模块' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=control-modules',
@@ -47,6 +55,10 @@ describe('EditWorkbench', () => {
       'href',
       '/edit?storyPackage=sample-scene&section=package-wiring-validation',
     );
+    expect(
+      screen.getByRole('navigation', { name: 'Editor sections' }).querySelectorAll('a'),
+    ).toHaveLength(5);
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
@@ -62,7 +74,25 @@ describe('EditWorkbench', () => {
     expect(within(pageHelper).getByText('Package')).toBeInTheDocument();
     expect(within(pageHelper).getByText('State source')).toBeInTheDocument();
     expect(within(pageHelper).getByText('Active section')).toBeInTheDocument();
-    expect(within(pageHelper).getByText('控制模块')).toBeInTheDocument();
+    expect(within(pageHelper).getByText('世界与角色')).toBeInTheDocument();
+  });
+
+  it('ignores the surface selector outside worldbase-cast', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="control-modules"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: '控制模块' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '世界' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: '角色' })).not.toHaveAttribute('aria-current');
   });
 
   it('shows localized save-warning and reset status copy in the shared helper', async () => {
@@ -99,6 +129,7 @@ describe('EditWorkbench', () => {
       <EditWorkbench
         packageName="sample-scene"
         activeSection="worldbase-cast"
+        activeSurface="world"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -177,6 +208,7 @@ describe('EditWorkbench', () => {
       <EditWorkbench
         packageName="sample-scene"
         activeSection="worldbase-cast"
+        activeSurface="world"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -225,6 +257,7 @@ describe('EditWorkbench', () => {
       <EditWorkbench
         packageName="sample-scene"
         activeSection="scene-phase-authoring"
+        activeSurface="world"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -298,6 +331,7 @@ describe('EditWorkbench', () => {
       <EditWorkbench
         packageName="sample-scene"
         activeSection="worldbase-cast"
+        activeSurface="world"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -327,6 +361,7 @@ describe('EditWorkbench', () => {
       <EditWorkbench
         packageName="sample-scene"
         activeSection="scene-phase-authoring"
+        activeSurface="world"
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,

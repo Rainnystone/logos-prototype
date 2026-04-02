@@ -7,6 +7,7 @@ import {
   listStoryPackageCatalog,
 } from '@/app/story-package-catalog';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
+import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -41,11 +42,20 @@ function getRequestedSectionId(value: string | readonly string[] | undefined): S
   return (SECTION_IDS as readonly string[]).includes(value) ? (value as SectionId) : null;
 }
 
+function getRequestedSurface(value: string | readonly string[] | undefined): WorldbaseSurface {
+  if (typeof value === 'string' && value === 'character') {
+    return 'character';
+  }
+
+  return 'world';
+}
+
 export default async function EditPage({ searchParams }: EditPageProps) {
   const resolvedSearchParams = await resolveSearchParams(searchParams);
   const catalog = await listStoryPackageCatalog();
   const requestedPackageName = getRequestedPackageName(resolvedSearchParams.storyPackage);
   const requestedSection = getRequestedSectionId(resolvedSearchParams.section);
+  const requestedSurface = getRequestedSurface(resolvedSearchParams.surface);
   const fallbackPackage = catalog.find(isReadyStoryPackageEntry);
   const selectedPackageName = requestedPackageName ?? fallbackPackage?.packageName ?? null;
 
@@ -65,11 +75,15 @@ export default async function EditPage({ searchParams }: EditPageProps) {
 
   try {
     const authoringState = await loadAuthoringState(selectedPackageName);
+    const activeSection = requestedSection ?? 'worldbase-cast';
+    const activeSurface =
+      activeSection === 'worldbase-cast' ? requestedSurface : 'world';
 
     return (
       <EditWorkbench
         packageName={selectedPackageName}
-        activeSection={requestedSection ?? 'worldbase-cast'}
+        activeSection={activeSection}
+        activeSurface={activeSurface}
         initialState={authoringState}
       />
     );

@@ -11,7 +11,7 @@ import { PageHelperPanel } from '@/app/edit/shared/PageHelperPanel';
 import { ControlModulesSection } from '@/app/edit/sections/ControlModulesSection';
 import { PackageWiringValidationSection } from '@/app/edit/sections/PackageWiringValidationSection';
 import { ScenePhaseAuthoringSection } from '@/app/edit/sections/ScenePhaseAuthoringSection';
-import { SectionTabs } from '@/app/edit/shared/SectionTabs';
+import { SectionTabs, type WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
 import {
   createControlModulesDraft,
@@ -70,6 +70,7 @@ const RESET_STATUS = '已恢复到最新保存版本。';
 interface EditWorkbenchProps {
   readonly packageName: string;
   readonly activeSection: SectionId;
+  readonly activeSurface: WorldbaseSurface;
   readonly initialState: AuthoringStateLoadResult;
 }
 
@@ -141,6 +142,7 @@ function SectionSurface({
 export function EditWorkbench({
   packageName,
   activeSection,
+  activeSurface,
   initialState,
 }: EditWorkbenchProps) {
   const [currentState, setCurrentState] = useState(initialState.state);
@@ -673,7 +675,11 @@ export function EditWorkbench({
           <span>{sceneName}</span>
           <span>{initialState.source}</span>
         </div>
-        <SectionTabs packageName={packageName} activeSection={activeSection} />
+        <SectionTabs
+          packageName={packageName}
+          activeSection={activeSection}
+          activeSurface={activeSurface}
+        />
       </section>
 
       <PageActionBar packageName={packageName} />
