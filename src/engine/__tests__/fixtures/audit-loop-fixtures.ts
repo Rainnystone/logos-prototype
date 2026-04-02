@@ -190,6 +190,7 @@ export const storyPackageFixture: StoryPackage = deepFreeze({
       },
     ],
     npcCharacters: 'npc-characters',
+    locations: [],
     locationPatch: 'location-patch',
   },
 });

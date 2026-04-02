@@ -63,6 +63,7 @@ const baseWorldBase: WorldBase = {
   ],
   antagonists: [],
   npcCharacters: '',
+  locations: [],
   locationPatch: 'location-patch',
 };
 

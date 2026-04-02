@@ -140,7 +140,8 @@ export function ScenePhaseAuthoringSection({
       .map((location) => location.locationId)
       .filter((candidateId) => currentLocationIds.has(candidateId));
 
-    const { locationIds: _removedLocationIds, ...restSceneSpec } = value.sceneSpec;
+    const restSceneSpec = { ...value.sceneSpec };
+    delete restSceneSpec.locationIds;
 
     onChange({
       ...value,

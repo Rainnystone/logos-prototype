@@ -499,6 +499,7 @@ function parseLegacyWorldBase(worldBase: LegacyWorldBaseLike): Omit<StructuredWo
       coreCast,
       antagonists,
       npcCharacters: supportingCast,
+      locations: [],
       locationPatch,
     };
   }
@@ -514,6 +515,7 @@ function parseLegacyWorldBase(worldBase: LegacyWorldBaseLike): Omit<StructuredWo
       coreCast,
       antagonists,
       npcCharacters: supportingCast,
+      locations: [],
       locationPatch,
     };
   }
@@ -558,6 +560,7 @@ function parseLegacyWorldBase(worldBase: LegacyWorldBaseLike): Omit<StructuredWo
     coreCast,
     antagonists,
     npcCharacters: supportingCast,
+    locations: [],
     locationPatch,
   };
 }
@@ -603,6 +606,7 @@ function parseStructuredWorldBase(
       'antagonist',
     ),
     npcCharacters: normalizeBlock(worldBase.npcCharacters ?? ''),
+    locations: [],
     locationPatch: normalizeBlock(worldBase.locationPatch),
   };
 }

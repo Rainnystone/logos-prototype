@@ -699,7 +699,14 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         const originalSceneContents = await readSceneDraftContents(request.packageName);
         const originalPhasePlansContents = await readPhasePlansDraftContents(request.packageName);
         const routerOptions = currentStoryPackage.routerProfiles.map((profile) => profile.routerName);
-        const scenePhaseIssues = validateScenePhaseAuthoringDraft(nextScenePhaseDraft!, routerOptions);
+        const locationOptions = currentStoryPackage.worldBase.locations.map(
+          (location) => location.locationId,
+        );
+        const scenePhaseIssues = validateScenePhaseAuthoringDraft(
+          nextScenePhaseDraft!,
+          routerOptions,
+          locationOptions,
+        );
 
         if (scenePhaseIssues.length > 0) {
           return createSaveBlockedResult(

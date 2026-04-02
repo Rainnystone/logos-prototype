@@ -685,6 +685,52 @@ describe('saveSectionDraft', () => {
     expect(savedScene.locationIds).toEqual(['loc_a1b2c3']);
   });
 
+  it('blocks scene-phase saves that include an unknown location id and keeps scene.yaml unchanged', async () => {
+    prepareTestPackage();
+    const originalSceneContents = readFileSync(scenePath, 'utf8');
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-unknown-location-id',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: ['chr_core01'],
+            locationIds: ['loc_missing'],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain(
+        '场景地点引用 "loc_missing" 不存在于当前世界地点列表中。',
+      );
+    }
+    expect(readFileSync(scenePath, 'utf8')).toBe(originalSceneContents);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
   it('preserves the existing sample purpose while clearing other optional scene fields', async () => {
     prepareTestPackage();
     const originalStoryPackage = await loadStoryPackage(testPackageName);

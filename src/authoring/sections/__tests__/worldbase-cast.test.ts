@@ -67,6 +67,7 @@ const structuredWorldBase: WorldBase = {
     },
   ],
   npcCharacters: 'Support One：Steady witness',
+  locations: [],
   locationPatch: 'Signal room',
 };
 

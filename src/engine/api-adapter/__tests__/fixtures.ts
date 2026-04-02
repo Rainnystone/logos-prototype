@@ -62,6 +62,7 @@ export const sampleStructuredWorldBase: WorldBase = {
     },
   ],
   npcCharacters: 'Support One - steady witness\nSupport Two - sharp clue finder',
+  locations: [],
   locationPatch: 'Main corridor\nBroadcast booth',
 };
 

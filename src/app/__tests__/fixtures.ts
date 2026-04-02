@@ -59,6 +59,7 @@ const storyPackageWorldBase: StoryPackage['worldBase'] = {
     },
   ],
   npcCharacters: 'Support One：Steady witness',
+  locations: [],
   locationPatch: 'A sealed corridor with old lights, cameras, and echoing vents.',
 };
 

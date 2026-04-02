@@ -57,10 +57,10 @@ export function SectionTabs({ packageName, activeSection, activeSurface }: Secti
   return (
     <nav className="edit-top-tabs" aria-label="Editor sections">
       {EDIT_WORKSPACE_TABS.map((tab) => {
+        const surface = tab.sectionId === 'worldbase-cast' ? tab.surface : undefined;
         const isActive =
-          tab.sectionId === activeSection &&
-          (tab.sectionId !== 'worldbase-cast' || tab.surface === activeSurface);
-        const href = buildSectionHref(packageName, tab.sectionId, tab.surface);
+          tab.sectionId === activeSection && (tab.sectionId !== 'worldbase-cast' || surface === activeSurface);
+        const href = buildSectionHref(packageName, tab.sectionId, surface);
 
         return (
           <Link

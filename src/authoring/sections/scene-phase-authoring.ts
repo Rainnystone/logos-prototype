@@ -159,9 +159,13 @@ export function createEmptyScenePhaseDraft(index: number): ScenePhasePlanDraft {
 export function validateScenePhaseAuthoringDraft(
   draft: ScenePhaseAuthoringDraft,
   routerOptions: readonly string[],
+  locationOptions: readonly string[] = [],
 ): readonly string[] {
   const issues: string[] = [];
   const routerOptionSet = new Set(routerOptions.map((option) => option.trim()).filter(Boolean));
+  const locationOptionSet = new Set(
+    locationOptions.map((locationId) => locationId.trim()).filter(Boolean),
+  );
 
   if (!normalizeText(draft.sceneSpec.sceneName)) {
     issues.push('场景名是必填项。');
@@ -173,6 +177,12 @@ export function validateScenePhaseAuthoringDraft(
 
   if (!normalizeText(draft.sceneSpec.endLine)) {
     issues.push('终点线是必填项。');
+  }
+
+  for (const locationId of normalizeOptionalIdList(draft.sceneSpec.locationIds) ?? []) {
+    if (!locationOptionSet.has(locationId)) {
+      issues.push(`场景地点引用 "${locationId}" 不存在于当前世界地点列表中。`);
+    }
   }
 
   if (draft.phasePlans.length === 0) {

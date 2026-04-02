@@ -73,6 +73,7 @@ const structuredStoryPackageFixture: StoryPackage = {
     ],
     antagonists: [],
     npcCharacters: 'Support One - steady witness',
+    locations: [],
     locationPatch: 'location-patch',
   },
 };

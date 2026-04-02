@@ -68,6 +68,7 @@ const draftValue: WorldBaseCastDraft = {
     },
   ],
   supportingCast: 'Support One：Steady witness',
+  locations: [],
   locationPool: 'Signal room',
 };
 

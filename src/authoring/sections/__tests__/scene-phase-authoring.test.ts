@@ -330,6 +330,19 @@ describe('scene-phase-authoring', () => {
     expect(output.sceneSpec.locationIds).toEqual(['loc_a1b2c3', 'loc_d4e5f6']);
   });
 
+  it('reports unknown scene location ids during validation instead of silently dropping them', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
+    draft.sceneSpec.locationIds = ['loc_missing', 'loc_a1b2c3'];
+
+    expect(
+      validateScenePhaseAuthoringDraft(
+        draft,
+        ['Investigation', 'Counterplay'],
+        ['loc_a1b2c3', 'loc_d4e5f6'],
+      ),
+    ).toContain('场景地点引用 "loc_missing" 不存在于当前世界地点列表中。');
+  });
+
   it('normalizes cast ids to the shared world-base order and drops stale ids', () => {
     const draft = createScenePhaseAuthoringDraft(currentStoryPackageWithCast);
     draft.sceneSpec.castMode = 'explicit';
