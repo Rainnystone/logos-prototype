@@ -165,6 +165,23 @@ describe('createWorldBaseCastDraft', () => {
     expect(draft.supportingCast).toBe('Support One：Steady witness');
     expect(draft.locationPool).toBe('Signal room');
   });
+
+  it('hydrates one imported location from a legacy locationPatch blob', () => {
+    const draft = createWorldBaseCastDraft({
+      ...structuredWorldBase,
+      locationPatch: '  Legacy location notes  ',
+    });
+
+    expect(draft.locations).toHaveLength(1);
+    expect(draft.locations[0]).toMatchObject({
+      locationId: '',
+      name: '',
+      description: 'Legacy location notes',
+      environmentAppearance: '',
+      atmosphereDescription: '',
+      humanContextDescription: '',
+    });
+  });
 });
 
 describe('applyWorldBaseCastDraft', () => {

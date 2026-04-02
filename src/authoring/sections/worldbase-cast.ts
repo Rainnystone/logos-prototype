@@ -1,6 +1,13 @@
 import type { CharacterProfile, WorldBase } from '@/types';
 import { generateCharacterId } from '@/lib/character-id';
 import { compactWorldBaseCastLists } from '@/lib/world-base-characters';
+import {
+  alignDescriptionOnlyLocationWithPatch,
+  hydrateWorldLocationDrafts,
+  projectLocationPatchFromLocations,
+  toPersistedLocations,
+  type WorldLocationDraft,
+} from '@/authoring/sections/world-locations';
 
 type CharacterKind = 'hero' | 'core' | 'antagonist';
 
@@ -31,6 +38,7 @@ export interface WorldBaseCastDraft {
   readonly coreCast: readonly WorldBaseCharacterDraft[];
   readonly antagonists: readonly WorldBaseCharacterDraft[];
   readonly supportingCast: string;
+  readonly locations: readonly WorldLocationDraft[];
   readonly locationPool: string;
 }
 
@@ -176,6 +184,11 @@ function normalizeWorldBaseCastDraft(
   draft: Partial<WorldBaseCastDraft>,
 ): WorldBaseCastDraft {
   const baseDraft = createWorldBaseCastDraft(currentWorldBase);
+  const normalizedLocationPool = normalizeBlock(draft.locationPool ?? baseDraft.locationPool);
+  const normalizedLocations = alignDescriptionOnlyLocationWithPatch(
+    draft.locations ?? baseDraft.locations,
+    normalizedLocationPool,
+  );
 
   return {
     ...baseDraft,
@@ -187,11 +200,17 @@ function normalizeWorldBaseCastDraft(
     coreCast: normalizeCharacterList(draft.coreCast ?? baseDraft.coreCast, 'core'),
     antagonists: normalizeCharacterList(draft.antagonists ?? baseDraft.antagonists, 'antagonist'),
     supportingCast: normalizeBlock(draft.supportingCast ?? baseDraft.supportingCast),
-    locationPool: normalizeBlock(draft.locationPool ?? baseDraft.locationPool),
+    locations: normalizedLocations,
+    locationPool: normalizedLocationPool,
   };
 }
 
 export function createWorldBaseCastDraft(worldBase: WorldBase): WorldBaseCastDraft {
+  const hydratedLocations = hydrateWorldLocationDrafts({
+    locations: worldBase.locations ?? [],
+    locationPatch: worldBase.locationPatch,
+  });
+
   return {
     worldBaseSetting: normalizeBlock(worldBase.worldBaseSetting),
     worldRules: normalizeBlock(worldBase.worldRules),
@@ -204,7 +223,8 @@ export function createWorldBaseCastDraft(worldBase: WorldBase): WorldBaseCastDra
       fromCharacterProfile(character, 'antagonist', index + 1),
     ),
     supportingCast: normalizeBlock(worldBase.npcCharacters),
-    locationPool: normalizeBlock(worldBase.locationPatch),
+    locations: hydratedLocations,
+    locationPool: projectLocationPatchFromLocations(hydratedLocations, worldBase.locationPatch),
   };
 }
 
@@ -265,6 +285,11 @@ export function applyWorldBaseCastDraft(
   draft: Partial<WorldBaseCastDraft>,
 ): WorldBase {
   const nextDraft = normalizeWorldBaseCastDraft(currentWorldBase, draft);
+  const persistedLocations = toPersistedLocations(nextDraft.locations);
+  const projectedLocationPatch = projectLocationPatchFromLocations(
+    persistedLocations,
+    nextDraft.locationPool,
+  );
 
   return compactWorldBaseCastLists({
     worldBaseSetting: nextDraft.worldBaseSetting,
@@ -276,7 +301,8 @@ export function applyWorldBaseCastDraft(
       toCharacterProfile(character, 'antagonist'),
     ),
     npcCharacters: normalizeSupportingCast(nextDraft.supportingCast),
-    locationPatch: normalizeBlock(nextDraft.locationPool),
+    locations: persistedLocations,
+    locationPatch: projectedLocationPatch,
   });
 }
 

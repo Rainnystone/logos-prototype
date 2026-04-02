@@ -25,6 +25,20 @@ export const CharacterProfileSchema = z
   .strict();
 export type CharacterProfile = z.infer<typeof CharacterProfileSchema>;
 
+const LOCATION_ID_PATTERN = /^loc_[0-9a-f]{6}$/;
+
+export const LocationSchema = z
+  .object({
+    locationId: z.string().regex(LOCATION_ID_PATTERN),
+    name: z.string().default(''),
+    description: z.string().default(''),
+    environmentAppearance: z.string().default(''),
+    atmosphereDescription: z.string().default(''),
+    humanContextDescription: z.string().default(''),
+  })
+  .strict();
+export type Location = z.infer<typeof LocationSchema>;
+
 /** archive/vendor/LOGOS-SPEC/05_CONTRACTS/prompt-object-schema.yaml */
 export const WorldBaseSchema = z
   .object({
@@ -35,6 +49,7 @@ export const WorldBaseSchema = z
     coreCast: z.array(CharacterProfileSchema).default([]),
     antagonists: z.array(CharacterProfileSchema).default([]),
     npcCharacters: z.string().default(''),
+    locations: z.array(LocationSchema).default([]),
     locationPatch: z.string(),
   })
   .strict();

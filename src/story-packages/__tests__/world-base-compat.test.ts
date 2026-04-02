@@ -4,6 +4,7 @@ import {
   filterWorldBaseForSceneCast,
   isLegacyWorldBase,
   migrateLegacyWorldBase,
+  projectLegacyLocationPatchFromStructuredLocations,
 } from '@/story-packages/world-base-compat';
 
 describe('world-base compatibility helpers', () => {
@@ -181,5 +182,23 @@ Personality: X
 
     expect(migrated.coreCast).toHaveLength(2);
     expect(migrated.coreCast[1]?.personality).toBe('X');
+  });
+
+  it('projects untouched imported location descriptions back to locationPatch', () => {
+    expect(
+      projectLegacyLocationPatchFromStructuredLocations({
+        locationPatch: 'Original location patch',
+        locations: [
+          {
+            locationId: 'loc_a1b2c3',
+            name: '',
+            description: '  Legacy location notes  ',
+            environmentAppearance: '',
+            atmosphereDescription: '',
+            humanContextDescription: '',
+          },
+        ],
+      }),
+    ).toBe('Legacy location notes');
   });
 });

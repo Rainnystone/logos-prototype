@@ -31,6 +31,15 @@ export interface WorldBaseCharacterProfile {
   readonly fatalWeakness?: string;
 }
 
+export interface WorldBaseLocationProfile {
+  readonly locationId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly environmentAppearance: string;
+  readonly atmosphereDescription: string;
+  readonly humanContextDescription: string;
+}
+
 export interface StructuredWorldBase {
   readonly worldBaseSetting: string;
   readonly worldRules: string;
@@ -39,6 +48,7 @@ export interface StructuredWorldBase {
   readonly coreCast: readonly WorldBaseCharacterProfile[];
   readonly antagonists: readonly WorldBaseCharacterProfile[];
   readonly npcCharacters: string;
+  readonly locations: readonly WorldBaseLocationProfile[];
   readonly locationPatch: string;
 }
 
@@ -95,6 +105,47 @@ function normalizeBlock(value: string): string {
 
 function normalizeInline(value: string): string {
   return normalizeBlock(value).replace(/\n+/g, ' ');
+}
+
+function hasDescriptionOnlyLocationShape(
+  location: Pick<
+    WorldBaseLocationProfile,
+    | 'name'
+    | 'description'
+    | 'environmentAppearance'
+    | 'atmosphereDescription'
+    | 'humanContextDescription'
+  >,
+): boolean {
+  if (!normalizeBlock(location.description)) {
+    return false;
+  }
+
+  return (
+    !normalizeBlock(location.name) &&
+    !normalizeBlock(location.environmentAppearance) &&
+    !normalizeBlock(location.atmosphereDescription) &&
+    !normalizeBlock(location.humanContextDescription)
+  );
+}
+
+export function projectLegacyLocationPatchFromStructuredLocations(input: {
+  readonly locationPatch: string;
+  readonly locations?: readonly WorldBaseLocationProfile[];
+}): string {
+  const normalizedFallback = normalizeBlock(input.locationPatch);
+  const normalizedLocations = Array.isArray(input.locations) ? input.locations : [];
+
+  if (normalizedLocations.length !== 1) {
+    return normalizedFallback;
+  }
+
+  const [location] = normalizedLocations;
+  if (!location || !hasDescriptionOnlyLocationShape(location)) {
+    return normalizedFallback;
+  }
+
+  return normalizeBlock(location.description);
 }
 
 function stripFormatting(value: string): string {
@@ -539,7 +590,11 @@ export function migrateLegacyWorldBase(worldBase: LegacyWorldBaseLike): Structur
       toCharacterProfile(character, 'antagonist'),
     ),
     npcCharacters: parsedWorldBase.npcCharacters,
-    locationPatch: parsedWorldBase.locationPatch,
+    locations: [],
+    locationPatch: projectLegacyLocationPatchFromStructuredLocations({
+      locationPatch: parsedWorldBase.locationPatch,
+      locations: [],
+    }),
   });
 }
 

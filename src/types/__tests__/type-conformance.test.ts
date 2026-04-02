@@ -80,6 +80,48 @@ describe('Phase 00 contract types', () => {
     ).toHaveProperty('hero.characterId', 'chr_hero01');
   });
 
+  it('accepts loc_ ids on persisted world-base locations', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.WorldBaseSchema.parse({
+        worldBaseSetting: 'World setting',
+        worldRules: 'World rules',
+        toneBaseline: 'Tone baseline',
+        hero: {
+          characterId: 'chr_hero01',
+          name: 'Hero One',
+          identityRole: 'Lead character',
+          lightNovelTrait: 'Calm and precise',
+          gender: 'Female',
+          personality: 'Reserved',
+          age: '16',
+          occupation: 'Student',
+          characterSummary: 'Primary viewpoint character.',
+          capabilityBoundary: 'Uses only physical methods.',
+          behaviorBoundary: 'Does not panic under pressure.',
+          oocRedLine: 'Never breaks character.',
+          clothing: 'School uniform',
+          propsWeapon: 'None',
+        },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: 'NPC pool',
+        locationPatch: 'Location notes',
+        locations: [
+          {
+            locationId: 'loc_a1b2c3',
+            name: '',
+            description: '',
+            environmentAppearance: '',
+            atmosphereDescription: '',
+            humanContextDescription: '',
+          },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
   it('exports a separate prompt-only world-base schema', async () => {
     const types = await import('@/types');
 
