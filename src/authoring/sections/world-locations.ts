@@ -18,6 +18,14 @@ export interface WorldLocationDraft {
   readonly humanContextDescription: string;
 }
 
+interface LocationProjectionContent {
+  readonly name: string;
+  readonly description: string;
+  readonly environmentAppearance: string;
+  readonly atmosphereDescription: string;
+  readonly humanContextDescription: string;
+}
+
 function normalizeBlock(value: string): string {
   return value.replace(/\r\n/g, '\n').trim();
 }
@@ -62,14 +70,7 @@ function createImportedLocationDraft(description: string): WorldLocationDraft {
   };
 }
 
-function hasDescriptionOnlyShape(location: Pick<
-  WorldLocationDraft,
-  | 'name'
-  | 'description'
-  | 'environmentAppearance'
-  | 'atmosphereDescription'
-  | 'humanContextDescription'
->): boolean {
+function hasDescriptionOnlyShape(location: LocationProjectionContent): boolean {
   if (normalizeBlock(location.description).length === 0) {
     return false;
   }
@@ -114,6 +115,35 @@ export function normalizeWorldLocationDrafts(
   return locations.map((location, index) => normalizeWorldLocationDraft(location, index + 1));
 }
 
+export function areWorldLocationDraftCollectionsEqual(
+  left: readonly WorldLocationDraft[],
+  right: readonly WorldLocationDraft[],
+): boolean {
+  const normalizedLeft = normalizeWorldLocationDrafts(left);
+  const normalizedRight = normalizeWorldLocationDrafts(right);
+
+  if (normalizedLeft.length !== normalizedRight.length) {
+    return false;
+  }
+
+  return normalizedLeft.every((location, index) => {
+    const target = normalizedRight[index];
+
+    if (!target) {
+      return false;
+    }
+
+    return (
+      location.locationId === target.locationId &&
+      location.name === target.name &&
+      location.description === target.description &&
+      location.environmentAppearance === target.environmentAppearance &&
+      location.atmosphereDescription === target.atmosphereDescription &&
+      location.humanContextDescription === target.humanContextDescription
+    );
+  });
+}
+
 export function alignDescriptionOnlyLocationWithPatch(
   locations: readonly WorldLocationDraft[],
   locationPatch: string,
@@ -146,6 +176,32 @@ export function toPersistedLocations(
   }));
 }
 
+function renderInlineField(label: string, value: string): string {
+  const normalizedValue = normalizeInline(value);
+
+  return normalizedValue.length > 0 ? `${label}: ${normalizedValue}` : `${label}:`;
+}
+
+function renderBlockField(label: string, value: string): string {
+  const normalizedValue = normalizeBlock(value);
+
+  return normalizedValue.length > 0 ? `${label}:\n${normalizedValue}` : `${label}:`;
+}
+
+function renderDeterministicLocationProjection(
+  location: LocationProjectionContent,
+  index: number,
+): string {
+  return [
+    `### Location ${index + 1}`,
+    renderInlineField('Name', location.name),
+    renderBlockField('Description', location.description),
+    renderBlockField('Environment Appearance', location.environmentAppearance),
+    renderBlockField('Atmosphere Description', location.atmosphereDescription),
+    renderBlockField('Human Context Description', location.humanContextDescription),
+  ].join('\n');
+}
+
 export function projectLocationPatchFromLocations(
   locations: readonly Pick<
     Location,
@@ -158,14 +214,26 @@ export function projectLocationPatchFromLocations(
   fallbackLocationPatch: string,
 ): string {
   const normalizedFallback = normalizeBlock(fallbackLocationPatch);
-  if (locations.length !== 1) {
+  if (locations.length === 0) {
     return normalizedFallback;
   }
 
-  const [location] = locations;
-  if (!location || !hasDescriptionOnlyShape(location)) {
-    return normalizedFallback;
+  const normalizedLocations = locations.map((location) => ({
+    name: normalizeInline(location.name),
+    description: normalizeBlock(location.description),
+    environmentAppearance: normalizeBlock(location.environmentAppearance),
+    atmosphereDescription: normalizeBlock(location.atmosphereDescription),
+    humanContextDescription: normalizeBlock(location.humanContextDescription),
+  }));
+
+  if (normalizedLocations.length === 1) {
+    const [location] = normalizedLocations;
+    if (location && hasDescriptionOnlyShape(location)) {
+      return normalizeBlock(location.description);
+    }
   }
 
-  return normalizeBlock(location.description);
+  return normalizedLocations
+    .map((location, index) => renderDeterministicLocationProjection(location, index))
+    .join('\n\n');
 }

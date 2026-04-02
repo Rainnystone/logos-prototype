@@ -182,6 +182,32 @@ describe('createWorldBaseCastDraft', () => {
       humanContextDescription: '',
     });
   });
+
+  it('hydrates exactly one imported location from a complex legacy location blob', () => {
+    const draft = createWorldBaseCastDraft({
+      ...structuredWorldBase,
+      locations: [],
+      locationPatch: `- 地点一：教学楼走廊
+- 地点二：广播室
+- 地点三：天台
+
+夜间巡逻路线如下：
+1. 教学楼
+2. 广播室
+3. 天台`,
+    });
+
+    expect(draft.locations).toHaveLength(1);
+    expect(draft.locations[0]?.locationId).toBe('');
+    expect(draft.locations[0]?.description).toBe(`- 地点一：教学楼走廊
+- 地点二：广播室
+- 地点三：天台
+
+夜间巡逻路线如下：
+1. 教学楼
+2. 广播室
+3. 天台`);
+  });
 });
 
 describe('applyWorldBaseCastDraft', () => {
@@ -211,5 +237,108 @@ describe('applyWorldBaseCastDraft', () => {
 
     expect(nextWorldBase.coreCast).toHaveLength(2);
     expect(nextWorldBase.coreCast[1]?.personality).toBe('X');
+  });
+
+  it('mints durable loc_ ids on the first successful structured save', () => {
+    const legacyWorldBase: WorldBase = {
+      ...structuredWorldBase,
+      locations: [],
+      locationPatch: 'Legacy location notes',
+    };
+    const draft = createWorldBaseCastDraft(legacyWorldBase);
+
+    expect(draft.locations).toHaveLength(1);
+    expect(draft.locations[0]?.locationId).toBe('');
+
+    const nextWorldBase = applyWorldBaseCastDraft(legacyWorldBase, draft);
+
+    expect(nextWorldBase.locations).toHaveLength(1);
+    expect(nextWorldBase.locations[0]?.locationId).toMatch(/^loc_[0-9a-f]{6}$/);
+  });
+
+  it('projects deterministic locationPatch text from named and multi-location drafts', () => {
+    const legacyWorldBase: WorldBase = {
+      ...structuredWorldBase,
+      locations: [],
+      locationPatch: 'legacy fallback location patch',
+    };
+    const draft = createWorldBaseCastDraft(legacyWorldBase);
+
+    const nextWorldBase = applyWorldBaseCastDraft(legacyWorldBase, {
+      ...draft,
+      locations: [
+        {
+          draftId: 'location-a',
+          locationId: '',
+          name: 'Signal Room',
+          description: 'Legacy monitors and cracked glass.',
+          environmentAppearance: 'Cold blue light and hanging wires.',
+          atmosphereDescription: 'Tense and humming.',
+          humanContextDescription: 'Two operators watch the corridor.',
+        },
+        {
+          draftId: 'location-b',
+          locationId: '',
+          name: 'Rooftop',
+          description: 'Wind pushes across open concrete.',
+          environmentAppearance: 'Exposed railings and wet floor.',
+          atmosphereDescription: 'Wide and isolating.',
+          humanContextDescription: 'Students avoid this place after dusk.',
+        },
+      ],
+    });
+
+    expect(nextWorldBase.locationPatch).toBe(`### Location 1
+Name: Signal Room
+Description:
+Legacy monitors and cracked glass.
+Environment Appearance:
+Cold blue light and hanging wires.
+Atmosphere Description:
+Tense and humming.
+Human Context Description:
+Two operators watch the corridor.
+
+### Location 2
+Name: Rooftop
+Description:
+Wind pushes across open concrete.
+Environment Appearance:
+Exposed railings and wet floor.
+Atmosphere Description:
+Wide and isolating.
+Human Context Description:
+Students avoid this place after dusk.`);
+  });
+
+  it('does not overwrite edited imported descriptions with stale locationPool text', () => {
+    const legacyWorldBase: WorldBase = {
+      ...structuredWorldBase,
+      locations: [],
+      locationPatch: 'Original legacy description',
+    };
+    const draft = createWorldBaseCastDraft(legacyWorldBase);
+
+    const nextWorldBase = applyWorldBaseCastDraft(legacyWorldBase, {
+      ...draft,
+      locationPool: 'Stale location pool text',
+      locations: [
+        {
+          ...(draft.locations[0] ?? {
+            draftId: 'location-1',
+            locationId: '',
+            name: '',
+            description: '',
+            environmentAppearance: '',
+            atmosphereDescription: '',
+            humanContextDescription: '',
+          }),
+          description: 'Edited imported description',
+        },
+      ],
+    });
+
+    expect(nextWorldBase.locations[0]?.description).toBe('Edited imported description');
+    expect(nextWorldBase.locationPatch).toBe('Edited imported description');
   });
 });

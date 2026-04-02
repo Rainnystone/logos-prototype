@@ -52,6 +52,14 @@ export interface StructuredWorldBase {
   readonly locationPatch: string;
 }
 
+interface LocationProjectionContent {
+  readonly name: string;
+  readonly description: string;
+  readonly environmentAppearance: string;
+  readonly atmosphereDescription: string;
+  readonly humanContextDescription: string;
+}
+
 const STRUCTURED_WORLD_HEADINGS = {
   worldBaseSetting: 'World Base Setting',
   worldRules: 'World Rules / Prohibitions / Anomalous Properties',
@@ -107,16 +115,7 @@ function normalizeInline(value: string): string {
   return normalizeBlock(value).replace(/\n+/g, ' ');
 }
 
-function hasDescriptionOnlyLocationShape(
-  location: Pick<
-    WorldBaseLocationProfile,
-    | 'name'
-    | 'description'
-    | 'environmentAppearance'
-    | 'atmosphereDescription'
-    | 'humanContextDescription'
-  >,
-): boolean {
+function hasDescriptionOnlyLocationShape(location: LocationProjectionContent): boolean {
   if (!normalizeBlock(location.description)) {
     return false;
   }
@@ -129,6 +128,32 @@ function hasDescriptionOnlyLocationShape(
   );
 }
 
+function renderInlineField(label: string, value: string): string {
+  const normalizedValue = normalizeInline(value);
+
+  return normalizedValue.length > 0 ? `${label}: ${normalizedValue}` : `${label}:`;
+}
+
+function renderBlockField(label: string, value: string): string {
+  const normalizedValue = normalizeBlock(value);
+
+  return normalizedValue.length > 0 ? `${label}:\n${normalizedValue}` : `${label}:`;
+}
+
+function renderDeterministicLocationProjection(
+  location: LocationProjectionContent,
+  index: number,
+): string {
+  return [
+    `### Location ${index + 1}`,
+    renderInlineField('Name', location.name),
+    renderBlockField('Description', location.description),
+    renderBlockField('Environment Appearance', location.environmentAppearance),
+    renderBlockField('Atmosphere Description', location.atmosphereDescription),
+    renderBlockField('Human Context Description', location.humanContextDescription),
+  ].join('\n');
+}
+
 export function projectLegacyLocationPatchFromStructuredLocations(input: {
   readonly locationPatch: string;
   readonly locations?: readonly WorldBaseLocationProfile[];
@@ -136,16 +161,28 @@ export function projectLegacyLocationPatchFromStructuredLocations(input: {
   const normalizedFallback = normalizeBlock(input.locationPatch);
   const normalizedLocations = Array.isArray(input.locations) ? input.locations : [];
 
-  if (normalizedLocations.length !== 1) {
+  if (normalizedLocations.length === 0) {
     return normalizedFallback;
   }
 
-  const [location] = normalizedLocations;
-  if (!location || !hasDescriptionOnlyLocationShape(location)) {
-    return normalizedFallback;
+  const normalizedProjectionLocations = normalizedLocations.map((location) => ({
+    name: normalizeInline(location.name),
+    description: normalizeBlock(location.description),
+    environmentAppearance: normalizeBlock(location.environmentAppearance),
+    atmosphereDescription: normalizeBlock(location.atmosphereDescription),
+    humanContextDescription: normalizeBlock(location.humanContextDescription),
+  }));
+
+  if (normalizedProjectionLocations.length === 1) {
+    const [location] = normalizedProjectionLocations;
+    if (location && hasDescriptionOnlyLocationShape(location)) {
+      return normalizeBlock(location.description);
+    }
   }
 
-  return normalizeBlock(location.description);
+  return normalizedProjectionLocations
+    .map((location, index) => renderDeterministicLocationProjection(location, index))
+    .join('\n\n');
 }
 
 function stripFormatting(value: string): string {

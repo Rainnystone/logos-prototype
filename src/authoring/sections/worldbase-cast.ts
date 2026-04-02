@@ -2,8 +2,10 @@ import type { CharacterProfile, WorldBase } from '@/types';
 import { generateCharacterId } from '@/lib/character-id';
 import { compactWorldBaseCastLists } from '@/lib/world-base-characters';
 import {
+  areWorldLocationDraftCollectionsEqual,
   alignDescriptionOnlyLocationWithPatch,
   hydrateWorldLocationDrafts,
+  normalizeWorldLocationDrafts,
   projectLocationPatchFromLocations,
   toPersistedLocations,
   type WorldLocationDraft,
@@ -185,10 +187,13 @@ function normalizeWorldBaseCastDraft(
 ): WorldBaseCastDraft {
   const baseDraft = createWorldBaseCastDraft(currentWorldBase);
   const normalizedLocationPool = normalizeBlock(draft.locationPool ?? baseDraft.locationPool);
-  const normalizedLocations = alignDescriptionOnlyLocationWithPatch(
-    draft.locations ?? baseDraft.locations,
-    normalizedLocationPool,
-  );
+  const nextLocations = draft.locations ?? baseDraft.locations;
+  const shouldAlignImportedDescription =
+    draft.locations === undefined ||
+    areWorldLocationDraftCollectionsEqual(nextLocations, baseDraft.locations);
+  const normalizedLocations = shouldAlignImportedDescription
+    ? alignDescriptionOnlyLocationWithPatch(nextLocations, normalizedLocationPool)
+    : normalizeWorldLocationDrafts(nextLocations);
 
   return {
     ...baseDraft,
