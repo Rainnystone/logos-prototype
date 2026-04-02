@@ -92,3 +92,16 @@
   - default output is evidence and `suggested-changes.md`, not product code edits
   - default workflow is boundary-first simulation, then cross-boundary verification if needed
   - cleanup and temp-package handling must be recorded as part of the run outcome
+
+## 2026-04-02 Phase 1 Location Projection Alignment
+
+- Status: complete
+- Scope:
+  - 在当前 Phase 1 worktree 里重新运行 `simulation-toolset`
+  - 对齐“场景地点选择会影响 runtime prompt projection”这条新产品边界
+  - 为 toolset 增加一条正式 smoke，覆盖 `scene-phase-authoring -> runtime package projection -> generate request`
+  - 更新 README、agent guide、task_plan、progress、findings，让文档与实际覆盖范围重新同步
+- Explicit rules:
+  - 不把“地点存在于世界页”误当成“地点已经进入本轮 prompt”
+  - smoke 必须同时覆盖“选中地点进入 prompt”和“清空地点后 prompt 为空”两种状态
+  - 结论必须基于当前 worktree 实际运行结果，不沿用 root 工作区旧记录

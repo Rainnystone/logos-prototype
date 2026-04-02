@@ -40,6 +40,7 @@ const structuredWorldBase: WorldBase = {
   coreCast: [],
   antagonists: [],
   npcCharacters: 'Support One - steady witness',
+  locations: [],
   locationPatch: 'location-patch',
 };
 

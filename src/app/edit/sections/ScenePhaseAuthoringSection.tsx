@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import type { Location } from '@/types';
 
 import {
   GRADIENT_OPTIONS,
@@ -14,6 +15,7 @@ import {
   SceneCastSelector,
   type SceneCastLibrary,
 } from '@/app/edit/sections/SceneCastSelector';
+import { SceneLocationSelector } from '@/app/edit/sections/SceneLocationSelector';
 
 type SceneField = keyof ScenePhaseAuthoringDraft['sceneSpec'];
 type PhaseField = keyof ScenePhasePlanDraft;
@@ -22,6 +24,7 @@ interface ScenePhaseAuthoringSectionProps {
   readonly packageName: string;
   readonly value: ScenePhaseAuthoringDraft;
   readonly sceneCastLibrary: SceneCastLibrary;
+  readonly sceneLocations: readonly Location[];
   readonly routerOptions: readonly string[];
   readonly onChange: (nextValue: ScenePhaseAuthoringDraft) => void;
   readonly onSubmit: () => void;
@@ -37,6 +40,7 @@ export function ScenePhaseAuthoringSection({
   packageName,
   value,
   sceneCastLibrary,
+  sceneLocations,
   routerOptions,
   onChange,
   onSubmit,
@@ -122,6 +126,22 @@ export function ScenePhaseAuthoringSection({
     onChange({
       ...value,
       sceneSpec: nextSceneSpec,
+    });
+  }
+
+  function updateSceneLocations(nextLocationIds: readonly string[] | undefined) {
+    const restSceneSpec = { ...value.sceneSpec };
+    delete restSceneSpec.locationIds;
+
+    onChange({
+      ...value,
+      sceneSpec:
+        nextLocationIds && nextLocationIds.length > 0
+          ? {
+              ...restSceneSpec,
+              locationIds: [...nextLocationIds],
+            }
+          : restSceneSpec,
     });
   }
 
@@ -370,6 +390,26 @@ export function ScenePhaseAuthoringSection({
                   sceneCastLibrary={sceneCastLibrary}
                   onChange={updateSceneCast}
                 />
+              </div>
+              <div className="mt-5">
+                {sceneLocations.length > 0 ? (
+                  <SceneLocationSelector
+                    value={value.sceneSpec.locationIds}
+                    sceneLocations={sceneLocations}
+                    onChange={updateSceneLocations}
+                  />
+                ) : (
+                  <div className="rounded-none border-2 border-black bg-white p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="panel-eyebrow">Scene Location</p>
+                        <h4 className="text-lg font-semibold text-slate-900">可选地点</h4>
+                      </div>
+                      <p className="panel-note">可不选；未选择时不会写入场景地点。</p>
+                    </div>
+                    <p className="panel-note">世界页还没有可选地点。</p>
+                  </div>
+                )}
               </div>
           </section>
         </div>

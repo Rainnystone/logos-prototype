@@ -10,6 +10,25 @@ import {
 } from '@/authoring/sections/scene-phase-authoring';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 
+const authoredLocations = [
+  {
+    locationId: 'loc_a1b2c3',
+    name: 'Signal Room',
+    description: 'A sealed signal room hidden behind the public corridor.',
+    environmentAppearance: 'Old relays and dim fluorescent light.',
+    atmosphereDescription: 'Compressed heat and low electrical hum.',
+    humanContextDescription: 'Operators only, no public traffic.',
+  },
+  {
+    locationId: 'loc_d4e5f6',
+    name: 'Service Corridor',
+    description: 'A maintenance lane connecting the sealed wing.',
+    environmentAppearance: 'Concrete walls and exposed vents.',
+    atmosphereDescription: 'Quiet, narrow, watchful.',
+    humanContextDescription: 'Used by staff during off hours.',
+  },
+] as const;
+
 function setWindowWidth(width: number) {
   Object.defineProperty(window, 'innerWidth', {
     configurable: true,
@@ -62,6 +81,7 @@ describe('ScenePhaseAuthoringSection', () => {
         packageName="sample-scene"
         value={draft}
         sceneCastLibrary={storyPackageFixture.worldBase}
+        sceneLocations={authoredLocations}
         routerOptions={['Investigation', 'Counterplay']}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -171,6 +191,7 @@ describe('ScenePhaseAuthoringSection', () => {
         packageName="sample-scene"
         value={draft}
         sceneCastLibrary={storyPackageFixture.worldBase}
+        sceneLocations={authoredLocations}
         routerOptions={['Investigation', 'Counterplay']}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -209,6 +230,7 @@ describe('ScenePhaseAuthoringSection', () => {
         packageName="sample-scene"
         value={sparseDraft}
         sceneCastLibrary={storyPackageFixture.worldBase}
+        sceneLocations={authoredLocations}
         routerOptions={[]}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -233,6 +255,7 @@ describe('ScenePhaseAuthoringSection', () => {
           phasePlans: [],
         }}
         sceneCastLibrary={storyPackageFixture.worldBase}
+        sceneLocations={authoredLocations}
         routerOptions={[]}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -266,6 +289,7 @@ describe('ScenePhaseAuthoringSection', () => {
           packageName="sample-scene"
           value={value}
           sceneCastLibrary={storyPackageFixture.worldBase}
+          sceneLocations={authoredLocations}
           routerOptions={[]}
           onChange={(nextValue) => {
             onChange(nextValue);
@@ -319,5 +343,81 @@ describe('ScenePhaseAuthoringSection', () => {
     ).toBe(true);
     expect(screen.getByText('沿用默认阵容，未显式选择。')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '移除 Touka Miyashita' })).not.toBeInTheDocument();
+  });
+
+  it('shows authored locations and writes locationIds through onChange', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const draft = createScenePhaseAuthoringDraft(storyPackageFixture);
+
+    function PageHarness() {
+      const [value, setValue] = useState<ScenePhaseAuthoringDraft>(draft);
+
+      return (
+        <ScenePhaseAuthoringSection
+          packageName="sample-scene"
+          value={value}
+          sceneCastLibrary={storyPackageFixture.worldBase}
+          sceneLocations={authoredLocations}
+          routerOptions={[]}
+          onChange={(nextValue) => {
+            onChange(nextValue);
+            setValue(nextValue);
+          }}
+          onSubmit={vi.fn()}
+          onReset={vi.fn()}
+        />
+      );
+    }
+
+    render(<PageHarness />);
+
+    expect(screen.getByText('可选地点')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '场景地点' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByText('当前场景未指定地点。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Signal Room' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('Scene Location'));
+    await user.click(screen.getByRole('button', { name: '选择地点 Signal Room' }));
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sceneSpec: expect.objectContaining({
+          locationIds: ['loc_a1b2c3'],
+        }),
+      }),
+    );
+    expect(screen.getByText('已选 1 个地点。')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '移除 Signal Room' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '选择地点 Service Corridor' }));
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sceneSpec: expect.objectContaining({
+          locationIds: ['loc_a1b2c3', 'loc_d4e5f6'],
+        }),
+      }),
+    );
+    expect(screen.getByText('已选 2 个地点。')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '移除 Signal Room' }));
+    await user.click(screen.getByRole('button', { name: '移除 Service Corridor' }));
+
+    expect(
+      onChange.mock.calls.some(
+        ([nextValue]) =>
+          typeof nextValue === 'object' &&
+          nextValue !== null &&
+          'sceneSpec' in nextValue &&
+          !('locationIds' in (nextValue as { sceneSpec: Record<string, unknown> }).sceneSpec),
+      ),
+    ).toBe(true);
+    expect(screen.getByText('当前场景未指定地点。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Signal Room' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Service Corridor' })).not.toBeInTheDocument();
   });
 });

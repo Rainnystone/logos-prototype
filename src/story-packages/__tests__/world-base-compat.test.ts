@@ -4,6 +4,7 @@ import {
   filterWorldBaseForSceneCast,
   isLegacyWorldBase,
   migrateLegacyWorldBase,
+  projectLegacyLocationPatchFromStructuredLocations,
 } from '@/story-packages/world-base-compat';
 
 describe('world-base compatibility helpers', () => {
@@ -181,5 +182,69 @@ Personality: X
 
     expect(migrated.coreCast).toHaveLength(2);
     expect(migrated.coreCast[1]?.personality).toBe('X');
+  });
+
+  it('projects untouched imported location descriptions back to locationPatch', () => {
+    expect(
+      projectLegacyLocationPatchFromStructuredLocations({
+        locationPatch: 'Original location patch',
+        locations: [
+          {
+            locationId: 'loc_a1b2c3',
+            name: '',
+            description: '  Legacy location notes  ',
+            environmentAppearance: '',
+            atmosphereDescription: '',
+            humanContextDescription: '',
+          },
+        ],
+      }),
+    ).toBe('Legacy location notes');
+  });
+
+  it('projects deterministic locationPatch text for named or multiple locations', () => {
+    expect(
+      projectLegacyLocationPatchFromStructuredLocations({
+        locationPatch: 'legacy fallback location patch',
+        locations: [
+          {
+            locationId: 'loc_a1b2c3',
+            name: 'Signal Room',
+            description: 'Legacy monitors and cracked glass.',
+            environmentAppearance: 'Cold blue light and hanging wires.',
+            atmosphereDescription: 'Tense and humming.',
+            humanContextDescription: 'Two operators watch the corridor.',
+          },
+          {
+            locationId: 'loc_d4e5f6',
+            name: 'Rooftop',
+            description: 'Wind pushes across open concrete.',
+            environmentAppearance: 'Exposed railings and wet floor.',
+            atmosphereDescription: 'Wide and isolating.',
+            humanContextDescription: 'Students avoid this place after dusk.',
+          },
+        ],
+      }),
+    ).toBe(`### Location 1
+Name: Signal Room
+Description:
+Legacy monitors and cracked glass.
+Environment Appearance:
+Cold blue light and hanging wires.
+Atmosphere Description:
+Tense and humming.
+Human Context Description:
+Two operators watch the corridor.
+
+### Location 2
+Name: Rooftop
+Description:
+Wind pushes across open concrete.
+Environment Appearance:
+Exposed railings and wet floor.
+Atmosphere Description:
+Wide and isolating.
+Human Context Description:
+Students avoid this place after dusk.`);
   });
 });

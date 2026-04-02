@@ -122,3 +122,15 @@
 - Two supporting patterns are also worth carrying into the guide:
   - prefer condition-based waiting over arbitrary sleeps when a cloud run needs async investigation
   - suggest defense-in-depth directions when a product bug clearly needs stronger boundary validation, but keep that as a recommendation rather than an in-run implementation
+
+## 2026-04-02 Phase 1 Location Projection Alignment
+
+- 今天 Phase 1 引入的关键边界不是“世界页新增了地点对象”，而是“场景里显式选中的地点才应进入本轮 runtime prompt projection”。
+- 因此旧版 `simulation-toolset` 即使全绿，也不足以证明今天这条新边界安全，因为它还没有把 scene-phase 地点选择一路追到 generate request。
+- 当前最合适的 toolset 覆盖点不是重 UI 回归，而是 route smoke：
+  - 先通过正式 `sections/[sectionId]` route 保存地点选择
+  - 再通过 `loadRuntimeStoryPackage()` 观察 runtime world projection
+  - 最后以 `generate` request 中的 `worldBase.locationPatch` 作为 prompt assembler 侧的最终证据
+- 对这条边界，至少要稳定覆盖两种状态：
+  - 选中子集时，只有被选中的地点进入 prompt
+  - 清空选择后，prompt 中不再保留地点文本

@@ -43,6 +43,7 @@ import {
   type WorldBaseCharacterDraft,
 } from '@/authoring/sections/worldbase-cast';
 import type { StoryPackage } from '@/types';
+import type { WorldLocationDraft } from '@/authoring/sections/world-locations';
 
 const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
 const supportedSaveSources = new Set<SaveRequest['source']>(['page', 'coordinator', 'repair']);
@@ -238,6 +239,31 @@ function extractCharacterList(value: unknown): WorldBaseCharacterDraft[] | undef
   return characters.length === value.length ? [...characters] : undefined;
 }
 
+function isWorldLocationDraft(value: unknown): value is WorldLocationDraft {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.draftId === 'string' &&
+    typeof value.locationId === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.description === 'string' &&
+    typeof value.environmentAppearance === 'string' &&
+    typeof value.atmosphereDescription === 'string' &&
+    typeof value.humanContextDescription === 'string'
+  );
+}
+
+function extractLocationList(value: unknown): WorldLocationDraft[] | undefined {
+  if (!isUnknownArray(value)) {
+    return undefined;
+  }
+
+  const locations = value.filter(isWorldLocationDraft);
+  return locations.length === value.length ? [...locations] : undefined;
+}
+
 function extractWorldBaseCastDraft(
   request: SaveRequest,
 ): Partial<WorldBaseCastDraft> | null {
@@ -256,6 +282,7 @@ function extractWorldBaseCastDraft(
   const coreCast = extractCharacterList(uiFields.coreCast);
   const antagonists = extractCharacterList(uiFields.antagonists);
   const supportingCast = isStringField(uiFields.supportingCast) ? uiFields.supportingCast : undefined;
+  const locations = extractLocationList(uiFields.locations);
   const locationPool = isStringField(uiFields.locationPool) ? uiFields.locationPool : undefined;
 
   if (
@@ -266,6 +293,7 @@ function extractWorldBaseCastDraft(
     coreCast === undefined &&
     antagonists === undefined &&
     supportingCast === undefined &&
+    locations === undefined &&
     locationPool === undefined
   ) {
     return null;
@@ -279,6 +307,7 @@ function extractWorldBaseCastDraft(
     ...(coreCast !== undefined ? { coreCast } : {}),
     ...(antagonists !== undefined ? { antagonists } : {}),
     ...(supportingCast !== undefined ? { supportingCast } : {}),
+    ...(locations !== undefined ? { locations } : {}),
     ...(locationPool !== undefined ? { locationPool } : {}),
   };
 }
@@ -318,6 +347,11 @@ function extractScenePhaseAuthoringDraft(
   const cast = castIsArray
     ? rawCast.filter((value): value is string => isStringField(value))
     : undefined;
+  const rawLocationIds = sceneSpec.locationIds as unknown;
+  const locationIdsAreArray = Array.isArray(rawLocationIds);
+  const locationIds = locationIdsAreArray
+    ? rawLocationIds.filter((value): value is string => isStringField(value))
+    : undefined;
   const filteredCast = cast ?? [];
   const castMode =
     sceneSpec.castMode === 'explicit' || sceneSpec.castMode === 'unset'
@@ -334,6 +368,14 @@ function extractScenePhaseAuthoringDraft(
     return null;
   }
 
+  if (
+    locationIdsAreArray &&
+    rawLocationIds.length > 0 &&
+    (locationIds === undefined || locationIds.length === 0)
+  ) {
+    return null;
+  }
+
   return {
     sceneSpec: {
       sceneName: isStringField(sceneSpec.sceneName) ? sceneSpec.sceneName : '',
@@ -347,9 +389,35 @@ function extractScenePhaseAuthoringDraft(
       openingHook: isStringField(sceneSpec.openingHook) ? sceneSpec.openingHook : '',
       castMode,
       ...(cast ? { cast } : {}),
+      ...(locationIds ? { locationIds } : {}),
     },
     phasePlans: normalizedPhasePlans,
   };
+}
+
+function getDeletedSceneLocationReferenceIssues(
+  currentStoryPackage: StoryPackage,
+  nextWorldBase: StoryPackage['worldBase'],
+): readonly string[] {
+  const currentSceneLocationIds = currentStoryPackage.sceneSpec.locationIds ?? [];
+
+  if (currentSceneLocationIds.length === 0) {
+    return [];
+  }
+
+  const nextLocationIds = new Set(nextWorldBase.locations.map((location) => location.locationId));
+  const missingLocationIds = currentSceneLocationIds.filter(
+    (locationId) => !nextLocationIds.has(locationId),
+  );
+
+  if (missingLocationIds.length === 0) {
+    return [];
+  }
+
+  return missingLocationIds.map(
+    (locationId) =>
+      `地点 "${locationId}" 仍被场景 "${currentStoryPackage.sceneSpec.sceneName}" (${currentStoryPackage.sceneSpec.sceneId}) 引用。`,
+  );
 }
 
 function extractControlModulesDraft(request: SaveRequest): ControlModulesDraft | null {
@@ -603,6 +671,23 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
             currentStoryPackage.worldBase,
             nextWorldBaseDraft!,
           );
+          const locationReferenceIssues = getDeletedSceneLocationReferenceIssues(
+            currentStoryPackage,
+            nextWorldBase,
+          );
+
+          if (locationReferenceIssues.length > 0) {
+            return createSaveBlockedResult(
+              {
+                requestId: request.requestId,
+                packageName: request.packageName,
+                sectionId: request.sectionId,
+                showLocally: true,
+                showInGlobalDiagnostics: false,
+              },
+              locationReferenceIssues,
+            );
+          }
 
           changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase);
           reloadedSectionState = await reloadStoryPackage(request.packageName);
@@ -614,7 +699,14 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
         const originalSceneContents = await readSceneDraftContents(request.packageName);
         const originalPhasePlansContents = await readPhasePlansDraftContents(request.packageName);
         const routerOptions = currentStoryPackage.routerProfiles.map((profile) => profile.routerName);
-        const scenePhaseIssues = validateScenePhaseAuthoringDraft(nextScenePhaseDraft!, routerOptions);
+        const locationOptions = currentStoryPackage.worldBase.locations.map(
+          (location) => location.locationId,
+        );
+        const scenePhaseIssues = validateScenePhaseAuthoringDraft(
+          nextScenePhaseDraft!,
+          routerOptions,
+          locationOptions,
+        );
 
         if (scenePhaseIssues.length > 0) {
           return createSaveBlockedResult(

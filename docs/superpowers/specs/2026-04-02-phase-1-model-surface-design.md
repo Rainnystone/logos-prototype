@@ -420,13 +420,12 @@ Recommended Phase 1 field shape:
 
 - `sceneSpec.locationIds?: string[]`
 
-Phase 1 does not require the runtime engine to depend on this field yet.
+2026-04-02 approved follow-up:
 
-The safe planning assumption is:
-
-- authoring persists the structured reference
-- validation checks referential integrity
-- runtime behavior may continue to rely on existing world/context input until a later explicit runtime upgrade consumes the field directly
+- `sceneSpec.locationIds` is no longer authoring-only metadata
+- runtime projection now consumes this field directly for scene-specific location context
+- when `locationIds` is omitted or empty, runtime prompt assembly should not receive scene-location context
+- this means the final system prompt must omit the location line entirely instead of rendering an empty placeholder
 
 ### 8.4 Delete / Invalid Reference Rule
 

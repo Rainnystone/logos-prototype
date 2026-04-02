@@ -101,24 +101,31 @@ vi.mock('@/app/story-package-catalog', async (importOriginal) => {
 });
 
 describe('EditPage', () => {
-  it('loads the selected package and opens the requested editor section', async () => {
+  it('defaults worldbase-cast to the world surface', async () => {
     const { default: EditPage } = await import('@/app/edit/page');
 
     const element = await EditPage({
       searchParams: {
         storyPackage: 'sample-scene',
-        section: 'control-modules',
+        section: 'worldbase-cast',
       },
     });
 
     render(element);
 
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene');
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: false,
+    });
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '世界与角色' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    );
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
     );
     expect(screen.getByRole('link', { name: '场景与阶段' })).toHaveAttribute(
       'href',
@@ -132,11 +139,92 @@ describe('EditPage', () => {
       'href',
       '/edit?storyPackage=sample-scene&section=package-wiring-validation',
     );
+    expect(screen.getByRole('navigation', { name: 'Editor sections' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
     );
     expect(screen.getByRole('link', { name: '返回标题' })).toHaveAttribute('href', '/');
+  });
+
+  it('enters the character surface when worldbase-cast is selected with surface=character', async () => {
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {
+        storyPackage: 'sample-scene',
+        section: 'worldbase-cast',
+        surface: 'character',
+      },
+    });
+
+    render(element);
+
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
+    );
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    );
+  });
+
+  it('loads sidecar-agent surface items only when entering the diagnostics workspace', async () => {
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {
+        storyPackage: 'sample-scene',
+        section: 'package-wiring-validation',
+      },
+    });
+
+    render(element);
+
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: true,
+    });
+  });
+
+  it('falls back to the world surface when section is missing even if surface=character', async () => {
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {
+        storyPackage: 'sample-scene',
+        surface: 'character',
+      },
+    });
+
+    render(element);
+
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    );
+  });
+
+  it('falls back to the world surface when section is invalid even if surface=character', async () => {
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {
+        storyPackage: 'sample-scene',
+        section: 'not-a-real-section',
+        surface: 'character',
+      },
+    });
+
+    render(element);
+
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    );
   });
 
   it('shows the Chinese fallback copy when no loadable package exists', async () => {

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { z } from 'zod';
 
+import type { AgentSurfaceItem } from '@/agents/agent-surface';
 import { parseWithSchema } from '@/lib/validation';
 import { SECTION_IDS } from '@/authoring/contracts';
 import { loadStoryPackage } from '@/engine/story-loader';
@@ -40,7 +41,12 @@ export type AuthoringStateSource = 'initial-sample' | 'latest-saved';
 export interface AuthoringStateLoadResult {
   readonly source: AuthoringStateSource;
   readonly state: StoryPackage;
+  readonly agentSurfaceItems?: readonly AgentSurfaceItem[];
   readonly authoringState?: AuthoringState | null;
+}
+
+export interface LoadAuthoringStateOptions {
+  readonly includeAgentSurfaceItems?: boolean;
 }
 
 export function resolvePackageRoot(packageName: string): string {
@@ -75,15 +81,23 @@ export async function writeAuthoringState(
 
 export async function loadAuthoringState(
   packageName: string,
+  options: LoadAuthoringStateOptions = {},
 ): Promise<AuthoringStateLoadResult> {
   const [state, authoringState] = await Promise.all([
     loadStoryPackage(packageName),
     readAuthoringState(packageName),
   ]);
+  let agentSurfaceItems: readonly AgentSurfaceItem[] | undefined;
+
+  if (options.includeAgentSurfaceItems) {
+    const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
+    agentSurfaceItems = await loadAgentSurfaceItems(packageName);
+  }
 
   return {
     source: authoringState?.hasSuccessfulSave ? 'latest-saved' : 'initial-sample',
     state,
+    ...(options.includeAgentSurfaceItems ? { agentSurfaceItems: agentSurfaceItems ?? [] } : {}),
     authoringState,
   };
 }

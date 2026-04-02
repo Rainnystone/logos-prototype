@@ -33,5 +33,17 @@ describe('prompt templates', () => {
       expect(messageContent).not.toContain('Highlighted deltas:');
       expect(messageContent).not.toContain('Stable background:');
     });
+
+    it('omits the location section line when no explicit scene locations are present', () => {
+      const systemPrompt = buildGenerateSystemPrompt({
+        ...samplePromptObject,
+        worldBase: {
+          ...samplePromptObject.worldBase,
+          locationPatch: '',
+        },
+      });
+
+      expect(systemPrompt).not.toContain('Location patch:');
+    });
   });
 });

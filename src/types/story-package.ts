@@ -11,6 +11,7 @@ export const SceneSpecSchema = z
     sceneId: z.string(),
     sceneName: z.string(),
     cast: z.array(z.string()).optional(),
+    locationIds: z.array(z.string()).optional(),
     openingSituation: z.string().optional(),
     startPoint: z.string().optional(),
     mainAxis: z.string(),

@@ -19,6 +19,19 @@ const worldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
 const scenePath = path.resolve(testPackagePath, 'scene.yaml');
 const controlModulesPath = path.resolve(testPackagePath, 'control-modules.yaml');
 const authoringStatusPath = path.resolve(testPackagePath, 'authoring-state.json');
+const sourceWorldBaseFixture = YAML.parse(
+  readFileSync(path.resolve(storyPackagesRoot, sourcePackageName, 'world-base.yaml'), 'utf8'),
+) as {
+  locations?: Array<{
+    locationId: string;
+    name: string;
+    description: string;
+    environmentAppearance?: string;
+    atmosphereDescription?: string;
+    humanContextDescription?: string;
+  }>;
+  locationPatch?: string;
+};
 
 function resetTestPackage(): void {
   rmSync(testPackagePath, { recursive: true, force: true });
@@ -62,7 +75,16 @@ function buildWorldBaseDraft(heroName: string) {
     coreCast: [],
     antagonists: [],
     supportingCast: 'Support One：Steady witness',
-    locationPool: 'Signal room',
+    locations: (sourceWorldBaseFixture.locations ?? []).map((location) => ({
+      draftId: location.locationId,
+      locationId: location.locationId,
+      name: location.name,
+      description: location.description,
+      environmentAppearance: location.environmentAppearance ?? '',
+      atmosphereDescription: location.atmosphereDescription ?? '',
+      humanContextDescription: location.humanContextDescription ?? '',
+    })),
+    locationPool: sourceWorldBaseFixture.locationPatch ?? '',
   };
 }
 
@@ -88,6 +110,11 @@ function readSavedWorldBase() {
       fatalWeakness?: string;
     }>;
     npcCharacters: string;
+    locations?: Array<{
+      locationId: string;
+      name: string;
+      description: string;
+    }>;
     locationPatch: string;
   };
 }
@@ -233,7 +260,8 @@ describe('saveSectionDraft', () => {
     expect(loaded.worldBase.coreCast[0]?.name).toBe('Core Draft');
     expect(loaded.worldBase.antagonists[0]?.name).toBe('Villain Draft');
     expect(loaded.worldBase.npcCharacters).toBe('Support One：Steady witness\nSupport Two：Sharp clue finder');
-    expect(loaded.worldBase.locationPatch).toBe('Signal room');
+    expect(loaded.worldBase.locations).toHaveLength(sourceWorldBaseFixture.locations?.length ?? 0);
+    expect(loaded.worldBase.locationPatch).toBe(savedWorldBase.locationPatch);
   });
 
   it('writes the authoring status marker after a successful save', async () => {
@@ -560,6 +588,91 @@ describe('saveSectionDraft', () => {
     };
 
     expect(status.pendingSectionReviews).toBeUndefined();
+  });
+
+  it('blocks deleting a location that is still referenced by the current scene', async () => {
+    prepareTestPackage();
+    const currentStoryPackage = await loadStoryPackage(testPackageName);
+    const referencedLocationId = currentStoryPackage.sceneSpec.locationIds?.[0];
+
+    expect(referencedLocationId).toBeTruthy();
+
+    const blockedWorldBaseSave = await saveSectionDraft({
+      requestId: 'request-worldbase-location-delete-blocked',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...createWorldBaseCastDraft(currentStoryPackage.worldBase),
+          locations: createWorldBaseCastDraft(currentStoryPackage.worldBase).locations.filter(
+            (location) => location.locationId !== referencedLocationId,
+          ),
+        },
+      },
+    });
+
+    expect(blockedWorldBaseSave.kind).toBe('save_blocked');
+    if (blockedWorldBaseSave.kind === 'save_blocked') {
+      expect(
+        blockedWorldBaseSave.blockingIssues.some(
+          (issue) =>
+            issue.includes(referencedLocationId ?? '') &&
+            (issue.includes('sample-yanshang-live-room') || issue.includes('炎上直播间·改')),
+        ),
+      ).toBe(true);
+    }
+
+    const savedScene = YAML.parse(readFileSync(scenePath, 'utf8')) as {
+      locationIds?: string[];
+    };
+    expect(savedScene.locationIds).toEqual(currentStoryPackage.sceneSpec.locationIds);
+  });
+
+  it('blocks scene-phase saves that include an unknown location id and keeps scene.yaml unchanged', async () => {
+    prepareTestPackage();
+    const originalSceneContents = readFileSync(scenePath, 'utf8');
+
+    const result = await saveSectionDraft({
+      requestId: 'request-scene-phase-unknown-location-id',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: ['chr_core01'],
+            locationIds: ['loc_missing'],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain(
+        '场景地点引用 "loc_missing" 不存在于当前世界地点列表中。',
+      );
+    }
+    expect(readFileSync(scenePath, 'utf8')).toBe(originalSceneContents);
+    expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('preserves the existing sample purpose while clearing other optional scene fields', async () => {

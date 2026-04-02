@@ -35,6 +35,7 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
 - Temp package scavenging for list / dry-run / remove cleanup flows
 - Programmatic route smoke through:
   - authoring `sections/[sectionId]`
+  - scene-phase location selection -> runtime location projection -> prompt location patch
   - authoring `diagnostics`
   - play `gossipelog`
 - Lightweight UI smoke through:

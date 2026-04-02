@@ -77,3 +77,15 @@
   - defense-in-depth as suggestion guidance
 - Updated `simulation-toolset/README.md` so the guide is explicitly the cloud Codex operational entry point.
 - This round is documentation-only and does not change harness code or test behavior.
+- 在当前 Phase 1 worktree 里重新运行 `simulation-toolset`，确认旧版全绿结果已经落后于今天的地点选择新规则。
+- 为 `simulation-toolset/src/route-smoke.ts` 补上一条新的跨边界 smoke：
+  - `scene-phase-authoring` 保存地点选择
+  - `loadRuntimeStoryPackage()` 做 runtime 投影
+  - `generate` request 里的 `locationPatch` 作为最终证据
+- 新 smoke 已确认两种状态：
+  - 只选中的地点会进入本轮 prompt
+  - 清空地点选择后，runtime 投影与 prompt 里的地点文本都会清空
+- 更新了 `simulation-toolset/README.md` 与 `simulation-toolset/agent-guide.md`，把这条新 smoke 纳入当前正式能力说明。
+- 当日 fresh verification：
+  - `npm run type-check:simulation` passed
+  - `npm run test:simulation` passed with 11 files and 31 tests

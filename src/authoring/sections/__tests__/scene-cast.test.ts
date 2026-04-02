@@ -80,6 +80,7 @@ const worldBase = {
     },
   ],
   npcCharacters: 'NPC',
+  locations: [],
   locationPatch: 'Location',
 } as const satisfies WorldBase;
 

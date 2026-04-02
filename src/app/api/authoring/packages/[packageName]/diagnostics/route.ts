@@ -10,7 +10,9 @@ export async function GET(
   },
 ) {
   const params = await context.params;
-  const state = await loadAuthoringState(params.packageName);
+  const state = await loadAuthoringState(params.packageName, {
+    includeAgentSurfaceItems: true,
+  });
   const diagnostics = buildPackageDiagnostics({
     packageName: params.packageName,
     source: state.source,
@@ -19,5 +21,11 @@ export async function GET(
     recentSaveResults: [],
   });
 
-  return NextResponse.json(diagnostics, { status: 200 });
+  return NextResponse.json(
+    {
+      ...diagnostics,
+      agentSurfaceItems: state.agentSurfaceItems ?? [],
+    },
+    { status: 200 },
+  );
 }

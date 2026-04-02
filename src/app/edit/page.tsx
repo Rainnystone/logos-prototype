@@ -7,6 +7,7 @@ import {
   listStoryPackageCatalog,
 } from '@/app/story-package-catalog';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
+import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -41,11 +42,26 @@ function getRequestedSectionId(value: string | readonly string[] | undefined): S
   return (SECTION_IDS as readonly string[]).includes(value) ? (value as SectionId) : null;
 }
 
+function getRequestedSurface(
+  sectionValue: string | readonly string[] | undefined,
+  surfaceValue: string | readonly string[] | undefined,
+): WorldbaseSurface {
+  if (sectionValue === 'worldbase-cast' && surfaceValue === 'character') {
+    return 'character';
+  }
+
+  return 'world';
+}
+
 export default async function EditPage({ searchParams }: EditPageProps) {
   const resolvedSearchParams = await resolveSearchParams(searchParams);
   const catalog = await listStoryPackageCatalog();
   const requestedPackageName = getRequestedPackageName(resolvedSearchParams.storyPackage);
   const requestedSection = getRequestedSectionId(resolvedSearchParams.section);
+  const requestedSurface = getRequestedSurface(
+    resolvedSearchParams.section,
+    resolvedSearchParams.surface,
+  );
   const fallbackPackage = catalog.find(isReadyStoryPackageEntry);
   const selectedPackageName = requestedPackageName ?? fallbackPackage?.packageName ?? null;
 
@@ -63,13 +79,20 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     );
   }
 
+  const activeSection = requestedSection ?? 'worldbase-cast';
+
   try {
-    const authoringState = await loadAuthoringState(selectedPackageName);
+    const authoringState = await loadAuthoringState(selectedPackageName, {
+      includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
+    });
+    const activeSurface =
+      activeSection === 'worldbase-cast' ? requestedSurface : 'world';
 
     return (
       <EditWorkbench
         packageName={selectedPackageName}
-        activeSection={requestedSection ?? 'worldbase-cast'}
+        activeSection={activeSection}
+        activeSurface={activeSurface}
         initialState={authoringState}
       />
     );

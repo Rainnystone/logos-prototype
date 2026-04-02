@@ -5,6 +5,7 @@ import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadStoryPackage } from '@/engine/story-loader';
+import { projectLegacyLocationPatchFromStructuredLocations } from '@/story-packages/world-base-compat';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const tempPackageNames = [
@@ -13,6 +14,8 @@ const tempPackageNames = [
   '__legacy-migration-sample-scene__',
   '__runtime-absent-cast-sample-scene__',
   '__runtime-cast-sample-scene__',
+  '__runtime-location-sample-scene__',
+  '__runtime-absent-location-sample-scene__',
 ] as const;
 
 const tempPackagePaths = tempPackageNames.map((packageName) =>
@@ -24,6 +27,7 @@ type StructuredStoryPackage = Awaited<ReturnType<typeof loadStoryPackage>> & {
     readonly hero: { readonly characterId: string; readonly name: string };
     readonly coreCast: readonly unknown[];
     readonly antagonists: readonly unknown[];
+    readonly locations: ReadonlyArray<{ readonly locationId: string; readonly name: string }>;
     readonly locationPatch: string;
   };
 };
@@ -122,7 +126,45 @@ function createStructuredWorldBase() {
       },
     ],
     npcCharacters: 'NPC pool',
-    locationPatch: 'Location notes',
+    locations: [
+      {
+        locationId: 'loc_a1b2c3',
+        name: 'Signal Room',
+        description: 'Legacy monitors and cracked glass.',
+        environmentAppearance: 'Cold blue light and hanging wires.',
+        atmosphereDescription: 'Tense and humming.',
+        humanContextDescription: 'Two operators watch the corridor.',
+      },
+      {
+        locationId: 'loc_d4e5f6',
+        name: 'Service Corridor',
+        description: 'Concrete walls and exposed vents.',
+        environmentAppearance: 'Narrow floor marks and maintenance panels.',
+        atmosphereDescription: 'Quiet, narrow, watchful.',
+        humanContextDescription: 'Used by staff during off hours.',
+      },
+    ],
+    locationPatch: projectLegacyLocationPatchFromStructuredLocations({
+      locationPatch: 'Location notes',
+      locations: [
+        {
+          locationId: 'loc_a1b2c3',
+          name: 'Signal Room',
+          description: 'Legacy monitors and cracked glass.',
+          environmentAppearance: 'Cold blue light and hanging wires.',
+          atmosphereDescription: 'Tense and humming.',
+          humanContextDescription: 'Two operators watch the corridor.',
+        },
+        {
+          locationId: 'loc_d4e5f6',
+          name: 'Service Corridor',
+          description: 'Concrete walls and exposed vents.',
+          environmentAppearance: 'Narrow floor marks and maintenance panels.',
+          atmosphereDescription: 'Quiet, narrow, watchful.',
+          humanContextDescription: 'Used by staff during off hours.',
+        },
+      ],
+    }),
   };
 }
 
@@ -157,6 +199,33 @@ function removeSceneCast(packagePath: string): void {
   >;
   const { cast, ...nextSceneSpec } = sceneSpec;
   void cast;
+
+  writeFileSync(path.resolve(packagePath, 'scene.yaml'), YAML.stringify(nextSceneSpec), 'utf8');
+}
+
+function writeSceneLocationIds(packagePath: string, locationIds: readonly string[]): void {
+  const sceneSpec = YAML.parse(readFileSync(path.resolve(packagePath, 'scene.yaml'), 'utf8')) as Record<
+    string,
+    unknown
+  >;
+
+  writeFileSync(
+    path.resolve(packagePath, 'scene.yaml'),
+    YAML.stringify({
+      ...sceneSpec,
+      locationIds: [...locationIds],
+    }),
+    'utf8',
+  );
+}
+
+function removeSceneLocationIds(packagePath: string): void {
+  const sceneSpec = YAML.parse(readFileSync(path.resolve(packagePath, 'scene.yaml'), 'utf8')) as Record<
+    string,
+    unknown
+  >;
+  const { locationIds, ...nextSceneSpec } = sceneSpec;
+  void locationIds;
 
   writeFileSync(path.resolve(packagePath, 'scene.yaml'), YAML.stringify(nextSceneSpec), 'utf8');
 }
@@ -207,6 +276,48 @@ describe('story loader', () => {
     expect(runtimePackage.worldBase.hero.characterId).toBeDefined();
     expect(runtimePackage.worldBase.coreCast).toHaveLength(2);
     expect(runtimePackage.worldBase.antagonists).toHaveLength(1);
+  });
+
+  it('projects only the selected scene locations into the runtime package', async () => {
+    const packageName = '__runtime-location-sample-scene__';
+    const packagePath = copySamplePackage(packageName);
+    writeStructuredWorldBase(packagePath);
+    writeSceneLocationIds(packagePath, ['loc_d4e5f6']);
+
+    const storyLoader = await import('@/engine/story-loader');
+    const runtimePackage = await storyLoader.loadRuntimeStoryPackage(packageName);
+
+    expect(runtimePackage.worldBase.locations).toHaveLength(1);
+    expect(runtimePackage.worldBase.locations[0]?.locationId).toBe('loc_d4e5f6');
+    expect(runtimePackage.worldBase.locationPatch).toBe(
+      projectLegacyLocationPatchFromStructuredLocations({
+        locationPatch: '',
+        locations: [
+          {
+            locationId: 'loc_d4e5f6',
+            name: 'Service Corridor',
+            description: 'Concrete walls and exposed vents.',
+            environmentAppearance: 'Narrow floor marks and maintenance panels.',
+            atmosphereDescription: 'Quiet, narrow, watchful.',
+            humanContextDescription: 'Used by staff during off hours.',
+          },
+        ],
+      }),
+    );
+    expect(runtimePackage.worldBase.locationPatch).not.toContain('Signal Room');
+  });
+
+  it('drops scene locations from the runtime package when the scene does not specify any', async () => {
+    const packageName = '__runtime-absent-location-sample-scene__';
+    const packagePath = copySamplePackage(packageName);
+    writeStructuredWorldBase(packagePath);
+    removeSceneLocationIds(packagePath);
+
+    const storyLoader = await import('@/engine/story-loader');
+    const runtimePackage = await storyLoader.loadRuntimeStoryPackage(packageName);
+
+    expect(runtimePackage.worldBase.locations).toHaveLength(0);
+    expect(runtimePackage.worldBase.locationPatch).toBe('');
   });
 
   it('migrates legacy world-base content in memory when loading a package', async () => {

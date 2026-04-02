@@ -125,6 +125,7 @@ export async function runEditWorkbenchUiSmoke(
       createElement(EditWorkbench, {
         packageName: fixture.packageName,
         activeSection: 'worldbase-cast',
+        activeSurface: 'world',
         initialState,
       }),
     );

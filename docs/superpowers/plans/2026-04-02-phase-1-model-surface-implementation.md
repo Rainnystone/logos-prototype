@@ -438,6 +438,12 @@ Execution note:
   - `npm test`
 - The commit step remains intentionally open until the current uncommitted verification-support changes are grouped for the next clean checkpoint.
 
+2026-04-02 post-plan follow-up:
+- the scene-location selector was later aligned to the same collapsible / chip-removal shell as `SceneCast`
+- runtime projection was extended so `sceneSpec.locationIds` actively filters `worldBase.locations` and the derived `locationPatch`
+- when no explicit scene locations remain, prompt assembly now omits the location line entirely instead of emitting an empty placeholder
+- the selector also gained an explicit `清空显式地点` recovery action so stale location IDs can be removed without leaving the page stuck behind bridge validation
+
 ## Task 6: Move page-local status into the page top area while keeping helper guidance on the right
 
 **Files:**
