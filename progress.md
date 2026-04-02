@@ -109,3 +109,30 @@
   - 关系区在 `Phase 1` 正式存在，但允许为空态
   - 不为关系区增加临时数据桥接
   - agent 区域在 `Phase 1` 先做信息面，不做操作台
+- 已将用户逐段认可的 `Phase 1` 设计收束成正式 spec 文件：
+  - `docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md`
+- 当前进入 `brainstorming` 要求的 spec review loop，先做独立文档审阅，再把文档交给用户确认。
+- 第一轮独立 spec 审阅发现两处会影响 implementation plan 的缺口：
+  - 需要明确 `世界` / `角色` 拆页是否改变现有 section/save contract 边界
+  - 需要明确结构化地点与场景地点引用的持久化契约与运行时兼容策略
+- 已根据审阅意见修订 spec：
+  - 明确 `世界` / `角色` 只是 UI 路由拆分，`Phase 1` 仍共用现有 `worldbase-cast` 保存边界
+  - 明确地点先作为 authoring model 结构化，同时保留对现有 runtime 输入的兼容投影
+  - 明确场景地点引用是可选多选的 location ID 列表
+  - 明确 agent 最近状态只显示固定摘要，不扩展成原始状态浏览
+- 第二轮独立 spec 审阅又补充暴露了四个会影响 implementation plan 的歧义：
+  - 五个 UI workspace 与现有四个 section family 的映射关系
+  - 结构化地点最终落到哪一层合同
+  - 场景地点引用的基数与删除规则
+  - agent 面板到底只展示谁，以及数据源来自哪里
+- 已再次修订 spec：
+  - 增加 UI workspace 到现有 section ID 的明确映射表
+  - 明确 `worldBase.locations[]` 为 authoring 真正来源，`locationPatch` 为兼容投影
+  - 明确 `sceneSpec.locationIds?: string[]` 为可选多选字段
+  - 明确删除被引用地点时阻止保存，不做静默清理
+  - 明确 agent surface 只展示真实 sidecar agent，并说明数据来源
+- 已发起第三轮终审，但 reviewer 未在当前等待窗口内返回结果。
+- 当前可确认状态是：
+  - spec 已写出
+  - 前两轮真正会影响 implementation plan 的问题都已被吸收并修正
+  - 现在进入用户 review 这份 spec 的节点
