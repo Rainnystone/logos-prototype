@@ -200,6 +200,97 @@ describe('EditWorkbench', () => {
     expect(screen.getByText('已恢复到最新保存版本。')).toBeInTheDocument();
   });
 
+  it('applies a fresh same-package initial state when the active worldbase surface does not change', () => {
+    const updatedState = {
+      ...storyPackageFixture,
+      worldBase: {
+        ...storyPackageFixture.worldBase,
+        worldBaseSetting: 'server refreshed world',
+      },
+    };
+
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: updatedState,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveDisplayValue(
+      'server refreshed world',
+    );
+  });
+
+  it('reloads the latest package state after leaving the shared worldbase surface family', async () => {
+    const user = userEvent.setup();
+    const updatedStoryPackage = {
+      ...storyPackageFixture,
+      worldBase: {
+        ...storyPackageFixture.worldBase,
+        worldBaseSetting: 'server replacement',
+      },
+    };
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.clear(screen.getByRole('textbox', { name: '世界基础设定' }));
+    await user.type(screen.getByRole('textbox', { name: '世界基础设定' }), 'shared draft');
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="scene-phase-authoring"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: updatedStoryPackage,
+        }}
+      />,
+    );
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: updatedStoryPackage,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveDisplayValue(
+      'server replacement',
+    );
+  });
+
   it('shows localized save-warning and reset status copy in the shared helper', async () => {
     const user = userEvent.setup();
     const fetchMock = vi

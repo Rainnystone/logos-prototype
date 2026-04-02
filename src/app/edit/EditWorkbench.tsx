@@ -178,7 +178,11 @@ export function EditWorkbench({
   );
   const [controlModulesSaveStatus, setControlModulesSaveStatus] = useState<string | null>(null);
   const [isControlModulesSaving, setIsControlModulesSaving] = useState(false);
-  const loadedPackageNameRef = useRef(packageName);
+  const previousRouteRef = useRef<{
+    readonly packageName: string;
+    readonly activeSection: SectionId;
+    readonly activeSurface: WorldbaseSurface;
+  } | null>(null);
   const activeSectionSummary = SECTION_SUMMARIES[activeSection];
   const sceneName = currentState.sceneSpec.sceneName;
   const routerOptions = getRouterOptions(currentState.routerProfiles);
@@ -224,11 +228,22 @@ export function EditWorkbench({
   );
 
   useEffect(() => {
-    if (loadedPackageNameRef.current === packageName) {
+    const previousRoute = previousRouteRef.current;
+    previousRouteRef.current = {
+      packageName,
+      activeSection,
+      activeSurface,
+    };
+
+    const isWorldbaseSurfaceSwitchOnly =
+      previousRoute?.packageName === packageName &&
+      previousRoute.activeSection === 'worldbase-cast' &&
+      activeSection === 'worldbase-cast' &&
+      previousRoute.activeSurface !== activeSurface;
+
+    if (isWorldbaseSurfaceSwitchOnly) {
       return;
     }
-
-    loadedPackageNameRef.current = packageName;
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
     setCurrentAuthoringState(initialState.authoringState ?? null);
@@ -250,7 +265,14 @@ export function EditWorkbench({
     setSavedControlModules(nextControlModulesDraft);
     setControlModulesSaveStatus(null);
     setIsControlModulesSaving(false);
-  }, [initialState.authoringState, initialState.source, initialState.state, packageName]);
+  }, [
+    activeSection,
+    activeSurface,
+    initialState.authoringState,
+    initialState.source,
+    initialState.state,
+    packageName,
+  ]);
 
   function rememberSaveResult(result: SaveResult) {
     setRecentSaveResults((currentResults) => {
