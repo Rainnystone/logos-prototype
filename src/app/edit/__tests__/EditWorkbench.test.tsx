@@ -95,6 +95,111 @@ describe('EditWorkbench', () => {
     expect(screen.getByRole('link', { name: '角色' })).not.toHaveAttribute('aria-current');
   });
 
+  it('keeps unsaved worldbase edits when rerendering with a fresh surface-specific initialState', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.clear(screen.getByRole('textbox', { name: '世界基础设定' }));
+    await user.type(screen.getByRole('textbox', { name: '世界基础设定' }), 'shared draft');
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: {
+            ...storyPackageFixture,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute('aria-current', 'page');
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: {
+            ...storyPackageFixture,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveDisplayValue(
+      'shared draft',
+    );
+  });
+
+  it('restores the latest saved worldbase draft when reset from the character surface', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.clear(screen.getByRole('textbox', { name: '世界基础设定' }));
+    await user.type(screen.getByRole('textbox', { name: '世界基础设定' }), 'reset candidate');
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: {
+            ...storyPackageFixture,
+          },
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '重置本页' }));
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: {
+            ...storyPackageFixture,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveDisplayValue(
+      storyPackageFixture.worldBase.worldBaseSetting,
+    );
+    expect(screen.getByText('已恢复到最新保存版本。')).toBeInTheDocument();
+  });
+
   it('shows localized save-warning and reset status copy in the shared helper', async () => {
     const user = userEvent.setup();
     const fetchMock = vi

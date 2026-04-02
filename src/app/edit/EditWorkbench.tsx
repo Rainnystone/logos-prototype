@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
@@ -178,6 +178,7 @@ export function EditWorkbench({
   );
   const [controlModulesSaveStatus, setControlModulesSaveStatus] = useState<string | null>(null);
   const [isControlModulesSaving, setIsControlModulesSaving] = useState(false);
+  const loadedPackageNameRef = useRef(packageName);
   const activeSectionSummary = SECTION_SUMMARIES[activeSection];
   const sceneName = currentState.sceneSpec.sceneName;
   const routerOptions = getRouterOptions(currentState.routerProfiles);
@@ -223,6 +224,11 @@ export function EditWorkbench({
   );
 
   useEffect(() => {
+    if (loadedPackageNameRef.current === packageName) {
+      return;
+    }
+
+    loadedPackageNameRef.current = packageName;
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
     setCurrentAuthoringState(initialState.authoringState ?? null);
