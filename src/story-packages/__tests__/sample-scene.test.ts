@@ -5,6 +5,7 @@ import YAML from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 import { AuditQuestionSetSchema, CharacterRelationshipsFileSchema } from '@/types';
+import { projectLegacyLocationPatchFromStructuredLocations } from '@/story-packages/world-base-compat';
 import {
   PhasePlansFileSchema,
   RouterLexiconFileSchema,
@@ -26,6 +27,7 @@ type StructuredSceneSpec = {
   readonly samplePurpose?: string;
   readonly source?: string;
   readonly cast?: readonly string[];
+  readonly locationIds?: readonly string[];
 };
 
 type StructuredWorldBase = {
@@ -33,6 +35,14 @@ type StructuredWorldBase = {
   readonly coreCast: ReadonlyArray<{ readonly name: string; readonly characterId: string }>;
   readonly antagonists: ReadonlyArray<{ readonly name: string; readonly characterId: string }>;
   readonly npcCharacters: string;
+  readonly locations: ReadonlyArray<{
+    readonly locationId: string;
+    readonly name: string;
+    readonly description: string;
+    readonly environmentAppearance: string;
+    readonly atmosphereDescription: string;
+    readonly humanContextDescription: string;
+  }>;
   readonly locationPatch: string;
 };
 
@@ -102,6 +112,18 @@ describe('sample-scene story package', () => {
     ]);
     expect(scene.cast).not.toContain(worldBase.hero.characterId);
     expect(scene.cast?.every((characterId) => knownCharacterIds.has(characterId))).toBe(true);
+  });
+
+  it('stores explicit scene location ids that cover every structured location in the package', () => {
+    const scene = readYamlFile<StructuredSceneSpec>(
+      path.resolve(projectFixtureRoot, 'scene.yaml'),
+    );
+    const worldBase = readYamlFile<StructuredWorldBase>(
+      path.resolve(projectFixtureRoot, 'world-base.yaml'),
+    );
+
+    expect(scene.locationIds).toEqual(worldBase.locations.map((location) => location.locationId));
+    expect(scene.locationIds).toHaveLength(3);
   });
 
   it('converts PhasePlan fixtures into a valid phase-plans.yaml file', () => {
@@ -235,7 +257,27 @@ describe('sample-scene story package', () => {
     expect(worldBase.npcCharacters).toContain('竹田启司：');
     expect(worldBase.npcCharacters).toContain('末真和子：');
     expect(worldBase.npcCharacters).toContain('新刻敬：');
-    expect(worldBase.locationPatch.length).toBeGreaterThan(0);
+    expect(worldBase.locations).toMatchObject([
+      {
+        locationId: expect.stringMatching(/^loc_[0-9a-f]{6}$/),
+        name: '2年C班教室',
+      },
+      {
+        locationId: expect.stringMatching(/^loc_[0-9a-f]{6}$/),
+        name: '午后的走廊与楼梯间',
+      },
+      {
+        locationId: expect.stringMatching(/^loc_[0-9a-f]{6}$/),
+        name: '旧校舍废弃视听室/机房',
+      },
+    ]);
+    expect(worldBase.locationPatch).toBe(
+      projectLegacyLocationPatchFromStructuredLocations({
+        locationPatch: worldBase.locationPatch,
+        locations: worldBase.locations,
+      }),
+    );
+    expect(worldBase.locationPatch).not.toContain('### A.');
   });
 
   it('stores package-local gossipelog relationships under the agent-owned path', () => {

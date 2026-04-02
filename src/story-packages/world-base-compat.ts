@@ -10,7 +10,8 @@ export interface LegacyWorldBaseLike {
 }
 
 export interface SceneCastLike {
-  readonly cast?: readonly string[];
+  readonly cast?: readonly string[] | undefined;
+  readonly locationIds?: readonly string[] | undefined;
 }
 
 export interface WorldBaseCharacterProfile {
@@ -644,12 +645,23 @@ export function filterWorldBaseForSceneCast(
   sceneSpec?: SceneCastLike,
 ): StructuredWorldBase {
   const cast = sceneSpec?.cast;
+  const locationIds = sceneSpec?.locationIds;
+  const locationIdSet = new Set(locationIds ?? []);
+  const projectedLocations = worldBase.locations.filter((location) =>
+    locationIdSet.has(location.locationId),
+  );
+  const projectedLocationPatch = projectLegacyLocationPatchFromStructuredLocations({
+    locationPatch: '',
+    locations: projectedLocations,
+  });
 
   if (!cast) {
     return {
       ...worldBase,
       coreCast: [...worldBase.coreCast],
       antagonists: [...worldBase.antagonists],
+      locations: projectedLocations,
+      locationPatch: projectedLocationPatch,
     };
   }
 
@@ -659,5 +671,7 @@ export function filterWorldBaseForSceneCast(
     ...worldBase,
     coreCast: worldBase.coreCast.filter((character) => castSet.has(character.characterId)),
     antagonists: worldBase.antagonists.filter((character) => castSet.has(character.characterId)),
+    locations: projectedLocations,
+    locationPatch: projectedLocationPatch,
   };
 }

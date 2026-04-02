@@ -373,10 +373,15 @@ describe('ScenePhaseAuthoringSection', () => {
     render(<PageHarness />);
 
     expect(screen.getByText('可选地点')).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Signal Room' })).not.toBeChecked();
-    expect(screen.getByRole('checkbox', { name: 'Service Corridor' })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: '场景地点' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByText('当前场景未指定地点。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Signal Room' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('checkbox', { name: 'Signal Room' }));
+    await user.click(screen.getByText('Scene Location'));
+    await user.click(screen.getByRole('button', { name: '选择地点 Signal Room' }));
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -385,9 +390,10 @@ describe('ScenePhaseAuthoringSection', () => {
         }),
       }),
     );
-    expect(screen.getByRole('checkbox', { name: 'Signal Room' })).toBeChecked();
+    expect(screen.getByText('已选 1 个地点。')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '移除 Signal Room' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('checkbox', { name: 'Service Corridor' }));
+    await user.click(screen.getByRole('button', { name: '选择地点 Service Corridor' }));
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -396,9 +402,10 @@ describe('ScenePhaseAuthoringSection', () => {
         }),
       }),
     );
+    expect(screen.getByText('已选 2 个地点。')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('checkbox', { name: 'Signal Room' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Service Corridor' }));
+    await user.click(screen.getByRole('button', { name: '移除 Signal Room' }));
+    await user.click(screen.getByRole('button', { name: '移除 Service Corridor' }));
 
     expect(
       onChange.mock.calls.some(
@@ -409,7 +416,8 @@ describe('ScenePhaseAuthoringSection', () => {
           !('locationIds' in (nextValue as { sceneSpec: Record<string, unknown> }).sceneSpec),
       ),
     ).toBe(true);
-    expect(screen.getByRole('checkbox', { name: 'Signal Room' })).not.toBeChecked();
-    expect(screen.getByRole('checkbox', { name: 'Service Corridor' })).not.toBeChecked();
+    expect(screen.getByText('当前场景未指定地点。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Signal Room' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '移除 Service Corridor' })).not.toBeInTheDocument();
   });
 });

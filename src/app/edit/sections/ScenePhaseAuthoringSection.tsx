@@ -15,6 +15,7 @@ import {
   SceneCastSelector,
   type SceneCastLibrary,
 } from '@/app/edit/sections/SceneCastSelector';
+import { SceneLocationSelector } from '@/app/edit/sections/SceneLocationSelector';
 
 type SceneField = keyof ScenePhaseAuthoringDraft['sceneSpec'];
 type PhaseField = keyof ScenePhasePlanDraft;
@@ -128,28 +129,17 @@ export function ScenePhaseAuthoringSection({
     });
   }
 
-  function updateSceneLocations(locationId: string, checked: boolean) {
-    const currentLocationIds = new Set(value.sceneSpec.locationIds ?? []);
-    if (checked) {
-      currentLocationIds.add(locationId);
-    } else {
-      currentLocationIds.delete(locationId);
-    }
-
-    const nextLocationIds = sceneLocations
-      .map((location) => location.locationId)
-      .filter((candidateId) => currentLocationIds.has(candidateId));
-
+  function updateSceneLocations(nextLocationIds: readonly string[] | undefined) {
     const restSceneSpec = { ...value.sceneSpec };
     delete restSceneSpec.locationIds;
 
     onChange({
       ...value,
       sceneSpec:
-        nextLocationIds.length > 0
+        nextLocationIds && nextLocationIds.length > 0
           ? {
               ...restSceneSpec,
-              locationIds: nextLocationIds,
+              locationIds: [...nextLocationIds],
             }
           : restSceneSpec,
     });
@@ -401,50 +391,24 @@ export function ScenePhaseAuthoringSection({
                   onChange={updateSceneCast}
                 />
               </div>
-              <div className="mt-5 rounded-none border-2 border-black bg-white p-4">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="panel-eyebrow">Scene Location</p>
-                    <h4 className="text-lg font-semibold text-slate-900">可选地点</h4>
-                  </div>
-                  <p className="panel-note">可不选；未选择时不会写入场景地点。</p>
-                </div>
+              <div className="mt-5">
                 {sceneLocations.length > 0 ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {sceneLocations.map((location) => {
-                      const label = location.name.trim() || location.locationId;
-                      const isChecked = (value.sceneSpec.locationIds ?? []).includes(
-                        location.locationId,
-                      );
-
-                      return (
-                        <label
-                          key={location.locationId}
-                          className="flex cursor-pointer gap-3 rounded-none border-2 border-black bg-[#f5f5f5] p-3"
-                        >
-                          <input
-                            type="checkbox"
-                            aria-label={label}
-                            checked={isChecked}
-                            onChange={(event) =>
-                              updateSceneLocations(location.locationId, event.currentTarget.checked)
-                            }
-                            className="mt-1 h-4 w-4 rounded-none border-2 border-black text-black accent-black"
-                          />
-                          <span className="min-w-0">
-                            <span className="block text-sm font-semibold text-black">{label}</span>
-                            {location.description.trim() ? (
-                              <span className="mt-1 block text-sm leading-relaxed text-black/70">
-                                {location.description}
-                              </span>
-                            ) : null}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  <SceneLocationSelector
+                    value={value.sceneSpec.locationIds}
+                    sceneLocations={sceneLocations}
+                    onChange={updateSceneLocations}
+                  />
                 ) : (
-                  <p className="panel-note">世界页还没有可选地点。</p>
+                  <div className="rounded-none border-2 border-black bg-white p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="panel-eyebrow">Scene Location</p>
+                        <h4 className="text-lg font-semibold text-slate-900">可选地点</h4>
+                      </div>
+                      <p className="panel-note">可不选；未选择时不会写入场景地点。</p>
+                    </div>
+                    <p className="panel-note">世界页还没有可选地点。</p>
+                  </div>
                 )}
               </div>
           </section>

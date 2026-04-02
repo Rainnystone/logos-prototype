@@ -26,6 +26,8 @@
   - `structured save -> bridge validation -> writeback -> reload -> diagnostics`
 - 玩家链路回归：
   - `runtime start/runBeat -> adapter outbound/inbound -> accept -> state update`
+- 运行时投影核对：
+  - `scene-phase authoring -> scene location selection -> runtime package projection -> prompt location patch`
 - adapter / provider 异常路径：
   - timeout
   - malformed response
@@ -63,7 +65,7 @@
 | `Scenario manifest` | `simulation-toolset/src/scenario-manifest.ts` | 管理场景清单与 batch metadata |
 | `Temp package helper` | `simulation-toolset/src/temp-package.ts` | 构造临时 story package fixture |
 | `Temp package scavenger` | `simulation-toolset/src/temp-package-scavenger.ts` | 列出、dry-run、清理 `.tmp-simulation-*` |
-| `Route smoke` | `simulation-toolset/src/route-smoke.ts` | 程序化验证正式 route 还连着正式边界 |
+| `Route smoke` | `simulation-toolset/src/route-smoke.ts` | 程序化验证正式 route 还连着正式边界，并可核对 scene-phase 地点选择是否真的进入 runtime prompt projection |
 | `UI smoke` | `simulation-toolset/src/ui-smoke.ts` | 用轻量 UI smoke 验证页面仍连着正式链路 |
 
 ## 4. 工作前提
@@ -154,6 +156,13 @@
 - `npm run test:simulation -- simulation-toolset/tests/route-smoke.test.ts`
 - `npm run test:simulation -- simulation-toolset/tests/ui-smoke.test.ts`
 - `npm run test:simulation -- simulation-toolset/tests/governance.test.ts`
+
+如果本轮变更涉及场景阵容、地点选择或 prompt 投影边界，优先查看 `route-smoke.test.ts` 是否已经覆盖：
+
+- `scene-phase authoring -> runtime projection -> generate request`
+- 选中的地点进入 prompt
+- 未选择的地点不进入 prompt
+- 清空选择后 prompt 中不再保留地点文本
 
 如果 simulation run 暴露出正式边界问题，再补跑跨边界验证：
 

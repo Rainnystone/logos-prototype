@@ -94,7 +94,10 @@ async function loadStoryPackageInternal(
   const projectedWorldBase = options?.runtimeProjection
     ? filterWorldBaseForSceneCast(
         worldBase as Parameters<typeof filterWorldBaseForSceneCast>[0],
-        sceneSpec.cast ? { cast: sceneSpec.cast } : undefined,
+        {
+          ...(sceneSpec.cast ? { cast: sceneSpec.cast } : {}),
+          ...(sceneSpec.locationIds ? { locationIds: sceneSpec.locationIds } : {}),
+        },
       )
     : worldBase;
 

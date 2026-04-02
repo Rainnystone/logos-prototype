@@ -58,6 +58,16 @@ function formatRouters(request: RouteRequest): string {
 }
 
 export function buildGenerateSystemPrompt(prompt: PromptObject): string {
+  const worldBaseLines = [
+    '[World Base]',
+    `Main characters: ${prompt.worldBase.mainCharacters}`,
+    `NPC characters: ${prompt.worldBase.npcCharacters || 'none'}`,
+  ];
+
+  if (prompt.worldBase.locationPatch.trim()) {
+    worldBaseLines.push(`Location patch: ${prompt.worldBase.locationPatch}`);
+  }
+
   return [
     'You are LOGOS, a controlled interactive fiction storyteller.',
     'Act with narrative initiative inside the supplied boundaries and make full use of the provided story resources.',
@@ -70,10 +80,7 @@ export function buildGenerateSystemPrompt(prompt: PromptObject): string {
     'Instead, infer the protagonist\'s actual outward behavior from the current context and continue the beat with actions that remain fully consistent with the established constraints.',
     'The blocked impulse may still surface inside the narration as internal monologue or self-directed commentary, but it cannot become enacted behavior.',
     '',
-    '[World Base]',
-    `Main characters: ${prompt.worldBase.mainCharacters}`,
-    `NPC characters: ${prompt.worldBase.npcCharacters || 'none'}`,
-    `Location patch: ${prompt.worldBase.locationPatch}`,
+    ...worldBaseLines,
     '',
     '[Dynamic Relationship Layer]',
     `Highlighted deltas: ${prompt.relationshipLayer?.highlightedDeltasText || 'none'}`,
