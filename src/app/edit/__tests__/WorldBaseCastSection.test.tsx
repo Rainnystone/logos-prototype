@@ -1,11 +1,81 @@
-import { useState } from 'react';
-
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
 import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
+
+const renderWorldSection = vi.hoisted(() => vi.fn());
+const renderCharacterSection = vi.hoisted(() => vi.fn());
+
+function stringifySelection(selection: unknown): string {
+  if (!selection || typeof selection !== 'object') {
+    return 'none';
+  }
+
+  const candidate = selection as { group?: string; characterId?: string };
+  if (candidate.group === 'hero') {
+    return 'hero';
+  }
+
+  if (
+    (candidate.group === 'coreCast' || candidate.group === 'antagonists') &&
+    typeof candidate.characterId === 'string'
+  ) {
+    return `${candidate.group}:${candidate.characterId}`;
+  }
+
+  return 'none';
+}
+
+vi.mock('@/app/edit/sections/WorldSection', () => ({
+  WorldSection: (props: unknown) => {
+    renderWorldSection(props);
+    const worldProps = props as {
+      selectedLocationDraftId?: string | null;
+      onSelectedLocationDraftIdChange?: (nextDraftId: string | null) => void;
+    };
+
+    return (
+      <div data-testid="world-section-mock">
+        <p data-testid="selected-location">{worldProps.selectedLocationDraftId ?? 'none'}</p>
+        <button
+          type="button"
+          onClick={() => worldProps.onSelectedLocationDraftIdChange?.('loc-2')}
+        >
+          select-location-2
+        </button>
+      </div>
+    );
+  },
+}));
+
+vi.mock('@/app/edit/sections/CharacterSection', () => ({
+  CharacterSection: (props: unknown) => {
+    renderCharacterSection(props);
+    const characterProps = props as {
+      selection?: unknown;
+      onSelectionChange?: (nextSelection: unknown) => void;
+    };
+
+    return (
+      <div data-testid="character-section-mock">
+        <p data-testid="selected-character">{stringifySelection(characterProps.selection)}</p>
+        <button
+          type="button"
+          onClick={() =>
+            characterProps.onSelectionChange?.({
+              group: 'antagonists',
+              characterId: 'chr_ant001',
+            })
+          }
+        >
+          select-antagonist
+        </button>
+      </div>
+    );
+  },
+}));
 
 const draftValue: WorldBaseCastDraft = {
   worldBaseSetting: 'World base',
@@ -14,223 +84,96 @@ const draftValue: WorldBaseCastDraft = {
   hero: {
     draftId: 'hero-1',
     characterId: 'chr_hero001',
-    name: '',
-    identityRole: 'Lead breaker',
-    lightNovelTrait: 'Silent pressure',
+    name: 'Hero',
+    identityRole: '',
+    lightNovelTrait: '',
     gender: '',
     personality: '',
-    age: '17',
-    occupation: 'Student',
-    characterSummary: 'Moves straight at the threat.',
-    capabilityBoundary: 'No magic.',
-    behaviorBoundary: 'Never stops the trace.',
-    oocRedLine: 'No speeches.',
-    clothing: 'Uniform',
-    propsWeapon: 'Ceramic blade',
+    age: '',
+    occupation: '',
+    characterSummary: '',
+    capabilityBoundary: '',
+    behaviorBoundary: '',
+    oocRedLine: '',
+    clothing: '',
+    propsWeapon: '',
   },
-  coreCast: [
-    {
-      draftId: 'core-1',
-      characterId: 'chr_core001',
-      name: 'Core One',
-      identityRole: 'Anchor',
-      lightNovelTrait: 'Soft contrast',
-      gender: 'Female',
-      personality: 'Gentle',
-      age: '17',
-      occupation: 'Student',
-      characterSummary: 'Keeps the ordinary layer intact.',
-      capabilityBoundary: '',
-      behaviorBoundary: 'Stays out of direct danger.',
-      oocRedLine: 'Never notices the anomaly.',
-      clothing: '',
-      propsWeapon: '',
-    },
-  ],
+  coreCast: [],
   antagonists: [
     {
       draftId: 'antagonist-1',
       characterId: 'chr_ant001',
-      name: 'Villain One',
-      identityRole: 'Threat',
-      lightNovelTrait: 'Showman',
-      gender: 'Male',
-      personality: 'Chaotic',
-      age: '19',
-      occupation: 'Streamer',
-      characterSummary: 'Turns attention into pressure.',
-      capabilityBoundary: 'Needs attention to trigger.',
-      behaviorBoundary: 'Always performs.',
-      oocRedLine: 'Cannot become quiet.',
+      name: 'Antagonist one',
+      identityRole: '',
+      lightNovelTrait: '',
+      gender: '',
+      personality: '',
+      age: '',
+      occupation: '',
+      characterSummary: '',
+      capabilityBoundary: '',
+      behaviorBoundary: '',
+      oocRedLine: '',
       clothing: '',
       propsWeapon: '',
-      fatalWeakness: 'Attention drop',
+      fatalWeakness: '',
     },
   ],
-  supportingCast: 'Support One：Steady witness',
-  locations: [],
-  locationPool: 'Signal room',
+  supportingCast: '',
+  locations: [
+    {
+      draftId: 'loc-1',
+      locationId: 'loc_111111',
+      name: 'Location one',
+      description: '',
+      environmentAppearance: '',
+      atmosphereDescription: '',
+      humanContextDescription: '',
+    },
+    {
+      draftId: 'loc-2',
+      locationId: 'loc_222222',
+      name: 'Location two',
+      description: '',
+      environmentAppearance: '',
+      atmosphereDescription: '',
+      humanContextDescription: '',
+    },
+  ],
+  locationPool: '',
 };
 
-function renderControlledSection(initialValue: WorldBaseCastDraft = draftValue) {
-  const onSubmit = vi.fn();
-  const onReset = vi.fn();
-  const onChange = vi.fn();
-  let latestValue = initialValue;
-
-  function Harness() {
-    const [value, setValue] = useState(initialValue);
-    latestValue = value;
-
-    return (
-      <WorldBaseCastSection
-        packageName="sample-scene"
-        value={value}
-        onChange={(nextValue) => {
-          latestValue = nextValue;
-          onChange(nextValue);
-          setValue(nextValue);
-        }}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      />
-    );
-  }
-
-  render(<Harness />);
-
-  return {
-    onSubmit,
-    onReset,
-    onChange,
-    getValue: () => latestValue,
-  };
+function renderSection(activeSurface: 'world' | 'character') {
+  return render(
+    <WorldBaseCastSection
+      packageName="sample-scene"
+      activeSurface={activeSurface}
+      value={draftValue}
+      onChange={vi.fn()}
+      onSubmit={vi.fn()}
+      onReset={vi.fn()}
+    />,
+  );
 }
 
 describe('WorldBaseCastSection', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    renderWorldSection.mockReset();
+    renderCharacterSection.mockReset();
   });
 
-  it('renders world blocks plus character rails and a detailed editor', async () => {
-    class ResizeObserverMock {
-      private readonly callback: ResizeObserverCallback;
+  it('renders only the active surface wrapper content', () => {
+    const { rerender } = renderSection('world');
 
-      constructor(callback: ResizeObserverCallback) {
-        this.callback = callback;
-      }
+    expect(screen.getByRole('heading', { name: '世界' })).toBeInTheDocument();
+    expect(screen.getByTestId('world-section-mock')).toBeInTheDocument();
+    expect(screen.queryByTestId('character-section-mock')).not.toBeInTheDocument();
 
-      observe(target: Element) {
-        this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver);
-      }
-
-      disconnect() {}
-      unobserve() {}
-    }
-
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
-      this: HTMLElement,
-    ) {
-      if (this.getAttribute('aria-label') === 'Character editor column') {
-        return DOMRect.fromRect({ width: 420, height: 960 });
-      }
-
-      return DOMRect.fromRect({ width: 420, height: 320 });
-    });
-
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const onChange = vi.fn();
-
-    render(
+    rerender(
       <WorldBaseCastSection
         packageName="sample-scene"
-        value={draftValue}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      />,
-    );
-
-    const workspaceRegion = screen.getByRole('region', { name: 'WorldBase workspace' });
-    expect(workspaceRegion).toBeInTheDocument();
-    expect(workspaceRegion.parentElement?.className).toContain('items-stretch');
-    expect(workspaceRegion.className).toContain('min-h-[calc(100vh-16rem)]');
-    expect(workspaceRegion.className).toContain('overflow-y-auto');
-    await waitFor(() => {
-      expect(workspaceRegion).toHaveStyle({ height: '960px' });
-    });
-    expect(screen.getByRole('heading', { name: '世界文本块' }).closest('section')?.className).not.toContain(
-      'min-h-full',
-    );
-    expect(screen.getByRole('region', { name: 'Character editor column' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '世界与角色' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: '世界基础设定' })).toHaveValue('World base');
-    expect(screen.getByRole('button', { name: /未命名角色/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Core One/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Villain One/ })).toBeInTheDocument();
-    expect(screen.getByText('世界基础')).toBeInTheDocument();
-    expect(screen.getByText('世界规则 / 禁忌 / 异常性质')).toBeInTheDocument();
-    expect(screen.getByText('文风基线')).toBeInTheDocument();
-    expect(screen.getByText('主角')).toBeInTheDocument();
-    expect(screen.getByText('核心角色')).toBeInTheDocument();
-    expect(screen.getByText('反派')).toBeInTheDocument();
-    expect(screen.getByText('杂项块')).toBeInTheDocument();
-    expect(screen.getByText('当前角色')).toBeInTheDocument();
-    expect(screen.getByText('当前条目')).toBeInTheDocument();
-    expect(screen.getByText('完整卡片')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: /Core One/ }));
-    expect(screen.getByRole('heading', { name: 'Core One' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: '角色名' })).toHaveValue('Core One');
-
-    await user.clear(screen.getByRole('textbox', { name: '角色名' }));
-    await user.type(screen.getByRole('textbox', { name: '角色名' }), 'Core Two');
-
-    expect(onChange).toHaveBeenCalled();
-
-    await user.click(screen.getByRole('button', { name: '新增核心角色' }));
-    await user.click(screen.getByRole('button', { name: '新增反派' }));
-
-    await user.click(screen.getByRole('button', { name: '保存本页' }));
-    await user.click(screen.getByRole('button', { name: '重置本页' }));
-
-    expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(onReset).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows Chinese fallbacks when the hero card is missing name and traits', async () => {
-    class ResizeObserverMock {
-      private readonly callback: ResizeObserverCallback;
-
-      constructor(callback: ResizeObserverCallback) {
-        this.callback = callback;
-      }
-
-      observe(target: Element) {
-        this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver);
-      }
-
-      disconnect() {}
-      unobserve() {}
-    }
-
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function mockRect(
-      this: HTMLElement,
-    ) {
-      if (this.getAttribute('aria-label') === 'Character editor column') {
-        return DOMRect.fromRect({ width: 420, height: 960 });
-      }
-
-      return DOMRect.fromRect({ width: 420, height: 320 });
-    });
-
-    render(
-      <WorldBaseCastSection
-        packageName="sample-scene"
+        activeSurface="character"
         value={draftValue}
         onChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -238,50 +181,78 @@ describe('WorldBaseCastSection', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: '未命名角色' })).toBeInTheDocument();
-    expect(screen.getByText('性别 / 性格')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '角色' })).toBeInTheDocument();
+    expect(screen.getByTestId('character-section-mock')).toBeInTheDocument();
+    expect(screen.queryByTestId('world-section-mock')).not.toBeInTheDocument();
   });
 
-  it('assigns a stable characterId when adding a character and does not reuse an existing id after delete-then-add', async () => {
+  it('keeps selected location context when switching surfaces', async () => {
     const user = userEvent.setup();
-    const initialValue: WorldBaseCastDraft = {
-      ...draftValue,
-      coreCast: [
-        {
-          ...draftValue.coreCast[0]!,
-          draftId: 'legacy-core-1',
-          characterId: 'chr_core001',
-          name: 'Core One',
-        },
-        {
-          ...draftValue.coreCast[0]!,
-          draftId: 'legacy-core-2',
-          characterId: 'chr_core002',
-          name: 'Core Two',
-        },
-      ],
-    };
-    const { getValue } = renderControlledSection(initialValue);
+    const { rerender } = renderSection('world');
 
-    await user.click(screen.getByRole('button', { name: /Core One/ }));
-    await user.click(screen.getByRole('button', { name: '删除' }));
+    expect(screen.getByTestId('selected-location')).toHaveTextContent('loc-1');
+    await user.click(screen.getByRole('button', { name: 'select-location-2' }));
 
-    expect(getValue().coreCast.map((character) => character.characterId)).toEqual(['chr_core002']);
+    expect(screen.getByTestId('selected-location')).toHaveTextContent('loc-2');
 
-    await user.click(screen.getByRole('button', { name: '新增核心角色' }));
+    rerender(
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        activeSurface="character"
+        value={draftValue}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+    rerender(
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        activeSurface="world"
+        value={draftValue}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
 
-    const newCharacter = getValue().coreCast.at(-1);
+    expect(screen.getByTestId('selected-location')).toHaveTextContent('loc-2');
+  });
 
-    expect(newCharacter).toBeDefined();
-    expect(newCharacter?.characterId).toMatch(/^chr_[0-9a-f]{6}$/);
-    expect(newCharacter?.characterId).not.toBe('chr_core001');
-    expect(newCharacter?.characterId).not.toBe('chr_core002');
-    expect(getValue().coreCast.map((character) => character.characterId)).toEqual([
-      'chr_core002',
-      expect.any(String),
-    ]);
-    expect(new Set(getValue().coreCast.map((character) => character.characterId)).size).toBe(
-      getValue().coreCast.length,
+  it('keeps selected character context when switching surfaces', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderSection('character');
+
+    expect(screen.getByTestId('selected-character')).toHaveTextContent('hero');
+    await user.click(screen.getByRole('button', { name: 'select-antagonist' }));
+
+    expect(screen.getByTestId('selected-character')).toHaveTextContent(
+      'antagonists:chr_ant001',
+    );
+
+    rerender(
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        activeSurface="world"
+        value={draftValue}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+    rerender(
+      <WorldBaseCastSection
+        packageName="sample-scene"
+        activeSurface="character"
+        value={draftValue}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId('selected-character')).toHaveTextContent(
+      'antagonists:chr_ant001',
     );
   });
 });

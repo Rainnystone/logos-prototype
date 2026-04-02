@@ -95,6 +95,133 @@ describe('EditWorkbench', () => {
     expect(screen.getByRole('link', { name: '角色' })).not.toHaveAttribute('aria-current');
   });
 
+  it('switches between the world and character surfaces under the shared worldbase contract', () => {
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '地点说明' })).toHaveValue(
+      'A sealed corridor with old lights, cameras, and echoing vents.',
+    );
+    expect(screen.queryByText('关系区')).not.toBeInTheDocument();
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByText('关系区')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: '地点说明' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the selected location after switching away from and back to the world surface', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '新增地点' }));
+    await user.type(screen.getByRole('textbox', { name: '地点名称' }), 'Bridge rooftop');
+    expect(screen.getByRole('textbox', { name: '地点名称' })).toHaveValue('Bridge rooftop');
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '地点名称' })).toHaveValue('Bridge rooftop');
+  });
+
+  it('keeps the selected core cast or antagonist after switching away from and back to the character surface', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Retsu Haitani/ }));
+    expect(screen.getByRole('textbox', { name: '角色名' })).toHaveValue('Retsu Haitani');
+    expect(screen.getByRole('textbox', { name: '致命弱点' })).toHaveValue(
+      'Loses power when attention drops to zero.',
+    );
+
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+    rerender(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: '角色名' })).toHaveValue('Retsu Haitani');
+    expect(screen.getByRole('textbox', { name: '致命弱点' })).toHaveValue(
+      'Loses power when attention drops to zero.',
+    );
+  });
+
   it('keeps unsaved worldbase edits when rerendering with a fresh surface-specific initialState', async () => {
     const user = userEvent.setup();
     const { rerender } = render(

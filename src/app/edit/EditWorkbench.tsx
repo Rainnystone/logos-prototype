@@ -43,7 +43,7 @@ const SECTION_SUMMARIES: Record<
   'worldbase-cast': {
     eyebrow: '当前页',
     title: '世界与角色',
-    description: '编辑世界基础、角色阵列和当前角色卡片。',
+    description: '在世界页与角色页之间切换，但继续共用同一套保存。',
   },
   'scene-phase-authoring': {
     eyebrow: '当前页',
@@ -716,6 +716,7 @@ export function EditWorkbench({
         {activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
             packageName={packageName}
+            activeSurface={activeSurface}
             value={draftWorldBase}
             onChange={setDraftWorldBase}
             onSubmit={handleWorldBaseCastSubmit}
