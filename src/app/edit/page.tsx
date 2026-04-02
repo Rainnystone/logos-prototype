@@ -42,8 +42,11 @@ function getRequestedSectionId(value: string | readonly string[] | undefined): S
   return (SECTION_IDS as readonly string[]).includes(value) ? (value as SectionId) : null;
 }
 
-function getRequestedSurface(value: string | readonly string[] | undefined): WorldbaseSurface {
-  if (typeof value === 'string' && value === 'character') {
+function getRequestedSurface(
+  sectionValue: string | readonly string[] | undefined,
+  surfaceValue: string | readonly string[] | undefined,
+): WorldbaseSurface {
+  if (sectionValue === 'worldbase-cast' && surfaceValue === 'character') {
     return 'character';
   }
 
@@ -55,7 +58,10 @@ export default async function EditPage({ searchParams }: EditPageProps) {
   const catalog = await listStoryPackageCatalog();
   const requestedPackageName = getRequestedPackageName(resolvedSearchParams.storyPackage);
   const requestedSection = getRequestedSectionId(resolvedSearchParams.section);
-  const requestedSurface = getRequestedSurface(resolvedSearchParams.surface);
+  const requestedSurface = getRequestedSurface(
+    resolvedSearchParams.section,
+    resolvedSearchParams.surface,
+  );
   const fallbackPackage = catalog.find(isReadyStoryPackageEntry);
   const selectedPackageName = requestedPackageName ?? fallbackPackage?.packageName ?? null;
 
