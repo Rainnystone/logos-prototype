@@ -163,3 +163,43 @@
 - 最新 plan review 结论已通过：
   - `Status: Approved`
 - 已关闭所有为这一步服务的 subagent，包括 3 个并行核对 explorer 和 1 个 plan reviewer。
+- 用户已确认采用推荐方式执行：按 task 拆给 subagent 推进，并提醒模型选择要按难度合理分配。
+- 已按 `using-git-worktrees` 建立隔离工作区：
+  - `/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-phase1-model-surface`
+  - 分支：`codex/phase1-model-surface`
+- 已在新 worktree 内执行 `npm install` 并完成基线全量测试：
+  - `npm test`
+  - 结果：68 个测试文件、449 条测试全部通过
+- 当前进入 `subagent-driven-development` 执行阶段，准备从 implementation plan 的 Task 1 开始逐项推进。
+- `Task 1` 已在隔离 worktree 中完成：
+  - 目标：锁定 `世界 / 角色` 拆页的路由合同，但不新增保存家族
+  - 提交：
+    - `4c090df9591e014c09d9ed3796bbe4e89876b58b`
+    - `a97bd685603087b89c8947ae4ada335c71065f64`
+  - 结果：
+    - `世界` / `角色` 现已成为 `worldbase-cast` 下的两个可见 surface
+    - `section` 仍然是唯一的保存边界选择器
+    - 只有显式进入 `section=worldbase-cast` 时，`surface=character` 才会生效
+- `Task 1` 的验证已经完成：
+  - 定向测试：`npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
+  - 全量测试：`npm test`
+  - 结果：68 个测试文件、453 条测试全部通过
+- `Task 1` 已完成两轮独立复审：
+  - 第一轮确认实现符合已批准 spec
+  - 第二轮发现并修正了入口规则的边界问题
+  - 修正后已再次复审通过，可继续进入 `Task 2`
+- `Task 2` 的第一版实现已经完成并通过测试：
+  - 目标：让 `世界` / `角色` 两个 surface 共用同一份未保存的 `worldbase-cast` 草稿
+  - 提交：
+    - `7846443951de37ffe00585ab3811d1593b7af25e`
+  - 验证：
+    - `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
+    - `npm test`
+  - 结果：
+    - 两个测试命令均通过，且全量测试仍为 68 个文件、455 条测试全部通过
+- 但主线程复核后发现该版本存在边界问题：
+  - 它把“只在 world / character surface 切换时保留共享草稿”放宽成了“同包下新的初始状态基本都不再触发重载”
+  - 这已经超出 `Task 2` 和 `Phase 1` 当前冻结的范围
+  - 因此该版本暂不接受，已退回继续回修，并要求补一条防越界测试
+- 当前执行焦点仍然是 `Task 2`：
+  - 目标：把共享草稿保留严格限制在 `worldbase-cast` 内部的 world / character surface 切换，不扩展成更广的 continuity

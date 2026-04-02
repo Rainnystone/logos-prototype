@@ -21,7 +21,7 @@
 | 4 | complete | 冻结高层顺序：先模型与表面，再连续性，再故事线层，最后新 agent |
 | 5 | complete | 把已批准的路线正式写回规划文件，并拆出第一阶段的交付节点 |
 | 6 | complete | 已写出 `Phase 1` implementation plan，并完成独立 plan review loop，当前计划已进入可执行状态 |
-| 7 | pending | 等待选择执行方式：按 task 拆给 subagent 执行，或在当前线程内按计划逐步实现 |
+| 7 | in_progress | 已按 task 拆给 subagent 执行；隔离 worktree 已建立并完成基线测试；`Task 1` 已完成并通过独立复审；`Task 2` 第一版已完成但主线程复核发现范围过宽，当前正在回修“仅 surface 切换共享草稿”的边界 |
 
 ## Frozen Product Decisions
 

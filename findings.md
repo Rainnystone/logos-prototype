@@ -259,6 +259,15 @@
   - 产品层在正式进入 `Storage / Repository Substrate` 时，再引入 `package root / repository seam`
 - 这也解释了为什么 simulation 当前 README 明确把自己定位为“消费正式 seam 的独立 workspace”，而不是定义长期目录契约的地方。
 
+## 2026-04-02 Phase 1 Task 1 执行补充结论
+
+- `Task 1` 已证明“5 个可见页面 / 4 个保存家族”这层边界可以先落地，不需要提前引入新的 section family。
+- 本轮执行中真正需要锁住的，不只是 `surface=world|character` 这个参数本身，而是它只能在 `section=worldbase-cast` 的前提下生效。
+- 第一版实现里最容易漏掉的边界，是：
+  - 缺失 `section` 时，不能因为带了 `surface=character` 就误进“角色”页
+  - 非法 `section` 时，也不能让 `surface` 抢走入口语义
+- 这条入口约束已经通过补测和修复冻结，后续任务可以把它当成既定合同继续往下做。
+
 ## 2026-04-02 Phase 1 spec 收口后的三条实施边界
 
 - `世界` / `角色` 的拆分现在已经明确成“一个保存边界、两个可见子页”：

@@ -75,7 +75,7 @@
 - Test: `src/app/edit/__tests__/page.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing route-contract tests**
+- [x] **Step 1: Write the failing route-contract tests**
 
 ```tsx
 it('defaults worldbase-cast to the world surface', async () => {
@@ -93,13 +93,13 @@ it('renders five visible workspaces while keeping four save families', () => {
 });
 ```
 
-- [ ] **Step 2: Run the route tests to verify RED**
+- [x] **Step 2: Run the route tests to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because `surface` parsing and five-workspace rendering do not exist yet.
 
-- [ ] **Step 3: Implement the explicit split-surface route model**
+- [x] **Step 3: Implement the explicit split-surface route model**
 
 ```ts
 type WorldbaseSurface = 'world' | 'character';
@@ -115,13 +115,13 @@ Implementation notes:
 - drive top tabs from a UI tab config, not a direct `SECTION_IDS.map(...)`
 - pass `activeSurface` into `EditWorkbench`
 
-- [ ] **Step 4: Run the route tests to verify GREEN**
+- [x] **Step 4: Run the route tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for URL parsing, visible tab rendering, and default-world behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/page.tsx src/app/edit/shared/SectionTabs.tsx src/app/edit/EditWorkbench.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -134,7 +134,7 @@ git commit -m "feat: split worldbase editor surface routing"
 - Modify: `src/app/edit/EditWorkbench.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing shared-draft tests**
+- [x] **Step 1: Write the failing shared-draft tests**
 
 ```tsx
 it('keeps unsaved worldbase edits when switching from world to character surface', async () => {
@@ -152,13 +152,13 @@ it('resets the whole shared draft from either surface', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the workbench test file to verify RED**
+- [x] **Step 2: Run the workbench test file to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because switching surfaces currently reloads or remounts the mixed page state.
 
-- [ ] **Step 3: Implement shared-draft surface switching**
+- [x] **Step 3: Implement shared-draft surface switching**
 
 ```ts
 const [activeWorldbaseSurface, setActiveWorldbaseSurface] = useState<WorldbaseSurface>(initialSurface);
@@ -173,13 +173,13 @@ Implementation notes:
 - save/reset handlers continue to submit the whole `worldbase-cast` payload
 - only package changes or successful reloads should replace the saved baseline
 
-- [ ] **Step 4: Re-run the workbench tests to verify GREEN**
+- [x] **Step 4: Re-run the workbench tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for cross-surface draft retention and boundary-level reset behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/EditWorkbench.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
