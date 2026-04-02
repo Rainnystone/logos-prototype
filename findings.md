@@ -403,3 +403,22 @@
 - A direct shell cleanup attempt was blocked by platform policy in this session, so release hygiene must rely on explicit staging instead of assuming the working tree can be made empty first.
 - The GitHub Actions workflow itself is deferred from this release because the current GitHub auth path available in-session cannot reliably obtain `workflow` scope for pushing `.github/workflows/ci.yml`.
 - This is a release-ops constraint, not a code-quality blocker in the simulation toolset.
+
+## 2026-04-02 `ui-ux-pro-max` 对 Phase 1 spec 的使用原则
+
+- 已针对 `Phase 1` 的界面方向执行一次 `ui-ux-pro-max` 设计系统查询，关键词为：
+  - `desktop authoring editor narrative neue brutalism`
+- 这次查询里真正可吸收的部分是：
+  - 强边框
+  - 零圆角
+  - 高对比
+  - 大块分区
+  - 少动效 / 硬切换
+- 但工具给出的通用 brutalism 字体与部分语气，不适合当前仓库已经存在的编辑器界面。
+- 因此 `Phase 1` 写 spec 时，`ui-ux-pro-max` 的角色应被明确限定为：
+  - 风格边界检查工具
+  - 不是重新发明一套视觉系统的来源
+- `Phase 1` 的 UI / UX 设计必须严格服从当前仓库已有的新粗野主义视觉语言：
+  - 保持黑色粗边框、硬切块、低装饰、桌面端高信息密度
+  - 不引入更柔和、更圆润、更现代 SaaS 化的漂移
+  - 不因为新页拆分就擅自换字体、换配色、换交互语气

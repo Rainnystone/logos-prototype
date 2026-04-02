@@ -83,3 +83,29 @@
 - A direct shell cleanup attempt for those temporary directories was blocked by platform policy, so the release will exclude them by explicit staging rather than by assuming local deletion succeeded.
 - Attempted to push the release commit and found the only blocker was GitHub refusing updates to `.github/workflows/ci.yml` without `workflow` scope.
 - User chose the smallest unblock path: roll back only the CI portion from this release while keeping the simulation toolset, README, and agent-guide work.
+
+## 2026-04-02
+
+- 按 `using-superpowers` 与 `planning-with-files-zh` 重新恢复上下文，重新读取 `task_plan.md`、`findings.md` 与 `progress.md`。
+- 已确认用户昨晚 pull 下来的补充重点是云上可跑的 mock test toolset、CI 与后续存储边界；这些不改变当前线程的 `Phase 1` 范围。
+- 已用 `ui-ux-pro-max` 对 `Phase 1` 的视觉方向做一次基线检查，并把结论写回 `findings.md`：
+  - 工具只作为风格边界检查
+  - `Phase 1` 必须严格延续现有新粗野主义界面
+  - 不允许借机换成另一套“通用 brutalism”或 SaaS 风格
+- 已开始按 `brainstorming` 正式呈现 `Phase 1` 设计方案。
+- 用户已认可第一部分“页面结构与信息架构”：
+  - 顶层保持保守延续式
+  - 先拆出 `世界` / `角色`
+  - `控制台` 暂不在 `Phase 1` 替换
+  - 继续沿用现有新粗野主义壳子与桌面端高信息密度布局
+- 用户已认可第二部分“对象边界与保存链路”：
+  - 地点提升为结构化对象
+  - 场景页补地点挂载
+  - 未挂地点不报错
+  - 继续沿用现有保存与重置链路，不额外发明新流程
+- 已完成一个并行 subagent 的只读探索，用于提炼当前编辑器必须保留的视觉特征；该结果已用于约束 `Phase 1` spec 的 UI / UX 表达。
+- 用户已认可第三部分“角色页、关系空态和只读 agent 外壳”：
+  - 角色页继承现有主要角色编辑布局
+  - 关系区在 `Phase 1` 正式存在，但允许为空态
+  - 不为关系区增加临时数据桥接
+  - agent 区域在 `Phase 1` 先做信息面，不做操作台
