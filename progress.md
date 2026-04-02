@@ -163,3 +163,23 @@
 - 最新 plan review 结论已通过：
   - `Status: Approved`
 - 已关闭所有为这一步服务的 subagent，包括 3 个并行核对 explorer 和 1 个 plan reviewer。
+- 已在独立 worktree `codex/phase1-model-surface` 中按 task 执行 `Phase 1` implementation plan。
+- 已完成并提交前五个实现任务中的前四个，当前代码状态已包含：
+  - 五个可见 workspace 与 `surface` 路由合同
+  - `worldbase-cast` 共享草稿切页保留
+  - 地点结构化合同与旧 `locationPatch` 兼容水合
+  - scene 可选地点引用与删除时的确定性阻塞
+- `Task 4` 在初次实现后经过一轮 spec review 与一轮 code quality review。
+- code quality review 暴露出一个真实回归：`世界` / `角色` 切换后，当前选中的地点或角色会重置。
+- 已按 TDD 修复这条回归：
+  - 先补失败测试，证明切换 surface 后会丢选中上下文
+  - 再把跨 surface 的选中状态提升到 `WorldBaseCastSection`
+  - 最后把 wrapper 测试与直连组件测试的职责重新切清
+- `Task 4` 现已完成第二轮质量复审，结论为 `QUALITY_OK`。
+- 主线程已独立完成最终验证：
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm test`
+- 当前 worktree 下全部通过，测试总数为 70 组文件、480 条测试。
+- 当前执行清单已推进到：
+  - 下一步进入 `Task 6`：页面顶部提示与右侧辅助区联动

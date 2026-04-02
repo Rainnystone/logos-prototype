@@ -21,7 +21,21 @@
 | 4 | complete | 冻结高层顺序：先模型与表面，再连续性，再故事线层，最后新 agent |
 | 5 | complete | 把已批准的路线正式写回规划文件，并拆出第一阶段的交付节点 |
 | 6 | complete | 已写出 `Phase 1` implementation plan，并完成独立 plan review loop，当前计划已进入可执行状态 |
-| 7 | pending | 等待选择执行方式：按 task 拆给 subagent 执行，或在当前线程内按计划逐步实现 |
+| 7 | complete | 已选择按 task 拆给 subagent 执行，并进入 `Phase 1` 实施 |
+| 8 | in_progress | `Phase 1` 实施中：Task 1-5 已完成，当前准备进入 Task 6（页面顶部提示与右侧辅助区联动） |
+
+## Current Execution Snapshot
+
+- `Phase 1` 当前已完成：
+  - Task 1：五个可见 workspace 与 `surface` 路由合同
+  - Task 2：`worldbase-cast` 共享草稿切页不丢失
+  - Task 3：地点结构化合同与旧 `locationPatch` 兼容水合
+  - Task 4：`世界` / `角色` 拆页、地点与角色编辑面分离、跨 surface 选中上下文保持
+  - Task 5：scene 可选引用地点，删除被引用地点时阻止保存
+- 当前下一步：
+  - Task 6：把页面级保存结果、阻塞和错误放到当前页面顶部，同时保留右侧辅助区提示
+  - Task 7：在当前“控制台”里加入只读 agent 信息面
+  - Task 8：跑完整验证并做 `Phase 1` UI / UX 复核
 
 ## Frozen Product Decisions
 

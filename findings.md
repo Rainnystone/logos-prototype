@@ -218,6 +218,21 @@
 - 按当前仓库结构，最现实的两档实现是：
   - 近档：先做“现有故事包内新故事线”脚手架，再让导入 agent 导入到这条新故事线
   - 远档：再补“新建故事包”脚手架
+
+## 2026-04-02 Phase 1 执行发现：Task 4 拆页后的共享选中上下文
+
+- `世界` / `角色` 虽然共享同一份 `worldbase-cast` 草稿，但如果把“当前选中地点 / 当前选中角色”留在各自页面组件本地，切换 surface 时仍会丢失编辑上下文。
+- 更稳的做法是：
+  - 让 `WorldBaseCastSection` 作为 wrapper 持有跨 surface 的 UI 级选中状态
+  - `WorldSection` 与 `CharacterSection` 同时保留“可受控 / 可自管”两种使用方式，避免被 wrapper 绑死
+- 这样既满足 `Phase 1` 的共享草稿边界，又不会偷跑到 `Phase 2` 的 continuity 范围。
+- 与之配套的测试边界也应同步收紧：
+  - wrapper 测试只验证 surface 切换与选中透传
+  - 真实交互测试分别留在 `WorldSection` 与 `CharacterSection`
+- 这组收口完成后，`Task 4` 的验证状态为：
+  - spec review 通过
+  - code quality review 通过
+  - `npm run lint`、`npm run type-check`、`npm test` 全通过
 - 具体落地时，应由服务端提供受控入口，按固定模板生成允许的文件，而不是开放任意路径写入。
 
 ## 2026-04-01 最终采用的路线排序理由

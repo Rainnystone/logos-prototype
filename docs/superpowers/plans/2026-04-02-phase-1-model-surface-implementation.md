@@ -75,7 +75,7 @@
 - Test: `src/app/edit/__tests__/page.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing route-contract tests**
+- [x] **Step 1: Write the failing route-contract tests**
 
 ```tsx
 it('defaults worldbase-cast to the world surface', async () => {
@@ -93,13 +93,13 @@ it('renders five visible workspaces while keeping four save families', () => {
 });
 ```
 
-- [ ] **Step 2: Run the route tests to verify RED**
+- [x] **Step 2: Run the route tests to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because `surface` parsing and five-workspace rendering do not exist yet.
 
-- [ ] **Step 3: Implement the explicit split-surface route model**
+- [x] **Step 3: Implement the explicit split-surface route model**
 
 ```ts
 type WorldbaseSurface = 'world' | 'character';
@@ -115,13 +115,13 @@ Implementation notes:
 - drive top tabs from a UI tab config, not a direct `SECTION_IDS.map(...)`
 - pass `activeSurface` into `EditWorkbench`
 
-- [ ] **Step 4: Run the route tests to verify GREEN**
+- [x] **Step 4: Run the route tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for URL parsing, visible tab rendering, and default-world behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/page.tsx src/app/edit/shared/SectionTabs.tsx src/app/edit/EditWorkbench.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -134,7 +134,7 @@ git commit -m "feat: split worldbase editor surface routing"
 - Modify: `src/app/edit/EditWorkbench.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing shared-draft tests**
+- [x] **Step 1: Write the failing shared-draft tests**
 
 ```tsx
 it('keeps unsaved worldbase edits when switching from world to character surface', async () => {
@@ -152,13 +152,13 @@ it('resets the whole shared draft from either surface', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the workbench test file to verify RED**
+- [x] **Step 2: Run the workbench test file to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because switching surfaces currently reloads or remounts the mixed page state.
 
-- [ ] **Step 3: Implement shared-draft surface switching**
+- [x] **Step 3: Implement shared-draft surface switching**
 
 ```ts
 const [activeWorldbaseSurface, setActiveWorldbaseSurface] = useState<WorldbaseSurface>(initialSurface);
@@ -173,13 +173,13 @@ Implementation notes:
 - save/reset handlers continue to submit the whole `worldbase-cast` payload
 - only package changes or successful reloads should replace the saved baseline
 
-- [ ] **Step 4: Re-run the workbench tests to verify GREEN**
+- [x] **Step 4: Re-run the workbench tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for cross-surface draft retention and boundary-level reset behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/EditWorkbench.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -199,7 +199,7 @@ git commit -m "feat: preserve shared worldbase draft across split surfaces"
 - Test: `src/authoring/sections/__tests__/worldbase-cast.test.ts`
 - Test: `src/story-packages/__tests__/world-base-compat.test.ts`
 
-- [ ] **Step 1: Write the failing location-contract tests**
+- [x] **Step 1: Write the failing location-contract tests**
 
 ```ts
 it('hydrates one imported location from a legacy locationPatch blob', () => {
@@ -222,13 +222,13 @@ it('accepts loc_ ids on persisted worldBase locations', () => {
 });
 ```
 
-- [ ] **Step 2: Run the location-related tests to verify RED**
+- [x] **Step 2: Run the location-related tests to verify RED**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/worldbase-cast.test.ts src/story-packages/__tests__/world-base-compat.test.ts`
 
 Expected: FAIL because `locations[]`, location IDs, and deterministic hydration are not implemented yet.
 
-- [ ] **Step 3: Implement the location schema, ID generator, and hydration/projection helpers**
+- [x] **Step 3: Implement the location schema, ID generator, and hydration/projection helpers**
 
 ```ts
 export interface AuthoredLocation {
@@ -252,13 +252,13 @@ Implementation notes:
 - mint persisted `locationId` only when the structured location is first saved successfully
 - if one imported location still only has `description`, project that description back to `locationPatch` unchanged after normalization
 
-- [ ] **Step 4: Re-run the location-related tests to verify GREEN**
+- [x] **Step 4: Re-run the location-related tests to verify GREEN**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/worldbase-cast.test.ts src/story-packages/__tests__/world-base-compat.test.ts`
 
 Expected: PASS for schema shape, deterministic hydration, and compatibility projection.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/location-id.ts src/authoring/sections/world-locations.ts src/types/prompt-object.ts src/types/story-package.ts src/authoring/sections/worldbase-cast.ts src/story-packages/world-base-compat.ts src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/worldbase-cast.test.ts src/story-packages/__tests__/world-base-compat.test.ts
@@ -276,7 +276,7 @@ git commit -m "feat: add structured location authoring contract"
 - Test: `src/app/edit/__tests__/CharacterSection.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing world/character surface tests**
+- [x] **Step 1: Write the failing world/character surface tests**
 
 ```tsx
 it('renders location rail and detail fields on the world surface', () => {
@@ -302,13 +302,13 @@ it('offers an explicit remove action for the selected location', () => {
 });
 ```
 
-- [ ] **Step 2: Run the new surface tests to verify RED**
+- [x] **Step 2: Run the new surface tests to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/WorldSection.test.tsx src/app/edit/__tests__/CharacterSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because the split surface components do not exist yet.
 
-- [ ] **Step 3: Implement the new world and character sections**
+- [x] **Step 3: Implement the new world and character sections**
 
 ```tsx
 <WorldSection
@@ -337,13 +337,13 @@ Implementation notes:
 - keep the existing brutalist component language from the mixed section
 - if `WorldBaseCastSection.tsx` becomes a dead extraction artifact, delete it and update imports/tests in the same task
 
-- [ ] **Step 4: Re-run the split-surface tests to verify GREEN**
+- [x] **Step 4: Re-run the split-surface tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/WorldSection.test.tsx src/app/edit/__tests__/CharacterSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for dedicated world/character rendering and the truthful empty relationship state.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/sections/WorldSection.tsx src/app/edit/sections/CharacterSection.tsx src/app/edit/EditWorkbench.tsx src/app/edit/__tests__/WorldSection.test.tsx src/app/edit/__tests__/CharacterSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -364,7 +364,7 @@ git commit -m "feat: split world and character editor surfaces"
 - Test: `src/app/edit/__tests__/ScenePhaseAuthoringSection.test.tsx`
 - Test: `src/authoring/persistence/__tests__/bridge.test.ts`
 
-- [ ] **Step 1: Write the failing scene-location tests**
+- [x] **Step 1: Write the failing scene-location tests**
 
 ```ts
 it('omits locationIds when no locations are selected', () => {
@@ -385,13 +385,13 @@ it('blocks save when a scene references a removed location', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the scene-location tests to verify RED**
+- [x] **Step 2: Run the scene-location tests to verify RED**
 
 Run: `npm test -- src/authoring/sections/__tests__/scene-phase-authoring.test.ts src/app/edit/__tests__/ScenePhaseAuthoringSection.test.tsx src/authoring/persistence/__tests__/bridge.test.ts`
 
 Expected: FAIL because `locationIds` and referential blockers do not exist yet.
 
-- [ ] **Step 3: Implement location selection and bridge validation**
+- [x] **Step 3: Implement location selection and bridge validation**
 
 ```ts
 export interface ScenePhaseSceneDraft {
@@ -416,13 +416,13 @@ Implementation notes:
 - surface the same blocker summary through the page-top status area and helper panel so the author knows what must be cleared first
 - do not make location selection required
 
-- [ ] **Step 4: Re-run the scene-location tests to verify GREEN**
+- [x] **Step 4: Re-run the scene-location tests to verify GREEN**
 
 Run: `npm test -- src/authoring/sections/__tests__/scene-phase-authoring.test.ts src/app/edit/__tests__/ScenePhaseAuthoringSection.test.tsx src/authoring/persistence/__tests__/bridge.test.ts`
 
 Expected: PASS for optional references, omit-when-empty behavior, and save blockers on broken references.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/EditWorkbench.tsx src/types/story-package.ts src/authoring/sections/scene-phase-authoring.ts src/app/edit/sections/ScenePhaseAuthoringSection.tsx src/authoring/persistence/bridge.ts src/authoring/persistence/repository.ts src/authoring/sections/__tests__/scene-phase-authoring.test.ts src/app/edit/__tests__/ScenePhaseAuthoringSection.test.tsx src/authoring/persistence/__tests__/bridge.test.ts
