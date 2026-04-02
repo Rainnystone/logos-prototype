@@ -728,6 +728,7 @@ export function EditWorkbench({
             packageName={packageName}
             value={draftScenePhase}
             sceneCastLibrary={currentState.worldBase}
+            sceneLocations={currentState.worldBase.locations}
             routerOptions={routerOptions}
             onChange={setDraftScenePhase}
             onSubmit={handleScenePhaseSubmit}

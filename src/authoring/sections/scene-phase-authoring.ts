@@ -21,6 +21,7 @@ export interface ScenePhaseSceneDraft {
   openingHook: string;
   castMode: 'unset' | 'explicit';
   cast?: string[];
+  locationIds?: string[];
 }
 
 export interface ScenePhasePlanDraft {
@@ -49,6 +50,18 @@ function normalizeOptionalText(value: string | undefined): string | undefined {
 
   const normalized = normalizeText(value);
   return normalized.length > 0 ? normalized : undefined;
+}
+
+function normalizeOptionalIdList(values: readonly string[] | undefined): string[] | undefined {
+  if (!values) {
+    return undefined;
+  }
+
+  const uniqueIds = Array.from(
+    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0)),
+  );
+
+  return uniqueIds.length > 0 ? uniqueIds : undefined;
 }
 
 function deriveStartPointFromMainAxis(mainAxis: string): string {
@@ -106,6 +119,9 @@ export function createScenePhaseAuthoringDraft(
       openingHook: source.sceneSpec.openingHook ?? '',
       castMode: source.sceneSpec.cast ? 'explicit' : 'unset',
       ...(source.sceneSpec.cast ? { cast: [...source.sceneSpec.cast] } : {}),
+      ...(source.sceneSpec.locationIds
+        ? { locationIds: [...source.sceneSpec.locationIds] }
+        : {}),
     },
     phasePlans: source.phasePlans.map((phasePlan) => ({
       phaseId: phasePlan.phaseId,
@@ -117,6 +133,17 @@ export function createScenePhaseAuthoringDraft(
       ...(phasePlan.notes ? { notes: phasePlan.notes } : {}),
     })),
   };
+}
+
+function normalizeSceneLocationSelection(
+  current: Pick<StoryPackage, 'worldBase'>,
+  locationIds: readonly string[] | undefined,
+): string[] {
+  const normalizedLocationIds = new Set(normalizeOptionalIdList(locationIds) ?? []);
+
+  return current.worldBase.locations
+    .map((location) => location.locationId)
+    .filter((locationId) => normalizedLocationIds.has(locationId));
 }
 
 export function createEmptyScenePhaseDraft(index: number): ScenePhasePlanDraft {
@@ -205,6 +232,14 @@ export function renderScenePhaseAuthoring(
   if (draft.sceneSpec.castMode === 'explicit') {
     const normalizedSceneCast = normalizeSceneCastSelection(current.worldBase, draft.sceneSpec.cast);
     nextSceneSpec.cast = normalizedSceneCast.cast;
+  }
+
+  const normalizedSceneLocationIds = normalizeSceneLocationSelection(
+    current,
+    draft.sceneSpec.locationIds,
+  );
+  if (normalizedSceneLocationIds.length > 0) {
+    nextSceneSpec.locationIds = normalizedSceneLocationIds;
   }
 
   const nextPhasePlans: PhasePlan[] = draft.phasePlans.map((phaseDraft, index) => {

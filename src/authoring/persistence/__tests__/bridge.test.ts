@@ -62,7 +62,24 @@ function buildWorldBaseDraft(heroName: string) {
     coreCast: [],
     antagonists: [],
     supportingCast: 'Support One：Steady witness',
+    locations: [],
     locationPool: 'Signal room',
+  };
+}
+
+function buildLocationDraft(
+  locationId: string,
+  name: string,
+  description: string,
+) {
+  return {
+    draftId: locationId,
+    locationId,
+    name,
+    description,
+    environmentAppearance: '',
+    atmosphereDescription: '',
+    humanContextDescription: '',
   };
 }
 
@@ -88,6 +105,11 @@ function readSavedWorldBase() {
       fatalWeakness?: string;
     }>;
     npcCharacters: string;
+    locations?: Array<{
+      locationId: string;
+      name: string;
+      description: string;
+    }>;
     locationPatch: string;
   };
 }
@@ -560,6 +582,107 @@ describe('saveSectionDraft', () => {
     };
 
     expect(status.pendingSectionReviews).toBeUndefined();
+  });
+
+  it('blocks deleting a location that is still referenced by the current scene', async () => {
+    prepareTestPackage();
+
+    const initialWorldBaseSave = await saveSectionDraft({
+      requestId: 'request-worldbase-locations-seed',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...buildWorldBaseDraft('Hero With Locations'),
+          locations: [
+            buildLocationDraft(
+              'loc_a1b2c3',
+              'Signal Room',
+              'A sealed signal room behind the public corridor.',
+            ),
+            buildLocationDraft(
+              'loc_d4e5f6',
+              'Service Corridor',
+              'A maintenance lane connecting the sealed wing.',
+            ),
+          ],
+          locationPool: 'A sealed signal room behind the public corridor.',
+        },
+      },
+    });
+
+    expect(initialWorldBaseSave.kind).toBe('save_applied');
+
+    const sceneSave = await saveSectionDraft({
+      requestId: 'request-scene-location-reference',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: ['chr_core01'],
+            locationIds: ['loc_a1b2c3'],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(sceneSave.kind).toBe('save_applied');
+
+    const blockedWorldBaseSave = await saveSectionDraft({
+      requestId: 'request-worldbase-location-delete-blocked',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          ...buildWorldBaseDraft('Hero With Locations'),
+          locations: [
+            buildLocationDraft(
+              'loc_d4e5f6',
+              'Service Corridor',
+              'A maintenance lane connecting the sealed wing.',
+            ),
+          ],
+          locationPool: 'A maintenance lane connecting the sealed wing.',
+        },
+      },
+    });
+
+    expect(blockedWorldBaseSave.kind).toBe('save_blocked');
+    if (blockedWorldBaseSave.kind === 'save_blocked') {
+      expect(
+        blockedWorldBaseSave.blockingIssues.some(
+          (issue) =>
+            issue.includes('loc_a1b2c3') &&
+            (issue.includes('sample-yanshang-live-room') || issue.includes('炎上直播间·改')),
+        ),
+      ).toBe(true);
+    }
+
+    const savedScene = YAML.parse(readFileSync(scenePath, 'utf8')) as {
+      locationIds?: string[];
+    };
+    expect(savedScene.locationIds).toEqual(['loc_a1b2c3']);
   });
 
   it('preserves the existing sample purpose while clearing other optional scene fields', async () => {

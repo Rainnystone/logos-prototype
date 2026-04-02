@@ -129,6 +129,24 @@ const currentStoryPackage = {
       },
     ],
     npcCharacters: 'NPC',
+    locations: [
+      {
+        locationId: 'loc_a1b2c3',
+        name: 'Signal Room',
+        description: 'A sealed signal room hidden behind the public corridor.',
+        environmentAppearance: 'Old relays and dim fluorescent light.',
+        atmosphereDescription: 'Compressed heat and low electrical hum.',
+        humanContextDescription: 'Operators only, no public traffic.',
+      },
+      {
+        locationId: 'loc_d4e5f6',
+        name: 'Service Corridor',
+        description: 'A maintenance lane connecting the sealed wing.',
+        environmentAppearance: 'Concrete walls and exposed vents.',
+        atmosphereDescription: 'Quiet, narrow, watchful.',
+        humanContextDescription: 'Used by staff during off hours.',
+      },
+    ],
     locationPatch: 'Location',
   },
 } as const satisfies Pick<StoryPackage, 'sceneSpec' | 'phasePlans' | 'routerProfiles' | 'worldBase'>;
@@ -163,6 +181,18 @@ describe('scene-phase-authoring', () => {
 
     expect(draft.sceneSpec.castMode).toBe('explicit');
     expect(draft.sceneSpec.cast).toEqual(['chr_core01', 'chr_ant01']);
+  });
+
+  it('keeps scene location references in the draft when the source scene already has them', () => {
+    const draft = createScenePhaseAuthoringDraft({
+      ...currentStoryPackage,
+      sceneSpec: {
+        ...currentStoryPackage.sceneSpec,
+        locationIds: ['loc_a1b2c3', 'loc_d4e5f6'],
+      },
+    });
+
+    expect(draft.sceneSpec.locationIds).toEqual(['loc_a1b2c3', 'loc_d4e5f6']);
   });
 
   it('keeps phaseId stable and recalculates phaseIndex from order', () => {
@@ -273,6 +303,31 @@ describe('scene-phase-authoring', () => {
     const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
 
     expect(output.sceneSpec.cast).toEqual([]);
+  });
+
+  it('omits locationIds when the draft location selection is empty', () => {
+    const draft = createScenePhaseAuthoringDraft({
+      ...currentStoryPackage,
+      sceneSpec: {
+        ...currentStoryPackage.sceneSpec,
+        locationIds: ['loc_a1b2c3'],
+      },
+    });
+
+    draft.sceneSpec.locationIds = [];
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec).not.toHaveProperty('locationIds');
+  });
+
+  it('keeps only authored scene location ids and preserves authored order', () => {
+    const draft = createScenePhaseAuthoringDraft(currentStoryPackage);
+    draft.sceneSpec.locationIds = ['loc_missing', 'loc_d4e5f6', 'loc_a1b2c3', 'loc_a1b2c3'];
+
+    const output = renderScenePhaseAuthoring(currentStoryPackage, draft);
+
+    expect(output.sceneSpec.locationIds).toEqual(['loc_a1b2c3', 'loc_d4e5f6']);
   });
 
   it('normalizes cast ids to the shared world-base order and drops stale ids', () => {
