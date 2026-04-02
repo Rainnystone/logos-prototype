@@ -418,7 +418,7 @@ describe('EditWorkbench', () => {
     );
   });
 
-  it('shows localized save-warning and reset status copy in the shared helper', async () => {
+  it('shows localized save-warning and reset status copy above the current page content', async () => {
     const user = userEvent.setup();
     const fetchMock = vi
       .fn()
@@ -466,16 +466,18 @@ describe('EditWorkbench', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    const pageStatus = screen.getByLabelText('Current page status');
+    expect(within(pageStatus).getByText('已保存，但仍有提示：主角仍需复核。')).toBeInTheDocument();
     expect(
-      await screen.findByText('已保存，但仍有提示：主角仍需复核。'),
-    ).toBeInTheDocument();
+      within(screen.getByLabelText('Page helper')).queryByText('已保存，但仍有提示：主角仍需复核。'),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '重置本页' }));
 
-    expect(await screen.findByText('已恢复到最新保存版本。')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Current page status')).getByText('已恢复到最新保存版本。')).toBeInTheDocument();
   });
 
-  it('shows the helper-save copy after a blocked save is repaired through the shared path', async () => {
+  it('shows the helper-save copy above the current page content after a blocked save is repaired', async () => {
     const user = userEvent.setup();
     const fetchMock = vi
       .fn()
@@ -547,8 +549,12 @@ describe('EditWorkbench', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
-    const pageHelper = screen.getByLabelText('Page helper');
-    expect(await within(pageHelper).findByText('已通过页面助手保存。')).toBeInTheDocument();
+    const pageStatus = screen.getByLabelText('Current page status');
+    expect(within(pageStatus).getByText('已通过页面助手保存。')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Page helper')).queryByText('已通过页面助手保存。')).not.toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText('Page helper')).queryByText('页面助手已经补回共享保存路径。'),
+    ).not.toBeInTheDocument();
 
     const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
       payload: { uiFields: Record<string, unknown> };
@@ -617,7 +623,7 @@ describe('EditWorkbench', () => {
     ]);
   });
 
-  it('shows the shared save-path reachability failure when the helper cannot connect', async () => {
+  it('shows the shared save-path reachability failure above the current page content when the helper cannot connect', async () => {
     const user = userEvent.setup();
     let rejectCoordinatorAssist: ((reason?: unknown) => void) | null = null;
     const fetchMock = vi
@@ -664,8 +670,8 @@ describe('EditWorkbench', () => {
 
     await user.click(screen.getByRole('button', { name: '保存本页' }));
 
-    const pageHelper = screen.getByLabelText('Page helper');
-    expect(await within(pageHelper).findByText('保存被阻止：主角阵列尚未准备好。')).toBeInTheDocument();
+    const pageStatus = screen.getByLabelText('Current page status');
+    expect(within(pageStatus).getByText('保存被阻止：主角阵列尚未准备好。')).toBeInTheDocument();
 
     const rejectPendingSave =
       rejectCoordinatorAssist as ((reason?: unknown) => void) | null;
@@ -675,8 +681,193 @@ describe('EditWorkbench', () => {
     }
 
     expect(
-      await within(pageHelper).findByText('页面助手无法连通共享保存路径。'),
+      await within(pageStatus).findByText('页面助手无法连通共享保存路径。'),
     ).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Page helper')).queryByText('页面助手无法连通共享保存路径。')).not.toBeInTheDocument();
+  });
+
+  it('clears the helper-path failure note after resetting the page', async () => {
+    const user = userEvent.setup();
+    let rejectCoordinatorAssist: ((reason?: unknown) => void) | null = null;
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            kind: 'save_blocked',
+            requestId: 'worldbase-cast-1',
+            packageName: 'sample-scene',
+            sectionId: 'worldbase-cast',
+            showLocally: true,
+            showInGlobalDiagnostics: false,
+            blockingIssues: ['主角阵列尚未准备好。'],
+          }),
+          {
+            status: 400,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        ),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((_resolve, reject) => {
+            rejectCoordinatorAssist = reject;
+          }),
+      );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '保存本页' }));
+
+    const pageStatus = screen.getByLabelText('Current page status');
+    expect(within(pageStatus).getByText('保存被阻止：主角阵列尚未准备好。')).toBeInTheDocument();
+
+    if (rejectCoordinatorAssist) {
+      (rejectCoordinatorAssist as (reason?: unknown) => void)(new Error('network down'));
+    }
+
+    expect(await within(pageStatus).findByText('页面助手无法连通共享保存路径。')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '重置本页' }));
+
+    expect(within(pageStatus).getByText('已恢复到最新保存版本。')).toBeInTheDocument();
+    expect(
+      within(pageStatus).queryByText('页面助手无法连通共享保存路径。'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('clears the helper-path failure note after a later direct save succeeds', async () => {
+    const user = userEvent.setup();
+    let rejectCoordinatorAssist: ((reason?: unknown) => void) | null = null;
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            kind: 'save_blocked',
+            requestId: 'worldbase-cast-1',
+            packageName: 'sample-scene',
+            sectionId: 'worldbase-cast',
+            showLocally: true,
+            showInGlobalDiagnostics: false,
+            blockingIssues: ['主角阵列尚未准备好。'],
+          }),
+          {
+            status: 400,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        ),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((_resolve, reject) => {
+            rejectCoordinatorAssist = reject;
+          }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            kind: 'save_applied',
+            requestId: 'worldbase-cast-2',
+            packageName: 'sample-scene',
+            sectionId: 'worldbase-cast',
+            showLocally: true,
+            showInGlobalDiagnostics: false,
+            reloadedSectionState: storyPackageFixture,
+            runtimeImpactSummary: {
+              changedFiles: ['world-base.yaml', 'authoring-state.json'],
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        ),
+      );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '保存本页' }));
+
+    const pageStatus = screen.getByLabelText('Current page status');
+    if (rejectCoordinatorAssist) {
+      (rejectCoordinatorAssist as (reason?: unknown) => void)(new Error('network down'));
+    }
+    expect(await within(pageStatus).findByText('页面助手无法连通共享保存路径。')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '保存本页' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    const updatedPageStatus = screen.getByLabelText('Current page status');
+    expect(await within(updatedPageStatus).findByText('已保存并归一化。')).toBeInTheDocument();
+    expect(
+      within(updatedPageStatus).queryByText('页面助手无法连通共享保存路径。'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('does not render a page-top status region before any local save result exists', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.queryByLabelText('Current page status')).not.toBeInTheDocument();
+  });
+
+  it('does not render a page-top status region on the diagnostics workspace', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="package-wiring-validation"
+        activeSurface="world"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(screen.queryByLabelText('Current page status')).not.toBeInTheDocument();
   });
 
   it('embeds the page helper inside the scene-phase workspace instead of keeping a third outer column', () => {

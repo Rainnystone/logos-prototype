@@ -139,6 +139,23 @@ function SectionSurface({
   );
 }
 
+function CurrentPageStatus({
+  message,
+  failureNote,
+}: {
+  readonly message: string;
+  readonly failureNote?: string | null;
+}) {
+  return (
+    <section className="panel edit-page-status edit-surface" aria-label="Current page status">
+      <p className="panel-eyebrow">当前页状态</p>
+      <h2>保存结果</h2>
+      <p className="panel-note">{message}</p>
+      {failureNote ? <p className="panel-note">{failureNote}</p> : null}
+    </section>
+  );
+}
+
 export function EditWorkbench({
   packageName,
   activeSection,
@@ -153,6 +170,9 @@ export function EditWorkbench({
   const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
   const [coordinatorSummaries, setCoordinatorSummaries] = useState<
     Partial<Record<SectionId, string | null>>
+  >({});
+  const [coordinatorPathFailures, setCoordinatorPathFailures] = useState<
+    Partial<Record<SectionId, boolean>>
   >({});
   const [draftWorldBase, setDraftWorldBase] = useState<WorldBaseCastDraft>(
     createWorldBaseCastDraft(initialState.state.worldBase),
@@ -208,6 +228,7 @@ export function EditWorkbench({
           ? controlModulesSaveStatus
           : null;
   const activeCoordinatorSummary = coordinatorSummaries[activeSection] ?? null;
+  const activeCoordinatorPathFailure = coordinatorPathFailures[activeSection] ?? false;
 
   const pageHelperPanel = (
     <PageHelperPanel
@@ -217,15 +238,21 @@ export function EditWorkbench({
         state: currentState,
       }}
       activeSectionLabel={activeSectionSummary.title}
-      {...(activeLocalStatusMessage ? { localStatusMessage: activeLocalStatusMessage } : {})}
-      {...(activeCoordinatorSummary
-        ? { coordinatorSummary: activeCoordinatorSummary }
-        : {})}
+      {...(activeCoordinatorSummary ? { coordinatorSummary: activeCoordinatorSummary } : {})}
       {...(activeSection === 'package-wiring-validation'
         ? { diagnosticsHelperView: diagnostics.globalDiagnosticsHelperView }
         : {})}
     />
   );
+
+  const currentPageStatus = activeLocalStatusMessage ? (
+    <CurrentPageStatus
+      message={activeLocalStatusMessage}
+      {...(activeCoordinatorPathFailure
+        ? { failureNote: SAVE_PATH_FAILURE_STATUS }
+        : {})}
+    />
+  ) : null;
 
   useEffect(() => {
     const previousRoute = previousRouteRef.current;
@@ -250,6 +277,7 @@ export function EditWorkbench({
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
     setCoordinatorSummaries({});
+    setCoordinatorPathFailures({});
     const nextWorldBaseDraft = createWorldBaseCastDraft(initialState.state.worldBase);
     setDraftWorldBase(nextWorldBaseDraft);
     setSavedWorldBase(nextWorldBaseDraft);
@@ -296,6 +324,13 @@ export function EditWorkbench({
     }));
   }
 
+  function setCoordinatorPathFailure(sectionId: SectionId, isPathFailure: boolean) {
+    setCoordinatorPathFailures((currentPathFailures) => ({
+      ...currentPathFailures,
+      [sectionId]: isPathFailure,
+    }));
+  }
+
   function rememberSuccessfulAuthoringSave(sectionId: EditableSectionId) {
     setCurrentAuthoringState((currentAuthoringStatus) => ({
       hasSuccessfulSave: true,
@@ -333,11 +368,16 @@ export function EditWorkbench({
       );
 
       const result = (await response.json()) as CoordinatorRunResult;
-      setCoordinatorSummary(sectionId, result.coordinatorSummary);
+      setCoordinatorSummary(
+        sectionId,
+        isSuccessfulSaveResult(result.saveResult) ? null : result.coordinatorSummary,
+      );
+      setCoordinatorPathFailure(sectionId, false);
       rememberSaveResult(result.saveResult);
       return result;
     } catch {
-      setCoordinatorSummary(sectionId, SAVE_PATH_FAILURE_STATUS);
+      setCoordinatorSummary(sectionId, null);
+      setCoordinatorPathFailure(sectionId, true);
       return null;
     }
   }
@@ -364,6 +404,7 @@ export function EditWorkbench({
   async function handleWorldBaseCastSubmit() {
     setIsWorldBaseSaving(true);
     setWorldBaseSaveStatus(null);
+    setCoordinatorPathFailure('worldbase-cast', false);
 
     try {
       const response = await fetch(
@@ -401,6 +442,7 @@ export function EditWorkbench({
         setSavedWorldBase(nextDraft);
         setWorldBaseSaveStatus(formatAppliedSaveMessage(result, '已保存并归一化。'));
         setCoordinatorSummary('worldbase-cast', null);
+        setCoordinatorPathFailure('worldbase-cast', false);
         return;
       }
 
@@ -465,11 +507,13 @@ export function EditWorkbench({
     setDraftWorldBase(savedWorldBase);
     setWorldBaseSaveStatus(RESET_STATUS);
     setCoordinatorSummary('worldbase-cast', null);
+    setCoordinatorPathFailure('worldbase-cast', false);
   }
 
   async function handleScenePhaseSubmit() {
     setIsScenePhaseSaving(true);
     setScenePhaseSaveStatus(null);
+    setCoordinatorPathFailure('scene-phase-authoring', false);
 
     try {
       const response = await fetch(
@@ -507,6 +551,7 @@ export function EditWorkbench({
         setSavedScenePhase(nextDraft);
         setScenePhaseSaveStatus(formatAppliedSaveMessage(result, '已保存并重新编排。'));
         setCoordinatorSummary('scene-phase-authoring', null);
+        setCoordinatorPathFailure('scene-phase-authoring', false);
         return;
       }
 
@@ -571,11 +616,13 @@ export function EditWorkbench({
     setDraftScenePhase(savedScenePhase);
     setScenePhaseSaveStatus(RESET_STATUS);
     setCoordinatorSummary('scene-phase-authoring', null);
+    setCoordinatorPathFailure('scene-phase-authoring', false);
   }
 
   async function handleControlModulesSubmit(moduleScope: ModuleScope) {
     setIsControlModulesSaving(true);
     setControlModulesSaveStatus(null);
+    setCoordinatorPathFailure('control-modules', false);
 
     try {
       const response = await fetch(
@@ -614,6 +661,7 @@ export function EditWorkbench({
         setSavedControlModules(nextDraft);
         setControlModulesSaveStatus(formatAppliedSaveMessage(result, '已保存当前控制模块。'));
         setCoordinatorSummary('control-modules', null);
+        setCoordinatorPathFailure('control-modules', false);
         return;
       }
 
@@ -713,6 +761,7 @@ export function EditWorkbench({
       <PageActionBar packageName={packageName} />
 
       <section className="edit-layout">
+        {currentPageStatus}
         {activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
             packageName={packageName}
@@ -721,7 +770,6 @@ export function EditWorkbench({
             onChange={setDraftWorldBase}
             onSubmit={handleWorldBaseCastSubmit}
             onReset={handleWorldBaseCastReset}
-            statusMessage={worldBaseSaveStatus ?? undefined}
             isSaving={isWorldBaseSaving}
           />
         ) : activeSection === 'scene-phase-authoring' ? (
@@ -747,8 +795,8 @@ export function EditWorkbench({
               setDraftControlModules(savedControlModules);
               setControlModulesSaveStatus(RESET_STATUS);
               setCoordinatorSummary('control-modules', null);
+              setCoordinatorPathFailure('control-modules', false);
             }}
-            statusMessage={controlModulesSaveStatus ?? undefined}
             isSaving={isControlModulesSaving}
           />
         ) : activeSection === 'package-wiring-validation' ? (
