@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from 'react';
 
+import type { AgentSurfaceItem } from '@/agents/agent-surface';
 import type { PackageDiagnostics } from '@/authoring/sections/package-diagnostics';
+import { AgentSurfacePanel } from '@/app/edit/sections/AgentSurfacePanel';
 
 interface PackageWiringValidationSectionProps {
   readonly packageName: string;
   readonly diagnostics: PackageDiagnostics;
+  readonly agentSurfaceItems?: readonly AgentSurfaceItem[];
   readonly onRefresh: () => void;
   readonly isRefreshing?: boolean;
 }
@@ -26,6 +29,7 @@ function statusBadgeClass(status: 'healthy' | 'warning' | 'blocked'): string {
 export function PackageWiringValidationSection({
   packageName,
   diagnostics,
+  agentSurfaceItems = [],
   onRefresh,
   isRefreshing = false,
 }: PackageWiringValidationSectionProps) {
@@ -77,6 +81,8 @@ export function PackageWiringValidationSection({
           </div>
           <p className="mt-3 text-sm text-slate-700">{diagnostics.overallStatusView.summary}</p>
         </section>
+
+        <AgentSurfacePanel items={agentSurfaceItems} />
 
         <section className="rounded-none border-2 border-black bg-white p-4">
           <p className="panel-eyebrow">页面状态</p>

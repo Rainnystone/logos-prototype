@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
+import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
 
@@ -868,6 +869,301 @@ describe('EditWorkbench', () => {
     );
 
     expect(screen.queryByLabelText('Current page status')).not.toBeInTheDocument();
+  });
+
+  it('renders sidecar-agent cards from the editor load payload on the diagnostics workspace', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="package-wiring-validation"
+        activeSurface="world"
+        initialState={
+          {
+            source: 'latest-saved',
+            state: storyPackageFixture,
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'present',
+                  lastUpdatedAt: '2026-04-02T08:00:00.000Z',
+                  statusLine: '1 relationship link tracked in the latest state snapshot.',
+                },
+              },
+            ],
+          } as never
+        }
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'sidecar agents' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
+    expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
+  });
+
+  it('refreshes sidecar-agent cards together with diagnostics when rechecking the package', async () => {
+    const user = userEvent.setup();
+    const refreshedDiagnostics = buildPackageDiagnostics({
+      packageName: 'sample-scene',
+      source: 'latest-saved',
+      storyPackage: storyPackageFixture,
+      recentSaveResults: [],
+    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ...refreshedDiagnostics,
+          agentSurfaceItems: [
+            {
+              agentId: 'gossipelog',
+              displayName: 'gossipelog agent',
+              responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+              skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+              packageConfigPath: 'agents/gossipelog/config.yaml',
+              packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+              latestStateSummary: {
+                statePresence: 'missing',
+                statusLine:
+                  'State file is missing. No persisted sidecar state is available yet.',
+              },
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="package-wiring-validation"
+        activeSurface="world"
+        initialState={
+          {
+            source: 'latest-saved',
+            state: storyPackageFixture,
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'present',
+                  lastUpdatedAt: '2026-04-02T08:00:00.000Z',
+                  statusLine: '1 relationship link tracked in the latest state snapshot.',
+                },
+              },
+            ],
+          } as never
+        }
+      />,
+    );
+
+    expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '重新检查' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/authoring/packages/sample-scene/diagnostics');
+    });
+
+    expect(
+      await screen.findByText('State file is missing. No persisted sidecar state is available yet.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('1 relationship link tracked in the latest state snapshot.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('clears previously loaded remote diagnostics when a later refresh returns non-ok', async () => {
+    const user = userEvent.setup();
+    const localDiagnostics = buildPackageDiagnostics({
+      packageName: 'sample-scene',
+      source: 'latest-saved',
+      storyPackage: storyPackageFixture,
+      recentSaveResults: [],
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ...localDiagnostics,
+            overallStatusView: {
+              ...localDiagnostics.overallStatusView,
+              summary: 'REMOTE_DIAGNOSTICS_SUMMARY',
+            },
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'missing',
+                  statusLine: 'REMOTE_AGENT_SUMMARY',
+                },
+              },
+            ],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(new Response('refresh failed', { status: 503 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="package-wiring-validation"
+        activeSurface="world"
+        initialState={
+          {
+            source: 'latest-saved',
+            state: storyPackageFixture,
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'present',
+                  statusLine: 'INITIAL_AGENT_SUMMARY',
+                },
+              },
+            ],
+          } as never
+        }
+      />,
+    );
+
+    expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '重新检查' }));
+    expect(await screen.findByText('REMOTE_DIAGNOSTICS_SUMMARY')).toBeInTheDocument();
+    expect(screen.getByText('REMOTE_AGENT_SUMMARY')).toBeInTheDocument();
+    expect(screen.queryByText('INITIAL_AGENT_SUMMARY')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '重新检查' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('REMOTE_DIAGNOSTICS_SUMMARY')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText('REMOTE_AGENT_SUMMARY')).not.toBeInTheDocument();
+    expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '重新检查' })).toBeInTheDocument();
+  });
+
+  it('keeps diagnostics workspace stable and exits refreshing state when refresh fetch rejects', async () => {
+    const user = userEvent.setup();
+    const localDiagnostics = buildPackageDiagnostics({
+      packageName: 'sample-scene',
+      source: 'latest-saved',
+      storyPackage: storyPackageFixture,
+      recentSaveResults: [],
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ...localDiagnostics,
+            overallStatusView: {
+              ...localDiagnostics.overallStatusView,
+              summary: 'REMOTE_DIAGNOSTICS_SUMMARY',
+            },
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'missing',
+                  statusLine: 'REMOTE_AGENT_SUMMARY',
+                },
+              },
+            ],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        ),
+      )
+      .mockRejectedValueOnce(new Error('network down'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="package-wiring-validation"
+        activeSurface="world"
+        initialState={
+          {
+            source: 'latest-saved',
+            state: storyPackageFixture,
+            agentSurfaceItems: [
+              {
+                agentId: 'gossipelog',
+                displayName: 'gossipelog agent',
+                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                packageConfigPath: 'agents/gossipelog/config.yaml',
+                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                latestStateSummary: {
+                  statePresence: 'present',
+                  statusLine: 'INITIAL_AGENT_SUMMARY',
+                },
+              },
+            ],
+          } as never
+        }
+      />,
+    );
+
+    expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '重新检查' }));
+    expect(await screen.findByText('REMOTE_DIAGNOSTICS_SUMMARY')).toBeInTheDocument();
+    expect(screen.getByText('REMOTE_AGENT_SUMMARY')).toBeInTheDocument();
+    expect(screen.queryByText('INITIAL_AGENT_SUMMARY')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '重新检查' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('REMOTE_DIAGNOSTICS_SUMMARY')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText('REMOTE_AGENT_SUMMARY')).not.toBeInTheDocument();
+    expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '控制台' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '重新检查' })).toBeInTheDocument();
   });
 
   it('embeds the page helper inside the scene-phase workspace instead of keeping a third outer column', () => {

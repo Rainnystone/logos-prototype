@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import type { AgentSurfaceItem } from '@/agents/agent-surface';
 import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
 import type { CoordinatorRunResult } from '@/authoring/coordinator/dispatch';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
@@ -120,6 +121,10 @@ function formatBlockedSaveMessage(issues: readonly string[]): string {
   return `保存被阻止：${issues.join(' ')}`;
 }
 
+interface DiagnosticsRefreshResult extends PackageDiagnostics {
+  readonly agentSurfaceItems?: readonly AgentSurfaceItem[];
+}
+
 function SectionSurface({
   sectionId,
   children,
@@ -164,6 +169,9 @@ export function EditWorkbench({
 }: EditWorkbenchProps) {
   const [currentState, setCurrentState] = useState(initialState.state);
   const [currentSource, setCurrentSource] = useState(initialState.source);
+  const [agentSurfaceItems, setAgentSurfaceItems] = useState<readonly AgentSurfaceItem[]>(
+    initialState.agentSurfaceItems ?? [],
+  );
   const [currentAuthoringState, setCurrentAuthoringState] = useState(initialState.authoringState ?? null);
   const [recentSaveResults, setRecentSaveResults] = useState<SaveResult[]>([]);
   const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
@@ -273,6 +281,7 @@ export function EditWorkbench({
     }
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
+    setAgentSurfaceItems(initialState.agentSurfaceItems ?? []);
     setCurrentAuthoringState(initialState.authoringState ?? null);
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
@@ -297,6 +306,7 @@ export function EditWorkbench({
     activeSection,
     activeSurface,
     initialState.authoringState,
+    initialState.agentSurfaceItems,
     initialState.source,
     initialState.state,
     packageName,
@@ -391,11 +401,19 @@ export function EditWorkbench({
       );
 
       if (!response.ok) {
+        setRemoteDiagnostics(null);
+        setAgentSurfaceItems(initialState.agentSurfaceItems ?? []);
         return;
       }
 
-      const result = (await response.json()) as PackageDiagnostics;
+      const result = (await response.json()) as DiagnosticsRefreshResult;
       setRemoteDiagnostics(result);
+      if (Array.isArray(result.agentSurfaceItems)) {
+        setAgentSurfaceItems(result.agentSurfaceItems);
+      }
+    } catch {
+      setRemoteDiagnostics(null);
+      setAgentSurfaceItems(initialState.agentSurfaceItems ?? []);
     } finally {
       setIsDiagnosticsRefreshing(false);
     }
@@ -803,6 +821,7 @@ export function EditWorkbench({
           <PackageWiringValidationSection
             packageName={packageName}
             diagnostics={diagnostics}
+            agentSurfaceItems={agentSurfaceItems}
             onRefresh={handleDiagnosticsRefresh}
             isRefreshing={isDiagnosticsRefreshing}
           />

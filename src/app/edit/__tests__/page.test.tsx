@@ -113,7 +113,9 @@ describe('EditPage', () => {
 
     render(element);
 
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene');
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: false,
+    });
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
@@ -167,6 +169,23 @@ describe('EditPage', () => {
       'href',
       '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
     );
+  });
+
+  it('loads sidecar-agent surface items only when entering the diagnostics workspace', async () => {
+    const { default: EditPage } = await import('@/app/edit/page');
+
+    const element = await EditPage({
+      searchParams: {
+        storyPackage: 'sample-scene',
+        section: 'package-wiring-validation',
+      },
+    });
+
+    render(element);
+
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: true,
+    });
   });
 
   it('falls back to the world surface when section is missing even if surface=character', async () => {

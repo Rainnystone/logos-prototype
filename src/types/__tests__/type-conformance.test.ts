@@ -22,10 +22,13 @@ describe('Phase 00 contract types', () => {
     expect(agentRegistry.gossipelog).toMatchObject({
       agentId: 'gossipelog',
       displayName: 'gossipelog agent',
+      surfaceType: 'sidecar',
+      responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
       skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
       packageConfigPath: 'agents/gossipelog/config.yaml',
       packageStatePath: 'agents/gossipelog/character-relationships.yaml',
     });
+    expect(typeof agentRegistry.gossipelog.summarizeState).toBe('function');
     expect(gossipelogAgentDefinition).toBe(agentRegistry.gossipelog);
   });
 

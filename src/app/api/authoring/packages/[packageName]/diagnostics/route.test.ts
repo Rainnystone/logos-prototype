@@ -33,7 +33,9 @@ describe('GET diagnostics route', () => {
       readonly packageName?: string;
     };
 
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene');
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: true,
+    });
     expect(response.status).toBe(200);
     expect(payload.packageName).toBe('sample-scene');
     expect(payload.overallStatusView?.status).toBe('healthy');

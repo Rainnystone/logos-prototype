@@ -79,9 +79,12 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     );
   }
 
+  const activeSection = requestedSection ?? 'worldbase-cast';
+
   try {
-    const authoringState = await loadAuthoringState(selectedPackageName);
-    const activeSection = requestedSection ?? 'worldbase-cast';
+    const authoringState = await loadAuthoringState(selectedPackageName, {
+      includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
+    });
     const activeSurface =
       activeSection === 'worldbase-cast' ? requestedSurface : 'world';
 
