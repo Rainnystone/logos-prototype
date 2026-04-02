@@ -429,6 +429,15 @@ git add src/app/edit/EditWorkbench.tsx src/types/story-package.ts src/authoring/
 git commit -m "feat: add scene location references"
 ```
 
+Execution note:
+- Task 5 was completed before Task 4 because the location reference path had to be stabilized first.
+- Final verification for this task included:
+  - targeted test rerun after review-driven fix for invalid `locationIds`
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm test`
+- The commit step remains intentionally open until the current uncommitted verification-support changes are grouped for the next clean checkpoint.
+
 ## Task 6: Move page-local status into the page top area while keeping helper guidance on the right
 
 **Files:**
@@ -436,7 +445,7 @@ git commit -m "feat: add scene location references"
 - Modify: `src/app/edit/shared/PageHelperPanel.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing status-surface tests**
+- [x] **Step 1: Write the failing status-surface tests**
 
 ```tsx
 it('shows the active page save result above the current surface', () => {
@@ -450,13 +459,13 @@ it('keeps helper guidance visible on the right panel', () => {
 });
 ```
 
-- [ ] **Step 2: Run the status-surface tests to verify RED**
+- [x] **Step 2: Run the status-surface tests to verify RED**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because page-top status handling is not explicit for the split surfaces yet.
 
-- [ ] **Step 3: Implement top-of-page status rendering**
+- [x] **Step 3: Implement top-of-page status rendering**
 
 ```tsx
 {activeLocalStatusMessage ? (
@@ -471,13 +480,13 @@ Implementation notes:
 - keep helper panel for summary, context, and secondary guidance
 - do not duplicate full diagnostics content into both surfaces
 
-- [ ] **Step 4: Re-run the status-surface tests to verify GREEN**
+- [x] **Step 4: Re-run the status-surface tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS for page-top status visibility plus right-panel continuity.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/EditWorkbench.tsx src/app/edit/shared/PageHelperPanel.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -499,7 +508,7 @@ git commit -m "feat: move edit status to page-top surfaces"
 - Test: `src/app/edit/__tests__/PackageWiringValidationSection.test.tsx`
 - Test: `src/types/__tests__/type-conformance.test.ts`
 
-- [ ] **Step 1: Write the failing agent-surface tests**
+- [x] **Step 1: Write the failing agent-surface tests**
 
 ```tsx
 it('renders the gossipelog agent as a read-only console card', () => {
@@ -522,13 +531,13 @@ it('loads bounded agent surface data with the editor package payload', async () 
 });
 ```
 
-- [ ] **Step 2: Run the agent-surface tests to verify RED**
+- [x] **Step 2: Run the agent-surface tests to verify RED**
 
 Run: `npm test -- src/authoring/persistence/__tests__/package-state.test.ts src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/PackageWiringValidationSection.test.tsx src/types/__tests__/type-conformance.test.ts`
 
 Expected: FAIL because the read-only agent panel and responsibility metadata do not exist yet.
 
-- [ ] **Step 3: Implement the bounded agent card surface**
+- [x] **Step 3: Implement the bounded agent card surface**
 
 ```ts
 export const gossipelogAgentDefinition = {
@@ -549,13 +558,13 @@ Implementation notes:
 - show bounded summary fields such as present/missing/invalid, last updated time if available, and one short status line
 - never dump YAML, node IDs, or editable controls into the UI
 
-- [ ] **Step 4: Re-run the agent-surface tests to verify GREEN**
+- [x] **Step 4: Re-run the agent-surface tests to verify GREEN**
 
 Run: `npm test -- src/authoring/persistence/__tests__/package-state.test.ts src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/PackageWiringValidationSection.test.tsx src/types/__tests__/type-conformance.test.ts`
 
 Expected: PASS for read-only rendering, bounded summary behavior, and registry-backed metadata.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/agents/agent-surface.ts src/app/edit/sections/AgentSurfacePanel.tsx src/agents/gossipelog/definition.ts src/agents/registry.ts src/authoring/persistence/package-state.ts src/app/edit/EditWorkbench.tsx src/app/edit/sections/PackageWiringValidationSection.tsx src/authoring/persistence/__tests__/package-state.test.ts src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/PackageWiringValidationSection.test.tsx src/types/__tests__/type-conformance.test.ts
@@ -570,7 +579,7 @@ git commit -m "feat: add read-only agent surface to console"
 - Check: `task_plan.md`
 - Check: `progress.md`
 
-- [ ] **Step 1: Run the focused edit/authoring verification batch**
+- [x] **Step 1: Run the focused edit/authoring verification batch**
 
 Run:
 
@@ -581,7 +590,7 @@ npm test -- src/authoring/sections/__tests__/worldbase-cast.test.ts src/authorin
 
 Expected: PASS across the new Phase 1 routing, structured location, scene reference, and console surface coverage.
 
-- [ ] **Step 2: Run repository verification**
+- [x] **Step 2: Run repository verification**
 
 Run:
 
@@ -595,7 +604,7 @@ npm run build
 
 Expected: all commands PASS.
 
-- [ ] **Step 3: Run the manual UI/UX review against the spec checklist**
+- [x] **Step 3: Run the manual UI/UX review against the spec checklist**
 
 Checklist:
 - `世界` and `角色` read as separate surfaces but still feel like one product
@@ -604,7 +613,7 @@ Checklist:
 - top status sits near the edited surface and helper guidance still lives on the right
 - no rounded cards, polished SaaS drift, soft shadows, or visual style fork
 
-- [ ] **Step 4: Sync plan/progress documents and close the implementation slice**
+- [x] **Step 4: Sync plan/progress documents and close the implementation slice**
 
 ```bash
 git add task_plan.md findings.md progress.md

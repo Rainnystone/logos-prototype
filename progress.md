@@ -163,23 +163,124 @@
 - 最新 plan review 结论已通过：
   - `Status: Approved`
 - 已关闭所有为这一步服务的 subagent，包括 3 个并行核对 explorer 和 1 个 plan reviewer。
-- 已在独立 worktree `codex/phase1-model-surface` 中按 task 执行 `Phase 1` implementation plan。
-- 已完成并提交前五个实现任务中的前四个，当前代码状态已包含：
-  - 五个可见 workspace 与 `surface` 路由合同
-  - `worldbase-cast` 共享草稿切页保留
-  - 地点结构化合同与旧 `locationPatch` 兼容水合
-  - scene 可选地点引用与删除时的确定性阻塞
-- `Task 4` 在初次实现后经过一轮 spec review 与一轮 code quality review。
-- code quality review 暴露出一个真实回归：`世界` / `角色` 切换后，当前选中的地点或角色会重置。
-- 已按 TDD 修复这条回归：
-  - 先补失败测试，证明切换 surface 后会丢选中上下文
-  - 再把跨 surface 的选中状态提升到 `WorldBaseCastSection`
-  - 最后把 wrapper 测试与直连组件测试的职责重新切清
-- `Task 4` 现已完成第二轮质量复审，结论为 `QUALITY_OK`。
-- 主线程已独立完成最终验证：
-  - `npm run lint`
-  - `npm run type-check`
+- 用户已确认采用推荐方式执行：按 task 拆给 subagent 推进，并提醒模型选择要按难度合理分配。
+- 已按 `using-git-worktrees` 建立隔离工作区：
+  - `/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-phase1-model-surface`
+  - 分支：`codex/phase1-model-surface`
+- 已在新 worktree 内执行 `npm install` 并完成基线全量测试：
   - `npm test`
-- 当前 worktree 下全部通过，测试总数为 70 组文件、480 条测试。
-- 当前执行清单已推进到：
-  - 下一步进入 `Task 6`：页面顶部提示与右侧辅助区联动
+  - 结果：68 个测试文件、449 条测试全部通过
+- 当前进入 `subagent-driven-development` 执行阶段，准备从 implementation plan 的 Task 1 开始逐项推进。
+- `Task 1` 已在隔离 worktree 中完成：
+  - 目标：锁定 `世界 / 角色` 拆页的路由合同，但不新增保存家族
+  - 提交：
+    - `4c090df9591e014c09d9ed3796bbe4e89876b58b`
+    - `a97bd685603087b89c8947ae4ada335c71065f64`
+  - 结果：
+    - `世界` / `角色` 现已成为 `worldbase-cast` 下的两个可见 surface
+    - `section` 仍然是唯一的保存边界选择器
+    - 只有显式进入 `section=worldbase-cast` 时，`surface=character` 才会生效
+- `Task 1` 的验证已经完成：
+  - 定向测试：`npm test -- src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
+  - 全量测试：`npm test`
+  - 结果：68 个测试文件、453 条测试全部通过
+- `Task 1` 已完成两轮独立复审：
+  - 第一轮确认实现符合已批准 spec
+  - 第二轮发现并修正了入口规则的边界问题
+  - 修正后已再次复审通过，可继续进入 `Task 2`
+- `Task 2` 已在隔离 worktree 中完成，并经历了一次主线程复核后的回修：
+  - 目标：让 `世界` / `角色` 两个 surface 共用同一份未保存的 `worldbase-cast` 草稿
+  - 首版提交：
+    - `7846443951de37ffe00585ab3811d1593b7af25e`
+  - 回修提交：
+    - `8167e84066a3f787087ea8618d3a4faa28b44ad3`
+  - 最终结果：
+    - 只在 `worldbase-cast` 内部的 world / character surface 切换时保留共享草稿
+    - 同包下如果不是 surface-only 切换，新的初始状态仍然会正常接管
+    - 离开 `worldbase-cast` 这组共享 surface 后，仍然沿用原有页面族重载逻辑
+- `Task 2` 的最终验证已经完成：
+  - 定向测试：`npm test -- src/app/edit/__tests__/EditWorkbench.test.tsx`
+  - 全量测试：`npm test`
+  - 结果：68 个测试文件、457 条测试全部通过
+- `Task 2` 的主线程复核结论：
+  - 首版实现一度把范围放宽过头，已被识别并退回
+  - 当前回修版已补齐防越界测试，并把行为重新收窄到计划要求的边界内
+- 已新增一条执行纪律，供后续所有 task-level subagent 使用：
+  - 派单时必须显式声明“你是 subagent，不是主 agent”
+  - 必须写清这是只读审查还是可写执行
+  - 必须写清允许改动的文件边界与禁止动作
+  - 对审查型 subagent，必须明确禁止编辑、提交和再派遣 subagent
+- 已补充一条模型分配纪律：
+  - 后续 subagent 默认不再与主线程使用同型号配置
+  - 优先在 `gpt-5.4 high`、`gpt-5.4-mini` 和 `codex` 之间按任务复杂度分配
+- `Task 3` 已在隔离 worktree 中完成，并经过一次回修后正式收口：
+  - 目标：建立结构化地点合同，并把旧 `locationPatch` 以确定性方式水合 / 投影
+  - 首版提交：
+    - `9f7ed02acd54c368d939ef0cec9f3a58551b604a`
+  - 回修提交：
+    - `a11ba4e2f6cdd7dcb180c4813d394175315f4126`
+  - 最终结果：
+    - `worldBase.locations[]` 已成为结构化 authored source of truth
+    - `locationPatch` 继续保留，但现在对命名地点、多地点和补充字段也会稳定地产生 deterministic projection
+    - legacy `locationPatch` 仍按“一次只水合一个 imported location”的规则处理
+    - durable `loc_` id 只在首次成功保存时生成，不在 hydration 阶段提前暴露
+- `Task 3` 的最终验证已经完成：
+  - 定向测试：`npm test -- src/types/__tests__/type-conformance.test.ts src/authoring/sections/__tests__/worldbase-cast.test.ts src/story-packages/__tests__/world-base-compat.test.ts`
+  - 全量测试：`npm test`
+  - 结果：68 个测试文件、465 条测试全部通过
+- `Task 3` 的复审结论：
+  - 首轮 spec review 认为方向正确，但提示测试覆盖仍可加强
+  - 首轮 code quality review 指出阻塞问题：缺少通用 deterministic projection，结构化地点可能与 runtime 消费的 `locationPatch` 脱钩
+  - 主线程已据此退回 implementer 回修，并补上 projection、mint 时机与复杂 legacy blob 的回归测试
+  - 回修后，spec review 与 code quality review 都确认无阻塞问题，可以进入下一任务
+- `Task 5` 已在隔离 worktree 中完成，并在两轮只读复审后收口：
+  - 目标：加入 scene 的可选地点引用，并让 broken reference 在保存桥接上得到确定性阻塞
+  - 实际收口边界：
+    - scene 编辑区现在可以写入可选 `locationIds`
+    - 删除仍被引用地点时，worldbase 保存会被阻止
+    - 场景保存如果带着未知地点编号，也会被明确阻止，不再静默丢弃
+  - 复审结果：
+    - code quality review 和 spec review 都先后指出“未知地点编号被静默过滤”这一问题
+    - 主线程已据此退回 implementer 回修，并补上 bridge / validation 的回归测试
+  - 为了让这组改动真正可继续承接后续任务，主线程还补齐了结构化地点引入后留下的类型检查尾项：
+    - 多个测试夹具补入最小 `locations: []`
+    - `world-base-compat.ts` 的 legacy / structured 兼容返回值补齐 `locations: []`
+    - `SectionTabs.tsx` 的 `surface` 联合类型使用方式收窄到显式分支
+    - `ScenePhaseAuthoringSection.tsx` 清掉 1 处 lint warning
+  - 最终验证已经完成：
+    - 定向测试：`npm test -- src/authoring/sections/__tests__/scene-phase-authoring.test.ts src/authoring/persistence/__tests__/bridge.test.ts`
+    - 静态检查：`npm run lint`
+    - 类型检查：`npm run type-check`
+    - 全量测试：`npm test`
+    - 结果：68 个测试文件、472 条测试全部通过
+- 当前执行焦点回到尚未开始的 `Task 4`：
+  - 目标：用独立的世界页 / 角色页替换当前混合 UI，并保留第一阶段约定的空关系区语义
+- `Task 4` 已完成并通过主线程复核：
+  - 世界页与角色页现已真正拆开
+  - 世界页承接世界文本、普通配角与结构化地点
+  - 角色页承接主角、核心角色、反派与空关系区
+  - 共享草稿边界仍维持在 `worldbase-cast`
+- `Task 6` 已完成并通过主线程复核：
+  - 页面级保存结果现已上移到当前页顶部
+  - 右侧辅助区保留上下文和引导，不再重复保存结果
+- `Task 7` 已完成并经历多轮收口：
+  - `控制台` 内已加入只读 sidecar agent 面板
+  - gossipelog 的摘要逻辑已经从中央 loader 移到自身定义
+  - sidecar 配置缺失 / 关闭 / 不可安全读取的情况已被明确区分
+  - diagnostics refresh 现会同步刷新 sidecar 卡片，并在失败时一并回退
+  - sidecar 数据现在按需加载，不再对所有编辑入口强制读取
+- `Task 8` 已完成：
+  - focused edit / authoring 验证已通过
+  - `npm run lint` 通过
+  - `npm run type-check` 通过
+  - `npm run type-check:simulation` 通过
+  - `npm test` 通过，当前为 70 个测试文件、498 条测试全部通过
+  - `npm run build` 通过
+  - 已完成桌面端页面复核：
+    - 世界页结构与地点轨道正常
+    - 角色页空关系区表达正常
+    - 控制台只读 agent 面板正常
+    - 浏览器控制台仅见开发态 `favicon.ico` 404
+- 当前结论：
+  - `Phase 1` 已经实现完成并完成验证
+  - 下一步可以回到 roadmap 层，继续讨论 `Phase 2`
