@@ -23,6 +23,7 @@
 | 6 | complete | 已写出 `Phase 1` implementation plan，并完成独立 plan review loop，当前计划已进入可执行状态 |
 | 7 | complete | 已按 task 拆给 subagent 执行并全部收口；`Task 1` 到 `Task 8` 均已完成主线程复核，其中 `Task 7` 额外完成了 sidecar 配置可见性、刷新失败回退、按需加载与 simulation toolset 对齐等质量回修。 |
 | 8 | complete | 已完成 `Phase 1` 全量验证、桌面端 UI / UX 复核与规划文件同步；当前仓库已可在此基础上进入下一阶段讨论。 |
+| 9 | complete | 已完成 `Phase 1` 的地点收尾回修：样例地点已从旧长文彻底转译为正式地点，场景地点选择器已与场景阵容对齐，并且 `locationIds` 已真实进入运行时组装链。 |
 
 ## Frozen Product Decisions
 

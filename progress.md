@@ -284,3 +284,17 @@
 - 当前结论：
   - `Phase 1` 已经实现完成并完成验证
   - 下一步可以回到 roadmap 层，继续讨论 `Phase 2`
+- 用户随后又追加了一轮 `Phase 1` 收尾，要求把样例里的旧地点长文彻底转译成正式地点，并让场景地点选择器在交互和视觉上与 `Scene Cast` 完全对齐。
+- 这轮收尾已完成：
+  - `sample-scene` 现已拥有 3 个正式地点条目，并且场景显式挂上了这些地点
+  - `Scene Location` 已改成可折叠、标签可直接移除的同构选择器
+  - 失效地点编号现在可以通过 `清空显式地点` 一步清掉
+  - `sceneSpec.locationIds` 已真实进入 runtime projection，不再只是 authoring 侧引用
+  - 当没有显式地点时，最终 prompt 文本不再留下空的地点栏位
+- 这轮收尾的验证也已完成：
+  - 定向测试：`SceneLocationSelector`、`ScenePhaseAuthoringSection`、`story-loader`、`prompt-templates`
+  - 全量测试：`npm test`，当前为 71 个测试文件、505 条测试全部通过
+  - 静态检查：`npm run lint` 通过
+  - 类型检查：`npm run type-check` 通过
+  - 正式打包：`npm run build` 通过
+  - 页面实看：已在干净开发服务端口上用浏览器脚本确认地点条目可展开、已选标签可直接移除，移除后摘要会从 3 个地点变成 2 个地点
