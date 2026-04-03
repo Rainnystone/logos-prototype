@@ -182,7 +182,7 @@ export async function loadEditRuntimeContinuityView(
     };
   }
 
-  if (playView.kind === 'awaiting_start' && playView.relationshipSummary.source === 'empty') {
+  if (playView.relationshipSummary.source === 'empty') {
     return {
       kind: 'empty',
       activeSession: null,

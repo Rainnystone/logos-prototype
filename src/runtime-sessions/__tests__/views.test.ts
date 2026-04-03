@@ -156,6 +156,48 @@ async function writeAwaitingStartRuntimeSessionsFile(): Promise<void> {
   });
 }
 
+async function writeActiveSessionWithoutUsableRelationshipLayer(): Promise<void> {
+  await writeRuntimeSessionsFile({
+    version: 1,
+    activeSessionId: 'sess_active_empty_relationship',
+    sessionsById: {
+      sess_active_empty_relationship: {
+        sessionId: 'sess_active_empty_relationship',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-03T00:00:00.000Z',
+        updatedAt: '2026-04-03T00:00:05.000Z',
+        headCheckpointId: 'chk_01',
+        activeCheckpointId: 'chk_01',
+        orderedCheckpointIds: ['chk_01'],
+        checkpointsById: {
+          chk_01: {
+            checkpointId: 'chk_01',
+            acceptedBeatOrdinal: 1,
+            sceneId: 'scene_opening',
+            phaseIndex: 1,
+            beatIndex: 1,
+            roundId: 'round_01',
+            acceptedTranscript: {
+              playerInput: 'inspect the hallway',
+              beatText: 'The hallway remains silent.',
+            },
+            stateSnapshot: makeStateSnapshot('The hallway remains silent.'),
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+            createdAt: '2026-04-03T00:00:01.000Z',
+          },
+        },
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: '',
+          stableBackgroundText: '',
+        },
+      },
+    },
+  });
+}
+
 afterEach(() => {
   resetTestPackage();
 });
@@ -209,6 +251,22 @@ describe('runtime session views', () => {
 
     expect(playView.kind).toBe('awaiting_start');
     expect(playView.activeSessionId).toBe('sess_bootstrap');
+    expect(playView.relationshipSummary.source).toBe('empty');
+    expect(editView).toEqual({
+      kind: 'empty',
+      activeSession: null,
+    });
+  });
+
+  it('treats an active session without a usable relationship layer as empty edit continuity', async () => {
+    prepareTestPackage();
+    await writeActiveSessionWithoutUsableRelationshipLayer();
+
+    const playView = await loadPlayRuntimeSessionView(testPackageName);
+    const editView = await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(playView.kind).toBe('restorable');
+    expect(playView.activeSessionId).toBe('sess_active_empty_relationship');
     expect(playView.relationshipSummary.source).toBe('empty');
     expect(editView).toEqual({
       kind: 'empty',
