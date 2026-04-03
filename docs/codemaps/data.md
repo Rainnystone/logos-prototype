@@ -14,10 +14,10 @@
 | `ControlModules` | Control layer config | sceneId, lightConeCustomization, directorNoteAdditions, beatVolumeDefinitions |
 | `AuditQuestionSet` | Audit questions and selection policy | sceneId, globalQuestions, controlQuestions, phaseSpecificQuestions, selectionPolicy |
 | `AuditQuestion` | Single audit question | id, question, expected, blocking, rationale? |
-| `StateSnapshot` | Runtime state at a point in time | sceneState, roundState, generationState |
+| `StateSnapshot` | Runtime state at a point in time | sceneState, roundState, generationState, evaluationState |
 | `RuntimeSessionsFile` | Package-scoped runtime continuity file | version, activeSessionId, sessionsById |
-| `RuntimeSession` | Active or archived work line | sessionId, lifecycle, headCheckpointId, activeCheckpointId, orderedCheckpointIds, checkpointsById, lastStableRelationshipLayer |
-| `RuntimeCheckpoint` | Immutable accepted-beat checkpoint | checkpointId, acceptedBeatOrdinal, acceptedTranscript, stateSnapshot, lastStableRelationshipLayer, createdAt |
+| `RuntimeSession` | Active or archived work line | sessionId, lifecycle, createdAt, updatedAt, headCheckpointId, activeCheckpointId, orderedCheckpointIds, checkpointsById, lastStableRelationshipLayer |
+| `RuntimeCheckpoint` | Immutable accepted-beat checkpoint | checkpointId, acceptedBeatOrdinal, sceneId, phaseIndex, beatIndex, roundId, acceptedTranscript, stateSnapshot, lastStableRelationshipLayer, createdAt |
 | `GradientType` | Phase intensity curve | `'Rising' \| 'Falling' \| 'Static High' \| 'U-Shape' \| 'Arch' \| 'Pulse' \| 'Steady'` |
 | `UsageInfo` | LLM token usage | promptTokens?, completionTokens?, totalTokens? |
 
@@ -25,8 +25,8 @@
 
 | Draft Type | Section | Key Fields |
 |------------|---------|------------|
-| `WorldBaseCastDraft` | worldbase-cast | worldBaseSetting, worldRules, toneBaseline, hero, coreCast[], antagonists[], supportingCast, locationPool |
-| `WorldBaseCharacterDraft` | worldbase-cast | draftId, name, identityRole, lightNovelTrait, gender, personality, age, occupation, characterSummary, capabilityBoundary, behaviorBoundary, oocRedLine, clothing, propsWeapon, fatalWeakness? |
+| `WorldBaseCastDraft` | worldbase-cast | worldBaseSetting, worldRules, toneBaseline, hero, coreCast[], antagonists[], supportingCast, locations[], locationPool |
+| `WorldBaseCharacterDraft` | worldbase-cast | draftId, characterId, name, identityRole, lightNovelTrait, gender, personality, age, occupation, characterSummary, capabilityBoundary, behaviorBoundary, oocRedLine, clothing, propsWeapon, fatalWeakness? |
 | `ScenePhaseAuthoringDraft` | scene-phase-authoring | sceneSpec (ScenePhaseSceneDraft), phasePlans (ScenePhasePlanDraft[]) |
 | `ControlModulesDraft` | control-modules | controlModules, routerProfiles[], auditQuestionSet |
 
@@ -61,19 +61,19 @@
 | `EditRuntimeContinuityView` | Section-safe continuity DTO for `/edit` | kind, activeSession, reason? |
 | `RuntimeRelationshipSummary` | Safe relationship projection | highlightedDeltasText, stableBackgroundText, source |
 
-## Story Package Files (`src/story-packages/sample-scene/`)
+## Story Package Files (example package root: `src/story-packages/sample-scene/`)
 
 | File | Format | Contains |
 |------|--------|----------|
 | `scene.yaml` | YAML | SceneSpec (sceneId, sceneName, cast, locationIds, mainAxis, opening hook, etc.) |
 | `phase-plans.yaml` | YAML | PhasePlans array with phaseId, goals, gradients, router hints |
-| `world-base.yaml` | YAML | WorldBase (mainCharacters, supporting cast, structured `locations[]`, legacy-compatible `locationPatch`) |
+| `world-base.yaml` | YAML | WorldBase (world text, hero/core/antagonist casts, npcCharacters, structured `locations[]`, `locationPatch`) |
 | `router-lexicon.yaml` | YAML | RouterProfile array (names, semantic cores, verb lexicons) |
 | `control-modules.yaml` | YAML | ControlModules (light cone, director notes, beat volumes) |
 | `audit-questions.yaml` | YAML | AuditQuestionSet (global, control, phase-specific questions + selection policy) |
 | `state-snapshots.yaml` | YAML | Reference state snapshots for testing |
 | `authoring-state.json` | JSON | Last save timestamp, edited section, request ID |
-| `runtime-sessions.json` | JSON | Active runtime session, archived sessions, ordered checkpoints, relationship continuity mirror |
+| `runtime-sessions.json` | JSON | Runtime-generated active session state, archived sessions, ordered checkpoints, relationship continuity mirror |
 
 ## Data Flow
 
@@ -84,7 +84,7 @@ YAML files on disk
   → orchestrator.ts (runtime loop)
   → StateSnapshot (beat-level state)
 
-runtime-sessions.json
+runtime-sessions.json (generated on demand at package root)
   → runtime-sessions/repository.ts (semantic validation + queued writes)
   → runtime-sessions/views.ts (bounded continuity projection)
   → /play and /edit server pages

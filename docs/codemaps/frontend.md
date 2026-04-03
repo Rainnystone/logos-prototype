@@ -15,7 +15,6 @@
 ```
 PlayWorkbench (client)
 ├── AuthorControlPanel — scene name, phase cards, meta bar
-│   └── SceneOverview — phase rail at top
 ├── FixtureReferencePanel — toggleable story package viewer
 ├── play-grid (3-column CSS grid)
 │   ├── LEFT: play-column--sidebar (sticky, scrollable)
@@ -39,14 +38,14 @@ PlayWorkbench (client)
 
 ```
 EditWorkbench (client)
-├── edit-shell — identity, PageHelperPanel, SectionTabs
+├── edit-shell — identity shell, PageHelperPanel, CurrentPageStatus, SectionTabs
 ├── PageActionBar — return to title, open scene
 ├── SectionTabs — 5 visible tab links (query param routing, with `worldbase-cast` split into `world` / `character` surfaces)
 └── edit-layout (active section)
-    ├── WorldBaseCastSection — world blocks + character editor + continuity-backed relationship panel
+    ├── WorldBaseCastSection — `world` / `character` 二选一切面；角色面承载 continuity-backed relationship panel
     ├── ScenePhaseAuthoringSection — phase rail + scene frame + phase editor
     ├── ControlModulesSection — module stack + module editor
-    └── PackageWiringValidationSection — diagnostics dashboard
+    └── PackageWiringValidationSection — diagnostics dashboard + AgentSurfacePanel
 ```
 
 ## Shared Components

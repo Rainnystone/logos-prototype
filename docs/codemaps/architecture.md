@@ -32,12 +32,17 @@
 ┌──────────┐  ┌────▼─────┐       │  │(AI repair)│             │
 │API       │→ │Views /   │→ UI   │  └──────────┘             │
 │Adapter   │  │bounded DTO│      │                           │
-└──────────┘  └──────────┘       │               ┌───────────┴───────────┐
-    │                            │               │   Story Package       │
-    ▼                            │               │   (YAML files on disk)│
-┌────────────────────┐           │               └───────────────────────┘
-│ Engine Modules     │           │
-│ (11 modules)       │           │
+└────┬─────┘  └──────────┘       │               ┌───────────┴───────────┐
+     │                           │               │   Story Package       │
+     ▼                           │               │   (YAML files on disk)│
+┌───────────────┐                │               └───────────────────────┘
+│ Gossipelog    │                │
+│ refresh chain │                │
+└────┬──────────┘                │
+     ▼                           │
+┌────────────────────┐           │
+│ Runtime modules +  │           │
+│ prompt/render layer│           │
 └────────────────────┘           │
 ```
 
@@ -48,6 +53,9 @@
 
 Phase 2 adds a package-scoped runtime continuity substrate:
 `/play page → loadRuntimeStoryPackage() + loadPlayRuntimeSessionView() → PlayWorkbench → runtime-session route/client → runtime-sessions.json`
+
+The continuity loop is wider than the checkpoint store itself:
+`PlayWorkbench/runtime.ts → /api/play/gossipelog → src/agents/gossipelog/* → runtime-session finalize → bounded continuity views`
 
 ### Authoring Chain (Edit)
 `PageDraft → API PATCH → Bridge(normalize → validate → extract → render → persist → reload) → SaveResult`
@@ -75,6 +83,7 @@ src/app/                ← depends on everything above
 | Provider preset | `runtime-config.ts` | Dropdown auto-fills baseUrl + model list |
 | CORS proxy | `api/llm/proxy/` | Server-side forward for non-standard LLM APIs |
 | Runtime continuity | `runtime-sessions/` | `runtime-sessions.json` stores active session + full checkpoints |
+| Relationship refresh | `app/play/runtime.ts` + `api/play/gossipelog` + `agents/gossipelog/` | Browser requests relationship update/injection; stale results finalize by `sessionId + checkpointId` |
 | Collapsible UI | `CollapsiblePanel.tsx` | Consistent expand/collapse for sidebar panels |
 | Section save | `persistence/bridge.ts` | normalize → validate → persist → reload pipeline |
 | Draft round-trip | `sections/*.ts` | File ↔ Draft ↔ Rendered ↔ File cycle |

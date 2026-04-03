@@ -13,21 +13,21 @@
 | `/api/play/gossipelog` | POST | Server-owned gossipelog bridge for relationship update + injection cycles |
 | `/api/play/packages/[packageName]/runtime-session` | POST | Runtime continuity bridge for ensure / record accepted beat / finalize relationship / reset |
 
-## Engine Modules (`src/engine/modules/`)
+## Runtime Engine
 
-| Module | Purpose | I/O |
-|--------|---------|-----|
-| `orchestrator.ts` | Main runtime loop: collapse -> route -> generate -> audit -> settle | StoryPackage + PlayerInput -> StateSnapshot |
-| `light-cone-collapse.ts` | Narrow narrative boundary after each phase | PreviousState -> Alpha/Beta boundaries |
-| `narrative-router.ts` | Select narrative path for current beat | RouterProfiles + Hint -> SelectedRouter |
-| `director-note-layer.ts` | Build beat constraints and option constraints | State + ControlModules -> DirectorNote |
-| `prompt-assembler.ts` | Assemble the final PromptObject for LLM | All layers -> PromptObject |
-| `auditor.ts` | Parse LLM audit response into pass/fail | AuditResponse -> AuditResult |
-| `audit-resolver.ts` | Decide: accept / rewrite / force-accept | AuditResult + RetryCount -> Resolution |
-| `phase-gradient.ts` | Convert gradient type to 4-beat volume sequence | GradientType -> VolumeSequence |
-| `phase-consequence-settlement.ts` | Process end-of-phase consequences | PhaseState -> PhaseConsequences |
-| `memory-placeholder.ts` | Default history-window helper for accepted beats | Returns full history unless an explicit window size is provided |
-| `option-generator.ts` | Generate player choice options | BeatContext -> Options[4] |
+| File | Purpose | I/O |
+|------|---------|-----|
+| `src/engine/orchestrator.ts` | Main runtime loop: collapse -> route -> generate -> audit -> settle -> checkpoint-ready continuation | StoryPackage + PlayerInput -> StateSnapshot + accepted beat side effects |
+| `src/engine/modules/light-cone-collapse.ts` | Narrow narrative boundary after each phase | PreviousState -> Alpha/Beta boundaries |
+| `src/engine/modules/narrative-router.ts` | Select narrative path for current beat | RouterProfiles + Hint -> SelectedRouter |
+| `src/engine/modules/director-note-layer.ts` | Build beat constraints and option constraints | State + ControlModules -> DirectorNote |
+| `src/engine/modules/prompt-assembler.ts` | Assemble the final PromptObject for LLM | All layers -> PromptObject |
+| `src/engine/modules/world-base-prompt-render.ts` | Render structured world base content into prompt-safe text | WorldBase -> Prompt fragments |
+| `src/engine/modules/auditor.ts` | Parse LLM audit response into pass/fail | AuditResponse -> AuditResult |
+| `src/engine/modules/audit-resolver.ts` | Decide: accept / rewrite / force-accept | AuditResult + RetryCount -> Resolution |
+| `src/engine/modules/phase-gradient.ts` | Convert gradient type to 4-beat volume sequence | GradientType -> VolumeSequence |
+| `src/engine/modules/phase-consequence-settlement.ts` | Process end-of-phase consequences | PhaseState -> PhaseConsequences |
+| `src/engine/modules/memory-placeholder.ts` | Default history-window helper for accepted beats | Returns full history unless an explicit window size is provided |
 
 ## API Adapter (`src/engine/api-adapter/`)
 
@@ -63,6 +63,8 @@
 | `persistence/authoring-status.ts` | Read/write authoring-state.json marker |
 | `persistence/save-results.ts` | Factory functions for SaveResult variants |
 | `sections/worldbase-cast.ts` | WorldBase draft <-> markdown round-trip |
+| `sections/world-locations.ts` | Structured location draft hydration, normalization, and patch projection |
+| `sections/scene-cast.ts` | Scene cast normalization shared by scene/phase authoring |
 | `sections/scene-phase-authoring.ts` | ScenePhase draft <-> YAML round-trip |
 | `sections/control-modules.ts` | ControlModules draft <-> YAML round-trip |
 | `sections/package-diagnostics.ts` | Package health assessment and issue detection |
@@ -84,3 +86,10 @@
 - Delayed gossipelog finalization is bound by `sessionId + checkpointId`, so stale refresh results can finalize their own checkpoint without polluting a newer active session.
 - `/play` restores from the active session by default; `/edit` only consumes a bounded continuity summary and never reads raw checkpoint maps or transcripts.
 - `ensure_active_session`, `record_accepted_beat`, `finalize_relationship_layer`, and `reset_workbench` all run through the same package-scoped queued write path, so write ordering is serialized per story package.
+
+## Test Coverage Landmarks
+
+- Runtime continuity route coverage sits in `src/app/api/play/packages/[packageName]/runtime-session/route.test.ts`.
+- Gossipelog bridge coverage sits in `src/app/api/play/gossipelog/route.test.ts`.
+- Repository and DTO projection coverage sits in `src/runtime-sessions/__tests__/repository.test.ts` and `src/runtime-sessions/__tests__/views.test.ts`.
+- Browser-level continuity observer coverage extends into `simulation-toolset/tests/gossipelog-observer.test.ts`.
