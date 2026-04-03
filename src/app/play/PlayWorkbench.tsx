@@ -347,7 +347,7 @@ export function PlayWorkbench({
         kind: 'awaiting_start',
         activeSessionId: result.activeSessionId,
         activeCheckpointId: null,
-        beatHistory,
+        beatHistory: [],
         stateSnapshot: null,
         relationshipSummary: {
           highlightedDeltasText: '',

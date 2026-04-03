@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -353,16 +353,17 @@ describe('PlayWorkbench', () => {
     ]);
   });
 
-  it('resets back to the pre-start waiting state without deleting the previous accepted beat history', async () => {
+  it('clears the local session history after reset and restarts new accepted beats from a fresh baseline', async () => {
     const user = userEvent.setup();
     const runtimeSessionClient = createRuntimeSessionClientMock();
+    const harness = createPlayAdapterHarness();
 
     render(
       <PlayWorkbench
         storyPackage={storyPackageFixture}
         storyPackageName="sample-scene"
         initialConfig={adapterConfigFixture}
-        adapterFactory={() => createPlayAdapterHarness().adapter}
+        adapterFactory={() => harness.adapter}
         runtimeSessionClient={runtimeSessionClient}
         initialRuntimeSession={createRestorableRuntimeSessionView()}
       />,
@@ -372,14 +373,31 @@ describe('PlayWorkbench', () => {
     await user.click(screen.getByRole('button', { name: 'Reset Workbench' }));
 
     expect(await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.')).toBeInTheDocument();
-    expect(screen.getByText('The operator enters the sealed corridor.')).toBeInTheDocument();
-    expect(screen.getByText('The relay clicks and the vent light turns red.')).toBeInTheDocument();
+    expect(screen.getByText('No accepted beats yet.')).toBeInTheDocument();
+    expect(screen.queryByText('The operator enters the sealed corridor.')).not.toBeInTheDocument();
+    expect(screen.queryByText('The relay clicks and the vent light turns red.')).not.toBeInTheDocument();
     expect(
       screen.queryByText(
         'The operator leans into the blind spot of the corridor and listens for the surge behind the wall.',
       ),
     ).not.toBeInTheDocument();
     expect(runtimeSessionClient.resetWorkbench).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: 'Start Round' }));
+
+    const firstNewBeatText = `Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`;
+    expect(await screen.findAllByText(firstNewBeatText)).toHaveLength(2);
+    expect(screen.queryByText('The operator enters the sealed corridor.')).not.toBeInTheDocument();
+    expect(screen.queryByText('The relay clicks and the vent light turns red.')).not.toBeInTheDocument();
+
+    const beatHistoryHeading = screen.getAllByRole('heading', { name: 'Beat History' }).at(-1);
+    const beatHistorySection = beatHistoryHeading?.closest('section');
+    if (!beatHistorySection) {
+      throw new Error('Expected Beat History section to exist.');
+    }
+    expect(within(beatHistorySection).getByText('Beat 1')).toBeInTheDocument();
+    expect(within(beatHistorySection).queryByText('Beat 2')).not.toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Opening Hook')).toBeInTheDocument();
   });
 
   it('surfaces reset write failures and preserves the previous truthful local continuity state', async () => {
