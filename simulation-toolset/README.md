@@ -41,6 +41,13 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
 - Lightweight UI smoke through:
   - edit workbench `保存本页 -> shared save route path`
   - play workbench `Start Round -> runtime loop -> sidecar hook`
+- Session continuity simulation:
+  - Checkpoint persistence after accepted beats
+  - Session restore with state/history preservation
+  - Reset workbench semantics (new session, old session preserved)
+  - Stale refresh protection (reset isolation from pending operations)
+  - Relationship finalization (gossipelog -> session/checkpoint binding)
+  - Edit continuity bounded view (no raw checkpoint exposure)
 - Optional JSON report persistence under `simulation-toolset/reports/` or a caller-provided output directory
 
 ## Cloud Usage Direction

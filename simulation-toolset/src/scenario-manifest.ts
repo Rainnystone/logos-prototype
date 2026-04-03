@@ -21,9 +21,34 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     tags: ['sidecar', 'fallback', 'adapter'],
   },
   {
+    scenarioId: 'session-checkpoint-persistence',
+    title: 'Session Checkpoint Persistence',
+    tags: ['session', 'continuity', 'checkpoint'],
+  },
+  {
+    scenarioId: 'session-restore',
+    title: 'Session Restore',
+    tags: ['session', 'continuity', 'restore'],
+  },
+  {
+    scenarioId: 'session-reset',
+    title: 'Session Reset',
+    tags: ['session', 'continuity', 'reset'],
+  },
+  {
     scenarioId: 'stale-refresh-protection',
     title: 'Stale Refresh Protection',
     tags: ['session', 'continuity', 'reset', 'gossipelog'],
+  },
+  {
+    scenarioId: 'relationship-finalization',
+    title: 'Relationship Finalization',
+    tags: ['session', 'continuity', 'gossipelog', 'checkpoint'],
+  },
+  {
+    scenarioId: 'edit-continuity-view',
+    title: 'Edit Continuity View',
+    tags: ['session', 'continuity', 'edit', 'bounded-view'],
   },
 ] as const;
 
