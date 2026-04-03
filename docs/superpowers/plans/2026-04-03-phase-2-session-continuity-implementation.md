@@ -191,6 +191,24 @@ it('persists lifecycle transitions provided by accepted-beat writes', async () =
   expect(first.session.lifecycle).toBe('in_progress');
   expect(final.session.lifecycle).toBe('complete');
 });
+
+it('serializes conflicting writes so stale finalization cannot overwrite a newer active session', async () => {
+  const staleFinalize = repository.finalizeRelationshipLayer({
+    packageName: 'tmp-package',
+    sessionId: 'sess_01',
+    checkpointId: 'chk_01',
+    lastStableRelationshipLayer: makeRelationshipLayer('stale'),
+  });
+  const reset = repository.resetWorkbench('tmp-package');
+
+  await Promise.allSettled([staleFinalize, reset]);
+
+  const file = await repository.readFile('tmp-package');
+  const nextActiveSession = file.activeSessionId ? file.sessionsById[file.activeSessionId] : null;
+
+  expect(nextActiveSession?.sessionId).not.toBe('sess_01');
+  expect(nextActiveSession?.lastStableRelationshipLayer).not.toEqual(makeRelationshipLayer('stale'));
+});
 ```
 
 - [ ] **Step 2: Run the schema/repository tests to verify RED**
@@ -222,6 +240,8 @@ Implementation notes:
   - `activeSessionId`, when present, must point to an existing session
   - `headCheckpointId` and `activeCheckpointId` must point to checkpoints in that session
   - `orderedCheckpointIds` and `checkpointsById` must stay consistent
+- serialize all package-scoped read-modify-write operations inside the repository with a per-package write queue or mutex
+- queued writes must re-read the latest file state inside the critical section before commit so reset/head advancement wins over stale finalization
 - keep the active-session boundary explicit in both schema and tests:
   - `createdAt`
   - `updatedAt`
@@ -242,7 +262,7 @@ Implementation notes:
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/runtime-sessions/__tests__/repository.test.ts`
 
-Expected: PASS for schema shape, semantic pointer validation, missing-file bootstrap, explicit session-pointer fields, and repository read/write behavior.
+Expected: PASS for schema shape, semantic pointer validation, per-package write serialization, missing-file bootstrap, explicit session-pointer fields, and repository read/write behavior.
 
 - [ ] **Step 5: Commit**
 
@@ -305,13 +325,19 @@ Expected: FAIL because no continuity-view loaders or page integrations exist yet
 - [ ] **Step 3: Implement bounded play/edit continuity loaders**
 
 ```ts
+export interface RuntimeRelationshipSummary {
+  highlightedDeltasText: string;
+  stableBackgroundText: string;
+  source: 'session' | 'checkpoint' | 'empty';
+}
+
 export interface PlayRuntimeSessionView {
   kind: 'empty' | 'awaiting_start' | 'restorable' | 'unavailable';
   activeSessionId: string | null;
   activeCheckpointId: string | null;
   beatHistory: readonly { beatNumber: number; playerInput: string; beatText: string }[];
   stateSnapshot: StateSnapshot | null;
-  relationshipLayer: GossipelogInjectionResult;
+  relationshipSummary: RuntimeRelationshipSummary;
   lifecycle: RuntimeSessionLifecycle | null;
   reason?: string;
 }
@@ -319,12 +345,13 @@ export interface PlayRuntimeSessionView {
 
 Implementation notes:
 - keep raw runtime file access on the server
+- define Phase 2 continuity DTOs in the view layer instead of exposing `GossipelogInjectionResult` directly to pages
 - `loadPlayRuntimeSessionView()` should reconstruct:
   - active session lifecycle
   - active checkpoint identity
   - `currentState`
   - derived beat history
-  - relationship layer using the spec priority:
+  - relationship summary using the spec priority:
     1. session-level layer
     2. active checkpoint layer
     3. empty layer
@@ -379,6 +406,31 @@ it('resets by creating a new active session instead of deleting history', async 
   }), context);
   expect(await response.json()).toMatchObject({ activeSessionId: expect.any(String) });
 });
+
+it('surfaces write failures from accepted-beat persistence instead of pretending success', async () => {
+  fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({
+    error: 'disk write failed',
+  }), { status: 500, headers: { 'content-type': 'application/json' } }));
+
+  await expect(browserClient.recordAcceptedBeat({
+    packageName: 'sample-scene',
+    sessionId: 'sess_01',
+    checkpointId: 'chk_02',
+  })).rejects.toThrow(/disk write failed/i);
+});
+
+it('returns a non-2xx response when reset persistence fails', async () => {
+  repository.resetWorkbench = vi.fn(async () => {
+    throw new Error('reset write failed');
+  });
+
+  const response = await POST(new Request('http://localhost', {
+    method: 'POST',
+    body: JSON.stringify({ kind: 'reset_workbench' }),
+  }), context);
+
+  expect(response.status).toBeGreaterThanOrEqual(500);
+});
 ```
 
 - [ ] **Step 2: Run the bridge tests to verify RED**
@@ -404,15 +456,17 @@ Implementation notes:
   - validate command body
   - call repository
   - return bounded result payloads
+  - translate repository write failures into explicit non-2xx error payloads
 - browser bridge responsibilities:
   - hide fetch details from `PlayWorkbench`
   - return typed results
+  - throw explicit errors when accepted-beat / reset / finalization persistence fails
 
 - [ ] **Step 4: Re-run the bridge tests to verify GREEN**
 
 Run: `npm test -- src/app/play/runtime.test.ts src/app/api/play/packages/[packageName]/runtime-session/route.test.ts`
 
-Expected: PASS for accepted-beat, finalization, and reset commands.
+Expected: PASS for accepted-beat, finalization, and reset commands, plus explicit write-failure propagation.
 
 - [ ] **Step 5: Commit**
 
@@ -480,6 +534,20 @@ it('writes complete lifecycle when the accepted beat finishes the scene', async 
     expect.objectContaining({ lifecycle: 'complete' }),
   );
 });
+
+it('keeps the accepted beat durable when delayed relationship-layer finalization persistence fails', async () => {
+  const recorder = createRecorderSpy({
+    finalizeRelationshipLayer: vi.fn(async () => {
+      throw new Error('finalize write failed');
+    }),
+  });
+  const orchestrator = createOrchestrator({ ...config, runtimeSessionStore: recorder });
+
+  await orchestrator.initScene();
+  await expect(orchestrator.runBeat('opening action')).resolves.toMatchObject({
+    beatResult: expect.objectContaining({ beatText: expect.any(String) }),
+  });
+});
 ```
 
 - [ ] **Step 2: Run the orchestrator tests to verify RED**
@@ -521,12 +589,13 @@ Implementation notes:
 - bind refresh finalization to the originating `sessionId + checkpointId`
 - allow an older bound checkpoint to finalize itself later
 - never let an older refresh overwrite the current active-session mirror
+- if post-accept finalization persistence fails, keep the already accepted checkpoint durable and continue using the previously stable relationship truth
 
 - [ ] **Step 4: Re-run the orchestrator tests to verify GREEN**
 
 Run: `npm test -- src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/phase-end-processing.test.ts`
 
-Expected: PASS for checkpoint creation, hydrate-scene restore, lifecycle transitions, bound finalization, and stale-refresh protection.
+Expected: PASS for checkpoint creation, hydrate-scene restore, lifecycle transitions, bound finalization, stale-refresh protection, and non-fatal finalization-write failure handling.
 
 - [ ] **Step 5: Commit**
 
@@ -552,7 +621,10 @@ it('builds orchestrator restore input from the active runtime session view', () 
   const input = buildOrchestratorRestoreInput(restorableView);
   expect(input).toMatchObject({
     currentState: restorableView.stateSnapshot,
-    lastStableRelationshipLayer: restorableView.relationshipLayer,
+    lastStableRelationshipLayer: {
+      highlightedDeltasText: restorableView.relationshipSummary.highlightedDeltasText,
+      stableBackgroundText: restorableView.relationshipSummary.stableBackgroundText,
+    },
     sceneComplete: false,
   });
   expect(input.acceptedHistory).toHaveLength(4);
@@ -574,6 +646,20 @@ it('resets into the pre-start waiting state without deleting old history', async
   render(<PlayWorkbench initialRuntimeSession={restorableView} ... />);
   await user.click(screen.getByRole('button', { name: 'Reset Workbench' }));
   expect(screen.getByRole('button', { name: 'Start Round' })).toBeInTheDocument();
+});
+
+it('shows a write error and preserves local continuity state when reset persistence fails', async () => {
+  render(<PlayWorkbench initialRuntimeSession={restorableView} runtimeClient={failingRuntimeClient} ... />);
+  await user.click(screen.getByRole('button', { name: 'Reset Workbench' }));
+  expect(screen.getByText(/reset write failed/i)).toBeInTheDocument();
+  expect(screen.getByText(/Accepted Beats/i)).toBeInTheDocument();
+});
+
+it('does not append accepted beat history when durable checkpoint persistence fails', async () => {
+  render(<PlayWorkbench initialRuntimeSession={awaitingStartView} runtimeClient={failingRuntimeClient} ... />);
+  await user.click(screen.getByRole('button', { name: 'Start Round' }));
+  expect(screen.getByText(/checkpoint write failed/i)).toBeInTheDocument();
+  expect(screen.queryByText(/Accepted Beats/i)).not.toBeInTheDocument();
 });
 ```
 
@@ -600,6 +686,7 @@ Implementation notes:
   - active `lastStableRelationshipLayer`
   - active `sessionId` and `activeCheckpointId`
 - build a concrete restore input in `src/app/play/runtime.ts`, then call `orchestrator.hydrateScene()` for `restorable` sessions
+- convert `RuntimeRelationshipSummary` back into the internal relationship-layer type at the restore boundary; keep UI surfaces depending on Phase 2 DTOs only
 - preserve the existing `acceptedHistory -> historyWindow -> prompt assembler -> memory placeholder` chain; do not fake continuation by only painting old beats into the UI
 - when `initialRuntimeSession.kind === 'unavailable'`, surface a truthful continuity error state and block automatic restore/cold bootstrap
 - when `initialRuntimeSession.kind === 'awaiting_start'`, keep the opening-hook waiting state
@@ -611,12 +698,13 @@ Implementation notes:
   - scene-complete state
 - add an explicit `Reset Workbench` button that calls the runtime-session bridge
 - after reset, rebuild local workbench state from the returned bootstrap session view instead of force-reloading the page
+- if reset or accepted-beat persistence fails, surface a non-silent error and keep the previously truthful local state instead of pretending the write succeeded
 
 - [ ] **Step 4: Re-run the play tests to verify GREEN**
 
 Run: `npm test -- src/app/play/runtime.test.ts src/app/__tests__/play.test.tsx src/app/__tests__/play-page.test.tsx`
 
-Expected: PASS for runtime hydration, refresh restore, invalid-file blocking, waiting-state bootstrap, and reset semantics.
+Expected: PASS for runtime hydration, refresh restore, invalid-file blocking, waiting-state bootstrap, reset semantics, and write-failure feedback without silent UI drift.
 
 - [ ] **Step 5: Commit**
 
@@ -716,7 +804,7 @@ git commit -m "feat: show continuity-backed edit relationship state"
 
 Run: `npm test -- src/runtime-sessions/__tests__/repository.test.ts src/runtime-sessions/__tests__/views.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/app/api/play/packages/[packageName]/runtime-session/route.test.ts src/engine/__tests__/orchestrator.test.ts src/app/play/runtime.test.ts src/app/__tests__/play.test.tsx src/app/__tests__/play-page.test.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/WorldBaseCastSection.test.tsx`
 
-Expected: PASS for repository, bridge, orchestrator, invalid-file restore blocking, same-session `/play -> /edit -> /play` continuity, play restore, and edit continuity coverage.
+Expected: PASS for repository, bridge, orchestrator, per-package write serialization, invalid-file restore blocking, same-session `/play -> /edit -> /play` continuity, play restore, explicit write-failure feedback, and edit continuity coverage.
 
 - [ ] **Step 2: Run repository-wide static and type checks**
 
@@ -756,6 +844,8 @@ git commit -m "feat: deliver phase 2 session continuity"
 - Use TDD inside every task exactly as written: RED -> minimal implementation -> GREEN.
 - Do not mix runtime continuity into `authoring-state.json`, `StoryPackage`, or gossipelog YAML state.
 - Do not widen Phase 2 into checkpoint browser UI or storyline management.
+- Keep repository writes serialized per package; do not bypass the repository with ad hoc file writes in route or UI code.
+- Keep UI contracts on Phase 2 continuity DTOs, not direct gossipelog internal types.
 - Keep subagent ownership tight:
   - repository/schema work
   - play runtime bridge/orchestrator work

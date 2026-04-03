@@ -373,3 +373,8 @@
 - 当前已经不再缺 spec / plan 产物，下一步只剩执行方式 handoff：
   - `subagent-driven-development`
   - 或 inline execution
+- 在用户确认前，又额外吸收了一轮基于根目录恢复文件的 best-practice 建议，并最小补强 implementation plan：
+  - repository 明确增加 package 级写序列化 / 并发保护口径，覆盖 accepted beat、reset、stale finalization 交错写入
+  - continuity view 从直接暴露 `GossipelogInjectionResult` 收窄为 Phase 2 自己的 DTO / summary 合同
+  - 增补 accepted beat、reset、finalization 写盘失败时的 route / UI 反馈与测试要求，避免静默数据丢失
+- 这轮补强没有改变 `Phase 2` 的目标、对象边界或产品语义，只是把实施风险进一步收口。
