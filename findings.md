@@ -295,12 +295,33 @@
 - 因而 checkpoint 主键不需要携带 `storylineId`：
   - checkpoint 的唯一性由 package scope + opaque `checkpointId` 保证
   - storyline 的区分度来自自己的 `storylineId` 与 `headCheckpointId`
+- 这次又补定了一个对下一阶段很关键的边界：当前 authoring 保存仍然是 `story package` 级全局定义。
+  - `worldbase / cast`
+  - `scene / phase`
+  - `control modules`（`light cone`、`director note additions`、`beat volume definitions`、`router profiles`、`auditor question set`）
+  - 这些现在都直接写回 package root 下的 YAML 定义文件，不跟着 session、checkpoint 或 beat 自动回退
+- 因而仅有“storyline 指向哪个 checkpoint”还不足以支撑“比较不同设置下故事走向”的作者目标：
+  - 回到旧 checkpoint，只会回到旧 runtime 连续性位置
+  - 不会自动回到那个位置当时的 authoring 定义版本
+- 对下一阶段更稳的推荐是：
+  - authoring 变体的绑定粒度应是 `storyline`
+  - 不需要细到 `beat`
+  - 也不应继续停留在“整个 package 永远只有唯一一套全局 authoring 定义”
+- 这意味着 `Phase 3` 除了 checkpoint ref layer 之外，还要补一层 storyline-scoped authoring variant / revision 语义：
+  - `story package` 继续作为容器与共享资产边界
+  - `checkpoint` 继续作为 runtime continuity node
+  - `storyline` 额外拥有自己的 authoring variant / revision 指向
+  - runtime session 在续跑时，既要知道自己从哪个 checkpoint 继续，也要知道自己正在消费哪条 storyline 的 authoring 定义
 - 对 `Phase 3` 而言，最轻量但不埋债的 branching 语义是：
   - 新建故事线时优先创建一个新的 storyline ref
   - 它指向既有 checkpoint
   - 不复制整段 checkpoint 历史
+- 但 authoring variant 不应被偷塞进 checkpoint 本体：
+  - checkpoint 继续只保存 runtime continuity truth
+  - storyline 侧再管理 authoring revision / overlay
 - 这也意味着 `Phase 3` 的推荐实现顺序应调整为：
   - 先冻结 storyline / checkpoint / session 三者合同
+  - 再冻结 storyline 与 authoring definition 之间的绑定合同
   - 再补 package 内 mutable storyline repository seam
   - 再接故事包 / 故事线管理 UI
   - 最后补重命名、归档、复制、删除等管理动作的完整交付

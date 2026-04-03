@@ -378,3 +378,11 @@
   - continuity view 从直接暴露 `GossipelogInjectionResult` 收窄为 Phase 2 自己的 DTO / summary 合同
   - 增补 accepted beat、reset、finalization 写盘失败时的 route / UI 反馈与测试要求，避免静默数据丢失
 - 这轮补强没有改变 `Phase 2` 的目标、对象边界或产品语义，只是把实施风险进一步收口。
+- 用户随后又追问了一个不会回改本阶段 spec / implementation plan，但会直接影响下一阶段对象边界的问题：
+  - 当前 `worldbase / cast / scene-phase / control modules` 的编辑保存，仍然跟着 `story package` 的全局定义走
+  - 它们不会跟着 runtime session、checkpoint 或 beat 自动回退
+  - 因此仅有 checkpoint / storyline ref 还不足以支撑“比较不同设置下故事走向”的作者目标
+- 已据此把下一阶段规划补回根目录文件：
+  - `Phase 3` 需要补上 storyline-scoped authoring variant / revision 语义
+  - 推荐绑定粒度是 `storyline`，而不是 `beat`
+  - 同时明确：authoring 变体不应被塞进 checkpoint 本体，checkpoint 继续只承载 runtime continuity truth

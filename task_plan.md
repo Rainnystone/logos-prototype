@@ -285,12 +285,25 @@
   - `checkpoint`：包内不可变节点
   - `storyline`：指向 checkpoint 的可移动 ref
   - `session`：当前活动工作线，与 storyline head 发生绑定
+- 还要补上一个下一阶段必须正面定义的对象边界：
+  - 当前 authoring 保存仍然是 `story package` 级全局定义
+  - 如果要支持“比较不同设置下的故事走向”，`worldbase / cast / scene-phase / control modules` 不能永远只跟唯一 package baseline 走
+  - 下一阶段需要引入 `storyline` 可绑定的 authoring variant / revision 语义
 - `checkpointId` 继续保持 package-scoped opaque id，不把 `storylineId` 编入主键。
 - 多 storyline 的区分度来自独立的 `storylineId` 与它的 `headCheckpointId`，而不是来自 checkpoint 主键字符串。
+- 这里的推荐绑定粒度明确为：
+  - 不绑定到 `beat`
+  - 不继续停留在“只绑定整个 story package”
+  - 而是绑定到 `storyline`
 - `Phase 3` 的 branching 推荐按以下顺序落地：
   - 先支持从既有 checkpoint 创建 storyline ref
+  - 再支持 storyline 级 authoring variant / revision 绑定
   - 再支持切换 storyline head
   - 再支持重命名、归档、复制、删除等管理动作
+- 非目标也应提前冻结：
+  - 不把完整 authoring 定义快照直接塞进每个 checkpoint
+  - checkpoint 继续保存 runtime continuity truth
+  - authoring variant 作为 storyline 侧另一层引用或 overlay 管理
 - `Phase 3` 的 UI 应消费前面已经冻结好的 substrate，而不是反过来驱动对象边界。
 
 ## Phase 1 Delivery Slices
