@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -60,6 +60,17 @@ async function writeRuntimeSessionsFile(
 }
 
 describe('runtime sessions repository', () => {
+  it('returns null when runtime-sessions.json is missing', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-missing-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await expect(repository.readFile(packageName)).resolves.toBeNull();
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
   it('rejects runtime files whose session or checkpoint pointers do not resolve', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-invalid-'));
     const packageName = path.basename(packageRoot);
@@ -116,9 +127,10 @@ describe('runtime sessions repository', () => {
     const packageName = path.basename(packageRoot);
 
     try {
+      const activeSession = await repository.ensureActiveSession(packageName);
       const { session } = await repository.recordAcceptedBeat({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: activeSession.sessionId,
         checkpointId: 'chk_01',
         lifecycle: 'in_progress',
         acceptedBeatOrdinal: 1,
@@ -148,9 +160,10 @@ describe('runtime sessions repository', () => {
     const packageName = path.basename(packageRoot);
 
     try {
+      const activeSession = await repository.ensureActiveSession(packageName);
       const first = await repository.recordAcceptedBeat({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: activeSession.sessionId,
         checkpointId: 'chk_01',
         lifecycle: 'in_progress',
         acceptedBeatOrdinal: 1,
@@ -168,7 +181,7 @@ describe('runtime sessions repository', () => {
 
       const final = await repository.recordAcceptedBeat({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: activeSession.sessionId,
         checkpointId: 'chk_02',
         lifecycle: 'complete',
         acceptedBeatOrdinal: 2,
@@ -196,9 +209,10 @@ describe('runtime sessions repository', () => {
     const packageName = path.basename(packageRoot);
 
     try {
+      const firstActiveSession = await repository.ensureActiveSession(packageName);
       await repository.recordAcceptedBeat({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: firstActiveSession.sessionId,
         checkpointId: 'chk_01',
         lifecycle: 'in_progress',
         acceptedBeatOrdinal: 1,
@@ -216,7 +230,7 @@ describe('runtime sessions repository', () => {
 
       const staleFinalize = repository.finalizeRelationshipLayer({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: firstActiveSession.sessionId,
         checkpointId: 'chk_01',
         lastStableRelationshipLayer: makeRelationshipLayer('stale'),
       });
@@ -225,9 +239,13 @@ describe('runtime sessions repository', () => {
       await Promise.allSettled([staleFinalize, reset]);
 
       const file = await repository.readFile(packageName);
+      expect(file).not.toBeNull();
+      if (!file) {
+        throw new Error('Expected runtime sessions file to exist.');
+      }
       const nextActiveSession = file.activeSessionId ? file.sessionsById[file.activeSessionId] : null;
 
-      expect(nextActiveSession?.sessionId).not.toBe('sess_01');
+      expect(nextActiveSession?.sessionId).not.toBe(firstActiveSession.sessionId);
       expect(nextActiveSession?.lastStableRelationshipLayer).not.toEqual(
         makeRelationshipLayer('stale'),
       );
@@ -241,9 +259,10 @@ describe('runtime sessions repository', () => {
     const packageName = path.basename(packageRoot);
 
     try {
+      const activeSession = await repository.ensureActiveSession(packageName);
       await repository.recordAcceptedBeat({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: activeSession.sessionId,
         checkpointId: 'chk_01',
         lifecycle: 'in_progress',
         acceptedBeatOrdinal: 1,
@@ -261,12 +280,52 @@ describe('runtime sessions repository', () => {
 
       const result = await repository.finalizeRelationshipLayer({
         packageName,
-        sessionId: 'sess_01',
+        sessionId: activeSession.sessionId,
         checkpointId: 'chk_01',
         lastStableRelationshipLayer: makeRelationshipLayer('settled'),
       });
 
       expect(result).toBeUndefined();
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects accepted-beat writes that do not target the current active session', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-stale-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      const previousActiveSession = await repository.ensureActiveSession(packageName);
+      await repository.resetWorkbench(packageName);
+
+      await expect(
+        repository.recordAcceptedBeat({
+          packageName,
+          sessionId: previousActiveSession.sessionId,
+          checkpointId: 'chk_stale',
+          lifecycle: 'in_progress',
+          acceptedBeatOrdinal: 1,
+          phaseIndex: 1,
+          beatIndex: 1,
+          sceneId: 'scene_opening',
+          roundId: 'round_stale',
+          acceptedTranscript: {
+            playerInput: 'stale input',
+            beatText: 'stale beat',
+          },
+          stateSnapshot: makeStateSnapshot(),
+          lastStableRelationshipLayer: makeRelationshipLayer('stale'),
+        }),
+      ).rejects.toThrow(/active session/i);
+
+      const file = await repository.readFile(packageName);
+      expect(file).not.toBeNull();
+      if (!file) {
+        throw new Error('Expected runtime sessions file to exist.');
+      }
+      expect(file.activeSessionId).not.toBe(previousActiveSession.sessionId);
+      expect(file.sessionsById[previousActiveSession.sessionId]?.checkpointsById.chk_stale).toBeUndefined();
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }
@@ -286,6 +345,41 @@ describe('runtime sessions repository', () => {
 
       expect(contents.endsWith('\n')).toBe(true);
       expect(contents).toContain('\n  "version": 1,');
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('cleans up temporary runtime-session write files after successful persistence', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-atomic-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await repository.ensureActiveSession(packageName);
+      const activeSession = await repository.ensureActiveSession(packageName);
+      await repository.recordAcceptedBeat({
+        packageName,
+        sessionId: activeSession.sessionId,
+        checkpointId: 'chk_atomic',
+        lifecycle: 'in_progress',
+        acceptedBeatOrdinal: 1,
+        phaseIndex: 1,
+        beatIndex: 1,
+        sceneId: 'scene_opening',
+        roundId: 'round_atomic',
+        acceptedTranscript: {
+          playerInput: 'atomic input',
+          beatText: 'atomic beat',
+        },
+        stateSnapshot: makeStateSnapshot(),
+        lastStableRelationshipLayer: makeRelationshipLayer('atomic'),
+      });
+
+      const entries = await readdir(packageRoot);
+      const tempArtifacts = entries.filter((entry) =>
+        entry.startsWith('runtime-sessions.json.tmp-'),
+      );
+      expect(tempArtifacts).toEqual([]);
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }

@@ -1,4 +1,10 @@
-import { access, readFile as readTextFile, writeFile as writeTextFile } from 'node:fs/promises';
+import {
+  access,
+  readFile as readTextFile,
+  rename,
+  unlink,
+  writeFile as writeTextFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
@@ -142,7 +148,17 @@ async function writeValidatedRuntimeSessionsFile(
   const filePath = resolveRuntimeSessionsPath(packageName);
   const validatedFile = validateRuntimeSessionsFile(file);
   const serialized = `${JSON.stringify(validatedFile, null, 2)}\n`;
-  await writeTextFile(filePath, serialized, 'utf8');
+  const tempPath = `${filePath}.tmp-${process.pid}-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
+  await writeTextFile(tempPath, serialized, 'utf8');
+
+  try {
+    await rename(tempPath, filePath);
+  } catch (error) {
+    await unlink(tempPath).catch(() => undefined);
+    throw error;
+  }
 }
 
 function runWithPackageWriteQueue<T>(
@@ -163,13 +179,17 @@ function runWithPackageWriteQueue<T>(
   return run;
 }
 
-export async function readFileFromDisk(packageName: string): Promise<RuntimeSessionsFile> {
+async function readFileFromDisk(packageName: string): Promise<RuntimeSessionsFile | null> {
   await ensureStoryPackageExists(packageName);
   const filePath = resolveRuntimeSessionsPath(packageName);
 
   try {
     return await readPersistedRuntimeSessionsFile(filePath);
   } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(
       `Failed to read runtime sessions for "${packageName}" from ${filePath}: ${message}`,
@@ -177,7 +197,7 @@ export async function readFileFromDisk(packageName: string): Promise<RuntimeSess
   }
 }
 
-export async function readFile(packageName: string): Promise<RuntimeSessionsFile> {
+export async function readFile(packageName: string): Promise<RuntimeSessionsFile | null> {
   return readFileFromDisk(packageName);
 }
 
@@ -216,10 +236,24 @@ export async function recordAcceptedBeat(
 ): Promise<RecordAcceptedBeatResult> {
   return runWithPackageWriteQueue(input.packageName, async () => {
     const file = await loadRuntimeSessionsFileForWrite(input.packageName);
+    if (file.activeSessionId === null) {
+      throw new Error('Cannot record accepted beat without an active session.');
+    }
+
+    if (file.activeSessionId !== input.sessionId) {
+      throw new Error(
+        `Cannot record accepted beat for inactive session "${input.sessionId}". Current active session is "${file.activeSessionId}".`,
+      );
+    }
+
+    const baseSession = file.sessionsById[file.activeSessionId];
+    if (!baseSession) {
+      throw new Error(
+        `Runtime session consistency violation: activeSessionId "${file.activeSessionId}" does not resolve.`,
+      );
+    }
+
     const timestamp = new Date().toISOString();
-    const existingSession = file.sessionsById[input.sessionId];
-    const baseSession =
-      existingSession ?? createBootstrapSession(input.sessionId, timestamp);
 
     const checkpoint: RuntimeCheckpoint = {
       checkpointId: input.checkpointId,
@@ -257,10 +291,9 @@ export async function recordAcceptedBeat(
 
     const nextFile: RuntimeSessionsFile = {
       ...file,
-      activeSessionId: input.sessionId,
       sessionsById: {
         ...file.sessionsById,
-        [input.sessionId]: updatedSession,
+        [file.activeSessionId]: updatedSession,
       },
     };
 
