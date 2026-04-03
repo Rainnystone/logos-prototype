@@ -6,19 +6,21 @@ import { defineConfig } from 'vitest/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// Project root is one level up from simulation-toolset
+const projectRoot = path.resolve(__dirname, '..');
 
 export default defineConfig({
   plugins: [react()],
-  root: __dirname,
+  root: projectRoot,
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, '../src'),
+      '@': path.resolve(projectRoot, 'src'),
       '@simulation': path.resolve(__dirname, './src'),
     },
   },
   test: {
     environment: 'jsdom',
-    setupFiles: ['../vitest.setup.ts'],
-    include: ['tests/**/*.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
+    include: ['simulation-toolset/tests/**/*.test.ts'],
   },
 });
