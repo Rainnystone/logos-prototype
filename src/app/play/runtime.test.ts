@@ -314,4 +314,38 @@ describe('createBrowserRuntimeSessionClient', () => {
       activeCheckpointId: 'checkpoint-2',
     });
   });
+
+  it('throws before fetch when accepted-beat payload packageName mismatches the configured package', async () => {
+    const fetchMock = vi.fn();
+    const client = createBrowserRuntimeSessionClient({
+      storyPackageName: 'sample-scene',
+      fetchImpl: fetchMock,
+    });
+
+    const input: RecordAcceptedBeatInput = {
+      packageName: 'other-scene',
+      sessionId: 'sess-1',
+      checkpointId: 'checkpoint-1',
+      lifecycle: 'in_progress',
+      acceptedBeatOrdinal: 1,
+      phaseIndex: 1,
+      beatIndex: 1,
+      sceneId: 'scene-sample',
+      roundId: 'round-1',
+      acceptedTranscript: {
+        playerInput: 'Look around',
+        beatText: 'You step into the room.',
+      },
+      stateSnapshot: stateSnapshotFixture,
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      },
+    };
+
+    await expect(client.recordAcceptedBeat(input)).rejects.toThrow(
+      'Failed to persist accepted beat: Runtime session packageName mismatch: expected "sample-scene", received "other-scene".',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

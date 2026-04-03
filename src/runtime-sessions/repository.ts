@@ -30,6 +30,23 @@ const emptyRelationshipLayer: RelationshipLayer = {
 
 let sessionCounter = 0;
 
+export class RuntimeStoryPackageNotFoundError extends Error {
+  readonly packageName: string;
+
+  constructor(packageName: string) {
+    super(`Story package "${packageName}" was not found.`);
+    this.name = 'RuntimeStoryPackageNotFoundError';
+    this.packageName = packageName;
+  }
+}
+
+export class RuntimeSessionConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RuntimeSessionConflictError';
+  }
+}
+
 export interface RecordAcceptedBeatInput {
   readonly packageName: string;
   readonly sessionId: string;
@@ -125,7 +142,7 @@ async function ensureStoryPackageExists(packageName: string): Promise<void> {
   try {
     await access(packageRoot);
   } catch {
-    throw new Error(`Story package "${packageName}" was not found at ${packageRoot}.`);
+    throw new RuntimeStoryPackageNotFoundError(packageName);
   }
 }
 
@@ -248,11 +265,13 @@ export async function recordAcceptedBeat(
   return runWithPackageWriteQueue(input.packageName, async () => {
     const file = await loadRuntimeSessionsFileForWrite(input.packageName);
     if (file.activeSessionId === null) {
-      throw new Error('Cannot record accepted beat without an active session.');
+      throw new RuntimeSessionConflictError(
+        'Cannot record accepted beat without an active session.',
+      );
     }
 
     if (file.activeSessionId !== input.sessionId) {
-      throw new Error(
+      throw new RuntimeSessionConflictError(
         `Cannot record accepted beat for inactive session "${input.sessionId}". Current active session is "${file.activeSessionId}".`,
       );
     }

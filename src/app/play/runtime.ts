@@ -158,6 +158,17 @@ function parseRuntimeSessionError(status: number, body: unknown): string {
   return `Runtime session bridge request failed with status ${status}.`;
 }
 
+function assertMatchingRuntimeSessionPackageName(
+  expectedPackageName: string,
+  payloadPackageName: string,
+): void {
+  if (payloadPackageName !== expectedPackageName) {
+    throw new Error(
+      `Runtime session packageName mismatch: expected "${expectedPackageName}", received "${payloadPackageName}".`,
+    );
+  }
+}
+
 async function postRuntimeSessionCommand(
   storyPackageName: string,
   command: RuntimeSessionCommand,
@@ -231,6 +242,7 @@ export function createBrowserRuntimeSessionClient(
 
     async recordAcceptedBeat(payload) {
       try {
+        assertMatchingRuntimeSessionPackageName(options.storyPackageName, payload.packageName);
         const result = await postRuntimeSessionCommand(
           options.storyPackageName,
           { kind: 'record_accepted_beat', payload },
@@ -252,6 +264,7 @@ export function createBrowserRuntimeSessionClient(
 
     async finalizeRelationshipLayer(payload) {
       try {
+        assertMatchingRuntimeSessionPackageName(options.storyPackageName, payload.packageName);
         const result = await postRuntimeSessionCommand(
           options.storyPackageName,
           { kind: 'finalize_relationship_layer', payload },

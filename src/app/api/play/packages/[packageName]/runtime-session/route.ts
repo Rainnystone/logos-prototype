@@ -71,6 +71,35 @@ function parseRuntimeSessionCommand(value: unknown): RuntimeSessionCommand | nul
   return parsed.data as RuntimeSessionCommand;
 }
 
+function commandHasPayload(
+  command: RuntimeSessionCommand,
+): command is
+  | { kind: 'record_accepted_beat'; payload: { packageName: string } }
+  | { kind: 'finalize_relationship_layer'; payload: { packageName: string } } {
+  return command.kind === 'record_accepted_beat' || command.kind === 'finalize_relationship_layer';
+}
+
+function mapRuntimeSessionError(error: unknown): { status: number; message: string } {
+  if (error instanceof runtimeSessionsRepository.RuntimeStoryPackageNotFoundError) {
+    return {
+      status: 404,
+      message: error.message,
+    };
+  }
+
+  if (error instanceof runtimeSessionsRepository.RuntimeSessionConflictError) {
+    return {
+      status: 409,
+      message: error.message,
+    };
+  }
+
+  return {
+    status: 500,
+    message: error instanceof Error ? error.message : String(error),
+  };
+}
+
 export async function POST(
   request: Request,
   context: {
@@ -85,6 +114,15 @@ export async function POST(
     return NextResponse.json(
       {
         error: 'Invalid runtime session command payload.',
+      },
+      { status: 400 },
+    );
+  }
+
+  if (commandHasPayload(command) && command.payload.packageName !== params.packageName) {
+    return NextResponse.json(
+      {
+        error: `Runtime session payload packageName mismatch: expected "${params.packageName}", received "${command.payload.packageName}".`,
       },
       { status: 400 },
     );
@@ -146,13 +184,13 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const mapped = mapRuntimeSessionError(error);
 
     return NextResponse.json(
       {
-        error: message,
+        error: mapped.message,
       },
-      { status: 500 },
+      { status: mapped.status },
     );
   }
 }
