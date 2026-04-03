@@ -222,6 +222,9 @@
   - `Reset Workbench` 的精确定义
   - continuity-backed 关系区如何读取当前 session 状态
   - sessions / activeSessionId 的仓储结构
+- spec 的写作顺序当前也已补充冻结：
+  - 先写对象模型与文件合同
+  - 再写执行时写入点、恢复语义与 `Reset Workbench` 语义
 - implementation plan 需要明确：
   - 运行时写入点
   - 页面恢复与显式重置入口
@@ -232,6 +235,7 @@
 
 - runtime session 文件当前冻结为 package root 下独立的 `runtime-sessions.json`
 - `runtime-sessions.json` 采用带 `version` 的 JSON 顶层结构
+- 物理落点上，`runtime-sessions.json` 与 `authoring-state.json`、`agents/` 并列放在 story package root；逻辑上不属于 `StoryPackage` 定义本体
 - package 级仓储结构采用：
   - `activeSessionId`
   - `sessionsById`

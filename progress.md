@@ -331,3 +331,14 @@
   - gossipelog 当前只保存 `lastStableRelationshipLayer`
   - reset 保留旧 session 历史，并创建新的 active session
   - 本阶段不新增作者可见 diagnostics UI
+- 已在上下文压缩后重新读取 `task_plan.md`、`findings.md`、`progress.md`，并交叉核对 `orchestrator`、`prompt-assembler`、`memory-placeholder`、`PlayWorkbench` 与 `authoring-state` 边界。
+- 当前恢复结论已明确：
+  - “方案 A” 不再是待定事项，根目录规划文件已经把它冻结为 `Phase 2` 的正式 substrate 方向。
+  - 这条方向与当前 runtime 事实一致：accepted transcript 直接服务 `historyWindow / precedingBeats`，关系层需要把 `lastStableRelationshipLayer` 一起纳入 checkpoint，而 `PlayWorkbench` 目前仍主要停留在页面内存。
+  - 因此下一步不是继续在 A / B 之间摇摆，而是开始编写 `Phase 2` 的正式 design spec 与 implementation plan。
+- 用户补回截图后，已再次核对并确认：
+  - 当前持久文件保住了 `方案 A` 的结论，但先前没有把 `A / B / C` 对比本身完整落盘
+  - 也缺少“spec 先写对象模型与文件合同，再继续写执行时写入点、恢复语义、Reset 语义”这条推进顺序
+- 已据此最小更新根目录规划文件：
+  - `findings.md` 补入三种方案的比较与为何当前仍推荐 `方案 A`
+  - `task_plan.md` 补入 spec 推进顺序，以及 `runtime-sessions.json` 与 `authoring-state.json`、`agents/` 的并列物理落点

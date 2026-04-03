@@ -222,6 +222,30 @@
   - 不在 reset 时 destructive clear 历史
   - 如后续需要清理，应通过显式 archive / cleanup 机制解决，而不是在当前阶段偷偷删历史
 
+## 上下文压缩后由截图补回的 Phase 2 方案对比
+
+- 这轮讨论里，曾明确比较过三种 runtime substrate 方案，而不只是直接宣布结论：
+  - `方案 A`：单文件 full checkpoint。`runtime-sessions.json` 内保存 `sessionsById`、每个 session 的 `checkpointsById`，并对每个 accepted beat 写 full checkpoint。
+  - `方案 B`：单文件 mixed 模式。仍使用 `runtime-sessions.json`，但 checkpoint 只保存部分 full state，某些字段改用 delta / event 表达。
+  - `方案 C`：多文件分拆。session 一个文件，checkpoint 一个目录或多文件。
+- 当前推荐仍然是 `方案 A`。
+- 推荐理由不是它“最高级”，而是它在当前仓库阶段最符合已冻结原则：
+  - 最直接、最稳、最容易验证
+  - 与当前 `orchestrator / prompt assembler / historyWindow` 运行链最贴合
+  - 能先把 `Phase 2` 的对象边界定稳，不为 `Phase 3` 埋第二套历史模型
+- `方案 B` 当前不取：
+  - 理论上更省空间
+  - 但会过早把“哪些字段可做 delta、哪些必须 full”提前固化成复杂度
+  - 与当前目标“先可靠续跑，再谈压缩”不匹配
+- `方案 C` 当前不取：
+  - 理论上更利于局部读写
+  - 但当前阶段会过早引入文件组织、原子写入、目录清理和跨文件一致性负担
+  - 对“先把 runtime continuity substrate 跑通”来说不是最小路径
+- 截图还补回了一个当时的表达顺序：
+  - 当时先在 spec 中冻结“对象模型与文件合同”
+  - 下一段原计划继续推进“执行时写入点、恢复语义、Reset Workbench 语义”
+- 这意味着当前 thread 的正确接续点不是重开 A / B / C 取舍，而是继续把上述第二段 spec 写完。
+
 ## 当前仍待冻结的问题
 
 - 本轮对齐后，当前已无架构级 blocker。
