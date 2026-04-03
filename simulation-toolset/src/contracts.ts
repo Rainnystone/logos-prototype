@@ -84,6 +84,32 @@ export const SimulationRunIndexSchema = z.object({
   ),
 });
 
+// Session Continuity Trace Schemas
+
+export const SimulationSessionTraceSchema = z.object({
+  sessionId: z.string(),
+  lifecycle: z.enum(['awaiting_start', 'in_progress', 'complete']),
+  checkpointCount: z.number(),
+  activeCheckpointId: z.string().nullable(),
+  relationshipSource: z.enum(['session', 'checkpoint', 'empty']),
+});
+
+export const SimulationCheckpointTraceSchema = z.object({
+  checkpointId: z.string(),
+  acceptedBeatOrdinal: z.number(),
+  phaseIndex: z.number(),
+  beatIndex: z.number(),
+  hasTranscript: z.boolean(),
+  hasStateSnapshot: z.boolean(),
+});
+
+export const SimulationEditContinuityTraceSchema = z.object({
+  kind: z.enum(['empty', 'active', 'unavailable']),
+  hasActiveSession: z.boolean(),
+  relationshipSummary: z.string().optional(),
+  exposesRawCheckpoints: z.boolean(),
+});
+
 export type SimulationAction = z.infer<typeof SimulationActionSchema>;
 export type SimulationAssertion = z.infer<typeof SimulationAssertionSchema>;
 export type SimulationAuthoringTrace = z.infer<typeof SimulationAuthoringTraceSchema>;
@@ -93,3 +119,6 @@ export type SimulationAgentTrace = z.infer<typeof SimulationAgentTraceSchema>;
 export type SimulationScenario = z.infer<typeof SimulationScenarioSchema>;
 export type SimulationReport = z.infer<typeof SimulationReportSchema>;
 export type SimulationRunIndex = z.infer<typeof SimulationRunIndexSchema>;
+export type SimulationSessionTrace = z.infer<typeof SimulationSessionTraceSchema>;
+export type SimulationCheckpointTrace = z.infer<typeof SimulationCheckpointTraceSchema>;
+export type SimulationEditContinuityTrace = z.infer<typeof SimulationEditContinuityTraceSchema>;
