@@ -791,11 +791,11 @@ export function EditWorkbench({
             packageName={packageName}
             activeSurface={activeSurface}
             value={draftWorldBase}
-            runtimeContinuityView={runtimeContinuityView}
             onChange={setDraftWorldBase}
             onSubmit={handleWorldBaseCastSubmit}
             onReset={handleWorldBaseCastReset}
             isSaving={isWorldBaseSaving}
+            {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
           />
         ) : activeSection === 'scene-phase-authoring' ? (
           <ScenePhaseAuthoringSection

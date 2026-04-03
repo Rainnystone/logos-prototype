@@ -1,13 +1,14 @@
 import { cpSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import {
   createOrchestrator,
+  type EnsureActiveSessionResult,
   type OrchestratorRestoreInput,
   type RuntimeSessionStore,
 } from '@/engine/orchestrator';
@@ -51,21 +52,29 @@ function createRelationshipLayer(label: string): GossipelogInjectionResult {
   };
 }
 
+type RuntimeSessionStoreSpy = RuntimeSessionStore & {
+  ensureActiveSession: Mock<() => Promise<EnsureActiveSessionResult>>;
+  recordAcceptedBeat: Mock<(input: RecordAcceptedBeatInput) => Promise<void>>;
+  finalizeRelationshipLayer: Mock<(input: FinalizeRelationshipLayerInput) => Promise<void>>;
+};
+
 function createRuntimeSessionStoreSpy(
-  overrides: Partial<RuntimeSessionStore> = {},
-): RuntimeSessionStore & {
-  ensureActiveSession: ReturnType<typeof vi.fn<() => Promise<{ activeSessionId: string }>>>;
-  recordAcceptedBeat: ReturnType<typeof vi.fn<(input: RecordAcceptedBeatInput) => Promise<void>>>;
-  finalizeRelationshipLayer: ReturnType<
-    typeof vi.fn<(input: FinalizeRelationshipLayerInput) => Promise<void>>
-  >;
-} {
+  overrides: Partial<RuntimeSessionStoreSpy> = {},
+): RuntimeSessionStoreSpy {
+  const ensureActiveSession: Mock<() => Promise<EnsureActiveSessionResult>> = vi.fn(async () => ({
+    activeSessionId: 'sess_active',
+  }));
+  const recordAcceptedBeat: Mock<(input: RecordAcceptedBeatInput) => Promise<void>> = vi.fn(
+    async (_input) => undefined,
+  );
+  const finalizeRelationshipLayer: Mock<
+    (input: FinalizeRelationshipLayerInput) => Promise<void>
+  > = vi.fn(async (_input) => undefined);
+
   return {
-    ensureActiveSession: vi.fn(async () => ({
-      activeSessionId: 'sess_active',
-    })),
-    recordAcceptedBeat: vi.fn(async () => undefined),
-    finalizeRelationshipLayer: vi.fn(async () => undefined),
+    ensureActiveSession,
+    recordAcceptedBeat,
+    finalizeRelationshipLayer,
     ...overrides,
   };
 }
@@ -1199,7 +1208,7 @@ describe('Orchestrator', () => {
       },
     };
     const recorder = createRuntimeSessionStoreSpy({
-      finalizeRelationshipLayer: vi.fn(async () => {
+      finalizeRelationshipLayer: vi.fn(async (_input: FinalizeRelationshipLayerInput) => {
         throw new Error('finalize write failed');
       }),
     });

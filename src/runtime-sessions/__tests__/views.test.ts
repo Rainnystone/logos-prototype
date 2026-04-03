@@ -5,7 +5,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadAuthoringState } from '@/authoring/persistence/package-state';
-import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
+import { loadEditRuntimeContinuityView, loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
 import type { RuntimeSessionsFile, StateSnapshot } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -158,6 +158,18 @@ describe('runtime session views', () => {
 
     expect(view.kind).toBe('unavailable');
     expect(view.reason).toMatch(/runtime continuity/i);
+  });
+
+  it('sanitizes edit continuity failures before they reach the editor surface', async () => {
+    prepareTestPackage();
+    await writeInvalidRuntimeSessionsFile();
+
+    const view = await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(view.kind).toBe('unavailable');
+    expect(view.reason).toBe('Runtime continuity is temporarily unavailable for this story package.');
+    expect(view.reason).not.toContain('sess_missing');
+    expect(view.reason).not.toContain('does not resolve');
   });
 
   it('keeps play and edit loaders aligned to the same active session', async () => {

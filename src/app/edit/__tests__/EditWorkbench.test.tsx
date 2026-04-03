@@ -163,6 +163,29 @@ describe('EditWorkbench', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows only safe unavailable continuity copy on the edit character surface', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+          runtimeContinuityView: {
+            kind: 'unavailable',
+            activeSession: null,
+            reason: 'Runtime continuity is temporarily unavailable for this story package.',
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Runtime 连续性暂不可用。')).toBeInTheDocument();
+    expect(screen.getByText('当前无法读取编辑态连续关系摘要。')).toBeInTheDocument();
+    expect(screen.queryByText(/temporarily unavailable for this story package/i)).not.toBeInTheDocument();
+  });
+
   it('keeps the selected location after switching away from and back to the world surface', async () => {
     const user = userEvent.setup();
     const { rerender } = render(

@@ -162,7 +162,7 @@ describe('CharacterSection', () => {
     const runtimeContinuityView: EditRuntimeContinuityView = {
       kind: 'unavailable',
       activeSession: null,
-      reason: 'Runtime continuity is unavailable for "sample-scene": invalid runtime file.',
+      reason: 'Runtime continuity is temporarily unavailable for this story package.',
     };
 
     render(
@@ -177,9 +177,8 @@ describe('CharacterSection', () => {
     );
 
     expect(screen.getByText('Runtime 连续性暂不可用。')).toBeInTheDocument();
-    expect(
-      screen.getByText('Runtime continuity is unavailable for "sample-scene": invalid runtime file.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('当前无法读取编辑态连续关系摘要。')).toBeInTheDocument();
+    expect(screen.queryByText(/invalid runtime file/i)).not.toBeInTheDocument();
   });
 
   it('falls back to hero after deleting a selected antagonist', async () => {

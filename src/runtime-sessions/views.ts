@@ -39,6 +39,8 @@ const emptyRelationshipSummary: RuntimeRelationshipSummary = {
   stableBackgroundText: '',
   source: 'empty',
 };
+const EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON =
+  'Runtime continuity is temporarily unavailable for this story package.';
 
 function hasRelationshipContent(layer: {
   readonly highlightedDeltasText: string;
@@ -174,7 +176,7 @@ export async function loadEditRuntimeContinuityView(
     return {
       kind: 'unavailable',
       activeSession: null,
-      ...(playView.reason ? { reason: playView.reason } : {}),
+      reason: EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
     };
   }
 
@@ -189,7 +191,7 @@ export async function loadEditRuntimeContinuityView(
     return {
       kind: 'unavailable',
       activeSession: null,
-      reason: `Runtime continuity is unavailable for "${packageName}": active lifecycle is missing.`,
+      reason: EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
     };
   }
 

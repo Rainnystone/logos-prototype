@@ -56,12 +56,16 @@ vi.mock('@/app/edit/sections/CharacterSection', () => ({
     renderCharacterSection(props);
     const characterProps = props as {
       selection?: unknown;
+      runtimeContinuityView?: EditRuntimeContinuityView;
       onSelectionChange?: (nextSelection: unknown) => void;
     };
 
     return (
       <div data-testid="character-section-mock">
         <p data-testid="selected-character">{stringifySelection(characterProps.selection)}</p>
+        <p data-testid="continuity-prop-presence">
+          {Object.hasOwn(characterProps, 'runtimeContinuityView') ? 'present' : 'absent'}
+        </p>
         <button
           type="button"
           onClick={() =>
@@ -168,10 +172,10 @@ function renderSection(
       packageName="sample-scene"
       activeSurface={activeSurface}
       value={draftValue}
-      runtimeContinuityView={runtimeContinuityView}
       onChange={vi.fn()}
       onSubmit={vi.fn()}
       onReset={vi.fn()}
+      {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
     />,
   );
 }
@@ -284,5 +288,11 @@ describe('WorldBaseCastSection', () => {
     };
 
     expect(characterSectionProps.runtimeContinuityView).toEqual(activeContinuityView);
+  });
+
+  it('does not pass an explicit undefined continuity prop into CharacterSection', () => {
+    renderSection('character');
+
+    expect(screen.getByTestId('continuity-prop-presence')).toHaveTextContent('absent');
   });
 });

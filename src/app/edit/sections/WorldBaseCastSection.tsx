@@ -107,13 +107,13 @@ export function WorldBaseCastSection({
         <CharacterSection
           packageName={packageName}
           value={value}
-          runtimeContinuityView={runtimeContinuityView}
           onChange={onChange}
           onSubmit={onSubmit}
           onReset={onReset}
           selection={characterSelection}
           onSelectionChange={setCharacterSelection}
           isSaving={isSaving}
+          {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
         />
       )}
     </section>

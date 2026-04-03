@@ -65,6 +65,7 @@ const CHARACTER_FIELD_GROUPS: readonly {
     ],
   },
 ] as const;
+const EDIT_CONTINUITY_UNAVAILABLE_COPY = '当前无法读取编辑态连续关系摘要。';
 
 interface CharacterRailProps {
   readonly title: string;
@@ -351,9 +352,7 @@ export function CharacterSection({
           {runtimeContinuityView?.kind === 'unavailable' ? (
             <>
               <p className="panel-note">Runtime 连续性暂不可用。</p>
-              <p className="panel-note">
-                {runtimeContinuityView.reason ?? 'Runtime continuity is unavailable.'}
-              </p>
+              <p className="panel-note">{EDIT_CONTINUITY_UNAVAILABLE_COPY}</p>
             </>
           ) : activeContinuitySession && relationshipStatus ? (
             <>
