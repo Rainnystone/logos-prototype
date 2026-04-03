@@ -61,6 +61,17 @@ export interface FinalizeRelationshipLayerInput {
   readonly lastStableRelationshipLayer: RelationshipLayer;
 }
 
+export type RuntimeSessionCommand =
+  | { kind: 'ensure_active_session' }
+  | { kind: 'record_accepted_beat'; payload: RecordAcceptedBeatInput }
+  | { kind: 'finalize_relationship_layer'; payload: FinalizeRelationshipLayerInput }
+  | { kind: 'reset_workbench' };
+
+export interface RuntimeSessionCommandResult {
+  readonly activeSessionId: string;
+  readonly activeCheckpointId?: string;
+}
+
 function resolveStoryPackageRoot(packageName: string): string {
   return resolvePackageRoot(packageName);
 }

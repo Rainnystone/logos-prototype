@@ -1,6 +1,12 @@
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
 import type {
+  FinalizeRelationshipLayerInput,
+  RecordAcceptedBeatInput,
+  RuntimeSessionCommand,
+  RuntimeSessionCommandResult,
+} from '@/runtime-sessions/repository';
+import type {
   GossipelogCycleRunner,
   RunGossipelogCycleResult,
 } from '@/agents/gossipelog/contracts';
@@ -64,6 +70,22 @@ interface BrowserGossipelogCycleRunnerOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
+interface BrowserRuntimeSessionClientOptions {
+  readonly storyPackageName: string;
+  readonly fetchImpl?: typeof fetch;
+}
+
+export interface BrowserRuntimeSessionClient {
+  ensureActiveSession(): Promise<{ activeSessionId: string }>;
+  recordAcceptedBeat(
+    payload: RecordAcceptedBeatInput,
+  ): Promise<{ activeSessionId: string; activeCheckpointId: string }>;
+  finalizeRelationshipLayer(
+    payload: FinalizeRelationshipLayerInput,
+  ): Promise<{ activeSessionId: string; activeCheckpointId: string }>;
+  resetWorkbench(): Promise<{ activeSessionId: string }>;
+}
+
 function defaultNoOpUpdate(): GossipelogUpdateResult {
   return {
     involvedRoleIds: [],
@@ -99,6 +121,64 @@ function isFallbackGossipelogMethod(method: unknown): boolean {
   );
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function buildRuntimeSessionRoutePath(storyPackageName: string): string {
+  return `/api/play/packages/${encodeURIComponent(storyPackageName)}/runtime-session`;
+}
+
+function parseRuntimeSessionCommandResult(body: unknown): RuntimeSessionCommandResult {
+  if (!isPlainObject(body) || typeof body.activeSessionId !== 'string') {
+    throw new Error('Runtime session bridge response is invalid.');
+  }
+
+  if (body.activeCheckpointId !== undefined && typeof body.activeCheckpointId !== 'string') {
+    throw new Error('Runtime session bridge response is invalid.');
+  }
+
+  return {
+    activeSessionId: body.activeSessionId,
+    ...(typeof body.activeCheckpointId === 'string'
+      ? { activeCheckpointId: body.activeCheckpointId }
+      : {}),
+  };
+}
+
+function parseRuntimeSessionError(status: number, body: unknown): string {
+  if (isPlainObject(body) && typeof body.error === 'string' && body.error.length > 0) {
+    return body.error;
+  }
+
+  return `Runtime session bridge request failed with status ${status}.`;
+}
+
+async function postRuntimeSessionCommand(
+  storyPackageName: string,
+  command: RuntimeSessionCommand,
+  fetchImpl: typeof fetch,
+): Promise<RuntimeSessionCommandResult> {
+  const response = await fetchImpl(buildRuntimeSessionRoutePath(storyPackageName), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(command),
+  });
+  const responseBody = (await response.json().catch(() => null)) as unknown;
+
+  if (!response.ok) {
+    throw new Error(parseRuntimeSessionError(response.status, responseBody));
+  }
+
+  return parseRuntimeSessionCommandResult(responseBody);
+}
+
 export function createWorkbenchAdapter(config: AdapterConfig | null): LLMAdapter {
   return config ? createAPIAdapter(config) : createWorkbenchDemoAdapter();
 }
@@ -128,6 +208,86 @@ export function createBrowserGossipelogCycleRunner(
     }
 
     return (await response.json()) as RunGossipelogCycleResult;
+  };
+}
+
+export function createBrowserRuntimeSessionClient(
+  options: BrowserRuntimeSessionClientOptions,
+): BrowserRuntimeSessionClient {
+  const fetchImpl = options.fetchImpl ?? fetch;
+
+  return {
+    async ensureActiveSession() {
+      const result = await postRuntimeSessionCommand(
+        options.storyPackageName,
+        { kind: 'ensure_active_session' },
+        fetchImpl,
+      );
+
+      return {
+        activeSessionId: result.activeSessionId,
+      };
+    },
+
+    async recordAcceptedBeat(payload) {
+      try {
+        const result = await postRuntimeSessionCommand(
+          options.storyPackageName,
+          { kind: 'record_accepted_beat', payload },
+          fetchImpl,
+        );
+
+        if (typeof result.activeCheckpointId !== 'string') {
+          throw new Error('Runtime session bridge response is missing activeCheckpointId.');
+        }
+
+        return {
+          activeSessionId: result.activeSessionId,
+          activeCheckpointId: result.activeCheckpointId,
+        };
+      } catch (error) {
+        throw new Error(`Failed to persist accepted beat: ${getErrorMessage(error)}`);
+      }
+    },
+
+    async finalizeRelationshipLayer(payload) {
+      try {
+        const result = await postRuntimeSessionCommand(
+          options.storyPackageName,
+          { kind: 'finalize_relationship_layer', payload },
+          fetchImpl,
+        );
+
+        if (typeof result.activeCheckpointId !== 'string') {
+          throw new Error('Runtime session bridge response is missing activeCheckpointId.');
+        }
+
+        return {
+          activeSessionId: result.activeSessionId,
+          activeCheckpointId: result.activeCheckpointId,
+        };
+      } catch (error) {
+        throw new Error(
+          `Failed to persist relationship-layer finalization: ${getErrorMessage(error)}`,
+        );
+      }
+    },
+
+    async resetWorkbench() {
+      try {
+        const result = await postRuntimeSessionCommand(
+          options.storyPackageName,
+          { kind: 'reset_workbench' },
+          fetchImpl,
+        );
+
+        return {
+          activeSessionId: result.activeSessionId,
+        };
+      } catch (error) {
+        throw new Error(`Failed to reset runtime workbench: ${getErrorMessage(error)}`);
+      }
+    },
   };
 }
 
