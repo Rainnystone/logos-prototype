@@ -25,11 +25,11 @@ describe('player simulator', () => {
       route: [{ routerName: 'investigation', inferenceTrace: 'route-trace' }],
       generate: [{ beatText: 'beat-1', options: ['a', 'b', 'c', 'd'] }],
     });
-    const simulator = await createPlayerSimulator(
-      fixture.packageName,
+    const simulator = await createPlayerSimulator({
+      packageName: fixture.packageName,
       adapter,
-      storyPackageWithoutAudit,
-    );
+      storyPackageOverride: storyPackageWithoutAudit,
+    });
 
     const initialState = await simulator.initScene();
     const result = await simulator.runBeat('opening action');

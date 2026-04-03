@@ -1,5 +1,5 @@
 import { runGossipelogCycle } from '@/agents/gossipelog/agent';
-import { createOrchestrator } from '@/engine/orchestrator';
+import { createOrchestrator, type RuntimeSessionStore } from '@/engine/orchestrator';
 import { loadStoryPackage } from '@/engine/story-loader';
 import type { BeatResult } from '@/engine/orchestrator';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
@@ -23,17 +23,23 @@ export type PlayerSimulator = {
   getState(): StateSnapshot;
 };
 
+export type CreatePlayerSimulatorOptions = {
+  readonly packageName: string;
+  readonly adapter: LLMAdapter;
+  readonly storyPackageOverride?: StoryPackage;
+  readonly runtimeSessionStore?: RuntimeSessionStore;
+};
+
 export async function createPlayerSimulator(
-  packageName: string,
-  adapter: LLMAdapter,
-  storyPackageOverride?: StoryPackage,
+  options: CreatePlayerSimulatorOptions,
 ): Promise<PlayerSimulator> {
-  const storyPackage = storyPackageOverride ?? (await loadStoryPackage(packageName));
+  const storyPackage = options.storyPackageOverride ?? (await loadStoryPackage(options.packageName));
   const orchestrator = createOrchestrator({
-    adapter,
-    storyPackageName: packageName,
+    adapter: options.adapter,
+    storyPackageName: options.packageName,
     storyPackage,
     gossipelogCycleRunner: runGossipelogCycle,
+    ...(options.runtimeSessionStore ? { runtimeSessionStore: options.runtimeSessionStore } : {}),
   });
 
   let initialized = false;

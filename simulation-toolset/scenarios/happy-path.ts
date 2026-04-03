@@ -58,11 +58,11 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
           route: [{ routerName: 'investigation', inferenceTrace: 'route-trace' }],
           generate: [{ beatText: 'beat-1', options: ['a', 'b', 'c', 'd'] }],
         });
-        const player = await createPlayerSimulator(
-          author.packageName,
-          playerAdapter,
-          runtimeStoryPackage,
-        );
+        const player = await createPlayerSimulator({
+          packageName: author.packageName,
+          adapter: playerAdapter,
+          storyPackageOverride: runtimeStoryPackage,
+        });
 
         await player.initScene();
         const beat = await player.runBeat('opening action');

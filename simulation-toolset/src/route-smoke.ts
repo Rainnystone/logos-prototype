@@ -170,7 +170,11 @@ async function capturePromptLocationPatch(packageName: string): Promise<{
     route: [{ routerName: 'investigation', inferenceTrace: 'route-trace' }],
     generate: [{ beatText: 'route-smoke-beat', options: ['a', 'b', 'c', 'd'] }],
   });
-  const player = await createPlayerSimulator(packageName, adapter, runtimeStoryPackage);
+  const player = await createPlayerSimulator({
+    packageName,
+    adapter,
+    storyPackageOverride: runtimeStoryPackage,
+  });
 
   await player.initScene();
   await player.runBeat('scene location prompt smoke');
