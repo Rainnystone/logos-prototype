@@ -55,11 +55,31 @@ interface PlayWorkbenchProps {
   readonly runtimeSessionClient?: BrowserRuntimeSessionClient;
 }
 
+interface PendingRelationshipSync {
+  readonly promise: Promise<void>;
+  resolve(): void;
+  finalizeQueued: boolean;
+  settled: boolean;
+}
+
 const EMPTY_RELATIONSHIP_SUMMARY: PlayRuntimeSessionView['relationshipSummary'] = {
   highlightedDeltasText: '',
   stableBackgroundText: '',
   source: 'empty',
 };
+
+function createPendingRelationshipSync(): PendingRelationshipSync {
+  let resolve!: () => void;
+
+  return {
+    promise: new Promise<void>((settle) => {
+      resolve = settle;
+    }),
+    resolve,
+    finalizeQueued: false,
+    settled: false,
+  };
+}
 
 function hasRelationshipContent(layer: {
   readonly highlightedDeltasText: string;
@@ -155,6 +175,8 @@ export function PlayWorkbench({
   const continuityUnavailableMessage = PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON;
   const orchestratorRef = useRef<Orchestrator | null>(null);
   const runtimeSessionViewRef = useRef<PlayRuntimeSessionView | undefined>(initialRuntimeSession);
+  const pendingRelationshipSyncsRef = useRef<Set<PendingRelationshipSync>>(new Set());
+  const relationshipSyncFinalizeQueueRef = useRef<PendingRelationshipSync[]>([]);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
   const [runtimeSessionView, setRuntimeSessionView] = useState<PlayRuntimeSessionView | undefined>(
@@ -184,6 +206,20 @@ export function PlayWorkbench({
         : null),
     [initialRuntimeSession, runtimeSessionClient, storyPackageName],
   );
+
+  function settlePendingRelationshipSync(sync: PendingRelationshipSync | undefined) {
+    if (!sync || sync.settled) {
+      return;
+    }
+
+    sync.settled = true;
+    pendingRelationshipSyncsRef.current.delete(sync);
+    relationshipSyncFinalizeQueueRef.current = relationshipSyncFinalizeQueueRef.current.filter(
+      (candidate) => candidate !== sync,
+    );
+    sync.resolve();
+  }
+
   const resolvedRuntimeSessionStore = useMemo<RuntimeSessionStore | null>(
     () =>
       resolvedRuntimeSessionClient
@@ -198,11 +234,17 @@ export function PlayWorkbench({
               );
             },
             finalizeRelationshipLayer: async (input) => {
-              await resolvedRuntimeSessionClient.finalizeRelationshipLayer(input);
-              runtimeSessionViewRef.current = buildFinalizedRuntimeSessionView(
-                runtimeSessionViewRef.current,
-                input,
-              );
+              const sync = relationshipSyncFinalizeQueueRef.current.shift();
+
+              try {
+                await resolvedRuntimeSessionClient.finalizeRelationshipLayer(input);
+                runtimeSessionViewRef.current = buildFinalizedRuntimeSessionView(
+                  runtimeSessionViewRef.current,
+                  input,
+                );
+              } finally {
+                settlePendingRelationshipSync(sync);
+              }
             },
           }
         : null,
@@ -237,6 +279,18 @@ export function PlayWorkbench({
     let cancelled = false;
 
     async function initializeWorkbench() {
+      const pendingRelationshipSyncs = Array.from(pendingRelationshipSyncsRef.current).map(
+        (sync) => sync.promise,
+      );
+
+      if (pendingRelationshipSyncs.length > 0) {
+        await Promise.allSettled(pendingRelationshipSyncs);
+      }
+
+      if (cancelled) {
+        return;
+      }
+
       const continuityView = runtimeSessionViewRef.current;
 
       orchestratorRef.current = null;
@@ -313,6 +367,30 @@ export function PlayWorkbench({
                 adapterConfig,
               })
             : undefined);
+        const trackedGossipelogCycleRunner = resolvedGossipelogCycleRunner
+          ? async (...args: Parameters<GossipelogCycleRunner>) => {
+              const sync = createPendingRelationshipSync();
+              pendingRelationshipSyncsRef.current.add(sync);
+
+              try {
+                const result = await resolvedGossipelogCycleRunner(...args);
+
+                if (resolvedRuntimeSessionStore) {
+                  sync.finalizeQueued = true;
+                  relationshipSyncFinalizeQueueRef.current.push(sync);
+                }
+
+                return result;
+              } catch (error) {
+                settlePendingRelationshipSync(sync);
+                throw error;
+              } finally {
+                if (!sync.finalizeQueued) {
+                  settlePendingRelationshipSync(sync);
+                }
+              }
+            }
+          : undefined;
         const orchestrator = createOrchestrator({
           adapter: trackedAdapter,
           storyPackageName,
@@ -320,7 +398,9 @@ export function PlayWorkbench({
           ...(resolvedRuntimeSessionStore
             ? { runtimeSessionStore: resolvedRuntimeSessionStore }
             : {}),
-          ...(resolvedGossipelogCycleRunner ? { gossipelogCycleRunner: resolvedGossipelogCycleRunner } : {}),
+          ...(trackedGossipelogCycleRunner
+            ? { gossipelogCycleRunner: trackedGossipelogCycleRunner }
+            : {}),
         });
         const initialState =
           continuityView?.kind === 'restorable'
