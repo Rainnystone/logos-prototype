@@ -768,6 +768,81 @@ describe('PlayWorkbench', () => {
     );
   });
 
+  it('locks submission immediately when runtime config save starts a rebuild with pending relationship settlement', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+    let resolveGossipelogCycle!: () => void;
+    const pendingGossipelogCycle = new Promise<void>((resolve) => {
+      resolveGossipelogCycle = resolve;
+    });
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => ({
+        highlightedDeltasText: 'lock delta settled',
+        stableBackgroundText: 'lock background settled',
+      })),
+    };
+    const gossipelogCycleRunner = vi.fn(async () => {
+      await pendingGossipelogCycle;
+
+      return {
+        updateRequest: {} as never,
+        updateResult: {
+          involvedRoleIds: [],
+          invocationNoOp: false,
+          edgeUpdates: [],
+        },
+        injectionRequest: {} as never,
+        relationshipLayer: {
+          highlightedDeltasText: 'lock delta settled',
+          stableBackgroundText: 'lock background settled',
+        },
+      };
+    }) as unknown as GossipelogCycleRunner;
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+    expect(recordedAcceptedBeats).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
+    expect(recordedAcceptedBeats).toHaveLength(1);
+
+    resolveGossipelogCycle();
+    await screen.findByText('Runtime config saved locally.');
+  });
+
   it('shows generating and auditing statuses before accepting a beat', async () => {
     const harness = createPlayAdapterHarness({ delayMs: 40 });
     const user = userEvent.setup();

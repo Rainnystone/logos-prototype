@@ -279,6 +279,8 @@ export function PlayWorkbench({
     let cancelled = false;
 
     async function initializeWorkbench() {
+      setStatus('initializing');
+
       const pendingRelationshipSyncs = Array.from(pendingRelationshipSyncsRef.current).map(
         (sync) => sync.promise,
       );
@@ -294,7 +296,6 @@ export function PlayWorkbench({
       const continuityView = runtimeSessionViewRef.current;
 
       orchestratorRef.current = null;
-      setStatus('initializing');
       setRewriteFeedback(null);
       setForceAccepted(false);
       setError(null);
