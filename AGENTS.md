@@ -68,6 +68,21 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - Spec text budget: max 40,000 tokens per session.
 - Never load: `Agent Client/`, `LOGOS Prototype/`, `SillyTavern调研/`.
 
+### 7. Subagent Delegation Discipline
+- For complex work, prefer decomposing the implementation into bounded tasks and dispatching subagents rather than keeping the whole execution on the main thread.
+- Subagent dispatch must follow `subagent-driven-development`; do not improvise a parallel workflow outside that discipline when the task has already been decomposed.
+- Choose the subagent model according to task complexity instead of defaulting to the largest model. Valid deployment options include:
+  - `gpt-5.4` with `medium` / `high`
+  - `gpt-5.4-mini` with `medium` / `high` / `xhigh`
+  - `gpt-5.3-codex` with `medium` / `high` / `xhigh`
+  - `gpt-5.3-codex-spark` with `medium` / `high` / `xhigh`
+- Dispatch instructions must explicitly tell the worker that it is a subagent, not the main thread.
+- Prefer giving the subagent a clean task brief, file boundary, and success criteria instead of forwarding raw main-thread conversation history.
+- Each dispatch should clearly state:
+  - whether the subagent is read-only review or write-authorized implementation
+  - which files or modules it owns
+  - which actions are forbidden, especially spawning more subagents, reverting unrelated work, or broadening scope without approval
+
 ## Key Paths
 
 | What                                  | Where                                                             |
