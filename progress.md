@@ -359,3 +359,17 @@
 - 最新状态：
   - `Phase 2` design spec 已通过 review
   - 下一步应进入 `writing-plans`，产出 implementation plan
+- 已按 `writing-plans` 写出正式 implementation plan：
+  - `docs/superpowers/plans/2026-04-03-phase-2-session-continuity-implementation.md`
+- 已完成 implementation plan review loop，并吸收所有会阻塞落地的结构性问题：
+  - session schema / repository 明确冻结 `createdAt`、`updatedAt`、`headCheckpointId`、`activeCheckpointId`
+  - repository 读取路径补入跨字段一致性校验，而不是只做 JSON / Zod 形状校验
+  - play continuity view 明确携带 `activeCheckpointId`，不破坏 bounded-view 边界
+  - orchestrator 计划显式新增 `hydrateScene()` 恢复入口，用于恢复 `acceptedHistory`、`currentState`、relationship layer 与 sceneComplete 真相
+  - session lifecycle 的迁移规则已写入 plan：`awaiting_start` -> `in_progress` -> `complete`
+  - `/edit` 侧 continuity 传递链已补全到 `EditWorkbench -> WorldBaseCastSection -> CharacterSection`
+- implementation plan 当前 review 状态：
+  - `Approved`
+- 当前已经不再缺 spec / plan 产物，下一步只剩执行方式 handoff：
+  - `subagent-driven-development`
+  - 或 inline execution

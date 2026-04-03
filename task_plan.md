@@ -24,7 +24,8 @@
 | 7 | complete | 已按 task 拆给 subagent 执行并全部收口；`Task 1` 到 `Task 8` 均已完成主线程复核，其中 `Task 7` 额外完成了 sidecar 配置可见性、刷新失败回退、按需加载与 simulation toolset 对齐等质量回修。 |
 | 8 | complete | 已完成 `Phase 1` 全量验证、桌面端 UI / UX 复核与规划文件同步；当前仓库已可在此基础上进入下一阶段讨论。 |
 | 9 | complete | 已完成 `Phase 1` 的地点收尾回修：样例地点已从旧长文彻底转译为正式地点，场景地点选择器已与场景阵容对齐，并且 `locationIds` 已真实进入运行时组装链。 |
-| 10 | in_progress | 正在冻结 `Phase 2` 的 runtime continuity substrate、checkpoint 边界与后续 `Phase 3` 可承接的落点；下一步应产出正式 spec 与 implementation plan。 |
+| 10 | complete | 已冻结 `Phase 2` 的 runtime continuity substrate、checkpoint 边界与后续 `Phase 3` 可承接的落点，并完成正式 spec 与 implementation plan 的独立 review loop。 |
+| 11 | in_progress | 正在从已批准的 `Phase 2` implementation plan 进入执行前 handoff；下一步需要在 `subagent-driven-development` 与 inline execution 之间选择执行方式。 |
 
 ## Frozen Product Decisions
 
@@ -269,9 +270,13 @@
   - `docs/superpowers/specs/2026-04-03-phase-2-session-continuity-design.md`
 - 已完成多轮 spec review loop，当前状态：
   - `Approved`
-- 下一步应进入：
-  - `writing-plans`
-  - 输出 `Phase 2` implementation plan
+- 正式 implementation plan 已写出：
+  - `docs/superpowers/plans/2026-04-03-phase-2-session-continuity-implementation.md`
+- 已完成多轮 implementation plan review loop，当前状态：
+  - `Approved`
+- 当前下一步应进入：
+  - 选择执行方式
+  - 按已批准 plan 开始 `Phase 2` 实施
 
 ## Current Phase 3 Recommendation
 
