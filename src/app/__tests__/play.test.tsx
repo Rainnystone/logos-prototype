@@ -283,6 +283,8 @@ describe('PlayWorkbench', () => {
 
   it('surfaces an explicit continuity error and blocks automatic restore when continuity is unavailable', async () => {
     const harness = createPlayAdapterHarness();
+    const unsafeUnavailableReason =
+      'Runtime consistency failed at /tmp/runtime-sessions.json: active session "sess_missing" does not resolve.';
 
     render(
       <PlayWorkbench
@@ -302,16 +304,17 @@ describe('PlayWorkbench', () => {
             source: 'empty',
           },
           lifecycle: null,
-          reason: 'Runtime continuity is unavailable for "sample-scene": invalid runtime file.',
+          reason: unsafeUnavailableReason,
         }}
       />,
     );
 
     expect(
-      await screen.findByText(
-        'Runtime continuity is unavailable for "sample-scene": invalid runtime file.',
-      ),
-    ).toBeInTheDocument();
+      await screen.findAllByText('Runtime continuity is unavailable. Reset the workbench to continue.'),
+    ).toHaveLength(2);
+    expect(screen.queryByText(unsafeUnavailableReason)).not.toBeInTheDocument();
+    expect(screen.queryByText(/runtime-sessions\.json/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/does not resolve/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
     await waitFor(() => {
       expect(harness.getCollapseCount()).toBe(0);

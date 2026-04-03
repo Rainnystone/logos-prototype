@@ -39,6 +39,8 @@ const emptyRelationshipSummary: RuntimeRelationshipSummary = {
   stableBackgroundText: '',
   source: 'empty',
 };
+const PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON =
+  'Runtime continuity is unavailable. Reset the workbench to continue.';
 const EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON =
   'Runtime continuity is temporarily unavailable for this story package.';
 
@@ -90,9 +92,7 @@ function buildBeatHistory(
   }));
 }
 
-function buildUnavailableView(packageName: string, error: unknown): PlayRuntimeSessionView {
-  const message = error instanceof Error ? error.message : String(error);
-
+function buildUnavailableView(): PlayRuntimeSessionView {
   return {
     kind: 'unavailable',
     activeSessionId: null,
@@ -101,7 +101,7 @@ function buildUnavailableView(packageName: string, error: unknown): PlayRuntimeS
     stateSnapshot: null,
     relationshipSummary: emptyRelationshipSummary,
     lifecycle: null,
-    reason: `Runtime continuity is unavailable for "${packageName}": ${message}`,
+    reason: PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
   };
 }
 
@@ -122,12 +122,7 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
 
     const activeSession = runtimeFile.sessionsById[runtimeFile.activeSessionId];
     if (!activeSession) {
-      return buildUnavailableView(
-        packageName,
-        new Error(
-          `Runtime continuity active session "${runtimeFile.activeSessionId}" does not resolve.`,
-        ),
-      );
+      return buildUnavailableView();
     }
 
     const activeCheckpoint = activeSession.activeCheckpointId
@@ -162,8 +157,8 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
       relationshipSummary,
       lifecycle: activeSession.lifecycle,
     };
-  } catch (error) {
-    return buildUnavailableView(packageName, error);
+  } catch {
+    return buildUnavailableView();
   }
 }
 
@@ -181,6 +176,13 @@ export async function loadEditRuntimeContinuityView(
   }
 
   if (!playView.activeSessionId) {
+    return {
+      kind: 'empty',
+      activeSession: null,
+    };
+  }
+
+  if (playView.kind === 'awaiting_start' && playView.relationshipSummary.source === 'empty') {
     return {
       kind: 'empty',
       activeSession: null,

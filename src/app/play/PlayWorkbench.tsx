@@ -60,6 +60,8 @@ export function PlayWorkbench({
   gossipelogCycleRunner,
   runtimeSessionClient,
 }: PlayWorkbenchProps) {
+  const continuityUnavailableMessage =
+    'Runtime continuity is unavailable. Reset the workbench to continue.';
   const orchestratorRef = useRef<Orchestrator | null>(null);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
@@ -153,7 +155,7 @@ export function PlayWorkbench({
         }
 
         setRuntimeSource(nextRuntimeSource);
-        setError(continuityView.reason ?? 'Runtime continuity is unavailable.');
+        setError(continuityUnavailableMessage);
         setStatus('error');
         return;
       }
@@ -293,7 +295,7 @@ export function PlayWorkbench({
         )
       : 'Click Start Round to run the opening hook and generate Beat 1.'
     : continuityUnavailable
-      ? 'Runtime continuity is unavailable. Reset the workbench to continue.'
+      ? continuityUnavailableMessage
       : 'Initializing Scene...';
 
   const gameViewSummary = currentState

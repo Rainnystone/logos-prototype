@@ -133,6 +133,29 @@ async function writeInvalidRuntimeSessionsFile(): Promise<void> {
   });
 }
 
+async function writeAwaitingStartRuntimeSessionsFile(): Promise<void> {
+  await writeRuntimeSessionsFile({
+    version: 1,
+    activeSessionId: 'sess_bootstrap',
+    sessionsById: {
+      sess_bootstrap: {
+        sessionId: 'sess_bootstrap',
+        lifecycle: 'awaiting_start',
+        createdAt: '2026-04-03T00:00:00.000Z',
+        updatedAt: '2026-04-03T00:00:00.000Z',
+        headCheckpointId: null,
+        activeCheckpointId: null,
+        orderedCheckpointIds: [],
+        checkpointsById: {},
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: '',
+          stableBackgroundText: '',
+        },
+      },
+    },
+  });
+}
+
 afterEach(() => {
   resetTestPackage();
 });
@@ -157,7 +180,9 @@ describe('runtime session views', () => {
     const view = await loadPlayRuntimeSessionView(testPackageName);
 
     expect(view.kind).toBe('unavailable');
-    expect(view.reason).toMatch(/runtime continuity/i);
+    expect(view.reason).toBe('Runtime continuity is unavailable. Reset the workbench to continue.');
+    expect(view.reason).not.toContain('sess_missing');
+    expect(view.reason).not.toContain('does not resolve');
   });
 
   it('sanitizes edit continuity failures before they reach the editor surface', async () => {
@@ -170,6 +195,22 @@ describe('runtime session views', () => {
     expect(view.reason).toBe('Runtime continuity is temporarily unavailable for this story package.');
     expect(view.reason).not.toContain('sess_missing');
     expect(view.reason).not.toContain('does not resolve');
+  });
+
+  it('treats an awaiting-start bootstrap session with no relationship summary as empty edit continuity', async () => {
+    prepareTestPackage();
+    await writeAwaitingStartRuntimeSessionsFile();
+
+    const playView = await loadPlayRuntimeSessionView(testPackageName);
+    const editView = await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(playView.kind).toBe('awaiting_start');
+    expect(playView.activeSessionId).toBe('sess_bootstrap');
+    expect(playView.relationshipSummary.source).toBe('empty');
+    expect(editView).toEqual({
+      kind: 'empty',
+      activeSession: null,
+    });
   });
 
   it('keeps play and edit loaders aligned to the same active session', async () => {
