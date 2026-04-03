@@ -141,6 +141,33 @@ describe('Phase 00 contract types', () => {
     });
   });
 
+  it('parses a versioned runtime-sessions file with one active session and explicit head pointers', async () => {
+    const types = await import('@/types');
+
+    expect(
+      types.RuntimeSessionsFileSchema.parse({
+        version: 1,
+        activeSessionId: 'sess_01',
+        sessionsById: {
+          sess_01: {
+            sessionId: 'sess_01',
+            lifecycle: 'awaiting_start',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      }),
+    ).toBeDefined();
+  });
+
   it('keeps scene cast available on the public scene spec contract', async () => {
     const storyPackage = await import('@/types/story-package');
 
