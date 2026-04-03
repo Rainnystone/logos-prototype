@@ -386,3 +386,190 @@
   - `Phase 3` 需要补上 storyline-scoped authoring variant / revision 语义
   - 推荐绑定粒度是 `storyline`，而不是 `beat`
   - 同时明确：authoring 变体不应被塞进 checkpoint 本体，checkpoint 继续只承载 runtime continuity truth
+- 已按用户要求切换到新 worktree：
+  - 路径：`/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-phase2-session-continuity`
+  - 分支：`codex/phase2-session-continuity`
+- 新 worktree 基线验证已通过：
+  - `npm install`
+  - `npm test`：71 个测试文件、505 个测试全部通过
+- 已按 `subagent-driven-development` 开始执行 `Phase 2` implementation plan，并完成 `Task 1`：
+  - 最终提交：`3064f70` `fix: harden runtime session repository writes`
+  - 交付内容：`runtime-sessions` schema、repository、公共语义一致性校验、原子写、缺失文件正常空态、stale accepted-beat 防护
+  - 过程上先后经过 implementer、spec reviewer、code quality reviewer 三道收口
+  - `Task 1` 当前状态：通过 spec compliance review，code quality review 也已通过，可继续进入 `Task 2`
+- 已完成 `Task 2`：
+  - 最终提交：`18352e2` `feat: add bounded runtime session views`
+  - 交付内容：新增 `src/runtime-sessions/views.ts`，为 `/play` 与 `/edit` 提供 Phase 2 bounded continuity DTO / loader；`loadAuthoringState()` 新增 `includeRuntimeContinuity` 选项；`/play` 与 `/edit` server page 已接入 continuity loader；补齐 4 组针对 bounded view 与 server-page 行为的测试
+  - 主线程已独立复跑目标测试：
+    - `npm test -- src/runtime-sessions/__tests__/views.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/app/edit/__tests__/page.test.tsx src/app/__tests__/play-page.test.tsx`
+    - 结果：4 个测试文件、26 个测试全部通过
+  - review 结果：
+    - spec reviewer：直接通过
+    - code quality reviewer：初次提出 2 条意见
+    - 主线程按 `receiving-code-review` 复核后确认两条都不构成 `Task 2` 阻塞项：
+      - `/play` 真正的 restore / reset wiring 属于 implementation plan 的 `Task 5`
+      - `views.ts` 对 `currentState / beatHistory / relationshipSummary` 的组合方式与正式 spec 9.2 一致，不是当前阶段缺陷
+  - `Task 2` 当前状态：通过 spec compliance review，code quality review 经复核后通过，可继续进入 `Task 3`
+- 已完成 `Task 3`：
+  - 最终有效提交序列：
+    - `e6b3a91` `feat: add runtime session browser bridge`
+    - `59ced62` `fix: classify runtime session bridge errors`
+  - 交付内容：
+    - 新增 `/api/play/packages/[packageName]/runtime-session` typed route
+    - 在 `src/app/play/runtime.ts` 新增统一的 browser runtime-session client
+    - `repository` 暴露统一 `RuntimeSessionCommand` / result 合同，供 route 与 browser bridge 共享
+    - route 与 browser client 都不再静默接受 `payload.packageName` mismatch
+    - route 对缺包与会话冲突做显式状态码分类，并去掉缺包错误里的本地绝对路径泄露
+  - 主线程已独立复跑目标测试：
+    - `npm test -- src/app/play/runtime.test.ts 'src/app/api/play/packages/[packageName]/runtime-session/route.test.ts'`
+    - 结果：2 个测试文件、14 个测试全部通过
+  - review 结果：
+    - spec reviewer：直接通过
+    - code quality reviewer：初次提出 2 条问题
+    - 主线程按 `receiving-code-review` 复核后，收下其中真正的边界问题并要求 implementer 做定点回修
+    - 同一 reviewer 复审后通过，确认：
+      - 缺包 -> `404`
+      - 会话冲突 -> `409`
+      - 缺包错误不再泄露绝对路径
+      - client / route 两侧都会拒绝 `packageName` mismatch
+  - `Task 3` 当前状态：通过 spec compliance review，code quality review 也已通过，可继续进入 `Task 4`
+- 已完成 `Task 4`：
+  - 最终有效提交序列：
+    - `057b61e` `feat: persist and hydrate runtime checkpoints`
+    - `6d428e6` `fix: preserve restored runtime bindings`
+  - 交付内容：
+    - `orchestrator` 新增 `RuntimeSessionStore` 接缝与 `hydrateScene()` 恢复入口
+    - accepted beat 会在 continuation-ready `nextState` 形成后写 full checkpoint
+    - lifecycle 按 `awaiting_start -> in_progress -> complete` 语义推进
+    - delayed gossipelog refresh 按 `sessionId + checkpointId` 绑定 finalization
+    - 恢复路径现在会保留 restored `sessionId / checkpointId` 绑定，避免后续续写 silently rebind 到新 session
+    - refresh 超时后即使晚到成功，仍会 finalize 绑定 checkpoint，但不会反向污染当前 live continuation 的内存关系层
+  - 主线程已独立复跑目标测试：
+    - `npm test -- src/engine/__tests__/orchestrator.test.ts src/engine/__tests__/e2e/phase-end-processing.test.ts`
+    - 结果：2 个测试文件、25 个测试全部通过
+  - implementer 额外验证：
+    - `npm test`
+    - 结果：75 个测试文件、545 个测试全部通过
+  - review 结果：
+    - spec reviewer：直接通过
+    - code quality reviewer：初次提出 2 条问题
+    - 主线程按 `receiving-code-review` 复核后，认定两条都是值得在当前阶段收掉的基础问题，并要求 implementer 定点回修
+    - 同一 reviewer 复审后通过，确认：
+      - restore 不再 silently rebind 到新的 active session
+      - timeout-then-late-success 仍会 finalize 绑定 checkpoint
+  - `Task 4` 当前状态：通过 spec compliance review，code quality review 也已通过，可继续进入 `Task 5`
+- 已完成 `Task 5`：
+  - 最终有效提交序列：
+    - `b73992c` `feat: hydrate play runtime from active session`
+    - `1bd3e49` `fix: clear play history after reset`
+  - 交付内容：
+    - `/play` server page 现在把 `initialRuntimeSession` 传给 `PlayWorkbench`
+    - `PlayWorkbench` 已接通 `restorable / awaiting_start / unavailable` 三类 continuity 入口
+    - `restorable` 会通过 `buildOrchestratorRestoreInput()` + `orchestrator.hydrateScene()` 恢复真实运行态，而不是只在 UI 上伪造旧历史
+    - `Reset Workbench` 已接通 runtime-session bridge；成功后回到 pre-start waiting state，失败时保留原本真实本地状态并显式报错
+    - accepted-beat checkpoint 写入失败会显式报错，且不会把未持久化成功的新 beat 假装追加进本地历史
+    - 回修后 reset 成功会清空当前 session 的本地 `beatHistory`，避免新 session 混入旧 session 的 accepted beats
+  - 主线程已独立复跑目标测试：
+    - `npm test -- src/app/play/runtime.test.ts src/app/__tests__/play.test.tsx src/app/__tests__/play-page.test.tsx`
+    - 结果：3 个测试文件、23 个测试全部通过
+  - implementer 额外验证：
+    - `npm test`
+    - 结果：75 个测试文件、551 个测试全部通过
+  - review 结果：
+    - spec reviewer：直接通过
+    - code quality reviewer：初次指出 reset 后本地历史漂移问题
+    - 主线程确认这是 Task 5 范围内的真实状态一致性 bug，并要求 implementer 定点回修
+    - 同一 reviewer 复审后通过，确认 reset -> start 不再把旧 session 历史混进新 session
+  - 额外发现：
+    - 主线程首次复跑 `npm run build` 时发现全局构建 blocker
+    - 后续沿着 `route.ts`、`PlayWorkbench.tsx`、`runtime.ts`、`package-state.ts`、`orchestrator.ts`、`views.ts` 清掉了一串 `exactOptionalPropertyTypes` / 类型收窄问题
+  - 主线程额外验证：
+    - `npm run build`
+    - 结果：通过
+    - `npm test`
+    - 结果：75 个测试文件、551 个测试全部通过
+  - 主线程已额外提交一笔 build/type 收尾修补：
+    - `f23a8a6` `fix: resolve continuity build typing issues`
+  - `Task 5` 当前状态：通过 spec compliance review，code quality review 也已通过；当前工作树重新回到可构建、可测试状态
+- 已完成 `Task 6`：
+  - 最终有效提交序列：
+    - `0e5c242` `feat: show continuity-backed edit relationship state`
+    - `57f9b73` `fix: sanitize edit continuity unavailable state`
+  - 交付内容：
+    - `/edit` 页面现在只在 `section=worldbase-cast` 时请求 runtime continuity view，不再把 continuity 读取扩散到其他 section
+    - `EditWorkbench -> WorldBaseCastSection -> CharacterSection` 已接通 bounded continuity projection
+    - `CharacterSection` 现已承接三类真实状态：
+      - 没有 active continuity
+      - active continuity 且可显示 relationship summary
+      - runtime continuity unavailable / unreadable
+    - 页面层没有泄露 raw checkpoint transcript、checkpoint map 或 gossipelog 内部状态
+  - 主线程已独立复跑目标测试：
+    - `npm test -- src/authoring/persistence/__tests__/package-state.test.ts src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/WorldBaseCastSection.test.tsx src/app/edit/__tests__/CharacterSection.test.tsx`
+    - 结果：5 个测试文件、51 个测试全部通过
+    - reopened 回修后，`/edit` unavailable 状态已改成安全文案，不再直出底层 runtime/schema/repository 错误
+    - `exactOptionalPropertyTypes` 下的 continuity prop 传递问题与 `orchestrator` 测试 mock 类型回归也已一并修复
+  - 主线程已独立复跑 reopened 回修的目标验证：
+    - `npm test -- src/runtime-sessions/__tests__/views.test.ts src/app/edit/__tests__/CharacterSection.test.tsx src/app/edit/__tests__/WorldBaseCastSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/engine/__tests__/orchestrator.test.ts`
+    - 结果：5 个测试文件、61 个测试全部通过
+    - `npm run type-check`
+    - 结果：通过
+  - review 结果：
+    - reopened spec reviewer：通过
+    - reopened code quality reviewer：通过
+  - final review 再次发现 2 条真实 blocker：
+    - bootstrap / reset 后仅有 active session、但无 checkpoint / relationship layer 时，`/edit` 现在仍会显示假 active continuity
+    - `/play` unavailable continuity 仍会把底层 runtime repository / consistency 错误文本直接暴露给用户
+  - 随后已完成第二轮定点回修：
+    - `5e2e990` `fix: tighten continuity empty-state semantics`
+    - `loadEditRuntimeContinuityView()` 现在会把 `awaiting_start + empty relationship summary` 收敛成 `empty`
+    - `/play` unavailable continuity 现在统一显示固定安全文案，不再暴露路径或 consistency 细节
+  - 主线程已独立复跑第二轮回修的目标验证：
+    - `npm test -- src/runtime-sessions/__tests__/views.test.ts src/app/__tests__/play.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/__tests__/page.test.tsx`
+    - 结果：4 个测试文件、50 个测试全部通过
+    - `npm run type-check`
+    - 结果：通过
+  - review 结果：
+    - 第二轮 spec reviewer：通过
+    - 第二轮 code quality reviewer：通过
+  - `Task 6` 当前状态：两轮 reopened fix 已全部收口，可重新恢复 `Task 7`
+- 已完成 `Task 7` 的最终 review / reopen / 收尾验证：
+  - 为了让最终验证建立在真实可发布基线上，主线程先独立清掉了一个新的 build blocker：
+    - `bd7ddeb` `fix: isolate client-safe continuity copy`
+    - 根因是 `PlayWorkbench` 从 client 侧直接引用了 `src/runtime-sessions/views.ts` 的运行时常量，间接把 server-only `repository.ts` 和 `node:fs/promises` 带进了 client bundle
+    - 回修后把用户可见文案常量抽到 `src/runtime-sessions/copy.ts`，`views.ts` 与 `PlayWorkbench.tsx` 分别从这层安全 copy 读取
+  - 随后的整体验收 review 暴露了 4 条真实的 config-save continuity 竞态问题，主线程没有跳过 review gate，而是逐条收口：
+    - `501d664` `fix: keep latest play continuity across config save`
+      - save runtime config 触发 workbench 重建时，不再回退到首屏时的旧 continuity snapshot
+    - `54cd417` `fix: preserve play relationship continuity on config save`
+      - relationship summary / lastStableRelationshipLayer 不再在 config save 后回退
+    - `21e109d` `fix: wait for play relationship sync before hydrate`
+      - 如果 relationship finalization 仍在飞行，重建前会先等它 settle，再读取 continuity snapshot
+    - `190fcd3` `fix: lock play input before waiting on sync`
+      - config save 一旦触发重建，就立即锁住输入，避免用户在等待 relationship settle 的窗口期再提交新一拍
+  - 上述 reopen 链已完成完整 review loop：
+    - final reviewer 先指出 config-save rollback bug
+    - implementer 回修后，spec reviewer 与 code quality reviewer 分别复审
+    - 最后一轮 reviewer 全部明确 `Approved`
+    - 相关 subagent 已在确认不再需要后关闭，不再保留假忙状态
+  - 主线程已独立复跑最终代码验证：
+    - `npm test -- src/app/__tests__/play.test.tsx`
+    - 结果：18 个测试全部通过
+    - `npm run type-check`
+    - 结果：通过
+    - `npm run lint`
+    - 结果：通过
+    - `npm test`
+    - 结果：75 个测试文件、570 个测试全部通过
+    - `npm run build`
+    - 结果：通过
+  - 主线程已独立完成 fresh manual smoke：
+    - 使用 fresh `next start` 生产服务在 `3001` 端口手验，而不是继续沿用旧的 dev / start 进程
+    - `/play?storyPackage=sample-scene` 首次进入后成功接受 2 拍
+    - 刷新 `/play` 后，页面恢复到 `Beat 3 ready`，且 `Beat History` 保留前 2 拍 accepted history
+    - `/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character` 成功显示 continuity-backed 关系区，包括 active session、lifecycle、accepted beat 数和 relationship summary
+    - `Reset Workbench` 后，`/play` 回到 pre-start waiting state，`Beat History` 显示 `No accepted beats yet.`
+    - 再次进入 `/edit` 角色页后，关系区正确收敛为 `暂无活跃连续性`
+  - 手验期间产生的 `runtime-sessions.json`、gossipelog 关系文件改动和 `.playwright-cli` 产物已在验证后清理，避免污染工作树
+  - `Task 7` 当前状态：
+    - `Phase 2` implementation plan 的代码任务与最终验证都已完成
+    - 当前剩余工作只是在 worktree 内同步规划文档与等待人工确认后进入后续集成动作

@@ -275,8 +275,22 @@
 - 已完成多轮 implementation plan review loop，当前状态：
   - `Approved`
 - 当前下一步应进入：
-  - 选择执行方式
-  - 按已批准 plan 开始 `Phase 2` 实施
+  - 在隔离 worktree 中按已批准 plan 完成实现
+  - 完成最终验证与人工确认后的后续集成动作
+- 当前执行分支最新状态：
+  - 已在 `codex/phase2-session-continuity` worktree 中开始实施
+  - `Task 1` 到 `Task 7` 已全部完成
+  - config-save continuity reopen fix 链已收口，reviewer 最终结论为 `Approved`
+  - fresh 最终验证已完成：
+    - `npm run lint`
+    - `npm run type-check`
+    - `npm test`
+    - `npm run build`
+    - `/play -> refresh restore -> /edit continuity -> reset -> /edit empty state` 手验
+  - `Phase 2` 当前阶段状态：
+    - 代码实现完成
+    - 验证完成
+    - 等待人工确认后决定后续集成方式
 
 ## Current Phase 3 Recommendation
 
@@ -456,3 +470,118 @@
 
 - Temporary `.tmp-simulation-*` directories under `src/story-packages/` are run artifacts and must stay out of the release commit.
 - If local cleanup is blocked by shell policy, the release can still proceed by staging only intended files and excluding those temporary directories.
+
+## 2026-04-03 Phase 2 Execution
+
+### Task 1: Runtime session repository substrate
+
+- Status: completed
+- Final commit:
+  - `3064f70` `fix: harden runtime session repository writes`
+- Gate result:
+  - spec compliance review passed
+  - code quality review passed
+
+### Task 2: Bounded continuity views for `/play` and `/edit`
+
+- Status: completed
+- Final commit:
+  - `18352e2` `feat: add bounded runtime session views`
+- Scope landed:
+  - `loadPlayRuntimeSessionView()` 与 `loadEditRuntimeContinuityView()`
+  - `loadAuthoringState(..., { includeRuntimeContinuity: true })`
+  - `/play` 与 `/edit` server-page continuity loader 接入
+  - bounded continuity test coverage
+- Gate result:
+  - spec compliance review passed
+  - code quality review after reassessment confirmed the two initial findings were non-blocking because:
+    - play restore wiring is owned by implementation plan `Task 5`
+    - current `views.ts` restore composition matches formal spec section 9.2
+
+### Task 3: Runtime-session browser/server bridge
+
+- Status: completed
+- Final commits:
+  - `e6b3a91` `feat: add runtime session browser bridge`
+  - `59ced62` `fix: classify runtime session bridge errors`
+- Scope landed:
+  - 新增 `/api/play/packages/[packageName]/runtime-session` route 与对应测试
+  - 新增 browser runtime-session client，统一 accepted-beat / finalization / reset 的 fetch envelope
+  - route 按错误类型区分 `404` / `409` / `500`
+  - client / route 都会拒绝 `payload.packageName` mismatch
+- Gate result:
+  - spec compliance review passed
+  - code quality review passed after one次定点回修
+
+### Task 4: Orchestrator checkpoint persistence and hydration
+
+- Status: completed
+- Final commits:
+  - `057b61e` `feat: persist and hydrate runtime checkpoints`
+  - `6d428e6` `fix: preserve restored runtime bindings`
+- Scope landed:
+  - `orchestrator` 写 accepted-beat full checkpoint
+  - `hydrateScene()` 恢复 `currentState` / `acceptedHistory` / relationship truth / complete state
+  - delayed finalization 绑定到 `sessionId + checkpointId`
+  - restore 时可带回 `sessionId / checkpointId` 绑定，避免 silently rebind
+  - timeout 后晚到成功仍会 finalize 绑定 checkpoint，但不覆盖当前内存 live truth
+- Gate result:
+  - spec compliance review passed
+  - code quality review passed after one次定点回修
+
+### Task 5: Play restore and Reset Workbench semantics
+
+- Status: completed
+- Final commits:
+  - `b73992c` `feat: hydrate play runtime from active session`
+  - `1bd3e49` `fix: clear play history after reset`
+- Scope landed:
+  - `/play` 页面把 `initialRuntimeSession` 传给 `PlayWorkbench`
+  - `PlayWorkbench` 已接入 continuity restore / reset 流程
+  - accepted-beat / reset 写入失败有显式反馈且不再伪装成功
+  - reset 成功后新 session 的本地 history 不再混入旧 session
+- Gate result:
+  - spec compliance review passed
+  - code quality review passed after one次定点回修
+
+### Build blocker: runtime-session route typing
+
+- Status: completed
+- Resolution:
+  - 主线程顺着构建链清掉了 `route.ts`、`PlayWorkbench.tsx`、`runtime.ts`、`package-state.ts`、`orchestrator.ts`、`views.ts` 中暴露出来的类型收窄 / `exactOptionalPropertyTypes` 问题
+  - 修补提交：
+    - `f23a8a6` `fix: resolve continuity build typing issues`
+- Verification:
+  - `npm run build` passed
+  - `npm test` passed (`75` files, `551` tests)
+
+### Task 6: Edit continuity surface
+
+- Status: completed
+- Final commits:
+  - `0e5c242` `feat: show continuity-backed edit relationship state`
+  - `57f9b73` `fix: sanitize edit continuity unavailable state`
+  - `5e2e990` `fix: tighten continuity empty-state semantics`
+- Scope landed:
+  - `/edit` 仅在 `section=worldbase-cast` 时请求 continuity-backed runtime relationship view
+  - `EditWorkbench -> WorldBaseCastSection -> CharacterSection` 已接通 bounded continuity projection
+  - `CharacterSection` 现在区分三类真实状态：
+    - 没有 active continuity
+    - active continuity 且带 relationship summary
+    - runtime continuity unavailable / unreadable
+  - reopened 回修后，`/edit` unavailable 状态已收敛成安全文案，不再直出底层 runtime/schema/repository 错误
+  - `exactOptionalPropertyTypes` 下的 continuity prop 传递与 `orchestrator` test mock 类型也已收敛到可通过全仓 `type-check`
+- Gate result:
+  - spec compliance review passed
+  - code quality review passed after one次 reopened fix
+  - final implementation review 暴露的 2 个 blocker 已收口：
+    - bootstrap / reset 后仅有 active session 但无关系层时，`/edit` 现已回到 empty state
+    - `/play` unavailable continuity 已收敛为固定安全文案
+
+### Task 7: Final verification and planning sync
+
+- Status: in_progress
+- Next execution slice:
+  - 跑完整验证，包括 `npm run build`、`npm test` 与计划要求的定向覆盖
+  - 同步 `progress.md` / `task_plan.md` 收尾记录
+  - 做最终 code review / handoff 准备
