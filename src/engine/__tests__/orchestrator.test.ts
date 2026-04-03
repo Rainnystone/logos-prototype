@@ -1102,6 +1102,51 @@ describe('Orchestrator', () => {
     ]);
   });
 
+  it('keeps the restored session binding instead of silently rebinding continuation writes', async () => {
+    const source = createNodeOrchestrator({
+      adapter: createRecordingAdapter().adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: structuredStoryPackageFixture,
+    });
+
+    await source.initScene();
+    await source.runBeat('opening action');
+    const secondBeat = await source.runBeat('follow-up action');
+    const recorder = createRuntimeSessionStoreSpy({
+      ensureActiveSession: vi.fn(async () => ({
+        activeSessionId: 'sess_new_active',
+      })),
+      recordAcceptedBeat: vi.fn(async (input) => {
+        if (input.sessionId === 'sess_restored') {
+          throw new Error('inactive session "sess_restored"');
+        }
+      }),
+    });
+    const restored = createNodeOrchestrator({
+      adapter: createRecordingAdapter().adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: structuredStoryPackageFixture,
+      runtimeSessionStore: recorder,
+    });
+
+    await restored.hydrateScene({
+      currentState: secondBeat.state,
+      acceptedHistory: buildAcceptedHistoryFromInputs(['opening action', 'follow-up action']),
+      lastStableRelationshipLayer: createRelationshipLayer('restored'),
+      sceneComplete: false,
+      sessionId: 'sess_restored',
+      checkpointId: 'chk_restored',
+    });
+
+    await expect(restored.runBeat('continued action')).rejects.toThrow(/inactive session/i);
+    expect(recorder.ensureActiveSession).not.toHaveBeenCalled();
+    expect(recorder.recordAcceptedBeat).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: 'sess_restored',
+      }),
+    );
+  });
+
   it('writes in_progress lifecycle for non-final accepted beats', async () => {
     const recorder = createRuntimeSessionStoreSpy();
     const { adapter } = createRecordingAdapter();
@@ -1279,6 +1324,103 @@ describe('Orchestrator', () => {
     expect(generateCalls[2]?.relationshipLayer).toEqual(lastStableRelationshipLayer);
     expect(thirdResult.state.generationState.promptObject).toMatchObject({
       relationshipLayer: lastStableRelationshipLayer,
+    });
+  });
+
+  it('persists bound checkpoint finalization when a timed-out refresh later succeeds without changing live queued truth', async () => {
+    vi.useFakeTimers();
+
+    const { packageName, storyPackage } = await createTempStoryPackageFixture();
+    const storyPackageWithoutAudit = {
+      ...storyPackage,
+      auditQuestionSet: {
+        ...storyPackage.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+    };
+    const recorder = createRuntimeSessionStoreSpy();
+    const { adapter: baseAdapter, generateCalls } = createRecordingAdapter();
+    const lateSettledLayer = createRelationshipLayer('late settled');
+    let generateCallCount = 0;
+    let injectionCallCount = 0;
+    let releaseFirstRefresh: (() => void) | null = null;
+    let releaseSecondGenerate: (() => void) | null = null;
+    const firstRefresh = new Promise<GossipelogInjectionResult>((resolve) => {
+      releaseFirstRefresh = () => resolve(lateSettledLayer);
+    });
+    const secondGenerateGate = new Promise<void>((resolve) => {
+      releaseSecondGenerate = resolve;
+    });
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      async generate(promptObject) {
+        generateCallCount += 1;
+
+        if (generateCallCount === 2) {
+          await secondGenerateGate;
+        }
+
+        return baseAdapter.generate!(promptObject);
+      },
+      async gossipelogUpdate() {
+        return {
+          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
+          invocationNoOp: true,
+          edgeUpdates: [],
+        };
+      },
+      async gossipelogInjection() {
+        injectionCallCount += 1;
+
+        if (injectionCallCount === 1) {
+          return firstRefresh;
+        }
+
+        return createRelationshipLayer(`settled-${injectionCallCount}`);
+      },
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: packageName,
+      storyPackage: storyPackageWithoutAudit,
+      runtimeSessionStore: recorder,
+    });
+
+    await orchestrator.initScene();
+    await orchestrator.runBeat('opening action');
+
+    const secondBeatPromise = orchestrator.runBeat('follow-up action');
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await Promise.resolve();
+
+    const firstCheckpointId = recorder.recordAcceptedBeat.mock.calls[0]?.[0].checkpointId;
+    expect(firstCheckpointId).toEqual(expect.any(String));
+    expect(recorder.finalizeRelationshipLayer).not.toHaveBeenCalled();
+
+    expect(releaseFirstRefresh).not.toBeNull();
+    releaseFirstRefresh!();
+    await vi.waitFor(() => {
+      expect(recorder.finalizeRelationshipLayer).toHaveBeenCalledWith({
+        packageName,
+        sessionId: 'sess_active',
+        checkpointId: firstCheckpointId!,
+        lastStableRelationshipLayer: lateSettledLayer,
+      });
+    });
+
+    expect(releaseSecondGenerate).not.toBeNull();
+    releaseSecondGenerate!();
+    await expect(secondBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+    expect(generateCalls[1]?.relationshipLayer).toEqual({
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
     });
   });
 });

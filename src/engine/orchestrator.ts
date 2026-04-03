@@ -68,6 +68,8 @@ export interface OrchestratorRestoreInput {
   readonly acceptedHistory: readonly HistoryEntry[];
   readonly lastStableRelationshipLayer: GossipelogInjectionResult;
   readonly sceneComplete: boolean;
+  readonly sessionId?: string;
+  readonly checkpointId?: string;
 }
 
 export interface RuntimeSessionStore {
@@ -400,9 +402,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       .then(async (result) => {
         const settledRelationshipLayer = cloneRelationshipLayer(result.relationshipLayer);
         const matchesCurrentCheckpoint = isCurrentCheckpointBinding(refresh);
-        const shouldPersistFinalization =
-          Boolean(config.runtimeSessionStore && refresh.sessionId) &&
-          (!refresh.timedOut || !matchesCurrentCheckpoint);
+        const shouldPersistFinalization = Boolean(config.runtimeSessionStore && refresh.sessionId);
 
         if (shouldPersistFinalization) {
           try {
@@ -586,7 +586,11 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     },
 
     async hydrateScene(input) {
-      await ensureRuntimeSessionId();
+      if (input.sessionId) {
+        activeRuntimeSessionId = input.sessionId;
+      } else {
+        await ensureRuntimeSessionId();
+      }
 
       acceptedHistory = input.acceptedHistory.map(cloneHistoryEntry);
       currentPhaseTranscript = deriveCurrentPhaseTranscript(
@@ -597,7 +601,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       sceneComplete = input.sceneComplete;
       queuedRelationshipLayer = cloneRelationshipLayer(input.lastStableRelationshipLayer);
       pendingRelationshipRefresh = null;
-      currentCheckpointId = null;
+      currentCheckpointId = input.checkpointId ?? null;
       currentState = freezeState(input.currentState);
 
       return currentState;
