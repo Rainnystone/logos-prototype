@@ -61,6 +61,33 @@ const EMPTY_RELATIONSHIP_SUMMARY: PlayRuntimeSessionView['relationshipSummary'] 
   source: 'empty',
 };
 
+function hasRelationshipContent(layer: {
+  readonly highlightedDeltasText: string;
+  readonly stableBackgroundText: string;
+}): boolean {
+  return (
+    layer.highlightedDeltasText.trim().length > 0 || layer.stableBackgroundText.trim().length > 0
+  );
+}
+
+function buildRelationshipSummary(
+  layer: {
+    readonly highlightedDeltasText: string;
+    readonly stableBackgroundText: string;
+  },
+  source: 'checkpoint' | 'session',
+): PlayRuntimeSessionView['relationshipSummary'] {
+  if (!hasRelationshipContent(layer)) {
+    return EMPTY_RELATIONSHIP_SUMMARY;
+  }
+
+  return {
+    highlightedDeltasText: layer.highlightedDeltasText,
+    stableBackgroundText: layer.stableBackgroundText,
+    source,
+  };
+}
+
 function buildUpdatedRuntimeSessionView(
   currentView: PlayRuntimeSessionView | undefined,
   payload: Parameters<BrowserRuntimeSessionClient['recordAcceptedBeat']>[0],
@@ -86,8 +113,33 @@ function buildUpdatedRuntimeSessionView(
       },
     ],
     stateSnapshot: payload.stateSnapshot,
-    relationshipSummary: currentView?.relationshipSummary ?? EMPTY_RELATIONSHIP_SUMMARY,
+    relationshipSummary: buildRelationshipSummary(
+      payload.lastStableRelationshipLayer,
+      currentView?.relationshipSummary.source === 'session' ? 'session' : 'checkpoint',
+    ),
     lifecycle: payload.lifecycle,
+  };
+}
+
+function buildFinalizedRuntimeSessionView(
+  currentView: PlayRuntimeSessionView | undefined,
+  payload: Parameters<BrowserRuntimeSessionClient['finalizeRelationshipLayer']>[0],
+): PlayRuntimeSessionView | undefined {
+  if (
+    !currentView ||
+    currentView.kind === 'unavailable' ||
+    currentView.activeSessionId !== payload.sessionId ||
+    currentView.activeCheckpointId !== payload.checkpointId
+  ) {
+    return currentView;
+  }
+
+  return {
+    ...currentView,
+    relationshipSummary: buildRelationshipSummary(
+      payload.lastStableRelationshipLayer,
+      'session',
+    ),
   };
 }
 
@@ -147,6 +199,10 @@ export function PlayWorkbench({
             },
             finalizeRelationshipLayer: async (input) => {
               await resolvedRuntimeSessionClient.finalizeRelationshipLayer(input);
+              runtimeSessionViewRef.current = buildFinalizedRuntimeSessionView(
+                runtimeSessionViewRef.current,
+                input,
+              );
             },
           }
         : null,

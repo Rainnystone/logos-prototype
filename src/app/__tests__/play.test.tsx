@@ -10,9 +10,13 @@ import {
 } from '@/app/__tests__/fixtures';
 import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
 import type { BrowserRuntimeSessionClient } from '@/app/play/runtime';
+import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
 import type { CollapseInput, LLMAdapter } from '@/engine/types/adapter-interface';
 import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
-import type { RecordAcceptedBeatInput } from '@/runtime-sessions/repository';
+import type {
+  FinalizeRelationshipLayerInput,
+  RecordAcceptedBeatInput,
+} from '@/runtime-sessions/repository';
 import type { CollapseResponse } from '@/types';
 import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 
@@ -574,6 +578,97 @@ describe('PlayWorkbench', () => {
       },
       { role: 'user', content: 'Cut the local power feed.' },
     ]);
+  });
+
+  it('preserves the latest relationship continuity across runtime config save before continuing the active session', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+    const finalizedRelationshipLayers: FinalizeRelationshipLayerInput[] = [];
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'session delta settled',
+      stableBackgroundText: 'session background settled',
+    };
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+    const gossipelogCycleRunner = vi.fn(async () => ({
+      updateRequest: {} as never,
+      updateResult: {
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      },
+      injectionRequest: {} as never,
+      relationshipLayer: settledRelationshipLayer,
+    })) as unknown as GossipelogCycleRunner;
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+          finalizeRelationshipLayer: vi.fn(async (payload) => {
+            finalizedRelationshipLayers.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+    await waitFor(() => {
+      expect(finalizedRelationshipLayers).toHaveLength(1);
+    });
+
+    expect(recordedAcceptedBeats[0]?.lastStableRelationshipLayer).toEqual({
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
+    });
+    expect(finalizedRelationshipLayers[0]?.lastStableRelationshipLayer).toEqual(
+      settledRelationshipLayer,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(await screen.findByText('Runtime config saved locally.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Beat 2 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Cut the local power feed.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(
+      await screen.findAllByText(`Draft beat 2 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).toHaveLength(2);
+    expect(recordedAcceptedBeats[1]?.lastStableRelationshipLayer).toEqual(
+      settledRelationshipLayer,
+    );
   });
 
   it('shows generating and auditing statuses before accepting a beat', async () => {
