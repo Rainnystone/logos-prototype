@@ -55,6 +55,42 @@ interface PlayWorkbenchProps {
   readonly runtimeSessionClient?: BrowserRuntimeSessionClient;
 }
 
+const EMPTY_RELATIONSHIP_SUMMARY: PlayRuntimeSessionView['relationshipSummary'] = {
+  highlightedDeltasText: '',
+  stableBackgroundText: '',
+  source: 'empty',
+};
+
+function buildUpdatedRuntimeSessionView(
+  currentView: PlayRuntimeSessionView | undefined,
+  payload: Parameters<BrowserRuntimeSessionClient['recordAcceptedBeat']>[0],
+  result: Awaited<ReturnType<BrowserRuntimeSessionClient['recordAcceptedBeat']>>,
+): PlayRuntimeSessionView {
+  const preservedBeatHistory =
+    currentView?.kind === 'unavailable'
+      ? []
+      : (currentView?.beatHistory ?? []).filter(
+          (entry) => entry.beatNumber < payload.acceptedBeatOrdinal,
+        );
+
+  return {
+    kind: 'restorable',
+    activeSessionId: result.activeSessionId,
+    activeCheckpointId: result.activeCheckpointId,
+    beatHistory: [
+      ...preservedBeatHistory,
+      {
+        beatNumber: payload.acceptedBeatOrdinal,
+        playerInput: payload.acceptedTranscript.playerInput,
+        beatText: payload.acceptedTranscript.beatText,
+      },
+    ],
+    stateSnapshot: payload.stateSnapshot,
+    relationshipSummary: currentView?.relationshipSummary ?? EMPTY_RELATIONSHIP_SUMMARY,
+    lifecycle: payload.lifecycle,
+  };
+}
+
 export function PlayWorkbench({
   storyPackage,
   storyPackageName,
@@ -66,6 +102,7 @@ export function PlayWorkbench({
 }: PlayWorkbenchProps) {
   const continuityUnavailableMessage = PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON;
   const orchestratorRef = useRef<Orchestrator | null>(null);
+  const runtimeSessionViewRef = useRef<PlayRuntimeSessionView | undefined>(initialRuntimeSession);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
   const [runtimeSessionView, setRuntimeSessionView] = useState<PlayRuntimeSessionView | undefined>(
@@ -101,7 +138,12 @@ export function PlayWorkbench({
         ? {
             ensureActiveSession: async () => resolvedRuntimeSessionClient.ensureActiveSession(),
             recordAcceptedBeat: async (input) => {
-              await resolvedRuntimeSessionClient.recordAcceptedBeat(input);
+              const result = await resolvedRuntimeSessionClient.recordAcceptedBeat(input);
+              runtimeSessionViewRef.current = buildUpdatedRuntimeSessionView(
+                runtimeSessionViewRef.current,
+                input,
+                result,
+              );
             },
             finalizeRelationshipLayer: async (input) => {
               await resolvedRuntimeSessionClient.finalizeRelationshipLayer(input);
@@ -112,6 +154,7 @@ export function PlayWorkbench({
   );
 
   useEffect(() => {
+    runtimeSessionViewRef.current = initialRuntimeSession;
     setRuntimeSessionView(initialRuntimeSession);
   }, [initialRuntimeSession]);
 
@@ -138,7 +181,7 @@ export function PlayWorkbench({
     let cancelled = false;
 
     async function initializeWorkbench() {
-      const continuityView = runtimeSessionView;
+      const continuityView = runtimeSessionViewRef.current;
 
       orchestratorRef.current = null;
       setStatus('initializing');
@@ -386,7 +429,7 @@ export function PlayWorkbench({
     try {
       const result = await resolvedRuntimeSessionClient.resetWorkbench();
 
-      setRuntimeSessionView({
+      const resetView: PlayRuntimeSessionView = {
         kind: 'awaiting_start',
         activeSessionId: result.activeSessionId,
         activeCheckpointId: null,
@@ -398,7 +441,10 @@ export function PlayWorkbench({
           source: 'empty',
         },
         lifecycle: 'awaiting_start',
-      });
+      };
+
+      runtimeSessionViewRef.current = resetView;
+      setRuntimeSessionView(resetView);
     } catch (resetError) {
       setError(
         resetError instanceof Error

@@ -12,6 +12,7 @@ import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
 import type { BrowserRuntimeSessionClient } from '@/app/play/runtime';
 import type { CollapseInput, LLMAdapter } from '@/engine/types/adapter-interface';
 import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
+import type { RecordAcceptedBeatInput } from '@/runtime-sessions/repository';
 import type { CollapseResponse } from '@/types';
 import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 
@@ -506,6 +507,73 @@ describe('PlayWorkbench', () => {
     expect(
       screen.queryByText(`Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
     ).not.toBeInTheDocument();
+  });
+
+  it('keeps the latest accepted continuity after saving runtime config and continues the active session without rollback', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+    await user.type(screen.getByLabelText('Free text action'), 'Advance on the control cabinet.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(
+      await screen.findByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(await screen.findByText('Runtime config saved locally.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Cut the local power feed.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(
+      await screen.findAllByText(`Draft beat 3 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).toHaveLength(2);
+    expect(recordedAcceptedBeats.map((entry) => entry.acceptedBeatOrdinal)).toEqual([1, 2, 3]);
+    expect(recordedAcceptedBeats.every((entry) => entry.sessionId === 'sess_waiting')).toBe(true);
+    expect(harness.getGeneratedPromptHistory(2)).toEqual([
+      { role: 'user', content: storyPackageFixture.sceneSpec.openingHook },
+      {
+        role: 'assistant',
+        content: `Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`,
+      },
+      { role: 'user', content: 'Advance on the control cabinet.' },
+      {
+        role: 'assistant',
+        content: `Draft beat 2 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`,
+      },
+      { role: 'user', content: 'Cut the local power feed.' },
+    ]);
   });
 
   it('shows generating and auditing statuses before accepting a beat', async () => {
