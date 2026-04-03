@@ -298,3 +298,17 @@
   - 类型检查：`npm run type-check` 通过
   - 正式打包：`npm run build` 通过
   - 页面实看：已在干净开发服务端口上用浏览器脚本确认地点条目可展开、已选标签可直接移除，移除后摘要会从 3 个地点变成 2 个地点
+
+## 2026-04-03
+
+- 已关闭本轮为 `Phase 2` 设计对齐服务的 2 个只读 subagent，保留其结论并停止继续占用上下文。
+- 已按 `brainstorming` 与 `planning-with-files-zh` 重新收口 `Phase 2` 的目标、边界和下一步产物，不再把本阶段当成 UI / UX 迭代。
+- 已把当前对齐结论压成一条更明确的推荐路线：
+  - `Phase 2` 以 package-root 下独立的 runtime session / checkpoint substrate 为核心
+  - continuity 的事实源不放在 `PromptObject`、`BeatHistory`、`authoring-state.json` 或 gossipelog 关系文件里
+  - checkpoint 主键不编码 storyline 序号或人类可读标签
+- 已吸收用户追加确认的 3 个方向：
+  - 系统与故事继续保持解耦
+  - 本阶段交付要为下一阶段“从某个 beat 重新发送整轮 generation 入口”打地基
+  - 本阶段不为 checkpoint 设计人类可读标签
+- 已同步更新 `task_plan.md` 与 `findings.md`，把旧的 roadmap 讨论口径收束到当前 `Phase 2` 的 substrate 设计目标上。

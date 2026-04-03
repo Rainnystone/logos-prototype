@@ -2,14 +2,14 @@
 
 ## Goal
 
-把当前这轮 roadmap 讨论收敛成项目根目录可恢复的持久记录，明确：
+把 `Phase 2: Session Continuity` 收敛成项目根目录可恢复的持久记录，明确：
 
-- 哪些产品判断已经冻结
-- 四个阶段的推荐顺序
-- 每个阶段解决什么问题
-- 第一阶段先拆成哪些更小的交付节点
+- 这一阶段真正要交付的连续性能力
+- 它与 `Phase 3` 故事线层的明确边界
+- 推荐的 runtime session / checkpoint substrate
+- 最小持久化对象、完成标准与下一步 spec / plan 目标
 
-这样后续无论是继续 brainstorm、写 spec、写 implementation plan，还是换一个线程继续，都能直接接上，不需要重新讨论大的方向。
+这样后续无论是继续 brainstorm、写 spec、写 implementation plan，还是换一个线程继续，都能直接接上，不需要重新把 `Phase 2` 的基础判断讨论一遍。
 
 ## Active Phases
 
@@ -24,6 +24,7 @@
 | 7 | complete | 已按 task 拆给 subagent 执行并全部收口；`Task 1` 到 `Task 8` 均已完成主线程复核，其中 `Task 7` 额外完成了 sidecar 配置可见性、刷新失败回退、按需加载与 simulation toolset 对齐等质量回修。 |
 | 8 | complete | 已完成 `Phase 1` 全量验证、桌面端 UI / UX 复核与规划文件同步；当前仓库已可在此基础上进入下一阶段讨论。 |
 | 9 | complete | 已完成 `Phase 1` 的地点收尾回修：样例地点已从旧长文彻底转译为正式地点，场景地点选择器已与场景阵容对齐，并且 `locationIds` 已真实进入运行时组装链。 |
+| 10 | in_progress | 正在冻结 `Phase 2` 的 runtime continuity substrate、checkpoint 边界与后续 `Phase 3` 可承接的落点；下一步应产出正式 spec 与 implementation plan。 |
 
 ## Frozen Product Decisions
 
@@ -61,6 +62,22 @@
 - 这属于产品层能力，不应伪装成 simulation toolset 的临时补丁。
 - 原因是 simulation 当前只是消费正式 seam 做 cloud-friendly 验证；它不是定义长期存储边界的地方。
 - 相关背景与当前 toolset 边界可参考 [simulation-toolset/README.md](simulation-toolset/README.md)。
+
+### C-3. Phase 2 Runtime Continuity Substrate
+
+- `LOGOS` 继续保持故事内容与系统机制解耦。
+- `story package definition` 仍然是作者定义态与 canonical baseline；`Phase 2` 的连续会话数据属于独立的 mutable runtime state。
+- `Phase 2` 不把 continuity 塞进 `authoring-state.json`、`gossipelog` 关系文件或 `StoryPackage` 定义本体。
+- `Phase 2` 的自然接入点在 `play runtime / orchestrator` 的 accepted beat 提交流程，而不是 authoring bridge。
+- `PromptObject` 与 `BeatHistory` 都是可派生层：
+  - `PromptObject` 是 generation 入口的派生物，不是事实源。
+  - `BeatHistory` 是展示层读模型，不是持久真相。
+- checkpoint 主键使用稳定的 opaque id，不把 storyline 序号、UI 标签或人类可读路径编码进主键。
+- `Phase 3` 的 storyline 应作为“指向 checkpoint 的 ref / pointer”，而不是复制整段历史。
+- `Phase 2` 虽然不要求先交付完整 rollback / fallback UI，但交付后的 substrate 必须已经支持：
+  - 从某个已接受 beat 的 checkpoint 重新组装那一轮 generation 入口
+  - 为后续 `Phase 3` 的分支创建提供稳定锚点
+- 当前规划默认至少按“页面刷新后仍可恢复”来设计 durability，同时保持数据模型可扩展到更长期的恢复，而不重做底层。
 
 ### D. Storyline v1 范围
 
@@ -112,11 +129,20 @@
 
 包含：
 
+- 独立于 package definition 的 runtime session / checkpoint substrate
 - play ↔ edit 切换不清零
+- 页面刷新后仍可恢复当前可续跑 session
 - 显式 `Reset Workbench`
 - 从上次离开处继续
-- 为已接受 beat 建立检查点
-- 从某个 beat 检查点重新开跑
+- 为每个 accepted beat 建立正式 checkpoint
+- checkpoint 至少保存恢复续跑所需的最小 runtime 事实，而不是整份 package 拷贝
+- 为下一阶段的“从某个 checkpoint 重新开跑 / 分叉故事线”提供正式底座
+
+不包含：
+
+- storyline 名称、归档、复制、切换等管理 UI
+- 以人类可读标签为中心的 checkpoint 命名体系
+- 把 continuity 做成浏览器内存或展示层专用缓存
 
 ### Phase 3: Package & Storyline Layer
 
@@ -147,6 +173,21 @@
 - 外部前序故事导入 agent
 - agent 管理窗口升级为真正管理面
 - 导入结果落到现有故事包 / 故事线，而不是污染主样例包
+
+## Current Phase 2 Planning Target
+
+- 先写出 `Phase 2` 正式 design spec，而不是直接实现。
+- spec 需要先冻结以下对象边界：
+  - runtime session 文件的落点
+  - checkpoint 的最小字段集合
+  - accepted beat 与 checkpoint 的映射关系
+  - `Reset Workbench` 的精确定义
+  - continuity-backed 关系区如何读取当前 session 状态
+- implementation plan 需要明确：
+  - 运行时写入点
+  - 页面恢复与显式重置入口
+  - 测试与验证路径
+  - 与 `Phase 3` storyline ref 模型的前后兼容关系
 
 ## Phase 1 Delivery Slices
 

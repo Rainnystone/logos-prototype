@@ -161,6 +161,45 @@
   - `Phase 2` 负责建立可靠检查点与续跑能力
   - `Phase 3` 负责把这些检查点组织成“像 branch 一样可管理的故事线”
 
+## Phase 2 substrate 对齐结论
+
+- `LOGOS` 继续保持故事内容与系统解耦：
+  - `story package` 仍是作者定义态与 canonical baseline
+  - `Phase 2` 的 continuity 数据应落在独立的 mutable runtime session / checkpoint state
+- `Phase 2` 的自然实现切口在 `play runtime`，不是 authoring bridge：
+  - 真正该接的位置是 accepted beat 已确定、`currentState` 已冻结、但尚未返回 UI 的 runtime 链路
+  - `PlayWorkbench` 的职责更适合保持为进入时恢复、离开时保存、显式 reset
+- `PromptObject` 与 `BeatHistory` 都应继续停留在派生层：
+  - `PromptObject` 是 generation 入口的派生物，不是事实源
+  - `BeatHistory` 是 UI 读模型，不是持久化真相
+- 最稳妥的最小方案是：
+  - 在 package root 下新增独立的 runtime session / checkpoint 文件
+  - 不把 continuity 塞进 `authoring-state.json`
+  - 不把 continuity 塞进 gossipelog 关系文件
+  - 不把 mutable runtime state 强塞进 `StoryPackage` 或 `state-snapshots.yaml`
+- checkpoint 的最小真相应该围绕“可续跑”而不是“可展示”来保存：
+  - `checkpointId`
+  - 结构化位置字段：`sceneId / phaseIndex / beatIndex / acceptedBeatOrdinal`
+  - `StateSnapshot`
+  - accepted transcript
+  - `lastStableRelationshipLayer`
+  - 必要的 round / session metadata
+- 不建议把 storyline 序号或人类可读路径写进 checkpoint 主键。
+- 更稳的做法是：
+  - checkpoint 只用 opaque id
+  - `Phase 3` 的 storyline 只做“指向 checkpoint 的 ref / pointer”
+- 用户所说的“fallback / 回滚”本质上更接近：
+  - 从某个已接受 beat 的 checkpoint 重新组装那一轮 generation 入口
+  - 再次把整轮 generation 请求送出
+- 这不要求 `Phase 2` 先交完整 rollback UI，但要求 `Phase 2` 交付后的 substrate 已经足够支持 `Phase 3` 去实现它。
+- 当前最合理的 durability 目标是：
+  - 至少支持页面刷新后的恢复
+  - 但数据模型与仓储边界要保持可扩展到更长期的继续，不在后续重做底层
+- 一个容易被忽略但必须进入恢复模型的点是 `gossipelog`：
+  - 关系层不是 accepted beat 的同步内联结果
+  - 它是 accepted 之后为下一拍准备的异步 runtime layer
+  - 因此 checkpoint 不能只存 `beatText + stateSnapshot`，还需要携带足以恢复下一拍语义的关系层状态
+
 ## 2026-04-01 用户对 storyline v1 范围的冻结
 
 - 用户不希望把故事线管理理解成递进式功能裁剪。
