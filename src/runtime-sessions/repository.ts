@@ -11,7 +11,7 @@ import type {
   RuntimeSessionsFile,
   StateSnapshot,
 } from '@/types';
-import { RuntimeSessionsFileSchema } from '@/types';
+import { RuntimeSessionsFileSchema, assertRuntimeSessionsFileConsistency } from '@/types';
 
 const runtimeSessionsFileName = 'runtime-sessions.json';
 
@@ -53,12 +53,6 @@ export interface FinalizeRelationshipLayerInput {
   readonly sessionId: string;
   readonly checkpointId: string;
   readonly lastStableRelationshipLayer: RelationshipLayer;
-}
-
-export interface FinalizeRelationshipLayerResult {
-  readonly applied: boolean;
-  readonly mirroredToSession: boolean;
-  readonly file: RuntimeSessionsFile;
 }
 
 function resolveStoryPackageRoot(packageName: string): string {
@@ -103,71 +97,9 @@ function createBootstrapSession(sessionId: string, timestamp: string): RuntimeSe
   };
 }
 
-function assertRuntimeSessionConsistency(file: RuntimeSessionsFile): RuntimeSessionsFile {
-  if (file.activeSessionId !== null && !file.sessionsById[file.activeSessionId]) {
-    throw new Error(
-      `Runtime session consistency violation: activeSessionId "${file.activeSessionId}" does not resolve.`,
-    );
-  }
-
-  for (const [sessionKey, session] of Object.entries(file.sessionsById)) {
-    if (session.sessionId !== sessionKey) {
-      throw new Error(
-        `Runtime session consistency violation: session key "${sessionKey}" does not match sessionId "${session.sessionId}".`,
-      );
-    }
-
-    if (session.headCheckpointId !== null && !session.checkpointsById[session.headCheckpointId]) {
-      throw new Error(
-        `Runtime session consistency violation: headCheckpointId "${session.headCheckpointId}" does not resolve in session "${session.sessionId}".`,
-      );
-    }
-
-    if (
-      session.activeCheckpointId !== null &&
-      !session.checkpointsById[session.activeCheckpointId]
-    ) {
-      throw new Error(
-        `Runtime session consistency violation: activeCheckpointId "${session.activeCheckpointId}" does not resolve in session "${session.sessionId}".`,
-      );
-    }
-
-    const orderedSet = new Set(session.orderedCheckpointIds);
-    if (orderedSet.size !== session.orderedCheckpointIds.length) {
-      throw new Error(
-        `Runtime session consistency violation: orderedCheckpointIds contains duplicates in session "${session.sessionId}".`,
-      );
-    }
-
-    for (const checkpointId of session.orderedCheckpointIds) {
-      if (!session.checkpointsById[checkpointId]) {
-        throw new Error(
-          `Runtime session consistency violation: ordered checkpoint "${checkpointId}" is missing from checkpointsById in session "${session.sessionId}".`,
-        );
-      }
-    }
-
-    for (const [checkpointKey, checkpoint] of Object.entries(session.checkpointsById)) {
-      if (!orderedSet.has(checkpointKey)) {
-        throw new Error(
-          `Runtime session consistency violation: checkpoint "${checkpointKey}" is missing from orderedCheckpointIds in session "${session.sessionId}".`,
-        );
-      }
-
-      if (checkpoint.checkpointId !== checkpointKey) {
-        throw new Error(
-          `Runtime session consistency violation: checkpoint key "${checkpointKey}" does not match checkpointId "${checkpoint.checkpointId}" in session "${session.sessionId}".`,
-        );
-      }
-    }
-  }
-
-  return file;
-}
-
 function validateRuntimeSessionsFile(data: unknown): RuntimeSessionsFile {
   const parsed = parseWithSchema(RuntimeSessionsFileSchema, data, 'runtimeSessionsFile');
-  return assertRuntimeSessionConsistency(parsed);
+  return assertRuntimeSessionsFileConsistency(parsed);
 }
 
 async function ensureStoryPackageExists(packageName: string): Promise<void> {
@@ -344,26 +276,18 @@ export async function recordAcceptedBeat(
 
 export async function finalizeRelationshipLayer(
   input: FinalizeRelationshipLayerInput,
-): Promise<FinalizeRelationshipLayerResult> {
+): Promise<void> {
   return runWithPackageWriteQueue(input.packageName, async () => {
     const file = await loadRuntimeSessionsFileForWrite(input.packageName);
     const session = file.sessionsById[input.sessionId];
 
     if (!session) {
-      return {
-        applied: false,
-        mirroredToSession: false,
-        file,
-      };
+      return;
     }
 
     const checkpoint = session.checkpointsById[input.checkpointId];
     if (!checkpoint) {
-      return {
-        applied: false,
-        mirroredToSession: false,
-        file,
-      };
+      return;
     }
 
     const timestamp = new Date().toISOString();
@@ -402,12 +326,6 @@ export async function finalizeRelationshipLayer(
     };
 
     await writeValidatedRuntimeSessionsFile(input.packageName, nextFile);
-
-    return {
-      applied: true,
-      mirroredToSession: mirrorsToSession,
-      file: nextFile,
-    };
   });
 }
 

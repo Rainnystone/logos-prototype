@@ -11,6 +11,7 @@ import {
   PhasePlanSchema,
   PromptObjectSchema,
   RuntimeSessionsFileSchema,
+  assertRuntimeSessionsFileConsistency,
   StateSnapshotSchema,
   type AuditPacket,
   type AuditQuestionSet,
@@ -81,5 +82,7 @@ export function validateAuditQuestionSet(data: unknown): AuditQuestionSet {
 }
 
 export function validateRuntimeSessionsFile(data: unknown): RuntimeSessionsFile {
-  return parseWithSchema(RuntimeSessionsFileSchema, data, 'runtimeSessionsFile');
+  return assertRuntimeSessionsFileConsistency(
+    parseWithSchema(RuntimeSessionsFileSchema, data, 'runtimeSessionsFile'),
+  );
 }

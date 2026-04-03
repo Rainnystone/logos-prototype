@@ -236,6 +236,42 @@ describe('runtime sessions repository', () => {
     }
   });
 
+  it('does not return diagnostics payload from relationship-layer finalization', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-finalize-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await repository.recordAcceptedBeat({
+        packageName,
+        sessionId: 'sess_01',
+        checkpointId: 'chk_01',
+        lifecycle: 'in_progress',
+        acceptedBeatOrdinal: 1,
+        phaseIndex: 1,
+        beatIndex: 1,
+        sceneId: 'scene_opening',
+        roundId: 'round_01',
+        acceptedTranscript: {
+          playerInput: 'open the door',
+          beatText: 'The door swings open.',
+        },
+        stateSnapshot: makeStateSnapshot(),
+        lastStableRelationshipLayer: makeRelationshipLayer(),
+      });
+
+      const result = await repository.finalizeRelationshipLayer({
+        packageName,
+        sessionId: 'sess_01',
+        checkpointId: 'chk_01',
+        lastStableRelationshipLayer: makeRelationshipLayer('settled'),
+      });
+
+      expect(result).toBeUndefined();
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
   it('writes runtime sessions with stable JSON formatting', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-format-'));
     const packageName = path.basename(packageRoot);
