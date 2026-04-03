@@ -1,14 +1,14 @@
 # Frontend Codemap
 
-> Generated: 2026-03-27 | Next.js 15 + React 19 + Tailwind 3
+> Updated: 2026-04-04 | Next.js 15 + React 19 + Tailwind 3
 
 ## Pages
 
 | Route | File | Type | Purpose |
 |-------|------|------|---------|
-| `/` | `src/app/page.tsx` | Server | Title page — provider setup + entry points |
-| `/play` | `src/app/play/page.tsx` | Server | Play Workbench — loads story package + config |
-| `/edit` | `src/app/edit/page.tsx` | Server | Narrative Editor — 4-section editor shell |
+| `/` | `src/app/page.tsx` | Server | Title page — provider setup cabinet plus Play / Edit entry points |
+| `/play` | `src/app/play/page.tsx` | Server | Play Workbench — loads story package plus bounded active-session continuity |
+| `/edit` | `src/app/edit/page.tsx` | Server | Narrative Editor — 4 save sections, surfaced as 5 visible tabs because `worldbase-cast` splits into `世界` / `角色` |
 
 ## Play Workbench Component Tree
 
@@ -26,13 +26,13 @@ PlayWorkbench (client)
 │   │   └── CollapsiblePanel "Prompt Status" (closed by default)
 │   │       └── PromptStatusPanel — assembly layers, context entries
 │   ├── CENTER: play-column
-│   │   ├── Generation Workspace — phase/beat status, Start Round
+│   │   ├── Generation Workspace — phase/beat status, Start Round, restore/reset awareness
 │   │   └── BeatDisplay — current beat text + error/rewrite feedback
 │   │       └── PlayerInput — 4 options + free text + submit
 │   └── RIGHT: play-column--feedback
 │       ├── StateInspector — scene state, boundaries, gradient, snapshots
 │       └── CollapsiblePanel "Beat History" (open)
-│           └── BeatHistory — accepted beat entries
+│           └── BeatHistory — accepted beat entries restored from active runtime session when available
 ```
 
 ## Edit Workbench Component Tree
@@ -41,9 +41,9 @@ PlayWorkbench (client)
 EditWorkbench (client)
 ├── edit-shell — identity, PageHelperPanel, SectionTabs
 ├── PageActionBar — return to title, open scene
-├── SectionTabs — 4 tab links (query param routing)
+├── SectionTabs — 5 visible tab links (query param routing, with `worldbase-cast` split into `world` / `character` surfaces)
 └── edit-layout (active section)
-    ├── WorldBaseCastSection — world blocks + character editor
+    ├── WorldBaseCastSection — world blocks + character editor + continuity-backed relationship panel
     ├── ScenePhaseAuthoringSection — phase rail + scene frame + phase editor
     ├── ControlModulesSection — module stack + module editor
     └── PackageWiringValidationSection — diagnostics dashboard
@@ -56,18 +56,19 @@ EditWorkbench (client)
 | `CollapsiblePanel` | title, eyebrow, defaultOpen, variant | Reusable expand/collapse section |
 | `RuntimeConfigForm` | initialConfig, onSave, actionSlot | Provider preset, API key, model, advanced params |
 | `ConfigPanel` | initialConfig, onSave, diagnostics | RuntimeConfigForm + Runtime Usage |
-| `TitleLandingSurface` | catalog, onSave | Title page landing with story package selector |
-| `StoryPackageSelector` | catalog | Dropdown for selecting story packages |
+| `TitleLandingSurface` | packageName | Title page cabinet with provider setup and Play / Edit entry links |
+| `StoryPackageSelector` | packages | Sample dashboard card list for ready/unavailable story packages |
 
 ## State Management
 
 | State | Location | Persistence |
 |-------|----------|-------------|
 | AdapterConfig | PlayWorkbench useState | localStorage (`logos-adapter-config`) |
-| Draft edits (worldbase, scene-phase, control-modules) | EditWorkbench useState | Lost on navigation (per-session) |
+| Draft edits (worldbase, scene-phase, control-modules) | EditWorkbench useState | Full route changes reset; `worldbase-cast` 内部 `世界 ↔ 角色` surface 切换继续共用同一份草稿 |
 | Saved state | EditWorkbench currentState | Server-side YAML files |
-| Beat history | PlayWorkbench useState | Lost on navigation (per-session) |
-| Scene state snapshots | Orchestrator | In-memory during play session |
+| Beat history | `PlayWorkbench` + `PlayRuntimeSessionView` | Restored from package-scoped `runtime-sessions.json` when an active checkpoint exists |
+| Scene state snapshots | Orchestrator + runtime-session repository | Current play session in memory, accepted checkpoints persisted to `runtime-sessions.json` |
+| Character relationship continuity | `CharacterSection` via `runtimeContinuityView` | Bounded summary loaded server-side from active runtime session |
 
 ## CSS Architecture
 

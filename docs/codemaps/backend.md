@@ -1,6 +1,6 @@
 # Backend Codemap
 
-> Generated: 2026-03-27 | Source: `src/engine/`, `src/authoring/`, `src/app/api/`
+> Updated: 2026-04-04 | Source: `src/engine/`, `src/authoring/`, `src/runtime-sessions/`, `src/app/api/`
 
 ## API Routes
 
@@ -10,6 +10,8 @@
 | `/api/authoring/packages/[packageName]/coordinator` | POST | Coordinator-assisted save with AI repair |
 | `/api/authoring/packages/[packageName]/diagnostics` | GET | Package health check and validation |
 | `/api/llm/proxy` | POST | Server-side proxy for third-party LLM APIs (CORS bypass) |
+| `/api/play/gossipelog` | POST | Server-owned gossipelog bridge for relationship update + injection cycles |
+| `/api/play/packages/[packageName]/runtime-session` | POST | Runtime continuity bridge for ensure / record accepted beat / finalize relationship / reset |
 
 ## Engine Modules (`src/engine/modules/`)
 
@@ -31,13 +33,21 @@
 
 | File | Purpose |
 |------|---------|
-| `adapter.ts` | Factory: creates Provider from AdapterConfig, exposes 5 operations |
+| `adapter.ts` | Factory: creates Provider from AdapterConfig, exposes route/generate/audit/settlement/collapse plus gossipelog update/injection |
 | `schema-mapper.ts` | Maps LOGOS operations to provider request format + default params |
 | `response-parsers.ts` | Parses JSON responses into typed results |
 | `prompt-templates.ts` | System prompts and template strings |
 | `providers/provider-interface.ts` | Types: ProviderType, ProviderConfig, AdapterConfig, Provider |
 | `providers/anthropic.ts` | Anthropic Messages API provider (with CORS proxy) |
 | `providers/openai-compatible.ts` | OpenAI Chat Completions provider (with CORS proxy) |
+
+## Runtime Session Substrate (`src/runtime-sessions/`)
+
+| File | Purpose |
+|------|---------|
+| `repository.ts` | Server-owned JSON repository for `runtime-sessions.json`, including queued writes and semantic validation |
+| `views.ts` | Builds bounded `/play` and `/edit` continuity DTOs from repository state |
+| `copy.ts` | Client-safe user-facing copy for continuity error / unavailable states |
 
 ## Authoring Pipeline (`src/authoring/`)
 
@@ -49,7 +59,7 @@
 | `persistence/bridge.ts` | Main save pipeline: normalize -> validate -> extract -> render -> persist -> reload |
 | `persistence/repository.ts` | File I/O: read/write/restore YAML files |
 | `persistence/reload.ts` | Reload StoryPackage from disk after write |
-| `persistence/package-state.ts` | Load initial authoring state for editor |
+| `persistence/package-state.ts` | Load initial authoring state for editor, optionally including bounded runtime continuity for worldbase-cast |
 | `persistence/authoring-status.ts` | Read/write authoring-state.json marker |
 | `persistence/save-results.ts` | Factory functions for SaveResult variants |
 | `sections/worldbase-cast.ts` | WorldBase draft <-> markdown round-trip |
@@ -67,14 +77,10 @@
 | Audit | 0.3 | 4,096 |
 | Settlement | 0.1 | 8,192 |
 
-## Test Coverage
+## Continuity Notes
 
-| Directory | Test Files | Focus |
-|-----------|-----------|-------|
-| `src/engine/__tests__/` | 4 | Orchestrator, schema, loader, mock adapter |
-| `src/engine/__tests__/e2e/` | 5 | Full phase runs, audit behavior, state transitions |
-| `src/engine/api-adapter/__tests__/` | 5 | Adapter, providers, mappers, parsers |
-| `src/engine/modules/__tests__/` | 10 | One per module |
-| `src/authoring/persistence/__tests__/` | 3 | Bridge, package-state, save-results |
-| `src/authoring/sections/__tests__/` | 4 | One per section |
-| `src/authoring/coordinator/__tests__/` | 1 | Coordinator |
+- `runtime-sessions.json` is package-scoped runtime state, parallel to `authoring-state.json` and `agents/`, but not part of the `StoryPackage` YAML definition itself.
+- Accepted beats are persisted as full checkpoints after the orchestrator produces continuation-ready state.
+- Delayed gossipelog finalization is bound by `sessionId + checkpointId`, so stale refresh results can finalize their own checkpoint without polluting a newer active session.
+- `/play` restores from the active session by default; `/edit` only consumes a bounded continuity summary and never reads raw checkpoint maps or transcripts.
+- `ensure_active_session`, `record_accepted_beat`, `finalize_relationship_layer`, and `reset_workbench` all run through the same package-scoped queued write path, so write ordering is serialized per story package.
