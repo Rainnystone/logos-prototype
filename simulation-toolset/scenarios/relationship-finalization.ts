@@ -25,11 +25,7 @@ function createRepositoryBackedSessionStore(packageName: string): RuntimeSession
       return { activeSessionId: session.sessionId };
     },
     async recordAcceptedBeat(input) {
-      const result = await recordAcceptedBeat(input);
-      return {
-        activeSessionId: result.session.sessionId,
-        activeCheckpointId: result.checkpoint.checkpointId,
-      };
+      await recordAcceptedBeat(input);
     },
     async finalizeRelationshipLayer(input) {
       await finalizeRelationshipLayer(input);
@@ -37,7 +33,7 @@ function createRepositoryBackedSessionStore(packageName: string): RuntimeSession
   };
 }
 
-function disableAuditQuestions(storyPackage: ReturnType<typeof loadStoryPackage>): ReturnType<typeof loadStoryPackage> {
+function disableAuditQuestions(storyPackage: Awaited<ReturnType<typeof loadStoryPackage>>): Awaited<ReturnType<typeof loadStoryPackage>> {
   return {
     ...storyPackage,
     auditQuestionSet: {

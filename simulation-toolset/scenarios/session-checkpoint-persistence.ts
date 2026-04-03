@@ -138,7 +138,7 @@ export function createSessionCheckpointPersistenceScenario(): ExecutableSimulati
         // Assertion: Checkpoint should exist (checkpointCount > 0)
         recorder.recordAssertion({
           name: 'checkpoint-created-after-beat',
-          pass: sessionObservation?.checkpointCount > 0,
+          pass: (sessionObservation?.checkpointCount ?? 0) > 0,
           details: `Expected checkpointCount > 0, got ${sessionObservation?.checkpointCount ?? 0}`,
         });
 

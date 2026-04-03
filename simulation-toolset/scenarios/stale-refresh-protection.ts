@@ -258,7 +258,7 @@ export function createStaleRefreshProtectionScenario(): ExecutableSimulationScen
 
         recorder.recordAssertion({
           name: 'old-session-has-checkpoint',
-          pass: resetResult.preservedOldSession?.orderedCheckpointIds.length > 0,
+          pass: (resetResult.preservedOldSession?.orderedCheckpointIds?.length ?? 0) > 0,
           details: 'Old session should have the checkpoint we created',
         });
 
