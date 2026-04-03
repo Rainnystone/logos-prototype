@@ -97,7 +97,7 @@ function mapRuntimeSessionError(error: unknown): { status: number; message: stri
 
   return {
     status: 500,
-    message: error instanceof Error ? error.message : String(error),
+    message: 'Failed to process runtime session command.',
   };
 }
 

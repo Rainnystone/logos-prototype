@@ -72,7 +72,11 @@ describe('POST runtime-session route', () => {
   });
 
   it('returns non-2xx with an explicit error payload when reset_workbench persistence fails', async () => {
-    resetWorkbench.mockRejectedValueOnce(new Error('disk write failed'));
+    resetWorkbench.mockRejectedValueOnce(
+      new Error(
+        'Failed to load runtime sessions for "sample-scene" from /tmp/sample-scene/runtime-sessions.json: disk write failed',
+      ),
+    );
     const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
 
     const response = await POST(
@@ -94,7 +98,7 @@ describe('POST runtime-session route', () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({
-      error: 'disk write failed',
+      error: 'Failed to process runtime session command.',
     });
   });
 
@@ -241,6 +245,57 @@ describe('POST runtime-session route', () => {
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toEqual({
       error: 'Cannot record accepted beat for inactive session.',
+    });
+  });
+
+  it('returns conflict without leaking internals when duplicate checkpoint ids are rejected', async () => {
+    recordAcceptedBeat.mockRejectedValueOnce(
+      new RuntimeSessionConflictError(
+        'Checkpoint "checkpoint-record" already exists for active session "sess-record".',
+      ),
+    );
+    const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/packages/sample-scene/runtime-session', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'record_accepted_beat',
+          payload: {
+            packageName: 'sample-scene',
+            sessionId: 'sess-record',
+            checkpointId: 'checkpoint-record',
+            lifecycle: 'in_progress',
+            acceptedBeatOrdinal: 1,
+            phaseIndex: 1,
+            beatIndex: 1,
+            sceneId: 'scene-signal-room',
+            roundId: 'round-1',
+            acceptedTranscript: {
+              playerInput: 'Inspect the panel',
+              beatText: 'The panel hums with unstable current.',
+            },
+            stateSnapshot: stateSnapshotFixture,
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: 'delta',
+              stableBackgroundText: 'background',
+            },
+          },
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Checkpoint "checkpoint-record" already exists for active session "sess-record".',
     });
   });
 

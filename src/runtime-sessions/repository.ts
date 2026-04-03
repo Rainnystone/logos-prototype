@@ -169,6 +169,34 @@ async function loadRuntimeSessionsFileForWrite(packageName: string): Promise<Run
   }
 }
 
+function isRecoverableRuntimeFileContentError(error: unknown): boolean {
+  return (
+    error instanceof Error && typeof (error as NodeJS.ErrnoException).code !== 'string'
+  );
+}
+
+async function loadRuntimeSessionsFileForReset(packageName: string): Promise<RuntimeSessionsFile> {
+  await ensureStoryPackageExists(packageName);
+  const filePath = resolveRuntimeSessionsPath(packageName);
+
+  try {
+    return await readPersistedRuntimeSessionsFile(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return createEmptyRuntimeSessionsFile();
+    }
+
+    if (isRecoverableRuntimeFileContentError(error)) {
+      return createEmptyRuntimeSessionsFile();
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to load runtime sessions for "${packageName}" from ${filePath}: ${message}`,
+    );
+  }
+}
+
 async function writeValidatedRuntimeSessionsFile(
   packageName: string,
   file: RuntimeSessionsFile,
@@ -283,6 +311,12 @@ export async function recordAcceptedBeat(
       );
     }
 
+    if (baseSession.checkpointsById[input.checkpointId]) {
+      throw new RuntimeSessionConflictError(
+        `Checkpoint "${input.checkpointId}" already exists for active session "${input.sessionId}".`,
+      );
+    }
+
     const timestamp = new Date().toISOString();
 
     const checkpoint: RuntimeCheckpoint = {
@@ -394,7 +428,7 @@ export async function finalizeRelationshipLayer(
 
 export async function resetWorkbench(packageName: string): Promise<RuntimeSession> {
   return runWithPackageWriteQueue(packageName, async () => {
-    const file = await loadRuntimeSessionsFileForWrite(packageName);
+    const file = await loadRuntimeSessionsFileForReset(packageName);
     const timestamp = new Date().toISOString();
     const session = createBootstrapSession(createSessionId(), timestamp);
     const nextFile: RuntimeSessionsFile = {

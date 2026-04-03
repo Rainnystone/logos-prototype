@@ -204,6 +204,69 @@ describe('runtime sessions repository', () => {
     }
   });
 
+  it('rejects duplicate checkpoint ids without overwriting the existing accepted checkpoint', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-duplicate-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      const activeSession = await repository.ensureActiveSession(packageName);
+      const initialWrite = await repository.recordAcceptedBeat({
+        packageName,
+        sessionId: activeSession.sessionId,
+        checkpointId: 'chk_duplicate',
+        lifecycle: 'in_progress',
+        acceptedBeatOrdinal: 1,
+        phaseIndex: 1,
+        beatIndex: 1,
+        sceneId: 'scene_opening',
+        roundId: 'round_01',
+        acceptedTranscript: {
+          playerInput: 'open the door',
+          beatText: 'The door swings open.',
+        },
+        stateSnapshot: makeStateSnapshot(),
+        lastStableRelationshipLayer: makeRelationshipLayer(),
+      });
+
+      await expect(
+        repository.recordAcceptedBeat({
+          packageName,
+          sessionId: activeSession.sessionId,
+          checkpointId: 'chk_duplicate',
+          lifecycle: 'complete',
+          acceptedBeatOrdinal: 99,
+          phaseIndex: 4,
+          beatIndex: 4,
+          sceneId: 'scene_override_attempt',
+          roundId: 'round_override',
+          acceptedTranscript: {
+            playerInput: 'override the checkpoint',
+            beatText: 'This should never replace the original checkpoint.',
+          },
+          stateSnapshot: makeStateSnapshot(),
+          lastStableRelationshipLayer: makeRelationshipLayer('override'),
+        }),
+      ).rejects.toThrow(/checkpoint/i);
+
+      const file = await repository.readFile(packageName);
+      expect(file).not.toBeNull();
+      if (!file) {
+        throw new Error('Expected runtime sessions file to exist.');
+      }
+
+      const persistedSession = file.sessionsById[activeSession.sessionId];
+      if (!persistedSession) {
+        throw new Error('Expected active session to remain persisted.');
+      }
+      expect(persistedSession.checkpointsById.chk_duplicate).toEqual(initialWrite.checkpoint);
+      expect(persistedSession.orderedCheckpointIds).toEqual(['chk_duplicate']);
+      expect(persistedSession.headCheckpointId).toBe('chk_duplicate');
+      expect(persistedSession.lifecycle).toBe('in_progress');
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
   it('serializes conflicting writes so stale finalization cannot overwrite a newer active session', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-serial-'));
     const packageName = path.basename(packageRoot);
@@ -380,6 +443,34 @@ describe('runtime sessions repository', () => {
         entry.startsWith('runtime-sessions.json.tmp-'),
       );
       expect(tempArtifacts).toEqual([]);
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuilds a fresh bootstrap session when reset_workbench encounters a corrupt runtime file', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-reset-corrupt-'));
+    const packageName = path.basename(packageRoot);
+    const runtimeSessionsPath = path.resolve(packageRoot, 'runtime-sessions.json');
+
+    try {
+      await writeFile(runtimeSessionsPath, '{"version":1,"activeSessionId":"oops"', 'utf8');
+
+      const session = await repository.resetWorkbench(packageName);
+      const file = await repository.readFile(packageName);
+
+      expect(session.lifecycle).toBe('awaiting_start');
+      expect(session.headCheckpointId).toBeNull();
+      expect(file).not.toBeNull();
+      if (!file) {
+        throw new Error('Expected runtime sessions file to exist.');
+      }
+      expect(file.activeSessionId).toBe(session.sessionId);
+      expect(file.sessionsById[session.sessionId]).toMatchObject({
+        sessionId: session.sessionId,
+        lifecycle: 'awaiting_start',
+        orderedCheckpointIds: [],
+      });
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }
