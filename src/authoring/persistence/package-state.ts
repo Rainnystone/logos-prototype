@@ -106,6 +106,6 @@ export async function loadAuthoringState(
     state,
     ...(options.includeAgentSurfaceItems ? { agentSurfaceItems: agentSurfaceItems ?? [] } : {}),
     authoringState,
-    ...(options.includeRuntimeContinuity ? { runtimeContinuityView } : {}),
+    ...(runtimeContinuityView !== undefined ? { runtimeContinuityView } : {}),
   };
 }

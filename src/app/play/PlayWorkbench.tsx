@@ -28,7 +28,11 @@ import {
   type WorkbenchStatus,
 } from '@/app/play/runtime';
 import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
-import { createOrchestrator, type Orchestrator } from '@/engine/orchestrator';
+import {
+  createOrchestrator,
+  type Orchestrator,
+  type RuntimeSessionStore,
+} from '@/engine/orchestrator';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
@@ -85,6 +89,21 @@ export function PlayWorkbench({
           })
         : null),
     [initialRuntimeSession, runtimeSessionClient, storyPackageName],
+  );
+  const resolvedRuntimeSessionStore = useMemo<RuntimeSessionStore | null>(
+    () =>
+      resolvedRuntimeSessionClient
+        ? {
+            ensureActiveSession: async () => resolvedRuntimeSessionClient.ensureActiveSession(),
+            recordAcceptedBeat: async (input) => {
+              await resolvedRuntimeSessionClient.recordAcceptedBeat(input);
+            },
+            finalizeRelationshipLayer: async (input) => {
+              await resolvedRuntimeSessionClient.finalizeRelationshipLayer(input);
+            },
+          }
+        : null,
+    [resolvedRuntimeSessionClient],
   );
 
   useEffect(() => {
@@ -179,14 +198,16 @@ export function PlayWorkbench({
           adapter: trackedAdapter,
           storyPackageName,
           storyPackage,
-          ...(resolvedRuntimeSessionClient
-            ? { runtimeSessionStore: resolvedRuntimeSessionClient }
+          ...(resolvedRuntimeSessionStore
+            ? { runtimeSessionStore: resolvedRuntimeSessionStore }
             : {}),
           ...(resolvedGossipelogCycleRunner ? { gossipelogCycleRunner: resolvedGossipelogCycleRunner } : {}),
         });
         const initialState =
           continuityView?.kind === 'restorable'
-            ? await orchestrator.hydrateScene(buildOrchestratorRestoreInput(continuityView))
+            ? await orchestrator.hydrateScene(
+                buildOrchestratorRestoreInput(continuityView),
+              )
             : await orchestrator.initScene();
 
         if (cancelled) {
@@ -224,6 +245,7 @@ export function PlayWorkbench({
     bootstrapped,
     gossipelogCycleRunner,
     resolvedRuntimeSessionClient,
+    resolvedRuntimeSessionStore,
     runtimeSessionView,
     storyPackage,
     storyPackageName,

@@ -332,8 +332,12 @@ export function buildRelationshipLayerFromSummary(
 }
 
 export function buildOrchestratorRestoreInput(
-  restorableView: Extract<PlayRuntimeSessionView, { kind: 'restorable' }>,
+  restorableView: PlayRuntimeSessionView,
 ): OrchestratorRestoreInput {
+  if (restorableView.kind !== 'restorable') {
+    throw new Error('Runtime session view is not restorable.');
+  }
+
   if (!restorableView.stateSnapshot) {
     throw new Error('Restorable runtime session view is missing stateSnapshot.');
   }

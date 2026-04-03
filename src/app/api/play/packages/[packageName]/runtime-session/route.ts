@@ -73,9 +73,10 @@ function parseRuntimeSessionCommand(value: unknown): RuntimeSessionCommand | nul
 
 function commandHasPayload(
   command: RuntimeSessionCommand,
-): command is
-  | { kind: 'record_accepted_beat'; payload: { packageName: string } }
-  | { kind: 'finalize_relationship_layer'; payload: { packageName: string } } {
+): command is Extract<
+  RuntimeSessionCommand,
+  { kind: 'record_accepted_beat' } | { kind: 'finalize_relationship_layer' }
+> {
   return command.kind === 'record_accepted_beat' || command.kind === 'finalize_relationship_layer';
 }
 

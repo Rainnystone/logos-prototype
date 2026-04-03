@@ -663,7 +663,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         selectedQuestions,
       );
 
-      const nextAcceptedHistory = [
+      const nextAcceptedHistory: HistoryEntry[] = [
         ...acceptedHistory.map(cloneHistoryEntry),
         { role: 'user', content: playerInput },
         {
@@ -671,7 +671,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           content: attemptOutcome.generationResult.beatText,
         },
       ];
-      const nextPhaseTranscript = [
+      const nextPhaseTranscript: HistoryEntry[] = [
         ...currentPhaseTranscript.map(cloneHistoryEntry),
         { role: 'user', content: playerInput },
         {

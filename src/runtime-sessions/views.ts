@@ -174,7 +174,7 @@ export async function loadEditRuntimeContinuityView(
     return {
       kind: 'unavailable',
       activeSession: null,
-      reason: playView.reason,
+      ...(playView.reason ? { reason: playView.reason } : {}),
     };
   }
 
