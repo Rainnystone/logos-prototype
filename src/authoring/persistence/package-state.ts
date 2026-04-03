@@ -8,6 +8,8 @@ import { parseWithSchema } from '@/lib/validation';
 import { SECTION_IDS } from '@/authoring/contracts';
 import { loadStoryPackage } from '@/engine/story-loader';
 import type { StoryPackage } from '@/types';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
+import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 const AuthoringSectionIdSchema = z.enum(SECTION_IDS);
 const ReviewableSectionIdSchema = z.enum([
@@ -43,10 +45,12 @@ export interface AuthoringStateLoadResult {
   readonly state: StoryPackage;
   readonly agentSurfaceItems?: readonly AgentSurfaceItem[];
   readonly authoringState?: AuthoringState | null;
+  readonly runtimeContinuityView?: EditRuntimeContinuityView;
 }
 
 export interface LoadAuthoringStateOptions {
   readonly includeAgentSurfaceItems?: boolean;
+  readonly includeRuntimeContinuity?: boolean;
 }
 
 export function resolvePackageRoot(packageName: string): string {
@@ -83,9 +87,12 @@ export async function loadAuthoringState(
   packageName: string,
   options: LoadAuthoringStateOptions = {},
 ): Promise<AuthoringStateLoadResult> {
-  const [state, authoringState] = await Promise.all([
+  const [state, authoringState, runtimeContinuityView] = await Promise.all([
     loadStoryPackage(packageName),
     readAuthoringState(packageName),
+    options.includeRuntimeContinuity
+      ? loadEditRuntimeContinuityView(packageName)
+      : Promise.resolve(undefined),
   ]);
   let agentSurfaceItems: readonly AgentSurfaceItem[] | undefined;
 
@@ -99,5 +106,6 @@ export async function loadAuthoringState(
     state,
     ...(options.includeAgentSurfaceItems ? { agentSurfaceItems: agentSurfaceItems ?? [] } : {}),
     authoringState,
+    ...(options.includeRuntimeContinuity ? { runtimeContinuityView } : {}),
   };
 }

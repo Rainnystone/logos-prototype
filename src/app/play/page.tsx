@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { PlayWorkbench } from '@/app/play/PlayWorkbench';
 import { isReadyStoryPackageEntry, listStoryPackageCatalog } from '@/app/story-package-catalog';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
+import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -51,7 +52,10 @@ export default async function PlayPage({ searchParams }: PlayPageProps) {
   }
 
   try {
-    const storyPackage = await loadRuntimeStoryPackage(selectedPackageName);
+    const [storyPackage] = await Promise.all([
+      loadRuntimeStoryPackage(selectedPackageName),
+      loadPlayRuntimeSessionView(selectedPackageName),
+    ]);
 
     return <PlayWorkbench storyPackage={storyPackage} storyPackageName={selectedPackageName} />;
   } catch (error) {
