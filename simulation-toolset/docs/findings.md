@@ -125,7 +125,7 @@
 
 ## 2026-04-02 Phase 1 Location Projection Alignment
 
-- 今天 Phase 1 引入的关键边界不是“世界页新增了地点对象”，而是“场景里显式选中的地点才应进入本轮 runtime prompt projection”。
+- 今天 Phase 1 引入的关键边界不是”世界页新增了地点对象”，而是”场景里显式选中的地点才应进入本轮 runtime prompt projection”。
 - 因此旧版 `simulation-toolset` 即使全绿，也不足以证明今天这条新边界安全，因为它还没有把 scene-phase 地点选择一路追到 generate request。
 - 当前最合适的 toolset 覆盖点不是重 UI 回归，而是 route smoke：
   - 先通过正式 `sections/[sectionId]` route 保存地点选择
@@ -134,3 +134,26 @@
 - 对这条边界，至少要稳定覆盖两种状态：
   - 选中子集时，只有被选中的地点进入 prompt
   - 清空选择后，prompt 中不再保留地点文本
+
+## 2026-04-04 Phase 5 Session Continuity Gap Analysis
+
+- Phase 2 引入的 `runtime-sessions.json` 是重要的运行时连续性基底，但当前 simulation-toolset 完全没有覆盖。
+- 关键差距：
+  - Checkpoint 持久化验证缺失
+  - Session restore 行为验证缺失
+  - Reset workbench 语义验证缺失
+  - Stale refresh 保护验证缺失
+  - Edit continuity bounded view 验证缺失
+- 设计决策：
+  - 采用独立模块方案（与 GossipelogObserver 风格一致）
+  - SessionObserver 专注读 session 状态，不混合写入职责
+  - SessionSimulator 协调 restore/reset 流程
+  - EditContinuityObserver 验证 bounded projection 不暴露 raw data
+- 架构原则：
+  - 消费正式 seam：`runtime-sessions/repository.ts`、`runtime-sessions/views.ts`
+  - 不修改产品代码
+  - 所有场景通过 temp package 隔离
+- Stale refresh 场景需要特殊处理：
+  - 使用 ScriptedAdapter 的 delay 模式模拟异步
+  - 在 pending refresh 期间触发 reset
+  - 验证最终结果符合 sessionId/checkpointId 绑定语义

@@ -89,3 +89,23 @@
 - 当日 fresh verification：
   - `npm run type-check:simulation` passed
   - `npm run test:simulation` passed with 11 files and 31 tests
+
+## 2026-04-04
+
+- 启动 Phase 5：Session Continuity + Edit Continuity Simulation
+- 目标：覆盖 Phase 2 引入的 runtime session continuity 能力
+- 完成设计文档：
+  - `simulation-toolset/docs/2026-04-04-session-continuity-simulation-design.md`
+  - `simulation-toolset/docs/2026-04-04-session-continuity-simulation-implementation.md`
+- 规划 3 个新模块：
+  - `SessionObserver` — 观察 runtime-sessions.json 读写
+  - `SessionSimulator` — 协调 restore/reset 流程
+  - `EditContinuityObserver` — 观察 edit continuity view
+- 规划 6 个新场景：
+  - S1: Checkpoint Persistence
+  - S2: Session Restore
+  - S3: Reset Workbench
+  - S4: Stale Refresh Protection
+  - S5: Relationship Finalization
+  - S6: Edit Continuity View
+- 待执行：按 implementation plan 逐任务 TDD 实现
