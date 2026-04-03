@@ -28,7 +28,7 @@
 | 7 | complete | 收口阶段 2 文档与验证，确认 no-audit 是正式允许分支 |
 | 8 | complete | 完成 Phase 3：fixture isolation、delay adapter、batch runner、timing trace |
 | 9 | complete | 完成 Phase 4：route smoke、轻量 UI smoke、sidecar trace normalization、governance/reuse minimums |
-| 10 | in_progress | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
+| 10 | complete | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
 | 11 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
 
 ## Phase 4 Scope
