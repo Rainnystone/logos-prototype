@@ -198,6 +198,48 @@ async function writeActiveSessionWithoutUsableRelationshipLayer(): Promise<void>
   });
 }
 
+async function writeActiveSessionWithCheckpointRelationshipLayer(): Promise<void> {
+  await writeRuntimeSessionsFile({
+    version: 1,
+    activeSessionId: 'sess_checkpoint_relationship',
+    sessionsById: {
+      sess_checkpoint_relationship: {
+        sessionId: 'sess_checkpoint_relationship',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-03T00:00:00.000Z',
+        updatedAt: '2026-04-03T00:00:05.000Z',
+        headCheckpointId: 'chk_01',
+        activeCheckpointId: 'chk_01',
+        orderedCheckpointIds: ['chk_01'],
+        checkpointsById: {
+          chk_01: {
+            checkpointId: 'chk_01',
+            acceptedBeatOrdinal: 1,
+            sceneId: 'scene_opening',
+            phaseIndex: 1,
+            beatIndex: 1,
+            roundId: 'round_01',
+            acceptedTranscript: {
+              playerInput: 'inspect the hallway',
+              beatText: 'The hallway remains silent.',
+            },
+            stateSnapshot: makeStateSnapshot('The hallway remains silent.'),
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: 'checkpoint delta',
+              stableBackgroundText: 'checkpoint background',
+            },
+            createdAt: '2026-04-03T00:00:01.000Z',
+          },
+        },
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: '',
+          stableBackgroundText: '',
+        },
+      },
+    },
+  });
+}
+
 afterEach(() => {
   resetTestPackage();
 });
@@ -271,6 +313,35 @@ describe('runtime session views', () => {
     expect(editView).toEqual({
       kind: 'empty',
       activeSession: null,
+    });
+  });
+
+  it('keeps edit continuity active when a non-empty checkpoint relationship layer is still available', async () => {
+    prepareTestPackage();
+    await writeActiveSessionWithCheckpointRelationshipLayer();
+
+    const playView = await loadPlayRuntimeSessionView(testPackageName);
+    const editView = await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(playView.kind).toBe('restorable');
+    expect(playView.relationshipSummary).toEqual({
+      highlightedDeltasText: 'checkpoint delta',
+      stableBackgroundText: 'checkpoint background',
+      source: 'checkpoint',
+    });
+    expect(editView).toEqual({
+      kind: 'active',
+      activeSession: {
+        sessionId: 'sess_checkpoint_relationship',
+        lifecycle: 'in_progress',
+        activeCheckpointId: 'chk_01',
+        acceptedBeatCount: 1,
+        relationshipStatus: {
+          highlightedDeltasText: 'checkpoint delta',
+          stableBackgroundText: 'checkpoint background',
+          source: 'checkpoint',
+        },
+      },
     });
   });
 
