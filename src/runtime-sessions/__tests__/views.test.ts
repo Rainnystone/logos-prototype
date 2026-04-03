@@ -180,7 +180,10 @@ describe('runtime session views', () => {
     const view = await loadPlayRuntimeSessionView(testPackageName);
 
     expect(view.kind).toBe('unavailable');
-    expect(view.reason).toBe('Runtime continuity is unavailable. Reset the workbench to continue.');
+    expect(view.reason).toBe(
+      'Runtime continuity is unavailable. Inspect the saved runtime data before continuing.',
+    );
+    expect(view.reason).not.toContain('Reset the workbench to continue');
     expect(view.reason).not.toContain('sess_missing');
     expect(view.reason).not.toContain('does not resolve');
   });

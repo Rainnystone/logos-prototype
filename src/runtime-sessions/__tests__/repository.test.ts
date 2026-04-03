@@ -448,29 +448,20 @@ describe('runtime sessions repository', () => {
     }
   });
 
-  it('rebuilds a fresh bootstrap session when reset_workbench encounters a corrupt runtime file', async () => {
+  it('fails reset_workbench and preserves the file when runtime data is corrupt JSON', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-reset-corrupt-'));
     const packageName = path.basename(packageRoot);
     const runtimeSessionsPath = path.resolve(packageRoot, 'runtime-sessions.json');
 
     try {
-      await writeFile(runtimeSessionsPath, '{"version":1,"activeSessionId":"oops"', 'utf8');
+      const originalContents = '{"version":1,"activeSessionId":"oops"';
+      await writeFile(runtimeSessionsPath, originalContents, 'utf8');
 
-      const session = await repository.resetWorkbench(packageName);
-      const file = await repository.readFile(packageName);
+      await expect(repository.resetWorkbench(packageName)).rejects.toThrow(
+        /failed to load runtime sessions/i,
+      );
 
-      expect(session.lifecycle).toBe('awaiting_start');
-      expect(session.headCheckpointId).toBeNull();
-      expect(file).not.toBeNull();
-      if (!file) {
-        throw new Error('Expected runtime sessions file to exist.');
-      }
-      expect(file.activeSessionId).toBe(session.sessionId);
-      expect(file.sessionsById[session.sessionId]).toMatchObject({
-        sessionId: session.sessionId,
-        lifecycle: 'awaiting_start',
-        orderedCheckpointIds: [],
-      });
+      await expect(readFile(runtimeSessionsPath, 'utf8')).resolves.toBe(originalContents);
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }

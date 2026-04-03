@@ -310,11 +310,48 @@ describe('PlayWorkbench', () => {
     );
 
     expect(
-      await screen.findAllByText('Runtime continuity is unavailable. Reset the workbench to continue.'),
+      await screen.findAllByText(
+        'Runtime continuity is unavailable. Inspect the saved runtime data before continuing.',
+      ),
     ).toHaveLength(2);
     expect(screen.queryByText(unsafeUnavailableReason)).not.toBeInTheDocument();
     expect(screen.queryByText(/runtime-sessions\.json/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/does not resolve/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(harness.getCollapseCount()).toBe(0);
+    });
+  });
+
+  it('blocks restore with a safe error state when the saved phase index no longer exists in the story package', async () => {
+    const harness = createPlayAdapterHarness();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock()}
+        initialRuntimeSession={{
+          ...createRestorableRuntimeSessionView(),
+          stateSnapshot: {
+            ...stateSnapshotFixture,
+            sceneState: {
+              ...stateSnapshotFixture.sceneState,
+              currentPhaseIndex: 999,
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(
+      await screen.findByText(
+        'Saved runtime continuity is incompatible with the current story package. Reset the workbench to start a new session.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Active phase 999 was not found/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
     await waitFor(() => {
       expect(harness.getCollapseCount()).toBe(0);

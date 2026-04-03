@@ -28,6 +28,9 @@ import type {
   UsageInfo,
 } from '@/types';
 
+export const RESTORE_COMPATIBILITY_ERROR =
+  'Saved runtime continuity is incompatible with the current story package. Reset the workbench to start a new session.';
+
 export type WorkbenchStatus =
   | 'initializing'
   | 'idle'
@@ -356,6 +359,25 @@ export function buildOrchestratorRestoreInput(
       ? { checkpointId: restorableView.activeCheckpointId }
       : {}),
   };
+}
+
+export function getRestoreCompatibilityError(
+  storyPackage: StoryPackage,
+  runtimeSessionView: PlayRuntimeSessionView | undefined,
+): string | null {
+  if (
+    runtimeSessionView?.kind !== 'restorable' ||
+    !runtimeSessionView.stateSnapshot
+  ) {
+    return null;
+  }
+
+  const restoredPhaseIndex = runtimeSessionView.stateSnapshot.sceneState.currentPhaseIndex;
+  const matchingPhasePlan = storyPackage.phasePlans.find(
+    (phasePlan) => phasePlan.phaseIndex === restoredPhaseIndex,
+  );
+
+  return matchingPhasePlan ? null : RESTORE_COMPATIBILITY_ERROR;
 }
 
 export function createTrackedWorkbenchAdapter(

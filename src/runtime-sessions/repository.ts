@@ -169,10 +169,6 @@ async function loadRuntimeSessionsFileForWrite(packageName: string): Promise<Run
   }
 }
 
-function isRecoverableRuntimeFileContentError(error: unknown): boolean {
-  return error instanceof SyntaxError;
-}
-
 async function loadRuntimeSessionsFileForReset(packageName: string): Promise<RuntimeSessionsFile> {
   await ensureStoryPackageExists(packageName);
   const filePath = resolveRuntimeSessionsPath(packageName);
@@ -181,10 +177,6 @@ async function loadRuntimeSessionsFileForReset(packageName: string): Promise<Run
     return await readPersistedRuntimeSessionsFile(filePath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return createEmptyRuntimeSessionsFile();
-    }
-
-    if (isRecoverableRuntimeFileContentError(error)) {
       return createEmptyRuntimeSessionsFile();
     }
 

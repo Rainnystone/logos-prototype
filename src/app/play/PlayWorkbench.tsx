@@ -19,6 +19,7 @@ import {
   createBrowserGossipelogCycleRunner,
   createTrackedWorkbenchAdapter,
   createWorkbenchAdapter,
+  getRestoreCompatibilityError,
   getActivePhasePlan,
   getGradientSequence,
   getReadyMessage,
@@ -35,7 +36,10 @@ import {
 } from '@/engine/orchestrator';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
-import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
+import {
+  PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
+  type PlayRuntimeSessionView,
+} from '@/runtime-sessions/views';
 import type { StateSnapshot, StoryPackage } from '@/types';
 
 interface PlayWorkbenchProps {
@@ -60,8 +64,7 @@ export function PlayWorkbench({
   gossipelogCycleRunner,
   runtimeSessionClient,
 }: PlayWorkbenchProps) {
-  const continuityUnavailableMessage =
-    'Runtime continuity is unavailable. Reset the workbench to continue.';
+  const continuityUnavailableMessage = PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON;
   const orchestratorRef = useRef<Orchestrator | null>(null);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
@@ -148,6 +151,10 @@ export function PlayWorkbench({
       setCurrentState(null);
 
       const nextRuntimeSource = adapterConfig ? 'Configured provider' : 'Local demo adapter';
+      const restoreCompatibilityError = getRestoreCompatibilityError(
+        storyPackage,
+        continuityView,
+      );
 
       if (continuityView?.kind === 'unavailable') {
         if (cancelled) {
@@ -156,6 +163,17 @@ export function PlayWorkbench({
 
         setRuntimeSource(nextRuntimeSource);
         setError(continuityUnavailableMessage);
+        setStatus('error');
+        return;
+      }
+
+      if (restoreCompatibilityError) {
+        if (cancelled) {
+          return;
+        }
+
+        setRuntimeSource(nextRuntimeSource);
+        setError(restoreCompatibilityError);
         setStatus('error');
         return;
       }
