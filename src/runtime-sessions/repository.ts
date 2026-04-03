@@ -170,9 +170,7 @@ async function loadRuntimeSessionsFileForWrite(packageName: string): Promise<Run
 }
 
 function isRecoverableRuntimeFileContentError(error: unknown): boolean {
-  return (
-    error instanceof Error && typeof (error as NodeJS.ErrnoException).code !== 'string'
-  );
+  return error instanceof SyntaxError;
 }
 
 async function loadRuntimeSessionsFileForReset(packageName: string): Promise<RuntimeSessionsFile> {

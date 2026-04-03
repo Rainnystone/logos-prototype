@@ -475,4 +475,42 @@ describe('runtime sessions repository', () => {
       await rm(packageRoot, { recursive: true, force: true });
     }
   });
+
+  it('fails reset_workbench and preserves the file when runtime data is parseable but inconsistent', async () => {
+    const packageRoot = await mkdtemp(
+      path.resolve(storyPackagesRoot, 'tmp-runtime-reset-inconsistent-'),
+    );
+    const packageName = path.basename(packageRoot);
+    const runtimeSessionsPath = path.resolve(packageRoot, 'runtime-sessions.json');
+
+    try {
+      const invalidFile: RuntimeSessionsFile = {
+        version: 1,
+        activeSessionId: 'sess_missing',
+        sessionsById: {
+          sess_01: {
+            sessionId: 'sess_01',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:01.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: makeRelationshipLayer(),
+          },
+        },
+      };
+      const originalContents = `${JSON.stringify(invalidFile, null, 2)}\n`;
+      await writeFile(runtimeSessionsPath, originalContents, 'utf8');
+
+      await expect(repository.resetWorkbench(packageName)).rejects.toThrow(
+        /runtime session consistency violation/i,
+      );
+
+      await expect(readFile(runtimeSessionsPath, 'utf8')).resolves.toBe(originalContents);
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
 });
