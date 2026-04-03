@@ -20,6 +20,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Adapter Failure',
     tags: ['sidecar', 'fallback', 'adapter'],
   },
+  {
+    scenarioId: 'stale-refresh-protection',
+    title: 'Stale Refresh Protection',
+    tags: ['session', 'continuity', 'reset', 'gossipelog'],
+  },
 ] as const;
 
 export function listBuiltInScenarioManifestEntries(): readonly SimulationScenarioManifestEntry[] {
