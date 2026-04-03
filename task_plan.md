@@ -67,17 +67,38 @@
 
 - `LOGOS` 继续保持故事内容与系统机制解耦。
 - `story package definition` 仍然是作者定义态与 canonical baseline；`Phase 2` 的连续会话数据属于独立的 mutable runtime state。
+- 这类 runtime state 物理上放在 story package 目录内，逻辑上不属于 `StoryPackage` 定义本体。
+- 当前推荐独立使用 JSON 文件承接 package-scoped runtime sessions / checkpoints，而不是并入 story definition YAML。
 - `Phase 2` 不把 continuity 塞进 `authoring-state.json`、`gossipelog` 关系文件或 `StoryPackage` 定义本体。
 - `Phase 2` 的自然接入点在 `play runtime / orchestrator` 的 accepted beat 提交流程，而不是 authoring bridge。
 - `PromptObject` 与 `BeatHistory` 都是可派生层：
   - `PromptObject` 是 generation 入口的派生物，不是事实源。
   - `BeatHistory` 是展示层读模型，不是持久真相。
+- accepted transcript 以 full text 保存：
+  - 至少保留 accepted player input 全文
+  - 以及 accepted beat 正文全文
+  - 以便继续兼容当前 `prompt assembler -> precedingBeats/historyWindow -> memory placeholder` 的运行链路
 - checkpoint 主键使用稳定的 opaque id，不把 storyline 序号、UI 标签或人类可读路径编码进主键。
 - `Phase 3` 的 storyline 应作为“指向 checkpoint 的 ref / pointer”，而不是复制整段历史。
 - `Phase 2` 虽然不要求先交付完整 rollback / fallback UI，但交付后的 substrate 必须已经支持：
   - 从某个已接受 beat 的 checkpoint 重新组装那一轮 generation 入口
   - 为后续 `Phase 3` 的分支创建提供稳定锚点
 - 当前规划默认至少按“页面刷新后仍可恢复”来设计 durability，同时保持数据模型可扩展到更长期的恢复，而不重做底层。
+- `Phase 2` 的 session 模型采用：
+  - schema-level plural
+  - behavior-level singular
+  - 即 package 仓储层允许 `sessions + activeSessionId`，但本阶段产品行为只承认 1 条默认 active session
+- `Phase 2` 的 checkpoint 写入策略采用：
+  - 每个 accepted beat 写 full checkpoint
+  - 本阶段不引入 event/delta 回放模型
+- `Phase 2` 默认保留旧 session 与旧 checkpoint：
+  - 不做自动滚动删除
+  - 不在 reset 时 destructive clear 历史
+- `Reset Workbench` 的产品语义采用：
+  - 当前线回到 opening hook 起点
+  - reset 后回到尚未点击 `Start Round` 的初始等待态
+  - reset 不等于回到任意 checkpoint
+  - 回到特定 checkpoint / beat 属于后续 checkpoint-driven 能力
 
 ### D. Storyline v1 范围
 
@@ -194,16 +215,38 @@
 
 - 先写出 `Phase 2` 正式 design spec，而不是直接实现。
 - spec 需要先冻结以下对象边界：
-  - runtime session 文件的落点
+  - runtime session 文件的落点与 JSON 结构
   - checkpoint 的最小字段集合
   - accepted beat 与 checkpoint 的映射关系
+  - accepted transcript 的全文持久化语义
   - `Reset Workbench` 的精确定义
   - continuity-backed 关系区如何读取当前 session 状态
+  - sessions / activeSessionId 的仓储结构
 - implementation plan 需要明确：
   - 运行时写入点
   - 页面恢复与显式重置入口
   - 测试与验证路径
   - 与 `Phase 3` storyline ref 模型的前后兼容关系
+
+## Frozen Phase 2 Spec Decisions
+
+- runtime session 文件当前冻结为 package root 下独立的 `runtime-sessions.json`
+- `runtime-sessions.json` 采用带 `version` 的 JSON 顶层结构
+- package 级仓储结构采用：
+  - `activeSessionId`
+  - `sessionsById`
+- session 内部采用：
+  - `checkpointsById`
+  - `orderedCheckpointIds`
+  - 以及当前 head / active checkpoint 指针
+- gossipelog 相关状态当前只保存 `lastStableRelationshipLayer`，不额外引入 refresh status 字段
+- reset 的底层机制冻结为：
+  - 保留旧 session 历史
+  - 创建新的 active session 实例
+  - 但产品语义仍然是“当前线 reset”
+- continuity-backed 关系区通过服务端聚合出的 section-safe view 读取当前 active session
+- `/play` 与 `/edit` 默认永远优先当前 active session，不在本阶段引入 query 覆盖
+- `Phase 2` 不新增面向作者的 active session / checkpoint diagnostics UI
 
 ## Current Phase 3 Recommendation
 

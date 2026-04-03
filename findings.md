@@ -166,6 +166,7 @@
 - `LOGOS` 继续保持故事内容与系统解耦：
   - `story package` 仍是作者定义态与 canonical baseline
   - `Phase 2` 的 continuity 数据应落在独立的 mutable runtime session / checkpoint state
+- 这些 runtime 数据物理上可以与 story package 同目录存放，但逻辑上仍是系统状态，不是故事定义内容。
 - `Phase 2` 的自然实现切口在 `play runtime`，不是 authoring bridge：
   - 真正该接的位置是 accepted beat 已确定、`currentState` 已冻结、但尚未返回 UI 的 runtime 链路
   - `PlayWorkbench` 的职责更适合保持为进入时恢复、离开时保存、显式 reset
@@ -181,9 +182,13 @@
   - `checkpointId`
   - 结构化位置字段：`sceneId / phaseIndex / beatIndex / acceptedBeatOrdinal`
   - `StateSnapshot`
-  - accepted transcript
+  - accepted transcript 全文
   - `lastStableRelationshipLayer`
   - 必要的 round / session metadata
+- accepted transcript 不应只存摘要：
+  - 至少保存 accepted player input 全文与 accepted beat 正文全文
+  - 因为当前 runtime 的 `prompt assembler` 消费的是 `precedingBeats/historyWindow`
+  - `memory placeholder` 目前也是从 accepted history 窗口派生，不适合只留摘要
 - 不建议把 storyline 序号或人类可读路径写进 checkpoint 主键。
 - 更稳的做法是：
   - checkpoint 只用 opaque id
@@ -195,10 +200,42 @@
 - 当前最合理的 durability 目标是：
   - 至少支持页面刷新后的恢复
   - 但数据模型与仓储边界要保持可扩展到更长期的继续，不在后续重做底层
+- 对 session cardinality 的当前推荐是：
+  - schema-level plural
+  - behavior-level singular
+  - 也就是仓储模型按 `sessions + activeSessionId` 设计，但本阶段产品行为只承认一个默认 active session
+- checkpoint 写入策略当前已冻结为：
+  - `Phase 2` 每个 accepted beat 都写 full checkpoint
+  - 当前不引入 event/delta 回放模型
 - 一个容易被忽略但必须进入恢复模型的点是 `gossipelog`：
   - 关系层不是 accepted beat 的同步内联结果
   - 它是 accepted 之后为下一拍准备的异步 runtime layer
   - 因此 checkpoint 不能只存 `beatText + stateSnapshot`，还需要携带足以恢复下一拍语义的关系层状态
+- `Reset Workbench` 的当前冻结语义是：
+  - 作用于当前线
+  - 回到 opening hook 起点
+  - reset 后停在尚未点击 `Start Round` 的等待态
+  - 不等于回到任意 checkpoint
+  - “回到特定 beat / checkpoint”继续运行属于后续 checkpoint-driven 能力
+- 旧 session 与旧 checkpoint 当前默认保留：
+  - `Phase 2` 不做自动滚动删除
+  - 不在 reset 时 destructive clear 历史
+  - 如后续需要清理，应通过显式 archive / cleanup 机制解决，而不是在当前阶段偷偷删历史
+
+## 当前仍待冻结的问题
+
+- 本轮对齐后，当前已无架构级 blocker。
+- 已冻结的实现口径包括：
+  - package root 下独立的 `runtime-sessions.json`
+  - 带 `version` 的 JSON 顶层结构
+  - `activeSessionId + sessionsById`
+  - session 内部的 `checkpointsById + orderedCheckpointIds`
+  - gossipelog 当前只保存 `lastStableRelationshipLayer`
+  - reset 保留旧 session 历史，并创建新的 active session
+  - editor 关系区通过服务端 section-safe projection 读取当前 active session
+  - `/play` 与 `/edit` 默认优先 active session
+  - 本阶段不做作者可见的 session/checkpoint diagnostics UI
+- 余下工作主要进入 spec 编写与实现拆解，而不是继续做架构级取舍。
 
 ## Phase 3 当前推荐结构
 

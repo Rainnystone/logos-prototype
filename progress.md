@@ -316,3 +316,18 @@
   - checkpoint 继续定义为 package-scoped immutable node
   - storyline 明确定义为指向 checkpoint 的 ref / pointer layer
   - 下一阶段建议先冻结对象层与仓储层，再接管理 UI，而不是 UI 先行
+- 已补充本轮最新冻结的 `Phase 2` 决策：
+  - session 采用 schema-level plural / behavior-level singular
+  - `Reset Workbench` 作用于当前线，并回到 opening hook 前的等待态
+- 已进一步冻结这几项实现口径：
+  - accepted transcript 以全文保存，继续服务当前 `prompt assembler / historyWindow / memory placeholder` 链路
+  - `Phase 2` 直接采用 full checkpoint，不引入 event/delta
+  - 旧 session 与旧 checkpoint 默认保留，不做自动滚动删除
+- 已把当前仍未拍板的问题整理成显式 pending list，写回 `task_plan.md` 与 `findings.md`，避免后续写 spec 时因压缩上下文而漏项。
+- 已继续冻结本阶段剩余的主要实现口径：
+  - runtime state 文件名为 `runtime-sessions.json`
+  - package 仓储采用 `activeSessionId + sessionsById`
+  - session 内部采用 `checkpointsById + orderedCheckpointIds`
+  - gossipelog 当前只保存 `lastStableRelationshipLayer`
+  - reset 保留旧 session 历史，并创建新的 active session
+  - 本阶段不新增作者可见 diagnostics UI
