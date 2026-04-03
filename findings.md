@@ -200,6 +200,33 @@
   - 它是 accepted 之后为下一拍准备的异步 runtime layer
   - 因此 checkpoint 不能只存 `beatText + stateSnapshot`，还需要携带足以恢复下一拍语义的关系层状态
 
+## Phase 3 当前推荐结构
+
+- `Phase 3` 现在已经可以更明确地收束成“ref layer + management layer”，而不是一个模糊的故事线大桶。
+- 下一阶段最稳的对象模型是：
+  - `checkpoint` = package-scoped immutable node
+  - `storyline` = 指向 checkpoint 的 ref / pointer
+  - `session` = 当前活动工作线，与某个 storyline head 绑定
+- 这意味着一个 checkpoint 不应被设计成“只属于一条 storyline”：
+  - 它可以先是主线当前节点
+  - 后续也可以成为多条分支线的共同祖先
+- 因而 checkpoint 主键不需要携带 `storylineId`：
+  - checkpoint 的唯一性由 package scope + opaque `checkpointId` 保证
+  - storyline 的区分度来自自己的 `storylineId` 与 `headCheckpointId`
+- 对 `Phase 3` 而言，最轻量但不埋债的 branching 语义是：
+  - 新建故事线时优先创建一个新的 storyline ref
+  - 它指向既有 checkpoint
+  - 不复制整段 checkpoint 历史
+- 这也意味着 `Phase 3` 的推荐实现顺序应调整为：
+  - 先冻结 storyline / checkpoint / session 三者合同
+  - 再补 package 内 mutable storyline repository seam
+  - 再接故事包 / 故事线管理 UI
+  - 最后补重命名、归档、复制、删除等管理动作的完整交付
+- 从当前线程看，`Phase 2` 打下的最重要基础不是“可恢复 UI”，而是：
+  - checkpoint 已经是正式节点
+  - 它未来可被多个 storyline 复用
+  - 因而后续分支创建可以保持轻量且不复制历史
+
 ## 2026-04-01 用户对 storyline v1 范围的冻结
 
 - 用户不希望把故事线管理理解成递进式功能裁剪。

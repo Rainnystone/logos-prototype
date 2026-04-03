@@ -154,6 +154,7 @@
 - 先把 `package definition` 与 `mutable state` 分开
 - 先明确 `package root / repository seam`
 - 先明确 storyline / checkpoint / session / agent state 的落点
+- 直接复用 `Phase 2` 已交付的 package-scoped checkpoint node substrate，而不是重造第二套历史模型
 
 包含：
 
@@ -163,6 +164,21 @@
 - 从某个检查点创建分支线
 - 切换、删除、重命名、归档、复制
 - session 与 storyline 绑定
+
+推荐实现心智：
+
+- checkpoint 是 package-scoped immutable node
+- storyline 是指向 checkpoint 的 ref / pointer layer
+- 一个 checkpoint 可以作为多条 storyline 的共同祖先
+- 创建分支线优先表现为“新建一个指向既有 checkpoint 的 storyline ref”，而不是复制整段历史
+- storyline 的人类可读名称、归档状态、复制语义属于管理层，不属于 checkpoint 主键设计
+
+优先顺序：
+
+- 先冻结 storyline / checkpoint / session 三者的对象边界
+- 再补 story package 内多 storyline 的 mutable state 仓储模型
+- 再接 story package 管理页与 storyline 工作区 UI
+- 最后再补完整的管理动作与更丰富的展示信息
 
 ### Phase 4: New Agents
 
@@ -188,6 +204,21 @@
   - 页面恢复与显式重置入口
   - 测试与验证路径
   - 与 `Phase 3` storyline ref 模型的前后兼容关系
+
+## Current Phase 3 Recommendation
+
+- `Phase 3` 不建议从 UI 先行，而建议从对象层与仓储层先行。
+- 下一阶段最关键的 first-class objects 应明确为：
+  - `checkpoint`：包内不可变节点
+  - `storyline`：指向 checkpoint 的可移动 ref
+  - `session`：当前活动工作线，与 storyline head 发生绑定
+- `checkpointId` 继续保持 package-scoped opaque id，不把 `storylineId` 编入主键。
+- 多 storyline 的区分度来自独立的 `storylineId` 与它的 `headCheckpointId`，而不是来自 checkpoint 主键字符串。
+- `Phase 3` 的 branching 推荐按以下顺序落地：
+  - 先支持从既有 checkpoint 创建 storyline ref
+  - 再支持切换 storyline head
+  - 再支持重命名、归档、复制、删除等管理动作
+- `Phase 3` 的 UI 应消费前面已经冻结好的 substrate，而不是反过来驱动对象边界。
 
 ## Phase 1 Delivery Slices
 

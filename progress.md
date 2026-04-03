@@ -312,3 +312,7 @@
   - 本阶段交付要为下一阶段“从某个 beat 重新发送整轮 generation 入口”打地基
   - 本阶段不为 checkpoint 设计人类可读标签
 - 已同步更新 `task_plan.md` 与 `findings.md`，把旧的 roadmap 讨论口径收束到当前 `Phase 2` 的 substrate 设计目标上。
+- 已进一步把 `Phase 3` 的推荐结构写回规划文件：
+  - checkpoint 继续定义为 package-scoped immutable node
+  - storyline 明确定义为指向 checkpoint 的 ref / pointer layer
+  - 下一阶段建议先冻结对象层与仓储层，再接管理 UI，而不是 UI 先行
