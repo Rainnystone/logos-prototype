@@ -261,6 +261,27 @@
   - 本阶段不做作者可见的 session/checkpoint diagnostics UI
 - 余下工作主要进入 spec 编写与实现拆解，而不是继续做架构级取舍。
 
+## Phase 2 spec review loop 额外冻结的语义
+
+- 为了同时满足“checkpoint 是正式锚点”与“gossipelog refresh 是异步完成”的两条约束，spec review 最后补定了一个关键规则：
+  - post-accept refresh 结果必须绑定到发起它的 `sessionId + checkpointId`
+  - 这个结果可以定向 finalize 它绑定 checkpoint 的 `lastStableRelationshipLayer`
+  - 即使当前 session head 已继续前进，该 checkpoint 仍然可以被补全
+  - 但它不得污染当前 active session 的 session-level `lastStableRelationshipLayer` mirror
+- active session 的恢复语义也随之补死：
+  - 优先读取 session-level `lastStableRelationshipLayer`
+  - 没有时再回退到 active checkpoint 内副本
+  - 两者都没有时才回退到 empty layer
+- 这组规则的意义是：
+  - 旧 checkpoint 最终仍能成为完整 continuation anchor
+  - 同时 `Reset Workbench` 或新 head 前进后，不会被旧 refresh 结果回写污染当前线
+- 这轮 reviewer 最终已通过，说明当前 spec 在以下几点上已经闭合：
+  - `Reset Workbench`
+  - active session
+  - checkpoint
+  - relationship layer
+  - derived layer vs persistence truth 边界
+
 ## Phase 3 当前推荐结构
 
 - `Phase 3` 现在已经可以更明确地收束成“ref layer + management layer”，而不是一个模糊的故事线大桶。

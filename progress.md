@@ -342,3 +342,20 @@
 - 已据此最小更新根目录规划文件：
   - `findings.md` 补入三种方案的比较与为何当前仍推荐 `方案 A`
   - `task_plan.md` 补入 spec 推进顺序，以及 `runtime-sessions.json` 与 `authoring-state.json`、`agents/` 的并列物理落点
+- 已按用户要求正式进入 `Phase 2` spec 编写，而不是继续停留在口头对齐。
+- 已写出正式 spec：
+  - `docs/superpowers/specs/2026-04-03-phase-2-session-continuity-design.md`
+- 用户补充纠偏后，已把 spec 明确写成两个同等重要的半段：
+  - 对象模型与文件合同
+  - 写入点、恢复语义与 `Reset Workbench` 语义
+  - 这里只是文档展开顺序，不代表轻重优先级
+- 已执行多轮 spec review loop，并根据 reviewer 反馈完成关键回修：
+  - 明确 head checkpoint 允许一次受边界约束的 relationship-layer finalization
+  - 明确 active session 恢复时 session-level / checkpoint-level relationship layer 的优先级
+  - 明确 post-accept refresh 结果必须绑定 `sessionId + checkpointId`
+  - 明确旧 refresh 结果可以补全它绑定的旧 checkpoint，但不得污染当前 active session mirror
+  - 补齐对应 repository / runtime integration test 口径
+- 本轮 spec review 使用的是按复杂度选择的轻量审阅 subagent，而不是盲目上最高推理配置。
+- 最新状态：
+  - `Phase 2` design spec 已通过 review
+  - 下一步应进入 `writing-plans`，产出 implementation plan

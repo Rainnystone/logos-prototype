@@ -225,6 +225,10 @@
 - spec 的写作顺序当前也已补充冻结：
   - 先写对象模型与文件合同
   - 再写执行时写入点、恢复语义与 `Reset Workbench` 语义
+- 这里的“先 / 再”只是文档展开顺序，不代表重要性排序：
+  - 对象模型与文件合同
+  - 执行时写入点、恢复语义与 `Reset Workbench` 语义
+  - 两部分同等重要，缺一不可
 - implementation plan 需要明确：
   - 运行时写入点
   - 页面恢复与显式重置入口
@@ -244,6 +248,9 @@
   - `orderedCheckpointIds`
   - 以及当前 head / active checkpoint 指针
 - gossipelog 相关状态当前只保存 `lastStableRelationshipLayer`，不额外引入 refresh status 字段
+- post-accept gossipelog refresh 的结果必须绑定到发起它的 `sessionId + checkpointId`
+- 该结果可以定向 finalize 它绑定的 checkpoint `lastStableRelationshipLayer`
+- 但只有当绑定目标仍是当前 active session 的 active/head checkpoint 时，才允许同步覆盖 session-level `lastStableRelationshipLayer` mirror
 - reset 的底层机制冻结为：
   - 保留旧 session 历史
   - 创建新的 active session 实例
@@ -251,6 +258,20 @@
 - continuity-backed 关系区通过服务端聚合出的 section-safe view 读取当前 active session
 - `/play` 与 `/edit` 默认永远优先当前 active session，不在本阶段引入 query 覆盖
 - `Phase 2` 不新增面向作者的 active session / checkpoint diagnostics UI
+- active session 恢复时，relationship layer 恢复优先级冻结为：
+  - 先读 session-level `lastStableRelationshipLayer`
+  - 否则回退到 active checkpoint 内的 `lastStableRelationshipLayer`
+  - 再否则回退到 empty relationship layer
+
+## Phase 2 Spec Status
+
+- 正式 spec 已写出：
+  - `docs/superpowers/specs/2026-04-03-phase-2-session-continuity-design.md`
+- 已完成多轮 spec review loop，当前状态：
+  - `Approved`
+- 下一步应进入：
+  - `writing-plans`
+  - 输出 `Phase 2` implementation plan
 
 ## Current Phase 3 Recommendation
 
