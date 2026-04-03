@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
 import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 const renderWorldSection = vi.hoisted(() => vi.fn());
 const renderCharacterSection = vi.hoisted(() => vi.fn());
@@ -143,12 +144,31 @@ const draftValue: WorldBaseCastDraft = {
   locationPool: '',
 };
 
-function renderSection(activeSurface: 'world' | 'character') {
+const activeContinuityView: EditRuntimeContinuityView = {
+  kind: 'active',
+  activeSession: {
+    sessionId: 'sess_01',
+    lifecycle: 'in_progress',
+    activeCheckpointId: 'chk_01',
+    acceptedBeatCount: 3,
+    relationshipStatus: {
+      highlightedDeltasText: 'Nagi started trusting Touka.',
+      stableBackgroundText: 'Nagi and Touka stay aligned under pressure.',
+      source: 'session',
+    },
+  },
+};
+
+function renderSection(
+  activeSurface: 'world' | 'character',
+  runtimeContinuityView?: EditRuntimeContinuityView,
+) {
   return render(
     <WorldBaseCastSection
       packageName="sample-scene"
       activeSurface={activeSurface}
       value={draftValue}
+      runtimeContinuityView={runtimeContinuityView}
       onChange={vi.fn()}
       onSubmit={vi.fn()}
       onReset={vi.fn()}
@@ -254,5 +274,15 @@ describe('WorldBaseCastSection', () => {
     expect(screen.getByTestId('selected-character')).toHaveTextContent(
       'antagonists:chr_ant001',
     );
+  });
+
+  it('passes runtime continuity through to CharacterSection on the character surface', () => {
+    renderSection('character', activeContinuityView);
+
+    const characterSectionProps = renderCharacterSection.mock.calls.at(-1)?.[0] as {
+      readonly runtimeContinuityView?: EditRuntimeContinuityView;
+    };
+
+    expect(characterSectionProps.runtimeContinuityView).toEqual(activeContinuityView);
   });
 });

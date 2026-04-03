@@ -130,6 +130,39 @@ describe('EditWorkbench', () => {
     expect(screen.queryByRole('textbox', { name: '地点说明' })).not.toBeInTheDocument();
   });
 
+  it('projects runtime continuity relationship status into the character surface', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="worldbase-cast"
+        activeSurface="character"
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+          runtimeContinuityView: {
+            kind: 'active',
+            activeSession: {
+              sessionId: 'sess_100',
+              lifecycle: 'in_progress',
+              activeCheckpointId: 'chk_100',
+              acceptedBeatCount: 2,
+              relationshipStatus: {
+                highlightedDeltasText: 'Nagi now treats Touka as a trusted witness.',
+                stableBackgroundText: 'They remain aligned against the corridor threat.',
+                source: 'session',
+              },
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('当前活跃会话：sess_100')).toBeInTheDocument();
+    expect(
+      screen.getByText('关系变化：Nagi now treats Touka as a trusted witness.'),
+    ).toBeInTheDocument();
+  });
+
   it('keeps the selected location after switching away from and back to the world surface', async () => {
     const user = userEvent.setup();
     const { rerender } = render(
