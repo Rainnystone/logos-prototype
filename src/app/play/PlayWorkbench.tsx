@@ -13,6 +13,8 @@ import { PlayerInput } from '@/app/components/PlayerInput';
 import { PromptStatusPanel } from '@/app/components/PromptStatusPanel';
 import { StateInspector } from '@/app/components/StateInspector';
 import {
+  buildOrchestratorRestoreInput,
+  createBrowserRuntimeSessionClient,
   createEmptyWorkbenchDiagnostics,
   createBrowserGossipelogCycleRunner,
   createTrackedWorkbenchAdapter,
@@ -21,6 +23,7 @@ import {
   getGradientSequence,
   getReadyMessage,
   shouldUseServerGossipelogBridge,
+  type BrowserRuntimeSessionClient,
   type WorkbenchDiagnostics,
   type WorkbenchStatus,
 } from '@/app/play/runtime';
@@ -28,29 +31,37 @@ import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
 import { createOrchestrator, type Orchestrator } from '@/engine/orchestrator';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
+import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 import type { StateSnapshot, StoryPackage } from '@/types';
 
 interface PlayWorkbenchProps {
   readonly storyPackage: StoryPackage;
   readonly storyPackageName: string;
+  readonly initialRuntimeSession?: PlayRuntimeSessionView;
   readonly initialConfig?: AdapterConfig | null;
   readonly adapterFactory?: (
     config: AdapterConfig | null,
     storyPackage: StoryPackage,
   ) => LLMAdapter;
   readonly gossipelogCycleRunner?: GossipelogCycleRunner;
+  readonly runtimeSessionClient?: BrowserRuntimeSessionClient;
 }
 
 export function PlayWorkbench({
   storyPackage,
   storyPackageName,
+  initialRuntimeSession,
   initialConfig = null,
   adapterFactory,
   gossipelogCycleRunner,
+  runtimeSessionClient,
 }: PlayWorkbenchProps) {
   const orchestratorRef = useRef<Orchestrator | null>(null);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
+  const [runtimeSessionView, setRuntimeSessionView] = useState<PlayRuntimeSessionView | undefined>(
+    initialRuntimeSession,
+  );
   const [status, setStatus] = useState<WorkbenchStatus>('initializing');
   const [runtimeSource, setRuntimeSource] = useState<string>('Loading runtime config');
   const [currentState, setCurrentState] = useState<StateSnapshot | null>(null);
@@ -63,6 +74,22 @@ export function PlayWorkbench({
     createEmptyWorkbenchDiagnostics(),
   );
   const [error, setError] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const resolvedRuntimeSessionClient = useMemo(
+    () =>
+      runtimeSessionClient ??
+      (initialRuntimeSession !== undefined
+        ? createBrowserRuntimeSessionClient({
+            storyPackageName,
+          })
+        : null),
+    [initialRuntimeSession, runtimeSessionClient, storyPackageName],
+  );
+
+  useEffect(() => {
+    setRuntimeSessionView(initialRuntimeSession);
+  }, [initialRuntimeSession]);
 
   useEffect(() => {
     if (initialConfig !== null) {
@@ -87,13 +114,30 @@ export function PlayWorkbench({
     let cancelled = false;
 
     async function initializeWorkbench() {
+      const continuityView = runtimeSessionView;
+
+      orchestratorRef.current = null;
       setStatus('initializing');
       setRewriteFeedback(null);
       setForceAccepted(false);
       setError(null);
-      setBeatHistory([]);
+      setBeatHistory(continuityView?.beatHistory ?? []);
       setRoundStarted(false);
       setDiagnostics(createEmptyWorkbenchDiagnostics());
+      setCurrentState(null);
+
+      const nextRuntimeSource = adapterConfig ? 'Configured provider' : 'Local demo adapter';
+
+      if (continuityView?.kind === 'unavailable') {
+        if (cancelled) {
+          return;
+        }
+
+        setRuntimeSource(nextRuntimeSource);
+        setError(continuityView.reason ?? 'Runtime continuity is unavailable.');
+        setStatus('error');
+        return;
+      }
 
       try {
         const baseAdapter = (adapterFactory ?? createWorkbenchAdapter)(adapterConfig, storyPackage);
@@ -135,9 +179,15 @@ export function PlayWorkbench({
           adapter: trackedAdapter,
           storyPackageName,
           storyPackage,
+          ...(resolvedRuntimeSessionClient
+            ? { runtimeSessionStore: resolvedRuntimeSessionClient }
+            : {}),
           ...(resolvedGossipelogCycleRunner ? { gossipelogCycleRunner: resolvedGossipelogCycleRunner } : {}),
         });
-        const initialState = await orchestrator.initScene();
+        const initialState =
+          continuityView?.kind === 'restorable'
+            ? await orchestrator.hydrateScene(buildOrchestratorRestoreInput(continuityView))
+            : await orchestrator.initScene();
 
         if (cancelled) {
           return;
@@ -145,8 +195,10 @@ export function PlayWorkbench({
 
         orchestratorRef.current = orchestrator;
         setCurrentState(initialState);
-        setRuntimeSource(adapterConfig ? 'Configured provider' : 'Local demo adapter');
-        setStatus('idle');
+        setBeatHistory(continuityView?.beatHistory ?? []);
+        setRoundStarted(continuityView?.kind === 'restorable');
+        setRuntimeSource(nextRuntimeSource);
+        setStatus(continuityView?.kind === 'restorable' ? 'accepted' : 'idle');
       } catch (initializationError) {
         if (cancelled) {
           return;
@@ -166,7 +218,16 @@ export function PlayWorkbench({
     return () => {
       cancelled = true;
     };
-  }, [adapterConfig, adapterFactory, bootstrapped, gossipelogCycleRunner, storyPackage, storyPackageName]);
+  }, [
+    adapterConfig,
+    adapterFactory,
+    bootstrapped,
+    gossipelogCycleRunner,
+    resolvedRuntimeSessionClient,
+    runtimeSessionView,
+    storyPackage,
+    storyPackageName,
+  ]);
 
   const currentPhasePlan = useMemo(() => {
     if (!currentState) {
@@ -199,15 +260,19 @@ export function PlayWorkbench({
     status === 'generating' ||
     status === 'auditing' ||
     status === 'rewriting';
+  const sceneComplete = orchestratorRef.current?.isSceneComplete() ?? false;
+  const continuityUnavailable = runtimeSessionView?.kind === 'unavailable';
 
   const readyMessage = currentState
     ? roundStarted
       ? getReadyMessage(
           currentState.sceneState.currentBeatIndexInPhase,
-          orchestratorRef.current?.isSceneComplete() ?? false,
+          sceneComplete,
         )
       : 'Click Start Round to run the opening hook and generate Beat 1.'
-    : 'Initializing Scene...';
+    : continuityUnavailable
+      ? 'Runtime continuity is unavailable. Reset the workbench to continue.'
+      : 'Initializing Scene...';
 
   const gameViewSummary = currentState
     ? `Phase ${currentState.sceneState.currentPhaseIndex} · Beat ${currentState.sceneState.currentBeatIndexInPhase} / 4`
@@ -260,11 +325,47 @@ export function PlayWorkbench({
   }
 
   async function handleSubmit(playerInput: string) {
-    if (!roundStarted) {
+    if (!roundStarted || sceneComplete) {
       return;
     }
 
     await runRound(playerInput);
+  }
+
+  async function handleResetWorkbench() {
+    if (!resolvedRuntimeSessionClient) {
+      return;
+    }
+
+    setError(null);
+    setIsResetting(true);
+
+    try {
+      const result = await resolvedRuntimeSessionClient.resetWorkbench();
+
+      setRuntimeSessionView({
+        kind: 'awaiting_start',
+        activeSessionId: result.activeSessionId,
+        activeCheckpointId: null,
+        beatHistory,
+        stateSnapshot: null,
+        relationshipSummary: {
+          highlightedDeltasText: '',
+          stableBackgroundText: '',
+          source: 'empty',
+        },
+        lifecycle: 'awaiting_start',
+      });
+    } catch (resetError) {
+      setError(
+        resetError instanceof Error
+          ? resetError.message
+          : 'Failed to reset runtime workbench.',
+      );
+      setStatus('error');
+    } finally {
+      setIsResetting(false);
+    }
   }
 
   const currentOptions = currentState?.generationState.currentOptions ?? [];
@@ -276,13 +377,25 @@ export function PlayWorkbench({
         currentPhaseIndex={currentState?.sceneState.currentPhaseIndex ?? 1}
         metaItems={[storyPackageName, runtimeSource]}
         actions={
-          <button
-            type="button"
-            className="inline-flex min-h-11 items-center justify-center rounded-none bg-black border-2 border-black px-4 py-2 text-sm font-bold text-white font-mono uppercase hover:bg-[#00ff00] hover:text-black transition-colors"
-            onClick={() => setFixtureReferenceOpen((current) => !current)}
-          >
-            {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
-          </button>
+          <div className="flex flex-wrap justify-end gap-2">
+            {resolvedRuntimeSessionClient ? (
+              <button
+                type="button"
+                className="inline-flex min-h-11 items-center justify-center rounded-none bg-white border-2 border-black px-4 py-2 text-sm font-bold text-black font-mono uppercase hover:bg-[#ff4d4d] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleResetWorkbench}
+                disabled={isInputLoading || isResetting}
+              >
+                {isResetting ? 'Resetting...' : 'Reset Workbench'}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center justify-center rounded-none bg-black border-2 border-black px-4 py-2 text-sm font-bold text-white font-mono uppercase hover:bg-[#00ff00] hover:text-black transition-colors"
+              onClick={() => setFixtureReferenceOpen((current) => !current)}
+            >
+              {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
+            </button>
+          </div>
         }
       />
 
@@ -329,7 +442,7 @@ export function PlayWorkbench({
               </div>
               <p className="text-xs text-black/40 max-w-xs text-right">{readyMessage}</p>
             </div>
-            {!roundStarted ? (
+            {!roundStarted && currentState ? (
               <section className="p-5 m-4 border-2 border-dashed border-black rounded-none bg-[#f5f5f5] flex flex-col gap-3">
                 <p className="text-sm text-black/60">
                   Start the round with the scene opening hook before accepting player actions.
@@ -341,7 +454,7 @@ export function PlayWorkbench({
                   className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase"
                   type="button"
                   onClick={handleStartRound}
-                  disabled={isInputLoading}
+                  disabled={isInputLoading || isResetting}
                 >
                   Start Round
                 </button>
@@ -358,8 +471,8 @@ export function PlayWorkbench({
           >
             <PlayerInput
               options={currentOptions}
-              isLoading={isInputLoading}
-              disabled={!roundStarted}
+              isLoading={isInputLoading || isResetting}
+              disabled={!roundStarted || sceneComplete || isResetting}
               variant="embedded"
               onSubmit={handleSubmit}
             />

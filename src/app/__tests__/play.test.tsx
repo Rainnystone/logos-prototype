@@ -1,13 +1,19 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { PlayWorkbench } from '@/app/play/PlayWorkbench';
-import { adapterConfigFixture, storyPackageFixture } from '@/app/__tests__/fixtures';
+import {
+  adapterConfigFixture,
+  stateSnapshotFixture,
+  storyPackageFixture,
+} from '@/app/__tests__/fixtures';
 import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
+import type { BrowserRuntimeSessionClient } from '@/app/play/runtime';
 import type { CollapseInput, LLMAdapter } from '@/engine/types/adapter-interface';
 import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
 import type { CollapseResponse } from '@/types';
+import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 
 type AuditMode = 'pass' | 'fail-once' | 'fail-always';
 
@@ -40,11 +46,14 @@ function createCollapseResponse(request: CollapseInput): CollapseResponse {
 
 function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
   const delayMs = config.delayMs ?? 20;
+  let collapseCount = 0;
   let generateCount = 0;
   let auditCount = 0;
+  const generatedPromptHistories: { role: string; content: string }[][] = [];
 
   const adapter: LLMAdapter = {
     async collapse(request) {
+      collapseCount += 1;
       await wait(delayMs);
       return createCollapseResponse(request);
     },
@@ -75,6 +84,12 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
     },
     async generate(promptObject) {
       generateCount += 1;
+      generatedPromptHistories.push(
+        promptObject.history.map((entry) => ({
+          role: entry.role,
+          content: entry.content,
+        })),
+      );
       await wait(delayMs);
 
       const isRewrite = Boolean(promptObject.generationControl?.isRewrite);
@@ -150,8 +165,75 @@ function createPlayAdapterHarness(config: PlayHarnessConfig = {}) {
 
   return {
     adapter,
+    getCollapseCount: () => collapseCount,
     getGenerateCount: () => generateCount,
     getAuditCount: () => auditCount,
+    getGeneratedPromptHistory: (index: number) => generatedPromptHistories[index] ?? null,
+  };
+}
+
+function createRuntimeSessionClientMock(
+  overrides: Partial<BrowserRuntimeSessionClient> = {},
+): BrowserRuntimeSessionClient {
+  return {
+    ensureActiveSession: vi.fn(async () => ({
+      activeSessionId: 'sess_active',
+    })),
+    recordAcceptedBeat: vi.fn(async () => ({
+      activeSessionId: 'sess_active',
+      activeCheckpointId: 'chk_active',
+    })),
+    finalizeRelationshipLayer: vi.fn(async () => ({
+      activeSessionId: 'sess_active',
+      activeCheckpointId: 'chk_active',
+    })),
+    resetWorkbench: vi.fn(async () => ({
+      activeSessionId: 'sess_reset',
+    })),
+    ...overrides,
+  };
+}
+
+function createRestorableRuntimeSessionView(): PlayRuntimeSessionView {
+  return {
+    kind: 'restorable',
+    activeSessionId: 'sess_restore',
+    activeCheckpointId: 'chk_restore',
+    beatHistory: [
+      {
+        beatNumber: 1,
+        playerInput: 'Opening hook',
+        beatText: 'The operator enters the sealed corridor.',
+      },
+      {
+        beatNumber: 2,
+        playerInput: 'Inspect the relay cabinet.',
+        beatText: 'The relay clicks and the vent light turns red.',
+      },
+    ],
+    stateSnapshot: stateSnapshotFixture,
+    relationshipSummary: {
+      highlightedDeltasText: 'delta restore',
+      stableBackgroundText: 'background restore',
+      source: 'checkpoint',
+    },
+    lifecycle: 'in_progress',
+  };
+}
+
+function createAwaitingStartRuntimeSessionView(): PlayRuntimeSessionView {
+  return {
+    kind: 'awaiting_start',
+    activeSessionId: 'sess_waiting',
+    activeCheckpointId: null,
+    beatHistory: [],
+    stateSnapshot: null,
+    relationshipSummary: {
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
+      source: 'empty',
+    },
+    lifecycle: 'awaiting_start',
   };
 }
 
@@ -197,6 +279,175 @@ describe('PlayWorkbench', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Ready')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start Round' })).toBeInTheDocument();
+  });
+
+  it('surfaces an explicit continuity error and blocks automatic restore when continuity is unavailable', async () => {
+    const harness = createPlayAdapterHarness();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        initialRuntimeSession={{
+          kind: 'unavailable',
+          activeSessionId: null,
+          activeCheckpointId: null,
+          beatHistory: [],
+          stateSnapshot: null,
+          relationshipSummary: {
+            highlightedDeltasText: '',
+            stableBackgroundText: '',
+            source: 'empty',
+          },
+          lifecycle: null,
+          reason: 'Runtime continuity is unavailable for "sample-scene": invalid runtime file.',
+        }}
+      />,
+    );
+
+    expect(
+      await screen.findByText(
+        'Runtime continuity is unavailable for "sample-scene": invalid runtime file.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(harness.getCollapseCount()).toBe(0);
+    });
+  });
+
+  it('restores accepted beat history and current state from a restorable runtime session view', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock()}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    expect(
+      await screen.findByText('The operator leans into the blind spot of the corridor and listens for the surge behind the wall.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('The operator enters the sealed corridor.')).toBeInTheDocument();
+    expect(screen.getByText('The relay clicks and the vent light turns red.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Advance on the control cabinet.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    await screen.findByText('Accepted');
+    expect(harness.getGeneratedPromptHistory(0)).toEqual([
+      { role: 'user', content: 'Opening hook' },
+      { role: 'assistant', content: 'The operator enters the sealed corridor.' },
+      { role: 'user', content: 'Inspect the relay cabinet.' },
+      { role: 'assistant', content: 'The relay clicks and the vent light turns red.' },
+      { role: 'user', content: 'Advance on the control cabinet.' },
+    ]);
+  });
+
+  it('resets back to the pre-start waiting state without deleting the previous accepted beat history', async () => {
+    const user = userEvent.setup();
+    const runtimeSessionClient = createRuntimeSessionClientMock();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => createPlayAdapterHarness().adapter}
+        runtimeSessionClient={runtimeSessionClient}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    await screen.findByText('The operator enters the sealed corridor.');
+    await user.click(screen.getByRole('button', { name: 'Reset Workbench' }));
+
+    expect(await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.')).toBeInTheDocument();
+    expect(screen.getByText('The operator enters the sealed corridor.')).toBeInTheDocument();
+    expect(screen.getByText('The relay clicks and the vent light turns red.')).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'The operator leans into the blind spot of the corridor and listens for the surge behind the wall.',
+      ),
+    ).not.toBeInTheDocument();
+    expect(runtimeSessionClient.resetWorkbench).toHaveBeenCalledTimes(1);
+  });
+
+  it('surfaces reset write failures and preserves the previous truthful local continuity state', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => createPlayAdapterHarness().adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          resetWorkbench: vi.fn(async () => {
+            throw new Error('Failed to reset runtime workbench: disk write failed');
+          }),
+        })}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    expect(
+      await screen.findByText(
+        'The operator leans into the blind spot of the corridor and listens for the surge behind the wall.',
+      ),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reset Workbench' }));
+
+    expect(
+      await screen.findByText('Failed to reset runtime workbench: disk write failed'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'The operator leans into the blind spot of the corridor and listens for the surge behind the wall.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start Round' })).not.toBeInTheDocument();
+  });
+
+  it('surfaces accepted-beat persistence failures and does not append accepted beat history', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          recordAcceptedBeat: vi.fn(async () => {
+            throw new Error('Failed to persist accepted beat: disk write failed');
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    const startButton = await screen.findByRole('button', { name: 'Start Round' });
+    await user.click(startButton);
+
+    expect(
+      await screen.findByText('Failed to persist accepted beat: disk write failed'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('No accepted beats yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start Round' })).toBeInTheDocument();
+    expect(
+      screen.queryByText(`Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).not.toBeInTheDocument();
   });
 
   it('shows generating and auditing statuses before accepting a beat', async () => {

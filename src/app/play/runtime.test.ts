@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  buildOrchestratorRestoreInput,
   createBrowserRuntimeSessionClient,
   createBrowserGossipelogCycleRunner,
   createTrackedWorkbenchAdapter,
@@ -8,6 +9,7 @@ import {
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import { stateSnapshotFixture, storyPackageFixture } from '@/app/__tests__/fixtures';
 import type { FinalizeRelationshipLayerInput, RecordAcceptedBeatInput } from '@/runtime-sessions/repository';
+import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 
 function createReporter() {
   return {
@@ -347,5 +349,51 @@ describe('createBrowserRuntimeSessionClient', () => {
       'Failed to persist accepted beat: Runtime session packageName mismatch: expected "sample-scene", received "other-scene".',
     );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('buildOrchestratorRestoreInput', () => {
+  it('maps the continuity view snapshot, accepted history, relationship layer, and completion flag', () => {
+    const restorableView = {
+      kind: 'restorable',
+      activeSessionId: 'sess_restore',
+      activeCheckpointId: 'chk_restore',
+      beatHistory: [
+        {
+          beatNumber: 1,
+          playerInput: 'Opening hook',
+          beatText: 'The operator enters the sealed corridor.',
+        },
+        {
+          beatNumber: 2,
+          playerInput: 'Inspect the relay cabinet.',
+          beatText: 'The relay clicks and the vent light turns red.',
+        },
+      ],
+      stateSnapshot: stateSnapshotFixture,
+      relationshipSummary: {
+        highlightedDeltasText: 'delta restore',
+        stableBackgroundText: 'background restore',
+        source: 'checkpoint',
+      },
+      lifecycle: 'complete',
+    } as const satisfies PlayRuntimeSessionView;
+
+    expect(buildOrchestratorRestoreInput(restorableView)).toEqual({
+      currentState: stateSnapshotFixture,
+      acceptedHistory: [
+        { role: 'user', content: 'Opening hook' },
+        { role: 'assistant', content: 'The operator enters the sealed corridor.' },
+        { role: 'user', content: 'Inspect the relay cabinet.' },
+        { role: 'assistant', content: 'The relay clicks and the vent light turns red.' },
+      ],
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta restore',
+        stableBackgroundText: 'background restore',
+      },
+      sceneComplete: true,
+      sessionId: 'sess_restore',
+      checkpointId: 'chk_restore',
+    });
   });
 });

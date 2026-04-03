@@ -1,5 +1,6 @@
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
+import type { OrchestratorRestoreInput } from '@/engine/orchestrator';
 import type {
   FinalizeRelationshipLayerInput,
   RecordAcceptedBeatInput,
@@ -15,11 +16,13 @@ import { resolveAudit } from '@/engine/modules/audit-resolver';
 import { buildVolumeSequence } from '@/engine/modules/phase-gradient';
 import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
+import type { PlayRuntimeSessionView, RuntimeRelationshipSummary } from '@/runtime-sessions/views';
 import type {
   AuditQuestion,
   AuditQuestionSet,
   GossipelogInjectionResult,
   GossipelogUpdateResult,
+  HistoryEntry,
   PhasePlan,
   StoryPackage,
   UsageInfo,
@@ -301,6 +304,53 @@ export function createBrowserRuntimeSessionClient(
         throw new Error(`Failed to reset runtime workbench: ${getErrorMessage(error)}`);
       }
     },
+  };
+}
+
+function buildAcceptedHistoryFromBeatHistory(
+  beatHistory: PlayRuntimeSessionView['beatHistory'],
+): readonly HistoryEntry[] {
+  return beatHistory.flatMap((entry) => [
+    {
+      role: 'user' as const,
+      content: entry.playerInput,
+    },
+    {
+      role: 'assistant' as const,
+      content: entry.beatText,
+    },
+  ]);
+}
+
+export function buildRelationshipLayerFromSummary(
+  relationshipSummary: RuntimeRelationshipSummary,
+): GossipelogInjectionResult {
+  return {
+    highlightedDeltasText: relationshipSummary.highlightedDeltasText,
+    stableBackgroundText: relationshipSummary.stableBackgroundText,
+  };
+}
+
+export function buildOrchestratorRestoreInput(
+  restorableView: Extract<PlayRuntimeSessionView, { kind: 'restorable' }>,
+): OrchestratorRestoreInput {
+  if (!restorableView.stateSnapshot) {
+    throw new Error('Restorable runtime session view is missing stateSnapshot.');
+  }
+
+  return {
+    currentState: restorableView.stateSnapshot,
+    acceptedHistory: buildAcceptedHistoryFromBeatHistory(restorableView.beatHistory),
+    lastStableRelationshipLayer: buildRelationshipLayerFromSummary(
+      restorableView.relationshipSummary,
+    ),
+    sceneComplete: restorableView.lifecycle === 'complete',
+    ...(restorableView.activeSessionId
+      ? { sessionId: restorableView.activeSessionId }
+      : {}),
+    ...(restorableView.activeCheckpointId
+      ? { checkpointId: restorableView.activeCheckpointId }
+      : {}),
   };
 }
 

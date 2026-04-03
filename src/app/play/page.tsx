@@ -52,12 +52,18 @@ export default async function PlayPage({ searchParams }: PlayPageProps) {
   }
 
   try {
-    const [storyPackage] = await Promise.all([
+    const [storyPackage, initialRuntimeSession] = await Promise.all([
       loadRuntimeStoryPackage(selectedPackageName),
       loadPlayRuntimeSessionView(selectedPackageName),
     ]);
 
-    return <PlayWorkbench storyPackage={storyPackage} storyPackageName={selectedPackageName} />;
+    return (
+      <PlayWorkbench
+        storyPackage={storyPackage}
+        storyPackageName={selectedPackageName}
+        initialRuntimeSession={initialRuntimeSession}
+      />
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load the selected package.';
 

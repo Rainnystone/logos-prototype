@@ -6,6 +6,19 @@ import { loadRuntimeStoryPackage } from '@/engine/story-loader';
 import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
 
 const loadPlayWorkbenchProps = vi.fn();
+const initialRuntimeSessionView = {
+  kind: 'awaiting_start',
+  activeSessionId: 'sess_waiting',
+  activeCheckpointId: null,
+  beatHistory: [],
+  stateSnapshot: null,
+  relationshipSummary: {
+    highlightedDeltasText: '',
+    stableBackgroundText: '',
+    source: 'empty',
+  },
+  lifecycle: 'awaiting_start',
+} as const;
 
 vi.mock('@/app/play/PlayWorkbench', () => ({
   PlayWorkbench: (props: unknown) => {
@@ -105,19 +118,7 @@ vi.mock('@/engine/story-loader', () => ({
 }));
 
 vi.mock('@/runtime-sessions/views', () => ({
-  loadPlayRuntimeSessionView: vi.fn(async () => ({
-    kind: 'empty',
-    activeSessionId: null,
-    activeCheckpointId: null,
-    beatHistory: [],
-    stateSnapshot: null,
-    relationshipSummary: {
-      highlightedDeltasText: '',
-      stableBackgroundText: '',
-      source: 'empty',
-    },
-    lifecycle: null,
-  })),
+  loadPlayRuntimeSessionView: vi.fn(async () => initialRuntimeSessionView),
 }));
 
 describe('PlayPage', () => {
@@ -134,7 +135,12 @@ describe('PlayPage', () => {
 
     expect(loadPlayRuntimeSessionView).toHaveBeenCalledWith('sample-scene');
     expect(loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene');
-    expect(loadPlayWorkbenchProps).toHaveBeenCalled();
+    expect(loadPlayWorkbenchProps).toHaveBeenCalledWith(
+      expect.objectContaining({
+        storyPackageName: 'sample-scene',
+        initialRuntimeSession: initialRuntimeSessionView,
+      }),
+    );
     expect(screen.getByTestId('play-workbench')).toBeInTheDocument();
   });
 
