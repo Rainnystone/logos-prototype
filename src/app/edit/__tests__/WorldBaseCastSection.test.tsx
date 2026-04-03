@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WorldBaseCastSection } from '@/app/edit/sections/WorldBaseCastSection';
 import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 const renderWorldSection = vi.hoisted(() => vi.fn());
 const renderCharacterSection = vi.hoisted(() => vi.fn());
@@ -55,12 +56,16 @@ vi.mock('@/app/edit/sections/CharacterSection', () => ({
     renderCharacterSection(props);
     const characterProps = props as {
       selection?: unknown;
+      runtimeContinuityView?: EditRuntimeContinuityView;
       onSelectionChange?: (nextSelection: unknown) => void;
     };
 
     return (
       <div data-testid="character-section-mock">
         <p data-testid="selected-character">{stringifySelection(characterProps.selection)}</p>
+        <p data-testid="continuity-prop-presence">
+          {Object.hasOwn(characterProps, 'runtimeContinuityView') ? 'present' : 'absent'}
+        </p>
         <button
           type="button"
           onClick={() =>
@@ -143,7 +148,25 @@ const draftValue: WorldBaseCastDraft = {
   locationPool: '',
 };
 
-function renderSection(activeSurface: 'world' | 'character') {
+const activeContinuityView: EditRuntimeContinuityView = {
+  kind: 'active',
+  activeSession: {
+    sessionId: 'sess_01',
+    lifecycle: 'in_progress',
+    activeCheckpointId: 'chk_01',
+    acceptedBeatCount: 3,
+    relationshipStatus: {
+      highlightedDeltasText: 'Nagi started trusting Touka.',
+      stableBackgroundText: 'Nagi and Touka stay aligned under pressure.',
+      source: 'session',
+    },
+  },
+};
+
+function renderSection(
+  activeSurface: 'world' | 'character',
+  runtimeContinuityView?: EditRuntimeContinuityView,
+) {
   return render(
     <WorldBaseCastSection
       packageName="sample-scene"
@@ -152,6 +175,7 @@ function renderSection(activeSurface: 'world' | 'character') {
       onChange={vi.fn()}
       onSubmit={vi.fn()}
       onReset={vi.fn()}
+      {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
     />,
   );
 }
@@ -254,5 +278,21 @@ describe('WorldBaseCastSection', () => {
     expect(screen.getByTestId('selected-character')).toHaveTextContent(
       'antagonists:chr_ant001',
     );
+  });
+
+  it('passes runtime continuity through to CharacterSection on the character surface', () => {
+    renderSection('character', activeContinuityView);
+
+    const characterSectionProps = renderCharacterSection.mock.calls.at(-1)?.[0] as {
+      readonly runtimeContinuityView?: EditRuntimeContinuityView;
+    };
+
+    expect(characterSectionProps.runtimeContinuityView).toEqual(activeContinuityView);
+  });
+
+  it('does not pass an explicit undefined continuity prop into CharacterSection', () => {
+    renderSection('character');
+
+    expect(screen.getByTestId('continuity-prop-presence')).toHaveTextContent('absent');
   });
 });

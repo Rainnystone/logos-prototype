@@ -6,11 +6,13 @@ import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import { type WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 import { CharacterSection, type CharacterSelection } from '@/app/edit/sections/CharacterSection';
 import { WorldSection } from '@/app/edit/sections/WorldSection';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 interface WorldBaseCastSectionProps {
   readonly packageName: string;
   readonly activeSurface?: WorldbaseSurface;
   readonly value: WorldBaseCastDraft;
+  readonly runtimeContinuityView?: EditRuntimeContinuityView;
   readonly onChange: (nextValue: WorldBaseCastDraft) => void;
   readonly onSubmit: () => void;
   readonly onReset: () => void;
@@ -22,6 +24,7 @@ export function WorldBaseCastSection({
   packageName,
   activeSurface = 'world',
   value,
+  runtimeContinuityView,
   onChange,
   onSubmit,
   onReset,
@@ -110,6 +113,7 @@ export function WorldBaseCastSection({
           selection={characterSelection}
           onSelectionChange={setCharacterSelection}
           isSaving={isSaving}
+          {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
         />
       )}
     </section>

@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CharacterSection } from '@/app/edit/sections/CharacterSection';
 import type { WorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 const draftValue: WorldBaseCastDraft = {
   worldBaseSetting: 'A sealed school wing hides the signal source.',
@@ -105,7 +106,7 @@ function renderControlledSection(initialValue: WorldBaseCastDraft = draftValue) 
 }
 
 describe('CharacterSection', () => {
-  it('renders an empty relationship area as a valid state', () => {
+  it('renders a no-active-continuity relationship state when no continuity view is provided', () => {
     render(
       <CharacterSection
         packageName="sample-scene"
@@ -120,10 +121,64 @@ describe('CharacterSection', () => {
     expect(screen.getByText('核心角色')).toBeInTheDocument();
     expect(screen.getByText('反派')).toBeInTheDocument();
     expect(screen.getByText('关系区')).toBeInTheDocument();
-    expect(
-      screen.getByText('这一阶段暂不承接连续关系数据，留空是正常结果。'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('当前没有进行中的 Runtime 连续性会话。')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('renders continuity-backed relationship status when an active session exists', () => {
+    const runtimeContinuityView: EditRuntimeContinuityView = {
+      kind: 'active',
+      activeSession: {
+        sessionId: 'sess_02',
+        lifecycle: 'in_progress',
+        activeCheckpointId: 'chk_11',
+        acceptedBeatCount: 4,
+        relationshipStatus: {
+          highlightedDeltasText: 'Nagi now trusts Touka after the corridor breach.',
+          stableBackgroundText: 'Nagi and Touka hold a guarded alliance.',
+          source: 'session',
+        },
+      },
+    };
+
+    render(
+      <CharacterSection
+        packageName="sample-scene"
+        value={draftValue}
+        runtimeContinuityView={runtimeContinuityView}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('当前活跃会话：sess_02')).toBeInTheDocument();
+    expect(screen.getByText('已接收 Beat：4')).toBeInTheDocument();
+    expect(screen.getByText('关系变化：Nagi now trusts Touka after the corridor breach.')).toBeInTheDocument();
+    expect(screen.getByText('关系基线：Nagi and Touka hold a guarded alliance.')).toBeInTheDocument();
+  });
+
+  it('renders an unavailable state when runtime continuity cannot be read', () => {
+    const runtimeContinuityView: EditRuntimeContinuityView = {
+      kind: 'unavailable',
+      activeSession: null,
+      reason: 'Runtime continuity is temporarily unavailable for this story package.',
+    };
+
+    render(
+      <CharacterSection
+        packageName="sample-scene"
+        value={draftValue}
+        runtimeContinuityView={runtimeContinuityView}
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Runtime 连续性暂不可用。')).toBeInTheDocument();
+    expect(screen.getByText('当前无法读取编辑态连续关系摘要。')).toBeInTheDocument();
+    expect(screen.queryByText(/invalid runtime file/i)).not.toBeInTheDocument();
   });
 
   it('falls back to hero after deleting a selected antagonist', async () => {

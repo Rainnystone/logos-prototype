@@ -1,6 +1,6 @@
 # Architecture Codemap
 
-> Generated: 2026-03-27 | 56 test files, 318 tests passing
+> Updated: 2026-04-04 | includes Phase 2 runtime session continuity
 
 ## System Overview
 
@@ -21,21 +21,29 @@
     ┌──────────────┴──────────────┐    ┌──────────┴──────────┐
     │                             │    │                      │
     ▼                             │    ▼                      │
-┌────────┐  ┌─────────┐          │  ┌──────────┐  ┌────────┐│
-│Orchestr│→ │API      │→ LLM    │  │Bridge    │→ │Reposit ││
-│ator    │  │Adapter  │  Provider│  │(validate)│  │ory     ││
-└────────┘  └─────────┘          │  └──────────┘  │(file IO)│
-    │            │               │       │         └────────┘│
-    ▼            ▼               │       ▼                   │
-┌────────────────────┐          │  ┌──────────┐             │
-│ Engine Modules     │          │  │Coordinator│             │
-│ (10 modules)       │          │  │(AI repair)│             │
-└────────────────────┘          │  └──────────┘             │
-                                │                           │
-                    ┌───────────┴───────────┐               │
-                    │   Story Package       │◄──────────────┘
-                    │   (YAML files on disk) │
-                    └───────────────────────┘
+┌────────┐  ┌──────────────┐     │  ┌──────────┐  ┌────────┐│
+│Orchestr│→ │RuntimeSession│     │  │Bridge    │→ │Reposit ││
+│ator    │  │Repository    │     │  │(validate)│  │ory     ││
+└────────┘  └──────┬───────┘     │  └──────────┘  │(file IO)│
+    │              │             │       │         └────────┘│
+    │        runtime-sessions    │       ▼                   │
+    │            JSON            │  ┌──────────┐             │
+    ▼              │             │  │Coordinator│             │
+┌──────────┐  ┌────▼─────┐       │  │(AI repair)│             │
+│API       │→ │Views /   │→ UI   │  └──────────┘             │
+│Adapter   │  │bounded DTO│      │                           │
+└────┬─────┘  └──────────┘       │               ┌───────────┴───────────┐
+     │                           │               │   Story Package       │
+     ▼                           │               │   (YAML files on disk)│
+┌───────────────┐                │               └───────────────────────┘
+│ Gossipelog    │                │
+│ refresh chain │                │
+└────┬──────────┘                │
+     ▼                           │
+┌────────────────────┐           │
+│ Runtime modules +  │           │
+│ prompt/render layer│           │
+└────────────────────┘           │
 ```
 
 ## Two Chains
@@ -43,18 +51,28 @@
 ### Runtime Chain (Play)
 `PlayerInput → Orchestrator → [Collapse → Route → DirectorNote → Assemble → Generate → Audit → Resolve] → Output`
 
+Phase 2 adds a package-scoped runtime continuity substrate:
+`/play page → loadRuntimeStoryPackage() + loadPlayRuntimeSessionView() → PlayWorkbench → runtime-session route/client → runtime-sessions.json`
+
+The continuity loop is wider than the checkpoint store itself:
+`PlayWorkbench/runtime.ts → /api/play/gossipelog → src/agents/gossipelog/* → runtime-session finalize → bounded continuity views`
+
 ### Authoring Chain (Edit)
 `PageDraft → API PATCH → Bridge(normalize → validate → extract → render → persist → reload) → SaveResult`
+
+For `section=worldbase-cast`, `/edit` can now additionally load a bounded runtime continuity projection:
+`loadAuthoringState(includeRuntimeContinuity=true) → loadEditRuntimeContinuityView() → CharacterSection`
 
 ## Module Dependency Map
 
 ```
-src/types/          ← shared by everything (zero deps)
-src/engine/modules/ ← depends on src/types/
-src/engine/orchestrator.ts ← depends on modules + types
+src/types/              ← shared by everything (zero deps)
+src/engine/modules/     ← depends on src/types/
+src/engine/orchestrator.ts ← depends on modules + types + runtime session store seam
 src/engine/api-adapter/ ← depends on types + provider-interface
-src/authoring/      ← depends on types + sections
-src/app/            ← depends on everything above
+src/runtime-sessions/   ← depends on types + authoring package root helpers
+src/authoring/          ← depends on types + sections + optional runtime continuity view
+src/app/                ← depends on everything above
 ```
 
 ## Key Patterns
@@ -64,20 +82,12 @@ src/app/            ← depends on everything above
 | Immutable state | Everywhere | `{ ...old, field: new }`, `deepFreeze()` |
 | Provider preset | `runtime-config.ts` | Dropdown auto-fills baseUrl + model list |
 | CORS proxy | `api/llm/proxy/` | Server-side forward for non-standard LLM APIs |
+| Runtime continuity | `runtime-sessions/` | `runtime-sessions.json` stores active session + full checkpoints |
+| Relationship refresh | `app/play/runtime.ts` + `api/play/gossipelog` + `agents/gossipelog/` | Browser requests relationship update/injection; stale results finalize by `sessionId + checkpointId` |
 | Collapsible UI | `CollapsiblePanel.tsx` | Consistent expand/collapse for sidebar panels |
 | Section save | `persistence/bridge.ts` | normalize → validate → persist → reload pipeline |
 | Draft round-trip | `sections/*.ts` | File ↔ Draft ↔ Rendered ↔ File cycle |
 | Coordinator assist | `coordinator/` | AI-powered save repair when validation fails |
-
-## File Count by Area
-
-| Area | Source Files | Test Files |
-|------|-------------|------------|
-| `src/app/` (pages, components, API) | 27 | 10 |
-| `src/engine/` (orchestrator, modules, adapter) | 19 | 20 |
-| `src/authoring/` (contracts, persistence, sections) | 12 | 8 |
-| `src/types/` | 3 | 2 |
-| **Total** | **61** | **40** |
 
 ## Provider Architecture
 

@@ -84,6 +84,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
   try {
     const authoringState = await loadAuthoringState(selectedPackageName, {
       includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
+      includeRuntimeContinuity: activeSection === 'worldbase-cast',
     });
     const activeSurface =
       activeSection === 'worldbase-cast' ? requestedSurface : 'world';

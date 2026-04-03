@@ -10,6 +10,8 @@ import {
   PhaseConsequenceResponseSchema,
   PhasePlanSchema,
   PromptObjectSchema,
+  RuntimeSessionsFileSchema,
+  assertRuntimeSessionsFileConsistency,
   StateSnapshotSchema,
   type AuditPacket,
   type AuditQuestionSet,
@@ -22,6 +24,7 @@ import {
   type PhaseConsequenceResponse,
   type PhasePlan,
   type PromptObject,
+  type RuntimeSessionsFile,
   type StateSnapshot,
 } from '@/types';
 import { parseWithSchema } from '@/lib/validation';
@@ -76,4 +79,10 @@ export function validatePhaseConsequenceResponse(data: unknown): PhaseConsequenc
 
 export function validateAuditQuestionSet(data: unknown): AuditQuestionSet {
   return parseWithSchema(AuditQuestionSetSchema, data, 'auditQuestionSet');
+}
+
+export function validateRuntimeSessionsFile(data: unknown): RuntimeSessionsFile {
+  return assertRuntimeSessionsFileConsistency(
+    parseWithSchema(RuntimeSessionsFileSchema, data, 'runtimeSessionsFile'),
+  );
 }

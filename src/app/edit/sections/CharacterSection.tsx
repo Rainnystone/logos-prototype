@@ -8,6 +8,7 @@ import {
   type WorldBaseCharacterDraft,
 } from '@/authoring/sections/worldbase-cast';
 import { useMatchedHeight } from '@/app/edit/shared/useMatchedHeight';
+import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 
 type CharacterField =
   | 'name'
@@ -64,6 +65,7 @@ const CHARACTER_FIELD_GROUPS: readonly {
     ],
   },
 ] as const;
+const EDIT_CONTINUITY_UNAVAILABLE_COPY = '当前无法读取编辑态连续关系摘要。';
 
 interface CharacterRailProps {
   readonly title: string;
@@ -78,6 +80,7 @@ interface CharacterRailProps {
 export interface CharacterSectionProps {
   readonly packageName: string;
   readonly value: WorldBaseCastDraft;
+  readonly runtimeContinuityView?: EditRuntimeContinuityView;
   readonly onChange: (nextValue: WorldBaseCastDraft) => void;
   readonly onSubmit: () => void;
   readonly onReset: () => void;
@@ -152,6 +155,7 @@ function CharacterRail({
 export function CharacterSection({
   packageName,
   value,
+  runtimeContinuityView,
   onChange,
   onSubmit,
   onReset,
@@ -212,6 +216,10 @@ export function CharacterSection({
       group: selection.group,
     };
   }, [selection, value.antagonists, value.coreCast, value.hero]);
+
+  const activeContinuitySession =
+    runtimeContinuityView?.kind === 'active' ? runtimeContinuityView.activeSession : null;
+  const relationshipStatus = activeContinuitySession?.relationshipStatus ?? null;
 
   function updateSelectedCharacter(field: CharacterField, nextValue: string) {
     if (!selectedCharacter) {
@@ -333,11 +341,36 @@ export function CharacterSection({
         <section className="rounded-none border-2 border-black bg-[#f5f5f5] p-4">
           <div className="mb-4">
             <p className="panel-eyebrow">关系区</p>
-            <h3 className="text-xl font-semibold text-black uppercase">当前留空</h3>
+            <h3 className="text-xl font-semibold text-black uppercase">
+              {runtimeContinuityView?.kind === 'unavailable'
+                ? '连续性读取失败'
+                : activeContinuitySession
+                  ? '连续关系状态'
+                  : '暂无活跃连续性'}
+            </h3>
           </div>
-          <p className="panel-note">
-            这一阶段暂不承接连续关系数据，留空是正常结果。
-          </p>
+          {runtimeContinuityView?.kind === 'unavailable' ? (
+            <>
+              <p className="panel-note">Runtime 连续性暂不可用。</p>
+              <p className="panel-note">{EDIT_CONTINUITY_UNAVAILABLE_COPY}</p>
+            </>
+          ) : activeContinuitySession && relationshipStatus ? (
+            <>
+              <p className="panel-note">当前活跃会话：{activeContinuitySession.sessionId}</p>
+              <p className="panel-note">生命周期：{activeContinuitySession.lifecycle}</p>
+              <p className="panel-note">已接收 Beat：{activeContinuitySession.acceptedBeatCount}</p>
+              <p className="panel-note">
+                关系变化：
+                {relationshipStatus.highlightedDeltasText.trim() || '（暂无变化）'}
+              </p>
+              <p className="panel-note">
+                关系基线：
+                {relationshipStatus.stableBackgroundText.trim() || '（暂无基线）'}
+              </p>
+            </>
+          ) : (
+            <p className="panel-note">当前没有进行中的 Runtime 连续性会话。</p>
+          )}
           <p className="panel-note">{packageName}</p>
         </section>
       </section>

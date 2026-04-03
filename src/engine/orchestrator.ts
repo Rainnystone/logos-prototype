@@ -18,6 +18,10 @@ import {
   type PromptAssemblerInput,
 } from '@/engine/modules/prompt-assembler';
 import type {
+  FinalizeRelationshipLayerInput,
+  RecordAcceptedBeatInput,
+} from '@/runtime-sessions/repository';
+import type {
   StateSnapshot,
   StoryPackage,
   AuditQuestion,
@@ -36,6 +40,7 @@ export interface OrchestratorConfig {
   readonly storyPackage: StoryPackage;
   readonly storyPackageName: string;
   readonly gossipelogCycleRunner?: GossipelogCycleRunner;
+  readonly runtimeSessionStore?: RuntimeSessionStore;
 }
 
 export interface BeatResult {
@@ -48,9 +53,29 @@ export interface BeatResult {
 
 export interface Orchestrator {
   initScene(): Promise<StateSnapshot>;
+  hydrateScene(input: OrchestratorRestoreInput): Promise<StateSnapshot>;
   runBeat(playerInput: string): Promise<{ beatResult: BeatResult; state: StateSnapshot }>;
   getState(): StateSnapshot;
   isSceneComplete(): boolean;
+}
+
+export interface EnsureActiveSessionResult {
+  readonly activeSessionId: string;
+}
+
+export interface OrchestratorRestoreInput {
+  readonly currentState: StateSnapshot;
+  readonly acceptedHistory: readonly HistoryEntry[];
+  readonly lastStableRelationshipLayer: GossipelogInjectionResult;
+  readonly sceneComplete: boolean;
+  readonly sessionId?: string;
+  readonly checkpointId?: string;
+}
+
+export interface RuntimeSessionStore {
+  ensureActiveSession(): Promise<EnsureActiveSessionResult>;
+  recordAcceptedBeat(input: RecordAcceptedBeatInput): Promise<void>;
+  finalizeRelationshipLayer(input: FinalizeRelationshipLayerInput): Promise<void>;
 }
 
 interface AttemptOutcome {
@@ -64,7 +89,9 @@ interface AttemptOutcome {
 interface PendingRelationshipRefresh {
   promise: Promise<void>;
   readonly fallbackLayer: GossipelogInjectionResult;
-  invalidated: boolean;
+  readonly checkpointId: string;
+  readonly sessionId: string | null;
+  timedOut: boolean;
 }
 
 const PASS_WITHOUT_AUDIT: AuditResolverResult = deepFreeze({
@@ -225,6 +252,10 @@ function formatRoundId(sessionPrefix: string, acceptedBeatCount: number): string
   return `${sessionPrefix}-round-${String(acceptedBeatCount).padStart(4, '0')}`;
 }
 
+function formatCheckpointId(sessionPrefix: string, acceptedBeatCount: number): string {
+  return `chk-${sessionPrefix}-${String(acceptedBeatCount).padStart(4, '0')}`;
+}
+
 function isFallbackGossipelogMethod(method: unknown): boolean {
   return Boolean(
     method &&
@@ -254,6 +285,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   const roundIdSessionPrefix = createRoundIdSessionPrefix();
   let queuedRelationshipLayer = cloneRelationshipLayer(EMPTY_RELATIONSHIP_LAYER);
   let pendingRelationshipRefresh: PendingRelationshipRefresh | null = null;
+  let activeRuntimeSessionId: string | null = null;
+  let currentCheckpointId: string | null = null;
 
   function requireState(): StateSnapshot {
     if (!currentState) {
@@ -261,6 +294,51 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     }
 
     return currentState;
+  }
+
+  async function ensureRuntimeSessionId(): Promise<string | null> {
+    if (!config.runtimeSessionStore) {
+      return null;
+    }
+
+    if (activeRuntimeSessionId) {
+      return activeRuntimeSessionId;
+    }
+
+    const ensuredSession = await config.runtimeSessionStore.ensureActiveSession();
+    activeRuntimeSessionId = ensuredSession.activeSessionId;
+    return activeRuntimeSessionId;
+  }
+
+  function isCurrentCheckpointBinding(refresh: PendingRelationshipRefresh): boolean {
+    if (currentCheckpointId !== refresh.checkpointId) {
+      return false;
+    }
+
+    if (refresh.sessionId === null) {
+      return true;
+    }
+
+    return activeRuntimeSessionId === refresh.sessionId;
+  }
+
+  function deriveCurrentPhaseTranscript(
+    state: StateSnapshot,
+    history: readonly HistoryEntry[],
+    restoredSceneComplete: boolean,
+  ): HistoryEntry[] {
+    const currentPhasePlan = getPhasePlan(config.storyPackage, state.sceneState.currentPhaseIndex);
+    const acceptedBeatsInCurrentPhase = restoredSceneComplete
+      ? currentPhasePlan.beatCount
+      : state.sceneState.currentBeatIndexInPhase - 1;
+
+    if (acceptedBeatsInCurrentPhase <= 0) {
+      return [];
+    }
+
+    return history
+      .slice(-acceptedBeatsInCurrentPhase * 2)
+      .map((entry) => cloneHistoryEntry(entry));
   }
 
   async function waitForPendingRelationshipRefresh(): Promise<void> {
@@ -283,8 +361,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       ]);
 
       if (result === 'timeout' && pendingRelationshipRefresh === refresh) {
-        refresh.invalidated = true;
-        queuedRelationshipLayer = cloneRelationshipLayer(refresh.fallbackLayer);
+        refresh.timedOut = true;
         pendingRelationshipRefresh = null;
       }
     } finally {
@@ -294,7 +371,12 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     }
   }
 
-  function scheduleRelationshipRefresh(acceptedBeatText: string, roundId: string): void {
+  function scheduleRelationshipRefresh(
+    acceptedBeatText: string,
+    roundId: string,
+    checkpointId: string,
+    sessionId: string | null,
+  ): void {
     if (!gossipelogEnabled || !config.gossipelogCycleRunner) {
       return;
     }
@@ -304,7 +386,9 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     const refresh: PendingRelationshipRefresh = {
       promise: Promise.resolve(),
       fallbackLayer: lastStableRelationshipLayer,
-      invalidated: false,
+      checkpointId,
+      sessionId,
+      timedOut: false,
     };
 
     refresh.promise = config.gossipelogCycleRunner({
@@ -315,19 +399,35 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       roundId,
       lastStableRelationshipLayer,
     })
-      .then((result) => {
-        if (refresh.invalidated) {
-          return;
+      .then(async (result) => {
+        const settledRelationshipLayer = cloneRelationshipLayer(result.relationshipLayer);
+        const matchesCurrentCheckpoint = isCurrentCheckpointBinding(refresh);
+        const shouldPersistFinalization = Boolean(config.runtimeSessionStore && refresh.sessionId);
+
+        if (shouldPersistFinalization) {
+          try {
+            await config.runtimeSessionStore!.finalizeRelationshipLayer({
+              packageName: config.storyPackageName,
+              sessionId: refresh.sessionId!,
+              checkpointId: refresh.checkpointId,
+              lastStableRelationshipLayer: settledRelationshipLayer,
+            });
+          } catch {
+            if (matchesCurrentCheckpoint) {
+              queuedRelationshipLayer = cloneRelationshipLayer(refresh.fallbackLayer);
+            }
+            return;
+          }
         }
 
-        queuedRelationshipLayer = cloneRelationshipLayer(result.relationshipLayer);
+        if (!refresh.timedOut && matchesCurrentCheckpoint) {
+          queuedRelationshipLayer = settledRelationshipLayer;
+        }
       })
       .catch(() => {
-        if (refresh.invalidated) {
-          return;
+        if (isCurrentCheckpointBinding(refresh)) {
+          queuedRelationshipLayer = cloneRelationshipLayer(lastStableRelationshipLayer);
         }
-
-        queuedRelationshipLayer = lastStableRelationshipLayer;
       })
       .finally(() => {
         if (pendingRelationshipRefresh === refresh) {
@@ -455,13 +555,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         config.storyPackage.worldBase,
         config.storyPackage.controlModules,
       );
-
-      acceptedHistory = [];
-      currentPhaseTranscript = [];
-      sceneComplete = false;
-      queuedRelationshipLayer = cloneRelationshipLayer(EMPTY_RELATIONSHIP_LAYER);
-      pendingRelationshipRefresh = null;
-      currentState = freezeState({
+      const initialState = freezeState({
         sceneState: initialSceneState,
         roundState: initialRoundState,
         generationState: {
@@ -477,6 +571,38 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           rewriteFeedback: null,
         },
       });
+
+      await ensureRuntimeSessionId();
+
+      acceptedHistory = [];
+      currentPhaseTranscript = [];
+      sceneComplete = false;
+      queuedRelationshipLayer = cloneRelationshipLayer(EMPTY_RELATIONSHIP_LAYER);
+      pendingRelationshipRefresh = null;
+      currentCheckpointId = null;
+      currentState = initialState;
+
+      return currentState;
+    },
+
+    async hydrateScene(input) {
+      if (input.sessionId) {
+        activeRuntimeSessionId = input.sessionId;
+      } else {
+        await ensureRuntimeSessionId();
+      }
+
+      acceptedHistory = input.acceptedHistory.map(cloneHistoryEntry);
+      currentPhaseTranscript = deriveCurrentPhaseTranscript(
+        input.currentState,
+        acceptedHistory,
+        input.sceneComplete,
+      );
+      sceneComplete = input.sceneComplete;
+      queuedRelationshipLayer = cloneRelationshipLayer(input.lastStableRelationshipLayer);
+      pendingRelationshipRefresh = null;
+      currentCheckpointId = input.checkpointId ?? null;
+      currentState = freezeState(input.currentState);
 
       return currentState;
     },
@@ -537,7 +663,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         selectedQuestions,
       );
 
-      acceptedHistory = [
+      const nextAcceptedHistory: HistoryEntry[] = [
         ...acceptedHistory.map(cloneHistoryEntry),
         { role: 'user', content: playerInput },
         {
@@ -545,7 +671,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           content: attemptOutcome.generationResult.beatText,
         },
       ];
-      currentPhaseTranscript = [
+      const nextPhaseTranscript: HistoryEntry[] = [
         ...currentPhaseTranscript.map(cloneHistoryEntry),
         { role: 'user', content: playerInput },
         {
@@ -553,9 +679,17 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           content: attemptOutcome.generationResult.beatText,
         },
       ];
-
+      const nextAcceptedBeatOrdinal = countAcceptedBeats(nextAcceptedHistory);
+      const roundId = formatRoundId(roundIdSessionPrefix, nextAcceptedBeatOrdinal);
+      const checkpointId = formatCheckpointId(roundIdSessionPrefix, nextAcceptedBeatOrdinal);
       const completedBeatCount = stateBeforeBeat.sceneState.currentBeatIndexInPhase;
       const phaseCompleted = completedBeatCount >= phasePlan.beatCount;
+      const followingPhasePlan = phaseCompleted
+        ? config.storyPackage.phasePlans.find(
+            (candidate) => candidate.phaseIndex === phasePlan.phaseIndex + 1,
+          )
+        : null;
+      const nextSceneComplete = phaseCompleted && !followingPhasePlan;
 
       let nextSceneState = {
         ...stateBeforeBeat.sceneState,
@@ -569,14 +703,11 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           nextSceneState.mainAxis,
           nextSceneState.endLine,
           phasePlan.phaseGoal,
-          currentPhaseTranscript,
+          nextPhaseTranscript,
           nextSceneState.sceneProgress,
           nextSceneState.currentPhaseIndex,
         );
         const settlementResponse = await settlePhaseConsequences(settlementRequest, config.adapter);
-        const nextPhasePlan = config.storyPackage.phasePlans.find(
-          (candidate) => candidate.phaseIndex === phasePlan.phaseIndex + 1,
-        );
 
         nextSceneState = {
           ...nextSceneState,
@@ -584,7 +715,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           sceneProgress: `Completed ${phasePlan.phaseId}`,
         };
 
-        if (nextPhasePlan) {
+        if (followingPhasePlan) {
           const collapsedBoundaries = await lightConeCollapse.reInferBoundaries({
             context: {
               mainAxis: nextSceneState.mainAxis,
@@ -599,18 +730,18 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
 
           nextSceneState = {
             ...nextSceneState,
-            currentPhaseIndex: nextPhasePlan.phaseIndex,
+            currentPhaseIndex: followingPhasePlan.phaseIndex,
             currentBeatIndexInPhase: 1,
             alpha: collapsedBoundaries.alpha,
             beta: collapsedBoundaries.beta,
           };
 
-          const nextHistoryWindow = getHistoryWindow(acceptedHistory);
-          const nextVolume = buildVolumeSequence(nextPhasePlan.gradientType)[0]!;
+          const nextHistoryWindow = getHistoryWindow(nextAcceptedHistory);
+          const nextVolume = buildVolumeSequence(followingPhasePlan.gradientType)[0]!;
           const nextRouter = await narrativeRouter.selectRouter(
             buildRouteRequest(
               config.storyPackage,
-              nextPhasePlan,
+              followingPhasePlan,
               nextSceneState,
               nextHistoryWindow,
               nextVolume,
@@ -618,32 +749,30 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           );
 
           nextRoundState = buildRoundState(
-            nextPhasePlan,
+            followingPhasePlan,
             nextVolume,
             nextRouter,
             nextHistoryWindow,
             buildDirectorConstraints(
-              nextPhasePlan,
-              selectAuditQuestions(config.storyPackage.auditQuestionSet, nextPhasePlan.phaseId)
+              followingPhasePlan,
+              selectAuditQuestions(config.storyPackage.auditQuestionSet, followingPhasePlan.phaseId)
                 .selectedQuestions,
             ),
           );
-          currentPhaseTranscript = [];
         } else {
-          sceneComplete = true;
           nextSceneState = {
             ...nextSceneState,
             currentBeatIndexInPhase: phasePlan.beatCount,
           };
           nextRoundState = {
             ...roundState,
-            historyWindow: getHistoryWindow(acceptedHistory).map(cloneHistoryEntry),
+            historyWindow: getHistoryWindow(nextAcceptedHistory).map(cloneHistoryEntry),
           };
         }
       } else {
         const nextBeatIndex = completedBeatCount + 1;
         const nextVolume = buildVolumeSequence(phasePlan.gradientType)[nextBeatIndex - 1]!;
-        const nextHistoryWindow = getHistoryWindow(acceptedHistory);
+        const nextHistoryWindow = getHistoryWindow(nextAcceptedHistory);
 
         nextSceneState = {
           ...nextSceneState,
@@ -667,7 +796,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         );
       }
 
-      currentState = freezeState({
+      const nextState = freezeState({
         sceneState: nextSceneState,
         roundState: nextRoundState,
         generationState: {
@@ -683,10 +812,42 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           rewriteFeedback: attemptOutcome.resolution.rewriteFeedback,
         },
       });
+      const runtimeSessionId = await ensureRuntimeSessionId();
+
+      if (config.runtimeSessionStore && runtimeSessionId) {
+        await config.runtimeSessionStore.recordAcceptedBeat({
+          packageName: config.storyPackageName,
+          sessionId: runtimeSessionId,
+          checkpointId,
+          lifecycle: nextSceneComplete ? 'complete' : 'in_progress',
+          acceptedBeatOrdinal: nextAcceptedBeatOrdinal,
+          phaseIndex: stateBeforeBeat.sceneState.currentPhaseIndex,
+          beatIndex: stateBeforeBeat.sceneState.currentBeatIndexInPhase,
+          sceneId: stateBeforeBeat.sceneState.sceneId,
+          roundId,
+          acceptedTranscript: {
+            playerInput,
+            beatText: attemptOutcome.generationResult.beatText,
+          },
+          stateSnapshot: nextState,
+          lastStableRelationshipLayer: cloneRelationshipLayer(queuedRelationshipLayer),
+        });
+      }
+
+      acceptedHistory = nextAcceptedHistory;
+      currentPhaseTranscript =
+        phaseCompleted && !nextSceneComplete
+          ? []
+          : nextPhaseTranscript.map((entry) => cloneHistoryEntry(entry));
+      sceneComplete = nextSceneComplete;
+      currentCheckpointId = checkpointId;
+      currentState = nextState;
 
       scheduleRelationshipRefresh(
         attemptOutcome.generationResult.beatText,
-        formatRoundId(roundIdSessionPrefix, countAcceptedBeats(acceptedHistory)),
+        roundId,
+        checkpointId,
+        runtimeSessionId,
       );
 
       return {
@@ -697,7 +858,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
           forceAccepted: attemptOutcome.resolution.forceAccepted,
           retryCount: attemptOutcome.retryCount,
         }),
-        state: currentState,
+        state: nextState,
       };
     },
 

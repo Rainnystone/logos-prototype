@@ -173,6 +173,9 @@ export function EditWorkbench({
     initialState.agentSurfaceItems ?? [],
   );
   const [currentAuthoringState, setCurrentAuthoringState] = useState(initialState.authoringState ?? null);
+  const [runtimeContinuityView, setRuntimeContinuityView] = useState(
+    initialState.runtimeContinuityView,
+  );
   const [recentSaveResults, setRecentSaveResults] = useState<SaveResult[]>([]);
   const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
   const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
@@ -277,12 +280,14 @@ export function EditWorkbench({
       previousRoute.activeSurface !== activeSurface;
 
     if (isWorldbaseSurfaceSwitchOnly) {
+      setRuntimeContinuityView(initialState.runtimeContinuityView);
       return;
     }
     setCurrentState(initialState.state);
     setCurrentSource(initialState.source);
     setAgentSurfaceItems(initialState.agentSurfaceItems ?? []);
     setCurrentAuthoringState(initialState.authoringState ?? null);
+    setRuntimeContinuityView(initialState.runtimeContinuityView);
     setRecentSaveResults([]);
     setRemoteDiagnostics(null);
     setCoordinatorSummaries({});
@@ -307,6 +312,7 @@ export function EditWorkbench({
     activeSurface,
     initialState.authoringState,
     initialState.agentSurfaceItems,
+    initialState.runtimeContinuityView,
     initialState.source,
     initialState.state,
     packageName,
@@ -789,6 +795,7 @@ export function EditWorkbench({
             onSubmit={handleWorldBaseCastSubmit}
             onReset={handleWorldBaseCastReset}
             isSaving={isWorldBaseSaving}
+            {...(runtimeContinuityView ? { runtimeContinuityView } : {})}
           />
         ) : activeSection === 'scene-phase-authoring' ? (
           <ScenePhaseAuthoringSection

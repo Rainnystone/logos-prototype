@@ -13,6 +13,7 @@ import {
   validatePhaseConsequenceRequest,
   validatePhaseConsequenceResponse,
   validatePromptObject,
+  validateRuntimeSessionsFile,
   validateStateSnapshot,
 } from '@/engine/schema-validator';
 import type { WorldBase } from '@/types';
@@ -421,5 +422,105 @@ describe('schema validator', () => {
         default: [],
       },
     });
+  });
+
+  it('accepts a semantically consistent runtime sessions file', () => {
+    expect(
+      validateRuntimeSessionsFile({
+        version: 1,
+        activeSessionId: 'sess_01',
+        sessionsById: {
+          sess_01: {
+            sessionId: 'sess_01',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:01.000Z',
+            headCheckpointId: 'chk_01',
+            activeCheckpointId: 'chk_01',
+            orderedCheckpointIds: ['chk_01'],
+            checkpointsById: {
+              chk_01: {
+                checkpointId: 'chk_01',
+                acceptedBeatOrdinal: 1,
+                sceneId: 'scene_opening',
+                phaseIndex: 1,
+                beatIndex: 1,
+                roundId: 'round_01',
+                acceptedTranscript: {
+                  playerInput: 'open the door',
+                  beatText: 'The door swings open.',
+                },
+                stateSnapshot: {
+                  sceneState: {
+                    sceneId: 'scene_opening',
+                    currentPhaseIndex: 1,
+                    currentBeatIndexInPhase: 1,
+                    mainAxis: 'main-axis',
+                    endLine: 'end-line',
+                    alpha: 'alpha',
+                    beta: 'beta',
+                  },
+                  roundState: {
+                    phaseGoal: 'phase-goal',
+                    currentVolume: 'Med',
+                    currentRouter: 'router',
+                    verbLexicon: ['observe'],
+                    historyWindow: [],
+                  },
+                  generationState: {
+                    directorNoteSummary: 'summary',
+                    promptObject: {},
+                    currentBeatText: null,
+                    currentOptions: [],
+                  },
+                  evaluationState: {
+                    auditAnswers: [],
+                    blockingFailures: [],
+                    retryCount: 0,
+                    rewriteFeedback: null,
+                  },
+                },
+                lastStableRelationshipLayer: {
+                  highlightedDeltasText: '',
+                  stableBackgroundText: '',
+                },
+                createdAt: '2026-04-03T00:00:01.000Z',
+              },
+            },
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      }),
+    ).toMatchObject({
+      activeSessionId: 'sess_01',
+    });
+  });
+
+  it('rejects runtime sessions files with unresolved active/session checkpoint pointers', () => {
+    expect(() =>
+      validateRuntimeSessionsFile({
+        version: 1,
+        activeSessionId: 'sess_missing',
+        sessionsById: {
+          sess_01: {
+            sessionId: 'sess_01',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:01.000Z',
+            headCheckpointId: 'chk_missing',
+            activeCheckpointId: 'chk_missing',
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      }),
+    ).toThrow(/runtime session consistency/i);
   });
 });

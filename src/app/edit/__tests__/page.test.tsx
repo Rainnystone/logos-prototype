@@ -115,6 +115,7 @@ describe('EditPage', () => {
 
     expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
       includeAgentSurfaceItems: false,
+      includeRuntimeContinuity: true,
     });
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
@@ -160,6 +161,10 @@ describe('EditPage', () => {
 
     render(element);
 
+    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
+      includeAgentSurfaceItems: false,
+      includeRuntimeContinuity: true,
+    });
     expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
@@ -185,6 +190,7 @@ describe('EditPage', () => {
 
     expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
       includeAgentSurfaceItems: true,
+      includeRuntimeContinuity: false,
     });
   });
 

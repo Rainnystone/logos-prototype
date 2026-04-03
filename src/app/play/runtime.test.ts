@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  buildOrchestratorRestoreInput,
+  createBrowserRuntimeSessionClient,
   createBrowserGossipelogCycleRunner,
   createTrackedWorkbenchAdapter,
 } from '@/app/play/runtime';
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
-import { storyPackageFixture } from '@/app/__tests__/fixtures';
+import { stateSnapshotFixture, storyPackageFixture } from '@/app/__tests__/fixtures';
+import type { FinalizeRelationshipLayerInput, RecordAcceptedBeatInput } from '@/runtime-sessions/repository';
+import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 
 function createReporter() {
   return {
@@ -159,6 +163,237 @@ describe('createBrowserGossipelogCycleRunner', () => {
     expect(result.relationshipLayer).toEqual({
       highlightedDeltasText: 'delta',
       stableBackgroundText: 'background',
+    });
+  });
+});
+
+describe('createBrowserRuntimeSessionClient', () => {
+  it('posts accepted-beat persistence commands to the runtime-session bridge route', async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          activeSessionId: 'sess-1',
+          activeCheckpointId: 'checkpoint-1',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    });
+    const client = createBrowserRuntimeSessionClient({
+      storyPackageName: 'sample-scene',
+      fetchImpl: fetchMock,
+    });
+    const input: RecordAcceptedBeatInput = {
+      packageName: 'sample-scene',
+      sessionId: 'sess-1',
+      checkpointId: 'checkpoint-1',
+      lifecycle: 'in_progress',
+      acceptedBeatOrdinal: 1,
+      phaseIndex: 1,
+      beatIndex: 1,
+      sceneId: 'scene-sample',
+      roundId: 'round-1',
+      acceptedTranscript: {
+        playerInput: 'Look around',
+        beatText: 'You step into the room.',
+      },
+      stateSnapshot: stateSnapshotFixture,
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      },
+    };
+
+    const result = await client.recordAcceptedBeat(input);
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/play/packages/sample-scene/runtime-session', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        kind: 'record_accepted_beat',
+        payload: input,
+      }),
+    });
+    expect(result).toEqual({
+      activeSessionId: 'sess-1',
+      activeCheckpointId: 'checkpoint-1',
+    });
+  });
+
+  it('throws an explicit accepted-beat persistence error when the bridge returns a 500 payload', async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: 'disk write failed',
+        }),
+        {
+          status: 500,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    });
+    const client = createBrowserRuntimeSessionClient({
+      storyPackageName: 'sample-scene',
+      fetchImpl: fetchMock,
+    });
+    const input: RecordAcceptedBeatInput = {
+      packageName: 'sample-scene',
+      sessionId: 'sess-1',
+      checkpointId: 'checkpoint-1',
+      lifecycle: 'in_progress',
+      acceptedBeatOrdinal: 1,
+      phaseIndex: 1,
+      beatIndex: 1,
+      sceneId: 'scene-sample',
+      roundId: 'round-1',
+      acceptedTranscript: {
+        playerInput: 'Look around',
+        beatText: 'You step into the room.',
+      },
+      stateSnapshot: stateSnapshotFixture,
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      },
+    };
+
+    await expect(client.recordAcceptedBeat(input)).rejects.toThrow(
+      'Failed to persist accepted beat: disk write failed',
+    );
+  });
+
+  it('posts relationship-layer finalization commands and returns checkpoint pointers', async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          activeSessionId: 'sess-2',
+          activeCheckpointId: 'checkpoint-2',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    });
+    const client = createBrowserRuntimeSessionClient({
+      storyPackageName: 'sample-scene',
+      fetchImpl: fetchMock,
+    });
+    const input: FinalizeRelationshipLayerInput = {
+      packageName: 'sample-scene',
+      sessionId: 'sess-2',
+      checkpointId: 'checkpoint-2',
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'settled delta',
+        stableBackgroundText: 'settled background',
+      },
+    };
+
+    const result = await client.finalizeRelationshipLayer(input);
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/play/packages/sample-scene/runtime-session', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        kind: 'finalize_relationship_layer',
+        payload: input,
+      }),
+    });
+    expect(result).toEqual({
+      activeSessionId: 'sess-2',
+      activeCheckpointId: 'checkpoint-2',
+    });
+  });
+
+  it('throws before fetch when accepted-beat payload packageName mismatches the configured package', async () => {
+    const fetchMock = vi.fn();
+    const client = createBrowserRuntimeSessionClient({
+      storyPackageName: 'sample-scene',
+      fetchImpl: fetchMock,
+    });
+
+    const input: RecordAcceptedBeatInput = {
+      packageName: 'other-scene',
+      sessionId: 'sess-1',
+      checkpointId: 'checkpoint-1',
+      lifecycle: 'in_progress',
+      acceptedBeatOrdinal: 1,
+      phaseIndex: 1,
+      beatIndex: 1,
+      sceneId: 'scene-sample',
+      roundId: 'round-1',
+      acceptedTranscript: {
+        playerInput: 'Look around',
+        beatText: 'You step into the room.',
+      },
+      stateSnapshot: stateSnapshotFixture,
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta',
+        stableBackgroundText: 'background',
+      },
+    };
+
+    await expect(client.recordAcceptedBeat(input)).rejects.toThrow(
+      'Failed to persist accepted beat: Runtime session packageName mismatch: expected "sample-scene", received "other-scene".',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('buildOrchestratorRestoreInput', () => {
+  it('maps the continuity view snapshot, accepted history, relationship layer, and completion flag', () => {
+    const restorableView = {
+      kind: 'restorable',
+      activeSessionId: 'sess_restore',
+      activeCheckpointId: 'chk_restore',
+      beatHistory: [
+        {
+          beatNumber: 1,
+          playerInput: 'Opening hook',
+          beatText: 'The operator enters the sealed corridor.',
+        },
+        {
+          beatNumber: 2,
+          playerInput: 'Inspect the relay cabinet.',
+          beatText: 'The relay clicks and the vent light turns red.',
+        },
+      ],
+      stateSnapshot: stateSnapshotFixture,
+      relationshipSummary: {
+        highlightedDeltasText: 'delta restore',
+        stableBackgroundText: 'background restore',
+        source: 'checkpoint',
+      },
+      lifecycle: 'complete',
+    } as const satisfies PlayRuntimeSessionView;
+
+    expect(buildOrchestratorRestoreInput(restorableView)).toEqual({
+      currentState: stateSnapshotFixture,
+      acceptedHistory: [
+        { role: 'user', content: 'Opening hook' },
+        { role: 'assistant', content: 'The operator enters the sealed corridor.' },
+        { role: 'user', content: 'Inspect the relay cabinet.' },
+        { role: 'assistant', content: 'The relay clicks and the vent light turns red.' },
+      ],
+      lastStableRelationshipLayer: {
+        highlightedDeltasText: 'delta restore',
+        stableBackgroundText: 'background restore',
+      },
+      sceneComplete: true,
+      sessionId: 'sess_restore',
+      checkpointId: 'chk_restore',
     });
   });
 });
