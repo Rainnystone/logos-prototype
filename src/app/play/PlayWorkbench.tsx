@@ -38,8 +38,8 @@ import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-inte
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import {
   PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
-  type PlayRuntimeSessionView,
-} from '@/runtime-sessions/views';
+} from '@/runtime-sessions/copy';
+import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
 import type { StateSnapshot, StoryPackage } from '@/types';
 
 interface PlayWorkbenchProps {
@@ -263,6 +263,7 @@ export function PlayWorkbench({
     adapterConfig,
     adapterFactory,
     bootstrapped,
+    continuityUnavailableMessage,
     gossipelogCycleRunner,
     resolvedRuntimeSessionClient,
     resolvedRuntimeSessionStore,

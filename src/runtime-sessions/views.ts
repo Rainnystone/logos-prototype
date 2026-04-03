@@ -1,4 +1,8 @@
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import {
+  EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
+  PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
+} from '@/runtime-sessions/copy';
 import type { RuntimeCheckpoint, RuntimeSessionLifecycle, StateSnapshot } from '@/types';
 
 export interface RuntimeRelationshipSummary {
@@ -39,10 +43,6 @@ const emptyRelationshipSummary: RuntimeRelationshipSummary = {
   stableBackgroundText: '',
   source: 'empty',
 };
-export const PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON =
-  'Runtime continuity is unavailable. Inspect the saved runtime data before continuing.';
-const EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON =
-  'Runtime continuity is temporarily unavailable for this story package.';
 
 function hasRelationshipContent(layer: {
   readonly highlightedDeltasText: string;
