@@ -7,7 +7,7 @@
 | Type | Purpose | Key Fields |
 |------|---------|------------|
 | `StoryPackage` | Complete story package loaded from disk | sceneSpec, phasePlans, worldBase, routerProfiles, controlModules, auditQuestionSet |
-| `SceneSpec` | Scene definition | sceneId, sceneName, cast?, locationIds?, mainAxis, endLine, openingSituation?, openingHook?, samplePurpose? |
+| `SceneSpec` | Scene definition | sceneId, sceneName, cast?, locationIds?, startPoint?, mainAxis, endLine, openingSituation?, openingHook?, samplePurpose? |
 | `PhasePlan` | Single phase in the scene | phaseId, phaseIndex, phaseName, phaseGoal, phaseEndPoint, gradientType, beatCount, routerHint, notes |
 | `WorldBase` | Structured world / cast / location source used by runtime and editor | worldBaseSetting, worldRules, toneBaseline, hero, coreCast[], antagonists[], npcCharacters, locations[], locationPatch |
 | `RouterProfile` | Narrative routing profile | routerName, routerSemanticCore, verbLexicon[] |
@@ -73,7 +73,7 @@
 | `audit-questions.yaml` | YAML | AuditQuestionSet (global, control, phase-specific questions + selection policy) |
 | `state-snapshots.yaml` | YAML | Reference state snapshots for testing |
 | `authoring-state.json` | JSON | Last save timestamp, edited section, request ID |
-| `runtime-sessions.json` | JSON | Runtime-generated active session state, archived sessions, ordered checkpoints, relationship continuity mirror |
+| `runtime-sessions.json` | JSON | Runtime-generated active session state, archived sessions, ordered checkpoints, relationship continuity mirror (generated at runtime, not authored) |
 
 ## Data Flow
 
@@ -87,7 +87,7 @@ YAML files on disk
 runtime-sessions.json (generated on demand at package root)
   → runtime-sessions/repository.ts (semantic validation + queued writes)
   → runtime-sessions/views.ts (bounded continuity projection)
-  → /play and /edit server pages
+  → /play and /edit server pages (initialRuntimeSession)
 
 Page draft (UI state)
   → API PATCH request (SaveRequest)

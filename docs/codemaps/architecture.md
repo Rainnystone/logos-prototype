@@ -70,7 +70,7 @@ src/types/              ← shared by everything (zero deps)
 src/engine/modules/     ← depends on src/types/
 src/engine/orchestrator.ts ← depends on modules + types + runtime session store seam
 src/engine/api-adapter/ ← depends on types + provider-interface
-src/runtime-sessions/   ← depends on types + authoring package root helpers
+src/runtime-sessions/   ← depends on types + gossipelog-skill-packets + authoring package root helpers
 src/authoring/          ← depends on types + sections + optional runtime continuity view
 src/app/                ← depends on everything above
 ```

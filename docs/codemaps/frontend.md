@@ -42,8 +42,12 @@ EditWorkbench (client)
 ├── PageActionBar — return to title, open scene
 ├── SectionTabs — 5 visible tab links (query param routing, with `worldbase-cast` split into `world` / `character` surfaces)
 └── edit-layout (active section)
-    ├── WorldBaseCastSection — `world` / `character` 二选一切面；角色面承载 continuity-backed relationship panel
-    ├── ScenePhaseAuthoringSection — phase rail + scene frame + phase editor
+    ├── WorldBaseCastSection — `world` / `character` 二选一切面；routes to WorldSection or CharacterSection
+    │   ├── WorldSection — world setting, rules, tone baseline editor
+    │   └── CharacterSection — character editor with continuity-backed relationship panel
+    ├── ScenePhaseAuthoringSection — scene spec editor + phase rail + phase editor
+    │   ├── SceneCastSelector — scene cast selection from world-base
+    │   └── SceneLocationSelector — scene location selection from world-base
     ├── ControlModulesSection — module stack + module editor
     └── PackageWiringValidationSection — diagnostics dashboard + AgentSurfacePanel
 ```
@@ -57,6 +61,11 @@ EditWorkbench (client)
 | `ConfigPanel` | initialConfig, onSave, diagnostics | RuntimeConfigForm + Runtime Usage |
 | `TitleLandingSurface` | packageName | Title page cabinet with provider setup and Play / Edit entry links |
 | `StoryPackageSelector` | packages | Sample dashboard card list for ready/unavailable story packages |
+| `BeatHistory` | entries, maxDisplay | Renders accepted beat history with role badges |
+| `BeatDisplay` | beatText, status, error | Current beat prose display with error/rewrite feedback |
+| `PlayerInput` | options, onSubmit, disabled | 4 options + free text + submit |
+| `StateInspector` | stateSnapshot, boundaries | Scene state, boundaries, gradient visualization |
+| `AuthorControlPanel` | sceneName, phasePlans, metaBar | Scene name, phase cards, meta bar for play workbench |
 
 ## State Management
 
@@ -73,19 +82,49 @@ EditWorkbench (client)
 
 | Class | Purpose |
 |-------|---------|
+| `.workspace-page` | Generic workspace page container |
 | `.play-page` | Play workbench page container |
+| `.title-page` | Title landing page with grid background |
+| `.title-card` | Card on title page for actions |
 | `.play-grid` | 3-column grid: `18-24rem / 2fr / 18-26rem` |
 | `.play-column` | Grid cell with `gap: 0.75rem` |
 | `.play-column--sidebar` | Sticky, max-height viewport, overflow scroll |
 | `.play-column--feedback` | Right column (order: -1 on mobile) |
 | `.edit-page` | Editor page container |
 | `.edit-shell` | Editor shell with identity + tabs |
+| `.edit-top-tabs` | Tab navigation container |
+| `.edit-top-tab` | Individual tab button with active state |
+| `.edit-action-bar` | Action buttons at section bottom |
+| `.worldbase-cast` | WorldBase section layout container |
+| `.worldbase-cast__layout` | 2-column: `13-16rem / 1fr` |
+| `.worldbase-cast__rail` | Left rail with summary cards |
+| `.worldbase-cast__summary` | Clickable summary card in rail |
+| `.worldbase-cast__editor` | Right side editor surface |
+| `.edit-surface` | Main editing area with gap |
+| `.edit-helper-panel` | Helper panel in edit sections |
 | `.panel` | Generic panel container |
 | `.shadow-brutal` | Neue brutalism drop shadow |
 | `.panel-eyebrow` | Uppercase tracking label |
 | `.panel-note` | Muted description text |
+| `.panel-heading` | Panel header with flex layout |
+| `.panel-actions` | Action buttons at panel bottom |
 | `.form-field` / `.form-label` | Form input styling |
+| `.form-grid` | Grid layout for form fields |
 | `.primary-link` / `.secondary-link` | Button styles |
+| `.selector-panel` / `.selector-grid` / `.selector-card` | Package selector layout |
+| `.beat-display` / `.beat-prose` / `.beat-placeholder` | Beat content display |
+| `.history-list` / `.history-card` / `.history-role` | Beat history styling |
+| `.option-grid` / `.option-card` | Player input options |
+| `.start-round-panel` / `.hook-preview` | Round start UI |
+| `.status-badge` | Status indicator badge |
+| `.warning-banner` / `.error-banner` / `.rewrite-feedback` | Feedback banners |
+| `.inspector-panel` / `.inspector-section` | State inspector styling |
+| `.fixture-panel` / `.fixture-grid` / `.fixture-card` | Fixture reference display |
+| `.usage-grid` / `.usage-card` | Runtime usage display |
+| `.metric-grid` / `.metric-label` | Metrics visualization |
+| `.boundary-grid` | Boundary display grid |
+| `.volume-chip` / `.gradient-bars` / `.gradient-bar` | Gradient visualization |
+| `.context-strip` | Context bar with meta and actions |
 
 ## Design System
 
