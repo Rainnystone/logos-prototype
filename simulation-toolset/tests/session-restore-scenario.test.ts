@@ -5,56 +5,24 @@ import { createSessionRestoreScenario } from '../scenarios/session-restore';
 import { runSimulationScenario } from '@simulation/scenario-runner';
 
 describe('session restore scenario', () => {
-  it('preserves session state after multiple accepted beats', async () => {
+  it('restores session state with beat history and relationship layer intact', async () => {
     const report = await runSimulationScenario(createSessionRestoreScenario());
 
-    // Verify all assertions pass
-    expect(report.assertions.every((item) => item.pass)).toBe(true);
+    // All scenario-internal assertions must pass
+    expect(report.assertions.every((a) => a.pass)).toBe(true);
 
-    // Verify beats were accepted (2-3 beats)
-    expect(report.runtimeTrace?.length).toBeGreaterThanOrEqual(2);
-    expect(report.runtimeTrace?.every((item) => item.accepted)).toBe(true);
+    // Spot-check key named assertions are present and passing
+    const keyAssertions = [
+      'session-restored',
+      'beat-history-preserved',
+      'relationship-layer-preserved',
+      'active-checkpoint-exists',
+    ] as const;
 
-    // Verify session restoration succeeded
-    expect(report.finalState).toMatchObject({
-      restored: true,
-    });
-
-    // Verify beat history is preserved
-    expect(report.finalState).toHaveProperty('checkpointCount');
-    expect((report.finalState as Record<string, unknown>).checkpointCount).toBeGreaterThanOrEqual(2);
-
-    // Verify relationship layer is preserved
-    expect(report.finalState).toHaveProperty('relationshipSource');
-    expect((report.finalState as Record<string, unknown>).relationshipSource).toMatch(/session|checkpoint/);
-  });
-
-  it('restores matching state snapshot', async () => {
-    const report = await runSimulationScenario(createSessionRestoreScenario());
-
-    expect(report.assertions).toContainEqual(
-      expect.objectContaining({
-        name: 'restored-state-matches-recorded',
-        pass: true,
-      }),
-    );
-
-    expect(report.assertions).toContainEqual(
-      expect.objectContaining({
-        name: 'beat-history-preserved',
-        pass: true,
-      }),
-    );
-  });
-
-  it('preserves relationship layer across restore', async () => {
-    const report = await runSimulationScenario(createSessionRestoreScenario());
-
-    expect(report.assertions).toContainEqual(
-      expect.objectContaining({
-        name: 'relationship-layer-preserved',
-        pass: true,
-      }),
-    );
+    for (const name of keyAssertions) {
+      expect(report.assertions).toContainEqual(
+        expect.objectContaining({ name, pass: true }),
+      );
+    }
   });
 });

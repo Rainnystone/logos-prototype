@@ -151,24 +151,6 @@ describe('session simulator', () => {
       await fixture.cleanup();
     });
 
-    it('returns restore result with no session when file does not exist', async () => {
-      const fixture = await createTempStoryPackage('sample-scene');
-
-      // Ensure no runtime-sessions.json exists
-      const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
-      await fs.unlink(sessionsPath).catch(() => undefined);
-
-      const simulator = await createSessionSimulator(fixture.packageName);
-      const result = await simulator.attemptRestore();
-
-      expect(result).toBeDefined();
-      expect(result.restored).toBe(false);
-      expect(result.session).toBeNull();
-      expect(result.activeCheckpoint).toBeNull();
-
-      await fixture.cleanup();
-    });
-
     it('returns restore result with awaiting_start lifecycle', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
 

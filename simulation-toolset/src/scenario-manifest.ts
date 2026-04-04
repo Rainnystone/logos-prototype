@@ -16,6 +16,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     tags: ['authoring', 'validation'],
   },
   {
+    scenarioId: 'validation-success',
+    title: 'Validation Success',
+    tags: ['authoring', 'validation'],
+  },
+  {
     scenarioId: 'adapter-failure',
     title: 'Adapter Failure',
     tags: ['sidecar', 'fallback', 'adapter'],

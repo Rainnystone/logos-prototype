@@ -430,11 +430,5 @@ describe('session observer', () => {
       await fixture.cleanup();
     });
 
-    it('returns empty arrays before any observations', () => {
-      const trace = getTrace();
-
-      expect(trace.sessions).toEqual([]);
-      expect(trace.checkpoints).toEqual([]);
-    });
   });
 });

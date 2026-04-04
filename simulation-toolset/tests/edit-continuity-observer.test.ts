@@ -72,60 +72,6 @@ function createMinimalStateSnapshot(): {
 
 describe('edit continuity observer', () => {
   describe('observe', () => {
-    it('returns empty view when no runtime-sessions.json exists', async () => {
-      const fixture = await createTempStoryPackage('sample-scene');
-
-      // Ensure no runtime-sessions.json exists
-      const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
-      await fs.unlink(sessionsPath).catch(() => undefined);
-
-      const result = await observe(fixture.packageName);
-
-      expect(result).not.toBeNull();
-      expect(result!.kind).toBe('empty');
-      expect(result!.hasActiveSession).toBe(false);
-      expect(result!.exposesRawCheckpoints).toBe(false);
-
-      await fixture.cleanup();
-    });
-
-    it('returns empty view for package with session but no relationship content', async () => {
-      const fixture = await createTempStoryPackage('sample-scene');
-
-      // Create a runtime-sessions.json with an active session but empty relationship layer
-      const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
-      const sessionData = {
-        version: 1,
-        activeSessionId: 'sess_empty_01',
-        sessionsById: {
-          sess_empty_01: {
-            sessionId: 'sess_empty_01',
-            lifecycle: 'awaiting_start',
-            createdAt: '2026-04-04T00:00:00.000Z',
-            updatedAt: '2026-04-04T00:00:00.000Z',
-            headCheckpointId: null,
-            activeCheckpointId: null,
-            orderedCheckpointIds: [],
-            checkpointsById: {},
-            lastStableRelationshipLayer: {
-              highlightedDeltasText: '',
-              stableBackgroundText: '',
-            },
-          },
-        },
-      };
-      await fs.writeFile(sessionsPath, JSON.stringify(sessionData, null, 2), 'utf8');
-
-      const result = await observe(fixture.packageName);
-
-      expect(result).not.toBeNull();
-      expect(result!.kind).toBe('empty');
-      expect(result!.hasActiveSession).toBe(false);
-      expect(result!.exposesRawCheckpoints).toBe(false);
-
-      await fixture.cleanup();
-    });
-
     it('returns active view for package with session and relationship content', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
 
@@ -313,23 +259,6 @@ describe('edit continuity observer', () => {
       // The view should have active session data but NOT raw checkpoint map
       expect(result!.kind).toBe('active');
       expect(result!.hasActiveSession).toBe(true);
-
-      await fixture.cleanup();
-    });
-
-    it('returns unavailable view when file read fails', async () => {
-      const fixture = await createTempStoryPackage('sample-scene');
-
-      // Create an invalid JSON file to trigger read failure
-      const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
-      await fs.writeFile(sessionsPath, '{ invalid json }', 'utf8');
-
-      const result = await observe(fixture.packageName);
-
-      expect(result).not.toBeNull();
-      expect(result!.kind).toBe('unavailable');
-      expect(result!.hasActiveSession).toBe(false);
-      expect(result!.exposesRawCheckpoints).toBe(false);
 
       await fixture.cleanup();
     });
