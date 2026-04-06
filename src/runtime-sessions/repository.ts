@@ -364,7 +364,6 @@ export async function createSessionFromCheckpoint(
 
     const nextFile: RuntimeSessionsFile = {
       ...file,
-      activeSessionId: session.sessionId,
       sessionsById: {
         ...file.sessionsById,
         [session.sessionId]: session,

@@ -9,6 +9,7 @@ import path from 'node:path';
 
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
 import { parseWithSchema } from '@/lib/validation';
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 import type { StorylineRepositoryFile } from '@/types';
 import {
   StorylineRepositoryFileSchema,
@@ -31,7 +32,7 @@ async function ensureStoryPackageExists(packageName: string): Promise<void> {
   try {
     await access(packageRoot);
   } catch {
-    throw new Error(`Story package "${packageName}" was not found at ${packageRoot}.`);
+    throw new RuntimeStoryPackageNotFoundError(packageName);
   }
 }
 

@@ -334,9 +334,53 @@ describe('POST runtime-session route', () => {
       },
     );
 
+    expect(executeStorylineRuntimeSessionCommand).toHaveBeenCalledWith('missing-pack', {
+      kind: 'ensure_active_session',
+    });
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       error: 'Story package "missing-pack" was not found.',
+    });
+  });
+
+  it('returns conflict when finalize_relationship_layer targets inactive storyline binding', async () => {
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
+      new RuntimeSessionConflictError(
+        'Cannot finalize relationship layer for a session outside the active storyline binding.',
+      ),
+    );
+    const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/packages/sample-scene/runtime-session', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'finalize_relationship_layer',
+          payload: {
+            packageName: 'sample-scene',
+            sessionId: 'sess-alt',
+            checkpointId: 'checkpoint-alt',
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: 'blocked',
+              stableBackgroundText: 'blocked',
+            },
+          },
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Cannot finalize relationship layer for a session outside the active storyline binding.',
     });
   });
 

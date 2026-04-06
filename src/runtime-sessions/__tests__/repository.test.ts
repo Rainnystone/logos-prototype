@@ -312,7 +312,7 @@ describe('runtime sessions repository', () => {
     }
   });
 
-  it('creates a new active session rooted at a known checkpoint', async () => {
+  it('creates a new session rooted at a known checkpoint without changing activeSessionId mirror', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-branch-'));
     const packageName = path.basename(packageRoot);
 
@@ -361,7 +361,7 @@ describe('runtime sessions repository', () => {
       expect(branched.orderedCheckpointIds).toEqual(['chk_01']);
 
       const persisted = await repository.readFile(packageName);
-      expect(persisted?.activeSessionId).toBe(branched.sessionId);
+      expect(persisted?.activeSessionId).toBe('sess_main');
       expect(persisted?.sessionsById[branched.sessionId]).toBeDefined();
       expect(persisted?.sessionsById[branched.sessionId]?.checkpointsById.chk_01?.checkpointId).toBe(
         'chk_01',

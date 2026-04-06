@@ -8,6 +8,7 @@ import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
   ensureStorylineAwareActiveSession,
+  executeStorylineRuntimeSessionCommand,
   resolveActiveStorylineContext,
   switchActiveStoryline,
 } from '@/storylines/substrate';
@@ -299,10 +300,12 @@ describe('storyline substrate', () => {
       sourceStorylineId: 'storyline_main',
       name: 'Branch A',
     });
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
 
     expect(created.storyline.sourceCheckpointId).toBe('chk_02');
     expect(created.storyline.headCheckpointId).toBe('chk_02');
     expect(created.repository.activeStorylineId).toBe('storyline_main');
+    expect(runtimeFile.activeSessionId).toBe('sess_main');
   });
 
   it('updates runtime-sessions.json activeSessionId as a mirror when switching storylines', async () => {
@@ -326,10 +329,12 @@ describe('storyline substrate', () => {
       checkpointId: 'chk_01',
       name: 'Checkpoint Branch',
     });
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
 
     expect(created.storyline.sourceCheckpointId).toBe('chk_01');
     expect(created.storyline.headCheckpointId).toBe('chk_01');
     expect(created.repository.activeStorylineId).toBe('storyline_main');
+    expect(runtimeFile.activeSessionId).toBe('sess_main');
   });
 
   it('repairs mirror drift on the next storyline-aware preflight instead of trusting stale mirrors', async () => {
@@ -426,5 +431,80 @@ describe('storyline substrate', () => {
       'utf8',
     );
     expect(worldBaseContent).toContain('variant_main:world-base.yaml');
+  });
+
+  it('surfaces missing-package errors as RuntimeStoryPackageNotFoundError for route-level 404 mapping', async () => {
+    const missingPackageName = `missing-substrate-package-${Date.now().toString(36)}`;
+
+    await expect(ensureStorylineAwareActiveSession(missingPackageName)).rejects.toBeInstanceOf(
+      runtimeSessionsRepository.RuntimeStoryPackageNotFoundError,
+    );
+  });
+
+  it('rejects finalize_relationship_layer when payload session is not bound to active storyline', async () => {
+    const { packageName } = await seedExplicitStorylinePackage({
+      includeAlternateStoryline: true,
+      runtimeActiveSessionId: 'sess_main',
+    });
+
+    await expect(
+      executeStorylineRuntimeSessionCommand(packageName, {
+        kind: 'finalize_relationship_layer',
+        payload: {
+          packageName,
+          sessionId: 'sess_alt',
+          checkpointId: 'chk_01',
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'bad finalize',
+            stableBackgroundText: 'bad finalize',
+          },
+        },
+      }),
+    ).rejects.toThrow(/active storyline/i);
+  });
+
+  it('rejects finalize_relationship_layer when payload session is orphan and unbound', async () => {
+    const { packageName } = await seedExplicitStorylinePackage({
+      includeAlternateStoryline: false,
+      runtimeActiveSessionId: 'sess_main',
+    });
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
+    await writeRuntimeSessionsFile(packageName, {
+      ...runtimeFile,
+      sessionsById: {
+        ...runtimeFile.sessionsById,
+        sess_orphan: {
+          sessionId: 'sess_orphan',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:20:00.000Z',
+          updatedAt: '2026-04-06T00:20:00.000Z',
+          headCheckpointId: 'chk_01',
+          activeCheckpointId: 'chk_01',
+          orderedCheckpointIds: ['chk_01'],
+          checkpointsById: {
+            chk_01: makeCheckpoint('chk_01', 1),
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'orphan',
+            stableBackgroundText: 'orphan',
+          },
+        },
+      },
+    });
+
+    await expect(
+      executeStorylineRuntimeSessionCommand(packageName, {
+        kind: 'finalize_relationship_layer',
+        payload: {
+          packageName,
+          sessionId: 'sess_orphan',
+          checkpointId: 'chk_01',
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'bad orphan finalize',
+            stableBackgroundText: 'bad orphan finalize',
+          },
+        },
+      }),
+    ).rejects.toThrow(/active storyline/i);
   });
 });

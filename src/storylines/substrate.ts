@@ -666,9 +666,23 @@ export async function executeStorylineRuntimeSessionCommand(
       }
 
       case 'finalize_relationship_layer': {
-        await resolveActiveStorylineContextInternal(packageName, {
+        const context = await resolveActiveStorylineContextInternal(packageName, {
           forWrite: true,
         });
+        assertExplicitContext(context);
+
+        if (command.payload.sessionId !== context.session.sessionId) {
+          throw new runtimeSessionsRepository.RuntimeSessionConflictError(
+            'Cannot finalize relationship layer for a session outside the active storyline binding.',
+          );
+        }
+
+        if (!context.session.checkpointsById[command.payload.checkpointId]) {
+          throw new runtimeSessionsRepository.RuntimeSessionConflictError(
+            `Cannot finalize relationship layer for checkpoint "${command.payload.checkpointId}" because it is not part of the active storyline session.`,
+          );
+        }
+
         await runtimeSessionsRepository.finalizeRelationshipLayer({
           ...command.payload,
           packageName,
