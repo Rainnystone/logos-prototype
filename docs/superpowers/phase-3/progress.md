@@ -67,6 +67,74 @@
   - 补清 `activeSessionId` 生命周期边界
   - 补一个最小迁移时序例子
   - 在 `Part 1` plan 里把 variant 复制与 session 绑定更新拆成独立检查点
+- 用户已继续拍板 `Part 1` 的多个关键范围决定：
+  - `Part 1` 采用 substrate + `/play`/`/edit` 默认 storyline 解析链
+  - 采用 `storyline-repository.json`
+  - 采用 `variants/<variantId>/...` materialized workspace
+  - package baseline 退回 baseline / scaffold / import-export anchor 角色
+  - `session` 绑定事实源保持在 `storyline-repository.json`
+  - lazy bootstrap migration 继续成立
+  - “从 checkpoint 继续”的作者可见入口仍放到 `Part 2`
+- 当前唯一仍待冻结的 `Part 1` 设计点，收敛到：
+  - variant workspace 的创建与复制规则
+- 用户已确认 variant workspace 创建规则，当前已正式冻结：
+  - 新建 / duplicate / 从 checkpoint 分叉，均立即复制来源 storyline 当前 variant workspace
+  - 不采用 overlay inheritance
+  - 不采用 deferred first-write materialization
+- 已写出正式 `Part 1` spec：
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
+- 当前 `Part 1` spec 已包含：
+  - `storyline-repository.json` 合同
+  - `variants/<variantId>/...` workspace 拓扑
+  - `/edit` 与 `/play` 的默认 storyline-aware 解析链
+  - storyline head / active session 不变量
+  - variant 创建规则
+  - lazy bootstrap migration
+  - deterministic bridge 的 workspace-target 语义
 - 当前下一步：
+  - 对 `Part 1` spec 执行独立 review
+  - 收口 review 意见
   - 交给用户确认
-  - 在用户确认后进入 `Part 1` spec
+- 已完成 `Part 1` 第一轮独立 review 收口，reviewer 提出的 3 个仍会阻塞 implementation plan 的缺口已补回 spec：
+  - 双文件一致性与 source-of-truth split 仍不够硬
+  - lazy bootstrap 的 materialization trigger 不够具体
+  - variant workspace 的 canonical physical contract 不够严格
+- 已将上述 3 点正式补入 `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`，包括：
+  - `storyline-repository.json` / `runtime-sessions.json` 的 canonical ownership split
+  - mutating operation 的固定写入顺序、failure handling 与 narrow repair 方向
+  - 只读路径 vs materializing write 的 bootstrap trigger 边界
+  - `variantId`、`workspaceRoot`、managed file set 与 recursive copy 规则
+- 已完成第二轮 `Part 1` spec blocker review，对齐出另外 2 个必须在 spec 层冻结的问题：
+  - 旧 package 首次物化且没有现成 session 时，是否立即创建 storyline-bound `awaiting_start` session
+  - `Part 1` 是否承担无 UI substrate primitives，还是把 create / switch / branch 全部推迟到 `Part 2`
+- 上述 2 点也已收口并回写：
+  - bootstrap 现已明确要求：若无现成 active session，物化时立即通过 runtime session layer 创建并绑定 `awaiting_start` session
+  - `Part 1` 现已明确承担无 UI substrate primitives：resolve / bootstrap / switch / create-from-source / branch-from-checkpoint
+  - `Part 2` 则明确改为消费这些 primitives 的 UI 工作区层
+- 第三轮 blocker review 又进一步收敛出最后 2 个需要补死的实现边界：
+  - `create_storyline_from_source` 的成功态落盘合同
+  - bootstrap / create / branch 触及 variant workspace、runtime session、storyline repo 三类资源时的固定写入顺序与 orphan 处理
+- 这两点也已完成回写：
+  - `create_storyline_from_source` 现已明确为“从 source 当前 head 分叉”，并明确不自动切换 `activeStorylineId`
+  - `branch_storyline_from_checkpoint` 与 `switch_active_storyline` 的成功态合同已补入 spec
+  - 三资源写入顺序已冻结为 staging workspace -> runtime JSON -> promote workspace -> storyline repo
+  - staging cleanup、orphaned workspace、orphaned session 的允许范围与正常解析忽略规则已补入 spec
+- 第四轮 blocker review 又指出 bootstrap 小节仍残留一段旧顺序描述，与前文已冻结的 runtime-first / repo-last 规则冲突。
+- 该矛盾现已收口：
+  - bootstrap sequencing 已改为先在内存中准备 default storyline metadata，再 stage workspace、写 runtime、promote workspace、最后写 storyline repo
+- 已完成最终独立 spec review，reviewer 结论：
+  - `Approved`
+- reviewer 仅给出 1 条非阻塞加强建议：
+  - 在 bootstrap sequencing 中把“新 session 创建时先持久化 runtime-sessions.json”写得更直白
+- 该建议也已吸收回 `Part 1` spec。
+- 用户随后补充了一个外部独立 spec review 参考；经主线程判断，其中 2 条澄清建议值得吸收，且不改变既有边界：
+  - 显式写清 `activeStorylineId` 在 explicit repository 存在后不可为 `null`
+  - 显式写清 `storyline -> variantId` 在 `Phase 3 v1` 下保持稳定绑定，不允许后续动作重绑到另一份 variant
+- 这两条已同步补入：
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
+  - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
+- 当前 `Part 1` spec 状态更新为：
+  - `Reviewed, pending user confirmation`
+- 当前下一步更新为：
+  - 交给用户确认
+  - 如认可，则进入 `Part 1` implementation plan

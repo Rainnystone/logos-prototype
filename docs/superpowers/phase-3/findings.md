@@ -64,10 +64,132 @@
 ## 当前尚未冻结的关键问题
 
 - `storyline-scoped authoring variant` 到底是：
-  - 独立 workspace / revision 指向
-  - 还是 overlay / delta / revision layer
-- package-level repository seam 的首版物理组织方式如何落盘。
-- `Part 2` 的“第一批可运行切片”到底要不要同时带一部分管理动作。
+  - 新建、duplicate、从 checkpoint 分叉时到底如何创建与复制 variant workspace
+
+## 2026-04-06 Part 1 已冻结决定
+
+- `Part 1` 不是纯 substrate-only，它要把 `/play` 与 `/edit` 的默认 storyline 解析链一并接通。
+- `storyline-repository.json` 作为首版 package-level storyline 仓储文件。
+- `authoring variant` 的物理模型冻结为：
+  - `variants/<variantId>/...` 下的 materialized workspace
+- package-root baseline YAML 的职责冻结为：
+  - baseline
+  - scaffold source
+  - import/export anchor
+  - 不再作为 storyline-aware 常规写目标
+- `session` 与 `storyline` 的绑定事实源冻结在：
+  - `storyline-repository.json`
+- 兼容迁移方式冻结为：
+  - lazy bootstrap migration
+- “从 checkpoint 继续”的作者可见入口延后到 `Part 2`，但 `Part 1` 必须把底层能力做成正式地基，而不是临时方案。
+- `Part 1` 不承担完整 storyline 管理动作；这些继续留给 `Part 2 / Part 3`。
+- `variant workspace` 的创建规则也已冻结：
+  - 新建 storyline：复制来源 storyline 当前 variant workspace
+  - duplicate storyline：复制被 duplicate 的 storyline 当前 variant workspace
+  - 从 checkpoint 分叉：仍复制来源 storyline 当前 variant workspace，只改变 checkpoint 锚点
+- 当前明确不采用：
+  - overlay inheritance
+  - deferred first-write materialization
+
+## 2026-04-06 Part 1 spec review 补充冻结结论
+
+第一轮 `Part 1` spec review 继续收敛出 3 个必须前置冻结的硬边界；这些结论已经回写到 `Part 1` spec。
+
+### 双文件一致性
+
+- `storyline-repository.json` 是以下字段的 canonical source:
+  - `activeStorylineId`
+  - `storyline.variantId`
+  - `storyline.activeSessionId`
+- `runtime-sessions.json` 是以下字段的 canonical source:
+  - `sessionsById`
+  - checkpoint graph
+  - `session.activeCheckpointId`
+  - `session.headCheckpointId`
+- `runtime-sessions.json.activeSessionId` 只作为 active storyline 的 compatibility mirror。
+- `storyline.headCheckpointId` 只作为 storyline-facing mirror，不再被视为独立 runtime truth。
+
+### 双文件写入顺序与 repair 方向
+
+- mutating runtime/storyline 操作统一采用：
+  - 先确保 explicit storyline substrate 已存在
+  - 先写 `runtime-sessions.json`
+  - 再写 `storyline-repository.json`
+- 如果 runtime 写失败，则 storyline repo 不能前进。
+- 如果 runtime 写成功但 storyline repo 写失败，则：
+  - 当前命令必须失败
+  - runtime continuity 继续作为 canonical truth
+  - 下一次 storyline-aware load / write preflight 必须先做 narrow repair
+- repair 方向冻结为：
+  - 用 storyline repo 修 `runtime-sessions.json.activeSessionId`
+  - 用 runtime session 的 checkpoint pointer 修 `storyline.headCheckpointId`
+- 如果遇到 structural mismatch，而不是 mirror drift，则必须直接报错，不能猜测修复。
+
+### lazy bootstrap trigger
+
+- 只读 `/edit`、`/play`、diagnostics、validation 不物化新文件。
+- 只有 storyline-aware write 才会把旧 package 物化成显式 `Phase 3` package。
+- 首批 trigger 已冻结为：
+  - 第一次 deterministic bridge save
+  - 第一次 mutating runtime-session command
+  - 后续 restart / branch 等 storyline-aware write
+
+### variant workspace 物理合同
+
+- `variantId` package 内唯一，创建后不可变。
+- `workspaceRoot` 必须严格等于相对路径 `variants/<variantId>`。
+- bridge / loader 的 managed authored contract 只覆盖 6 个 YAML 文件。
+- workspace 下允许额外文件或目录存在，但 `Part 1` 只把它们当 opaque package-local assets。
+- baseline bootstrap 只复制 managed YAML family。
+- variant 复制必须递归复制整个 workspace 目录，避免丢失 opaque adjunct files。
+
+### bootstrap session 语义与 Part 1 primitive 边界
+
+- `Part 1` 与总 spec 现已重新对齐：
+  - 如果旧 package 首次物化时没有现成 active session，bootstrap 必须立刻通过 runtime session layer 创建一个 storyline-bound `awaiting_start` session，并绑定给默认 storyline。
+- 这样做的原因：
+  - 显式 `Phase 3` package 一旦物化，就不再保留“有 storyline 但没有 activeSessionId”的半成品状态。
+  - `/play` 与 `/edit` 的默认 storyline 解析链可以始终依赖正式绑定，而不是额外再做一次 placeholder 推断。
+- `Part 1` 的职责也已进一步冻结：
+  - 不只交付数据模型
+  - 还要交付无 UI 的 substrate primitives，至少包括：
+    - resolve active storyline
+    - bootstrap default storyline substrate
+    - switch active storyline
+    - create storyline from source storyline
+    - branch storyline from checkpoint
+- `Part 2` 只负责把这些 primitives 接成作者工作区，而不是再回头定义底层动作边界。
+- `duplicate storyline` 的产品动作仍留在 `Part 3`，但 `Part 1` 需要把底层 workspace-clone contract 做成可复用能力。
+
+### `create_storyline_from_source` 与三资源写入顺序
+
+- `create_storyline_from_source` 现已冻结为“从 source storyline 当前 head 分叉”的 substrate primitive：
+  - source storyline 必须已有非空 `headCheckpointId`
+  - 新 storyline 的 `sourceCheckpointId` 与 `headCheckpointId` 都等于 source 当前 head
+  - 新 storyline 获得自己的 `variantId` 和自己的新 session
+  - 创建动作本身不自动切换 package `activeStorylineId`
+- `branch_storyline_from_checkpoint` 则是显式历史锚点版本：
+  - 选中的 checkpoint 必须能在 package checkpoint graph 里 resolve
+  - 新 storyline 的 `sourceCheckpointId` / `headCheckpointId` 都等于选中 checkpoint
+  - 同样不自动切换 active storyline
+- `switch_active_storyline` 被正式冻结为独立 primitive：
+  - 只切换 package `activeStorylineId`
+  - 同步更新 `runtime-sessions.json.activeSessionId` mirror
+  - 不创建 storyline / variant / session
+
+对于 bootstrap / create / branch 这三类会同时碰 variant workspace、runtime session、storyline repo 的操作，当前写入顺序已冻结为：
+
+1. 先在 staging 路径准备 variant workspace
+2. 先写 `runtime-sessions.json`
+3. 再把 workspace promote 到正式 `variants/<variantId>`
+4. 最后写 `storyline-repository.json`
+
+对应的 partial failure 规则也已冻结：
+
+- staging workspace 若未 promote 即失败，必须清理
+- 已 promote 但 repo 未成功登记的 workspace 可以作为 orphan 保留；正常解析必须忽略未登记目录
+- repo 写失败后未绑定的新 session 可以留在 `runtime-sessions.json` 中；正常解析必须忽略未绑定 session
+- 正确性不能依赖 cleanup 一定成功；cleanup 只作为 best effort
 
 ## 代码现状对 Phase 3 的直接约束
 

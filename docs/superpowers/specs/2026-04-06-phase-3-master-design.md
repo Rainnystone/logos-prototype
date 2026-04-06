@@ -192,6 +192,8 @@ A storyline should own or point to:
 - active session reference
 - timestamps and lightweight provenance
 
+Once the explicit storyline repository exists, the package-level `activeStorylineId` must be non-null and resolve to one concrete storyline; only pre-bootstrap legacy compatibility is allowed to operate without that explicit record.
+
 A storyline is the thing authors will:
 
 - continue
@@ -270,15 +272,16 @@ To keep Part 1 implementable, the following invariants are frozen now.
 
 1. `storyline.headCheckpointId` is the storyline’s current official continuation head.
 2. `storyline.activeSessionId` points to the storyline’s current active session.
-3. When a storyline has an active session, `session.activeCheckpointId` and `storyline.headCheckpointId` must resolve to the same checkpoint.
-4. Continuing a storyline and accepting a new beat advances both:
+3. `storyline.variantId` is stable after bootstrap or storyline creation in Phase 3 v1; later actions may create a new storyline, but should not rebind an existing storyline to a different variant.
+4. When a storyline has an active session, `session.activeCheckpointId` and `storyline.headCheckpointId` must resolve to the same checkpoint.
+5. Continuing a storyline and accepting a new beat advances both:
    - `session.activeCheckpointId`
    - `storyline.headCheckpointId`
-5. Restarting a storyline from an older checkpoint is a deliberate storyline-head move:
+6. Restarting a storyline from an older checkpoint is a deliberate storyline-head move:
    - the storyline head moves to the chosen checkpoint immediately
    - the replacement active session is bound to that same checkpoint
    - subsequent accepted beats advance forward from there
-6. Switching storylines changes the package-level `activeStorylineId`, then resolves that storyline’s:
+7. Switching storylines changes the package-level `activeStorylineId`, then resolves that storyline’s:
    - variant workspace
    - active session
    - head checkpoint
@@ -379,6 +382,7 @@ Workspace creation rules are frozen now:
 - creating a new storyline materializes a new variant workspace by copying the source storyline’s current variant workspace
 - duplicating a storyline materializes a new variant workspace by copying the duplicated storyline’s current variant workspace
 - branching from a checkpoint still copies the source storyline’s current variant workspace; only the checkpoint anchor changes
+- no storyline creation path in Phase 3 relies on overlay inheritance or deferred first-write materialization
 
 This means `authoring variant` tracks storyline-specific authored intent, while `checkpoint` tracks runtime continuation history.
 
@@ -442,6 +446,13 @@ The new storyline should receive:
 - its own storyline id
 - its own authoring variant
 - its own active session binding
+
+At the product-contract level:
+
+- creating from another storyline's current state uses that storyline's current head checkpoint as the new anchor
+- creating from an explicitly chosen checkpoint uses that selected checkpoint as the new anchor
+- the new storyline gets its own bound session rooted at that anchor
+- creation does not implicitly switch the package `activeStorylineId`; switching remains a separate action
 
 ### 7.2 Continue Storyline
 
@@ -517,6 +528,7 @@ Primary delivery target:
 - authoring variant contract
 - storyline-bound session semantics
 - checkpoint-ref model
+- non-UI substrate primitives for active-storyline resolution, create-from-source, switch, and branch-from-checkpoint
 - lazy bootstrap migration for old packages
 
 Completion means:
@@ -524,6 +536,7 @@ Completion means:
 - a package can formally contain multiple storylines
 - each storyline has its own authoring variant and active session binding
 - the system can resolve the active storyline without requiring the new management UI yet
+- the server-owned substrate primitives for create / switch / branch already exist before the workspace UI lands
 - old Phase 2-era packages still open through implicit-default-storyline compatibility
 
 ### 9.2 Part 2: Package & Storyline Workspace
