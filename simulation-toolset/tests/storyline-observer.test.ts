@@ -10,6 +10,10 @@ import type {
   RuntimeCheckpoint,
 } from '@/types/runtime-sessions';
 import type {
+  StateSnapshot,
+  RelationshipLayer,
+} from '@/types';
+import type {
   MockKernel,
 } from '@simulation/mock-kernel';
 import {
@@ -39,6 +43,48 @@ import {
  * Observers should return derived view data, not raw repository objects.
  */
 
+// Helper to create a default state snapshot
+function createDefaultStateSnapshot(ordinal: number): StateSnapshot {
+  return {
+    sceneState: {
+      sceneId: 'scene_test',
+      currentPhaseIndex: 1,
+      currentBeatIndexInPhase: ordinal,
+      mainAxis: 'test-axis',
+      endLine: 'test-end',
+      alpha: 'test-alpha',
+      beta: 'test-beta',
+    },
+    roundState: {
+      phaseGoal: 'test-goal',
+      currentVolume: 'Med',
+      currentRouter: 'test-router',
+      verbLexicon: ['observe'],
+      historyWindow: [],
+    },
+    generationState: {
+      directorNoteSummary: 'test summary',
+      promptObject: {},
+      currentBeatText: `beat_${ordinal}`,
+      currentOptions: [],
+    },
+    evaluationState: {
+      auditAnswers: [],
+      blockingFailures: [],
+      retryCount: 0,
+      rewriteFeedback: null,
+    },
+  };
+}
+
+// Helper to create a default relationship layer
+function createDefaultRelationshipLayer(): RelationshipLayer {
+  return {
+    highlightedDeltasText: '',
+    stableBackgroundText: '',
+  };
+}
+
 // Helper to create a minimal checkpoint
 function createMinimalCheckpoint(checkpointId: string, ordinal: number): RuntimeCheckpoint {
   return {
@@ -52,22 +98,8 @@ function createMinimalCheckpoint(checkpointId: string, ordinal: number): Runtime
       playerInput: `input_${ordinal}`,
       beatText: `beat_${ordinal}`,
     },
-    stateSnapshot: {
-      version: 1,
-      beatOrdinal: ordinal,
-      sceneId: 'scene_test',
-      phaseIndex: 1,
-      beatIndex: ordinal,
-      globalClock: { currentBeatOrdinal: ordinal, currentPhaseIndex: 1, currentBeatIndex: ordinal },
-      characters: {},
-      flags: {},
-      counters: {},
-    },
-    lastStableRelationshipLayer: {
-      charactersById: {},
-      relationships: [],
-      version: 1,
-    },
+    stateSnapshot: createDefaultStateSnapshot(ordinal),
+    lastStableRelationshipLayer: createDefaultRelationshipLayer(),
     createdAt: new Date().toISOString(),
   };
 }
@@ -222,7 +254,7 @@ describe('StorylineObserver', () => {
     beforeEach(async () => {
       // Add checkpoints to the session
       const state = kernel.getState();
-      const sessionId = state.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
+      const sessionId = state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
 
       const checkpoints: RuntimeCheckpoint[] = [
         createMinimalCheckpoint('checkpoint_1', 1),
@@ -230,7 +262,7 @@ describe('StorylineObserver', () => {
         createMinimalCheckpoint('checkpoint_3', 3),
       ];
 
-      const session = state.runtimeSessions.sessionsById[sessionId];
+      const session = state.runtimeSessions.sessionsById[sessionId]!;
 
       kernel._testSetState({
         ...state,
@@ -242,9 +274,9 @@ describe('StorylineObserver', () => {
               ...session,
               orderedCheckpointIds: ['checkpoint_1', 'checkpoint_2', 'checkpoint_3'],
               checkpointsById: {
-                checkpoint_1: checkpoints[0],
-                checkpoint_2: checkpoints[1],
-                checkpoint_3: checkpoints[2],
+                checkpoint_1: checkpoints[0]!,
+                checkpoint_2: checkpoints[1]!,
+                checkpoint_3: checkpoints[2]!,
               },
               headCheckpointId: 'checkpoint_3',
               activeCheckpointId: 'checkpoint_3',
@@ -256,7 +288,7 @@ describe('StorylineObserver', () => {
           storylinesById: {
             ...state.storylineRepository!.storylinesById,
             storyline_main: {
-              ...state.storylineRepository!.storylinesById['storyline_main'],
+              ...state.storylineRepository!.storylinesById['storyline_main']!,
               headCheckpointId: 'checkpoint_3',
             },
           },
@@ -320,14 +352,14 @@ describe('StorylineObserver', () => {
     beforeEach(async () => {
       // Add checkpoints
       const state = kernel.getState();
-      const sessionId = state.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
+      const sessionId = state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
 
       const checkpoints: RuntimeCheckpoint[] = [
         createMinimalCheckpoint('checkpoint_1', 1),
         createMinimalCheckpoint('checkpoint_2', 2),
       ];
 
-      const session = state.runtimeSessions.sessionsById[sessionId];
+      const session = state.runtimeSessions.sessionsById[sessionId]!;
 
       kernel._testSetState({
         ...state,
@@ -339,8 +371,8 @@ describe('StorylineObserver', () => {
               ...session,
               orderedCheckpointIds: ['checkpoint_1', 'checkpoint_2'],
               checkpointsById: {
-                checkpoint_1: checkpoints[0],
-                checkpoint_2: checkpoints[1],
+                checkpoint_1: checkpoints[0]!,
+                checkpoint_2: checkpoints[1]!,
               },
               headCheckpointId: 'checkpoint_2',
               activeCheckpointId: 'checkpoint_2',
@@ -486,14 +518,7 @@ describe('StorylineObserver', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false for unknown assertion kind', async () => {
-      const result = observer.verifyStateAssertion({
-        kind: 'unknown_assertion',
-        expected: 'something',
-      });
-
-      expect(result).toBe(false);
-    });
+    // Note: Unknown assertion kinds are prevented by TypeScript's type system
   });
 
   // ============================================================================

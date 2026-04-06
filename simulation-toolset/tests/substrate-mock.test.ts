@@ -11,6 +11,10 @@ import type {
   RuntimeCheckpoint,
 } from '@/types/runtime-sessions';
 import type {
+  StateSnapshot,
+  RelationshipLayer,
+} from '@/types';
+import type {
   MockKernel,
   ScriptedMode,
 } from '@simulation/mock-kernel';
@@ -55,9 +59,8 @@ function createMinimalSession(sessionId: string): RuntimeSession {
     orderedCheckpointIds: [],
     checkpointsById: {},
     lastStableRelationshipLayer: {
-      charactersById: {},
-      relationships: [],
-      version: 1,
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
     },
   };
 }
@@ -76,22 +79,82 @@ function createMinimalCheckpoint(checkpointId: string, ordinal: number): Runtime
       beatText: 'test beat',
     },
     stateSnapshot: {
-      version: 1,
-      beatOrdinal: ordinal,
-      sceneId: 'scene_test',
-      phaseIndex: 1,
-      beatIndex: 1,
-      globalClock: { currentBeatOrdinal: ordinal, currentPhaseIndex: 1, currentBeatIndex: 1 },
-      characters: {},
-      flags: {},
-      counters: {},
+      sceneState: {
+        sceneId: 'scene_test',
+        currentPhaseIndex: 1,
+        currentBeatIndexInPhase: 1,
+        mainAxis: 'test-axis',
+        endLine: 'test-end',
+        alpha: 'test-alpha',
+        beta: 'test-beta',
+      },
+      roundState: {
+        phaseGoal: 'test-goal',
+        currentVolume: 'Med',
+        currentRouter: 'test-router',
+        verbLexicon: ['observe'],
+        historyWindow: [],
+      },
+      generationState: {
+        directorNoteSummary: 'test summary',
+        promptObject: {},
+        currentBeatText: 'test beat',
+        currentOptions: [],
+      },
+      evaluationState: {
+        auditAnswers: [],
+        blockingFailures: [],
+        retryCount: 0,
+        rewriteFeedback: null,
+      },
     },
     lastStableRelationshipLayer: {
-      charactersById: {},
-      relationships: [],
-      version: 1,
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
     },
     createdAt: new Date().toISOString(),
+  };
+}
+
+// Helper to create a default state snapshot
+function createDefaultStateSnapshot(): StateSnapshot {
+  return {
+    sceneState: {
+      sceneId: 'scene_001',
+      currentPhaseIndex: 1,
+      currentBeatIndexInPhase: 1,
+      mainAxis: 'test-axis',
+      endLine: 'test-end',
+      alpha: 'test-alpha',
+      beta: 'test-beta',
+    },
+    roundState: {
+      phaseGoal: 'test-goal',
+      currentVolume: 'Med',
+      currentRouter: 'test-router',
+      verbLexicon: ['observe'],
+      historyWindow: [],
+    },
+    generationState: {
+      directorNoteSummary: 'test summary',
+      promptObject: {},
+      currentBeatText: 'test beat',
+      currentOptions: [],
+    },
+    evaluationState: {
+      auditAnswers: [],
+      blockingFailures: [],
+      retryCount: 0,
+      rewriteFeedback: null,
+    },
+  };
+}
+
+// Helper to create a default relationship layer
+function createDefaultRelationshipLayer(): RelationshipLayer {
+  return {
+    highlightedDeltasText: '',
+    stableBackgroundText: '',
   };
 }
 
@@ -166,8 +229,8 @@ describe('SubstrateMock', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].layer).toBe('substrate');
-      expect(trace[0].operation).toBe('resolve_active_storyline_context');
+      expect(trace[0]!.layer).toBe('substrate');
+      expect(trace[0]!.operation).toBe('resolve_active_storyline_context');
     });
   });
 
@@ -401,11 +464,11 @@ describe('SubstrateMock', () => {
 
       // Add a checkpoint to the session
       const state = kernel.getState();
-      const sessionId = state.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
+      const sessionId = state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
       checkpointId = 'checkpoint_test_001';
 
       const checkpoint = createMinimalCheckpoint(checkpointId, 1);
-      const session = state.runtimeSessions.sessionsById[sessionId];
+      const session = state.runtimeSessions.sessionsById[sessionId]!;
 
       kernel._testSetState({
         ...state,
@@ -427,7 +490,7 @@ describe('SubstrateMock', () => {
           storylinesById: {
             ...state.storylineRepository!.storylinesById,
             storyline_main: {
-              ...state.storylineRepository!.storylinesById['storyline_main'],
+              ...state.storylineRepository!.storylinesById['storyline_main']!,
               headCheckpointId: checkpointId,
             },
           },
@@ -541,7 +604,7 @@ describe('SubstrateMock', () => {
     });
 
     it('returns unchanged if name is same', async () => {
-      const before = kernel.getState().storylineRepository!.storylinesById['storyline_main'];
+      const before = kernel.getState().storylineRepository!.storylinesById['storyline_main']!;
 
       const result = await substrate.updateStorylineDisplayName({
         packageName: 'test-package',
@@ -685,17 +748,7 @@ describe('SubstrateMock', () => {
                 playerInput: 'test',
                 beatText: 'test beat',
               },
-              stateSnapshot: {
-                version: 1,
-                beatOrdinal: 1,
-                sceneId: 'scene_001',
-                phaseIndex: 1,
-                beatIndex: 1,
-                globalClock: { currentBeatOrdinal: 1, currentPhaseIndex: 1, currentBeatIndex: 1 },
-                characters: {},
-                flags: {},
-                counters: {},
-              },
+              stateSnapshot: createDefaultStateSnapshot(),
             },
           },
         });
@@ -705,7 +758,7 @@ describe('SubstrateMock', () => {
 
         // Verify storyline head updated
         const state = kernel.getState();
-        const storyline = state.storylineRepository!.storylinesById[state.storylineRepository!.activeStorylineId];
+        const storyline = state.storylineRepository!.storylinesById[state.storylineRepository!.activeStorylineId]!;
         expect(storyline.headCheckpointId).toBe(result.activeCheckpointId);
       });
 
@@ -724,24 +777,14 @@ describe('SubstrateMock', () => {
                 playerInput: 'test',
                 beatText: 'test beat',
               },
-              stateSnapshot: {
-                version: 1,
-                beatOrdinal: 1,
-                sceneId: 'scene_001',
-                phaseIndex: 1,
-                beatIndex: 1,
-                globalClock: { currentBeatOrdinal: 1, currentPhaseIndex: 1, currentBeatIndex: 1 },
-                characters: {},
-                flags: {},
-                counters: {},
-              },
+              stateSnapshot: createDefaultStateSnapshot(),
             },
           },
         });
 
         const state = kernel.getState();
-        const sessionId = state.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
-        const session = state.runtimeSessions.sessionsById[sessionId];
+        const sessionId = state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
+        const session = state.runtimeSessions.sessionsById[sessionId]!;
 
         expect(session.orderedCheckpointIds.length).toBe(1);
         expect(session.activeCheckpointId).toBe(session.orderedCheckpointIds[0]);
@@ -762,17 +805,7 @@ describe('SubstrateMock', () => {
                 playerInput: 'test',
                 beatText: 'test beat',
               },
-              stateSnapshot: {
-                version: 1,
-                beatOrdinal: 1,
-                sceneId: 'scene_001',
-                phaseIndex: 1,
-                beatIndex: 1,
-                globalClock: { currentBeatOrdinal: 1, currentPhaseIndex: 1, currentBeatIndex: 1 },
-                characters: {},
-                flags: {},
-                counters: {},
-              },
+              stateSnapshot: createDefaultStateSnapshot(),
             },
           },
         });
@@ -803,17 +836,7 @@ describe('SubstrateMock', () => {
                 playerInput: 'test',
                 beatText: 'test beat',
               },
-              stateSnapshot: {
-                version: 1,
-                beatOrdinal: 1,
-                sceneId: 'scene_001',
-                phaseIndex: 1,
-                beatIndex: 1,
-                globalClock: { currentBeatOrdinal: 1, currentPhaseIndex: 1, currentBeatIndex: 1 },
-                characters: {},
-                flags: {},
-                counters: {},
-              },
+              stateSnapshot: createDefaultStateSnapshot(),
             },
           },
         });
@@ -830,11 +853,7 @@ describe('SubstrateMock', () => {
             payload: {
               sessionId: sessionId,
               checkpointId: checkpointId,
-              relationshipLayer: {
-                charactersById: {},
-                relationships: [],
-                version: 1,
-              },
+              relationshipLayer: createDefaultRelationshipLayer(),
             },
           },
         });
@@ -852,11 +871,7 @@ describe('SubstrateMock', () => {
               payload: {
                 sessionId: 'wrong_session',
                 checkpointId: checkpointId,
-                relationshipLayer: {
-                  charactersById: {},
-                  relationships: [],
-                  version: 1,
-                },
+                relationshipLayer: createDefaultRelationshipLayer(),
               },
             },
           }),
@@ -872,11 +887,7 @@ describe('SubstrateMock', () => {
               payload: {
                 sessionId: sessionId,
                 checkpointId: 'wrong_checkpoint',
-                relationshipLayer: {
-                  charactersById: {},
-                  relationships: [],
-                  version: 1,
-                },
+                relationshipLayer: createDefaultRelationshipLayer(),
               },
             },
           }),
@@ -891,11 +902,7 @@ describe('SubstrateMock', () => {
             payload: {
               sessionId: sessionId,
               checkpointId: checkpointId,
-              relationshipLayer: {
-                charactersById: {},
-                relationships: [],
-                version: 1,
-              },
+              relationshipLayer: createDefaultRelationshipLayer(),
             },
           },
         });
@@ -916,7 +923,7 @@ describe('SubstrateMock', () => {
 
       it('creates new session and preserves old', async () => {
         const stateBefore = kernel.getState();
-        const oldSessionId = stateBefore.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
+        const oldSessionId = stateBefore.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
 
         const result = await substrate.executeStorylineRuntimeSessionCommand({
           packageName: 'test-package',
@@ -937,7 +944,7 @@ describe('SubstrateMock', () => {
         });
 
         const state = kernel.getState();
-        const newSession = state.runtimeSessions.sessionsById[result.activeSessionId];
+        const newSession = state.runtimeSessions.sessionsById[result.activeSessionId]!;
         expect(newSession.lifecycle).toBe('awaiting_start');
       });
 
@@ -948,7 +955,7 @@ describe('SubstrateMock', () => {
         });
 
         const state = kernel.getState();
-        const storyline = state.storylineRepository!.storylinesById['storyline_main'];
+        const storyline = state.storylineRepository!.storylinesById['storyline_main']!;
         expect(storyline.headCheckpointId).toBeNull();
       });
 
@@ -959,7 +966,7 @@ describe('SubstrateMock', () => {
         });
 
         const state = kernel.getState();
-        const storyline = state.storylineRepository!.storylinesById['storyline_main'];
+        const storyline = state.storylineRepository!.storylinesById['storyline_main']!;
         expect(storyline.activeSessionId).toBe(result.activeSessionId);
       });
 
@@ -1038,8 +1045,8 @@ describe('SubstrateMock', () => {
 
       // When scripted success, we get { kind: 'success' } output, not actual context
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toEqual({ kind: 'success' });
-      expect(trace[0].output).toEqual({ kind: 'success' });
+      expect(trace[0]!.mode).toEqual({ kind: 'success' });
+      expect(trace[0]!.output).toEqual({ kind: 'success' });
     });
 
     it('scriptNext(error) throws and records error', async () => {
@@ -1053,7 +1060,7 @@ describe('SubstrateMock', () => {
       ).rejects.toThrow('Test error');
 
       const trace = kernel.getTrace();
-      expect(trace[0].error).toBe('Test error');
+      expect(trace[0]!.error).toBe('Test error');
     });
   });
 });

@@ -47,20 +47,38 @@ function createMinimalCheckpoint(checkpointId: string, ordinal: number): Runtime
       beatText: `beat_${ordinal}`,
     },
     stateSnapshot: {
-      version: 1,
-      beatOrdinal: ordinal,
-      sceneId: 'scene_test',
-      phaseIndex: 1,
-      beatIndex: ordinal,
-      globalClock: { currentBeatOrdinal: ordinal, currentPhaseIndex: 1, currentBeatIndex: ordinal },
-      characters: {},
-      flags: {},
-      counters: {},
+      sceneState: {
+        sceneId: 'scene_test',
+        currentPhaseIndex: 1,
+        currentBeatIndexInPhase: ordinal,
+        mainAxis: 'test-axis',
+        endLine: 'test-end',
+        alpha: 'test-alpha',
+        beta: 'test-beta',
+      },
+      roundState: {
+        phaseGoal: 'test-goal',
+        currentVolume: 'Med',
+        currentRouter: 'test-router',
+        verbLexicon: ['observe'],
+        historyWindow: [],
+      },
+      generationState: {
+        directorNoteSummary: 'test summary',
+        promptObject: {},
+        currentBeatText: 'test beat',
+        currentOptions: [],
+      },
+      evaluationState: {
+        auditAnswers: [],
+        blockingFailures: [],
+        retryCount: 0,
+        rewriteFeedback: null,
+      },
     },
     lastStableRelationshipLayer: {
-      charactersById: {},
-      relationships: [],
-      version: 1,
+      highlightedDeltasText: '',
+      stableBackgroundText: '',
     },
     createdAt: new Date().toISOString(),
   };
@@ -118,7 +136,7 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
       expect(state.storylineRepository!.storylinesById['storyline_main']).toBeDefined();
-      expect(state.storylineRepository!.storylinesById['storyline_main'].name).toBe('Main Line');
+      expect(state.storylineRepository!.storylinesById['storyline_main']!.name).toBe('Main Line');
     });
 
     it('withVariantWorkspace adds variant state', async () => {
@@ -134,8 +152,8 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
       expect(state.variantsById['variant_main']).toBeDefined();
-      expect(state.variantsById['variant_main'].hasWorldBase).toBe(true);
-      expect(state.variantsById['variant_main'].hasScene).toBe(true);
+      expect(state.variantsById['variant_main']!.hasWorldBase).toBe(true);
+      expect(state.variantsById['variant_main']!.hasScene).toBe(true);
     });
 
     it('withSession adds session to runtimeSessions', async () => {
@@ -146,7 +164,7 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
       expect(state.runtimeSessions.sessionsById['session_001']).toBeDefined();
-      expect(state.runtimeSessions.sessionsById['session_001'].lifecycle).toBe('awaiting_start');
+      expect(state.runtimeSessions.sessionsById['session_001']!.lifecycle).toBe('awaiting_start');
     });
 
     it('withCheckpoint adds checkpoint to session', async () => {
@@ -162,7 +180,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.checkpointsById['checkpoint_001']).toBeDefined();
       expect(session.orderedCheckpointIds).toContain('checkpoint_001');
@@ -214,7 +232,7 @@ describe('MockFixtureBuilder', () => {
       ]);
 
       const state = kernel.getState();
-      expect(state.storylineRepository!.storylinesById['storyline_archived'].status).toBe('archived');
+      expect(state.storylineRepository!.storylinesById['storyline_archived']!.status).toBe('archived');
     });
   });
 
@@ -235,7 +253,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const variant = state.variantsById['variant_full'];
+      const variant = state.variantsById['variant_full']!;
 
       expect(variant.hasWorldBase).toBe(true);
       expect(variant.hasScene).toBe(true);
@@ -258,7 +276,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const variant = state.variantsById['variant_with_content'];
+      const variant = state.variantsById['variant_with_content']!;
 
       expect(variant.worldBase).toBeDefined();
       expect((variant.worldBase as { characters: unknown[] }).characters).toBeDefined();
@@ -277,7 +295,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.sessionId).toBe('session_001');
       expect(session.lifecycle).toBe('awaiting_start');
@@ -310,8 +328,8 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      expect(state.runtimeSessions.sessionsById['session_progress'].lifecycle).toBe('in_progress');
-      expect(state.runtimeSessions.sessionsById['session_complete'].lifecycle).toBe('complete');
+      expect(state.runtimeSessions.sessionsById['session_progress']!.lifecycle).toBe('in_progress');
+      expect(state.runtimeSessions.sessionsById['session_complete']!.lifecycle).toBe('complete');
     });
   });
 
@@ -335,7 +353,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.checkpointsById['checkpoint_001']).toBeDefined();
     });
@@ -354,7 +372,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.orderedCheckpointIds).toEqual(['checkpoint_001', 'checkpoint_002']);
     });
@@ -373,7 +391,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.headCheckpointId).toBe('checkpoint_002');
     });
@@ -386,7 +404,7 @@ describe('MockFixtureBuilder', () => {
       });
 
       const state = kernel.getState();
-      const session = state.runtimeSessions.sessionsById['session_001'];
+      const session = state.runtimeSessions.sessionsById['session_001']!;
 
       expect(session.activeCheckpointId).toBe('checkpoint_001');
     });
@@ -422,14 +440,14 @@ describe('MockFixtureBuilder', () => {
 
       // Check storyline
       expect(state.storylineRepository!.storylinesById['storyline_main']).toBeDefined();
-      expect(state.storylineRepository!.storylinesById['storyline_main'].name).toBe('Main Line');
+      expect(state.storylineRepository!.storylinesById['storyline_main']!.name).toBe('Main Line');
 
       // Check variant
       expect(state.variantsById['variant_main']).toBeDefined();
 
       // Check session with checkpoints
-      const sessionId = state.storylineRepository!.storylinesById['storyline_main'].activeSessionId;
-      const session = state.runtimeSessions.sessionsById[sessionId];
+      const sessionId = state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId;
+      const session = state.runtimeSessions.sessionsById[sessionId]!;
 
       expect(session.orderedCheckpointIds.length).toBe(3);
       expect(session.headCheckpointId).not.toBeNull();
@@ -443,8 +461,8 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
 
-      const sessionId = state.storylineRepository!.storylinesById['storyline_empty'].activeSessionId;
-      const session = state.runtimeSessions.sessionsById[sessionId];
+      const sessionId = state.storylineRepository!.storylinesById['storyline_empty']!.activeSessionId;
+      const session = state.runtimeSessions.sessionsById[sessionId]!;
 
       expect(session.orderedCheckpointIds.length).toBe(0);
       expect(session.headCheckpointId).toBeNull();
@@ -464,8 +482,8 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
 
-      expect(state.storylineRepository!.storylinesById['storyline_main'].variantId).toBe('variant_main');
-      expect(state.storylineRepository!.storylinesById['storyline_alt'].variantId).toBe('variant_alt');
+      expect(state.storylineRepository!.storylinesById['storyline_main']!.variantId).toBe('variant_main');
+      expect(state.storylineRepository!.storylinesById['storyline_alt']!.variantId).toBe('variant_alt');
 
       // Variants should exist
       expect(state.variantsById['variant_main']).toBeDefined();
@@ -495,7 +513,7 @@ describe('MockFixtureBuilder', () => {
 
       const state = kernel.getState();
 
-      expect(state.storylineRepository!.storylinesById['storyline_main'].activeSessionId).toBe('session_main');
+      expect(state.storylineRepository!.storylinesById['storyline_main']!.activeSessionId).toBe('session_main');
       expect(state.runtimeSessions.sessionsById['session_main']).toBeDefined();
     });
 

@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { z } from 'zod';
 
 import {
   MockKernel,
@@ -30,8 +31,8 @@ function createEmptyRuntimeSessions(): RuntimeSessionsFile {
   };
 }
 
-type RuntimeSessionsFile = RuntimeSessionsFileSchema['_output'];
-type StorylineRepositoryFile = StorylineRepositoryFileSchema['_output'];
+type RuntimeSessionsFile = z.infer<typeof RuntimeSessionsFileSchema>;
+type StorylineRepositoryFile = z.infer<typeof StorylineRepositoryFileSchema>;
 
 describe('MockKernel', () => {
   let kernel: MockKernel;
@@ -212,7 +213,7 @@ describe('MockKernel', () => {
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
 
-      const entry = trace[0];
+      const entry = trace[0]!;
       expect(entry.sequenceId).toBe(1);
       expect(entry.layer).toBe('substrate');
       expect(entry.operation).toBe('test_operation');
@@ -247,9 +248,9 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(3);
-      expect(trace[0].sequenceId).toBe(1);
-      expect(trace[1].sequenceId).toBe(2);
-      expect(trace[2].sequenceId).toBe(3);
+      expect(trace[0]!.sequenceId).toBe(1);
+      expect(trace[1]!.sequenceId).toBe(2);
+      expect(trace[2]!.sequenceId).toBe(3);
     });
 
     it('execute() captures error in trace', async () => {
@@ -271,7 +272,7 @@ describe('MockKernel', () => {
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
 
-      const entry = trace[0];
+      const entry = trace[0]!;
       expect(entry.error).toBe('Operation failed');
       expect(entry.output).toBeNull();
     });
@@ -299,9 +300,9 @@ describe('MockKernel', () => {
       });
 
       const trace = kernel.getTrace();
-      expect(trace[0].layer).toBe('substrate');
-      expect(trace[1].layer).toBe('route');
-      expect(trace[2].layer).toBe('runtime');
+      expect(trace[0]!.layer).toBe('substrate');
+      expect(trace[1]!.layer).toBe('route');
+      expect(trace[2]!.layer).toBe('runtime');
     });
 
     it('execute() allows handler to modify state', async () => {
@@ -348,8 +349,8 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({ kind: 'success' });
-      expect(trace[0].output).toEqual({ kind: 'success' });
+      expect(trace[0]!.mode).toEqual({ kind: 'success' });
+      expect(trace[0]!.output).toEqual({ kind: 'success' });
     });
 
     it('scriptNext(failure) makes next execute fail', async () => {
@@ -368,8 +369,8 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({ kind: 'failure', reason: 'Simulated failure' });
-      expect(trace[0].error).toBe('Simulated failure');
+      expect(trace[0]!.mode).toEqual({ kind: 'failure', reason: 'Simulated failure' });
+      expect(trace[0]!.error).toBe('Simulated failure');
     });
 
     it('scriptNext(error) throws error', async () => {
@@ -388,8 +389,8 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({ kind: 'error', message: 'Simulated error' });
-      expect(trace[0].error).toBe('Simulated error');
+      expect(trace[0]!.mode).toEqual({ kind: 'error', message: 'Simulated error' });
+      expect(trace[0]!.error).toBe('Simulated error');
     });
 
     it('scriptNext(validation_error) provides fields', async () => {
@@ -407,11 +408,11 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({
+      expect(trace[0]!.mode).toEqual({
         kind: 'validation_error',
         fields: ['field1', 'field2'],
       });
-      expect(trace[0].output).toEqual({
+      expect(trace[0]!.output).toEqual({
         kind: 'validation_error',
         fields: ['field1', 'field2'],
       });
@@ -436,11 +437,11 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({
+      expect(trace[0]!.mode).toEqual({
         kind: 'conflict',
         details: 'State conflict detected',
       });
-      expect(trace[0].error).toBe('State conflict detected');
+      expect(trace[0]!.error).toBe('State conflict detected');
     });
 
     it('scriptNext(stale_state) provides expectedVersion', async () => {
@@ -458,11 +459,11 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(1);
-      expect(trace[0].mode).toEqual({
+      expect(trace[0]!.mode).toEqual({
         kind: 'stale_state',
         expectedVersion: 5,
       });
-      expect(trace[0].output).toEqual({
+      expect(trace[0]!.output).toEqual({
         kind: 'stale_state',
         expectedVersion: 5,
       });
@@ -484,9 +485,9 @@ describe('MockKernel', () => {
       expect(elapsed).toBeGreaterThanOrEqual(50);
 
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toEqual({ kind: 'timeout', delayMs: 100 });
+      expect(trace[0]!.mode).toEqual({ kind: 'timeout', delayMs: 100 });
       // Timeout does NOT throw - it succeeds with timeout output
-      expect(trace[0].error).toBeUndefined();
+      expect(trace[0]!.error).toBeUndefined();
     });
 
     it('scriptNext(delayed) delays but succeeds', async () => {
@@ -504,8 +505,8 @@ describe('MockKernel', () => {
       expect(elapsed).toBeGreaterThanOrEqual(40);
 
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toEqual({ kind: 'delayed', delayMs: 50 });
-      expect(trace[0].output).toEqual({ result: 'success' });
+      expect(trace[0]!.mode).toEqual({ kind: 'delayed', delayMs: 50 });
+      expect(trace[0]!.output).toEqual({ result: 'success' });
     });
 
     it('scriptNext() is consumed after one execute()', async () => {
@@ -526,9 +527,9 @@ describe('MockKernel', () => {
       });
 
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toEqual({ kind: 'success' });
-      expect(trace[1].mode).toBeUndefined();
-      expect(trace[1].output).toEqual({ handler: 'called' });
+      expect(trace[0]!.mode).toEqual({ kind: 'success' });
+      expect(trace[1]!.mode).toBeUndefined();
+      expect(trace[1]!.output).toEqual({ handler: 'called' });
     });
   });
 
@@ -571,9 +572,9 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(3);
-      expect(trace[0].mode).toEqual({ kind: 'success' });
-      expect(trace[1].mode).toEqual({ kind: 'failure', reason: 'reason-2' });
-      expect(trace[2].mode).toEqual({ kind: 'error', message: 'error-3' });
+      expect(trace[0]!.mode).toEqual({ kind: 'success' });
+      expect(trace[1]!.mode).toEqual({ kind: 'failure', reason: 'reason-2' });
+      expect(trace[2]!.mode).toEqual({ kind: 'error', message: 'error-3' });
     });
 
     it('scriptSequence() continues normal after queue exhausted', async () => {
@@ -604,10 +605,10 @@ describe('MockKernel', () => {
       });
 
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toEqual({ kind: 'success' });
-      expect(trace[1].mode).toEqual({ kind: 'success' });
-      expect(trace[2].mode).toBeUndefined();
-      expect(trace[2].output).toEqual({ actual: 'handler' });
+      expect(trace[0]!.mode).toEqual({ kind: 'success' });
+      expect(trace[1]!.mode).toEqual({ kind: 'success' });
+      expect(trace[2]!.mode).toBeUndefined();
+      expect(trace[2]!.output).toEqual({ actual: 'handler' });
     });
 
     it('scriptNext() and scriptSequence() work together', async () => {
@@ -648,9 +649,9 @@ describe('MockKernel', () => {
 
       const trace = kernel.getTrace();
       expect(trace.length).toBe(3);
-      expect(trace[0].mode).toEqual({ kind: 'error', message: 'first' });
-      expect(trace[1].mode).toEqual({ kind: 'success' });
-      expect(trace[2].mode).toEqual({ kind: 'failure', reason: 'third' });
+      expect(trace[0]!.mode).toEqual({ kind: 'error', message: 'first' });
+      expect(trace[1]!.mode).toEqual({ kind: 'success' });
+      expect(trace[2]!.mode).toEqual({ kind: 'failure', reason: 'third' });
     });
   });
 
@@ -677,9 +678,9 @@ describe('MockKernel', () => {
       const trace = kernel.getTrace();
 
       expect(trace.length).toBe(2);
-      expect(trace[0].sequenceId).toBeLessThan(trace[1].sequenceId);
-      expect(trace[0].operation).toBe('op1');
-      expect(trace[1].operation).toBe('op2');
+      expect(trace[0]!.sequenceId).toBeLessThan(trace[1]!.sequenceId);
+      expect(trace[0]!.operation).toBe('op1');
+      expect(trace[1]!.operation).toBe('op2');
     });
 
     it('returns immutable copy (no mutation)', async () => {
@@ -691,10 +692,10 @@ describe('MockKernel', () => {
       });
 
       const trace1 = kernel.getTrace();
-      trace1[0].operation = 'mutated';
+      trace1[0]!.operation = 'mutated';
 
       const trace2 = kernel.getTrace();
-      expect(trace2[0].operation).toBe('op');
+      expect(trace2[0]!.operation).toBe('op');
     });
   });
 
@@ -814,8 +815,8 @@ describe('MockKernel', () => {
       });
 
       const trace = kernel.getTrace();
-      expect(trace[0].mode).toBeUndefined();
-      expect(trace[0].output).toEqual({ normal: true });
+      expect(trace[0]!.mode).toBeUndefined();
+      expect(trace[0]!.output).toEqual({ normal: true });
     });
 
     it('reset() re-initializes with original package name', async () => {
