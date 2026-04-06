@@ -1,5 +1,38 @@
 # Findings
 
+## 2026-04-06 Phase 3 当前恢复点
+
+- `Phase 3 Part 1` 已不是“待执行设计”，而是已完成并发出 PR 的交付切片。
+- 后续恢复上下文时，应优先看：
+  - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
+  - GitHub PR `#6`
+- 不应再假设本地 `codex/phase-3-part-1-substrate` worktree 仍然存在；用户已按工作纪律在 push / PR 后删除该临时工作树。
+
+## 2026-04-06 Part 2 已冻结目标
+
+- `Part 2` 不是再回头补 substrate；`Part 1` 已经把 repository seam、storyline substrate、variant workspace、storyline-bound session 和默认 `/edit` `/play` 解析链做成正式地基。
+- `Part 2` 的职责是把这些底层能力变成作者真正可用的“故事包 / 故事线工作区”。
+- 当前已冻结的 `Part 2` 交付目标包括：
+  - 用“故事包管理”替换当前“控制台”页
+  - 提供 package selector
+  - 提供 list-first 的 storyline workspace，而不是 detail-first 页面
+  - 接入 storyline 当前状态的 read views
+  - 接入 create storyline
+  - 接入 branch from checkpoint
+  - 接入 switch storyline
+  - 接入 continue storyline
+- 当前明确仍不属于 `Part 2` 的是：
+  - rename
+  - archive
+  - duplicate
+  - delete
+  - 这些继续留在 `Part 3`
+- `新建 story package` 仍保持原判断：
+  - 如果 backend seam 已准备好，可作为 `Part 2` 的 companion slice
+  - 但不应反过来阻塞 `Part 2` 主体 workspace 的 spec
+
 ## 2026-04-06 Phase 3 文档治理结论
 
 - 根目录三件套继续保留，但角色切换为：

@@ -20,8 +20,8 @@
 | 3 | complete | `Phase 3` 的 part 边界、依赖关系与每个 part 的完成标准已在总 spec 中冻结。 |
 | 4 | complete | `Part 1` spec 已写出、完成多轮 review 收口，并进入用户确认后的正式基线。 |
 | 5 | complete | `Part 1` implementation plan 已写出并通过独立 plan review。 |
-| 6 | pending | 执行并验证 `Part 1`。 |
-| 7 | pending | 编写 `Part 2` spec。 |
+| 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与 PR 提交。 |
+| 7 | in_progress | 对齐 `Part 2` 的交付目标，并开始编写 `Part 2` spec。 |
 | 8 | pending | 编写 `Part 2` implementation plan。 |
 | 9 | pending | 执行并验证 `Part 2`。 |
 | 10 | pending | 编写 `Part 3` spec。 |
@@ -140,7 +140,16 @@
 - 正式 `Part 1` implementation plan 已写出：
   - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
 - 当前状态：
-  - `Approved, pending execution choice`
+  - `Execution complete`
 - 下一步：
-  - 由用户选择执行方式
-  - 然后进入 `Part 1` 代码实现与验证
+  - 进入 `Part 2` spec
+  - 把故事包管理工作区的交付边界与 `Part 3` 的管理动作边界重新确认一遍
+
+## Part 1 Delivery Status
+
+- `Part 1` 已完成实现、验证与 PR 提交。
+- 当前 GitHub review surface：
+  - `PR #6 feat: complete phase 3 part 1 storyline substrate`
+- 需要注意的恢复纪律：
+  - 执行 `Part 1` 时使用过的临时 worktree 已在 push / PR 后删除
+  - 后续继续 `Phase 3` 时，应以正式 spec / plan / progress 以及 PR 记录为恢复入口

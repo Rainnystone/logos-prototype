@@ -1,5 +1,35 @@
 # Phase 3 Findings
 
+## 2026-04-06 Part 2 入口判断
+
+- `Part 2` 的目标不是重新设计 `storyline` / `checkpoint` / `session` / `variant` 这些对象边界；这些边界已经在总 spec 和 `Part 1` 中冻结。
+- `Part 2` 应只消费 `Part 1` 已存在的正式 substrate primitive：
+  - resolve active storyline
+  - create storyline from source
+  - branch storyline from checkpoint
+  - switch active storyline
+  - storyline-aware `/edit` 与 `/play` 默认解析链
+- 当前最稳的 `Part 2` 目标是把“故事包管理”做成真正的作者工作区：
+  - package selector
+  - list-first storyline workspace
+  - current storyline state read views
+  - create / branch / switch / continue 这几条核心工作流
+- 当前明确不应混入 `Part 2` 的管理动作：
+  - rename
+  - archive
+  - duplicate
+  - delete
+- `新建 story package` 仍维持 companion-slice 判断：
+  - 如果 backend seam 够稳，可以在 `Part 2` 里一起规划
+  - 但它不应阻塞 `Part 2` 主体 workspace 的 spec
+
+## 2026-04-06 浏览器手验补充判断
+
+- `Part 1` 浏览器手验里，`/play` 的“纯读不物化”需要区分两层：
+  - SSR / no-JS 纯读路径不应物化
+  - 正常开启 JS 后，`/play` 页面会进入运行时初始化链，因此不再是“纯读”语义
+- 这个判断不改变 `Part 1` 结论，但后续如果 `Part 2` spec 要描述页面级非物化语义，必须把 SSR 纯读与 hydrate 后 runtime 初始化分开写清楚，避免把正常运行副作用误判成 substrate 漏洞。
+
 ## 文档治理结论
 
 - `Phase 3` 采用“双层文档”：

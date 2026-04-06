@@ -2,6 +2,15 @@
 
 ## 2026-04-06
 
+- `Part 1` 已在独立 worktree 中完成实现、验证、浏览器手验与 PR 提交；当前 `Phase 3` 主线切换到 `Part 2` 目标对齐与 spec 准备。
+- `Part 1` 的当前 GitHub review surface：
+  - `PR #6 feat: complete phase 3 part 1 storyline substrate`
+- 需要记录的恢复事实：
+  - 执行 `Part 1` 的本地临时 worktree 已在 push / PR 后删除
+  - 因此后续线程恢复不应再依赖那个 worktree，而应依赖：
+    - 正式 spec / plan
+    - 本目录三件套
+    - GitHub PR `#6`
 - 已恢复根目录 `task_plan.md`、`findings.md`、`progress.md`，并通过现有持久记录确认：
   - `Phase 1` 已完成
   - `Phase 2` 已完成实现、验证与手验

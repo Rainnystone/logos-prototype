@@ -2,6 +2,17 @@
 
 ## 2026-04-06
 
+- 已确认主工作区中的根目录三件套与 `docs/superpowers/phase-3/` 一度停留在 `Part 1` 执行前状态；当前已开始补同步，避免后续恢复时误判 `Part 1` 仍未执行。
+- `Phase 3 Part 1` 当前已实际完成：
+  - 总 spec、`Part 1` spec、`Part 1` implementation plan 都已完成并通过 review
+  - 代码实现、定向回归、`build`、simulation 验证、全量 `npm test` 与浏览器手验都已完成
+  - 交付分支已 push，并已创建 PR：`#6 feat: complete phase 3 part 1 storyline substrate`
+- 当前需要记住的恢复点是：
+  - `codex/phase-3-part-1-substrate` 对应的临时 worktree 已在 push / PR 后被人为删除
+  - 后续若需要回看 `Part 1` 完整执行结果，应以 PR `#6` 与正式文档为准，而不是假设本地 worktree 仍然存在
+- 当前主线任务已从 `Part 1` 实现切换为：
+  - 对齐 `Part 2` 的交付目标
+  - 然后编写 `Part 2` spec
 - 已重新恢复根目录三件套上下文，并确认当前仓库状态已经从 `Phase 2` 收口切换到 `Phase 3` 规划启动。
 - 已补读 `master-record`、`Phase 2` spec / plan，以及当前 authoring persistence、runtime sessions、editor shell、story loader 相关实现，用来确认 `Phase 3` 的真实边界不是 UI 按钮，而是对象层与仓储层。
 - 已与用户对齐 `Phase 3` 的文档治理方式：
