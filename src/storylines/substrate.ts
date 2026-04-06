@@ -180,14 +180,22 @@ function resolveActiveStorylineRecordOrThrow(repository: StorylineRepositoryFile
   return activeStoryline;
 }
 
-function hasCheckpoint(runtimeFile: RuntimeSessionsFile, checkpointId: string): boolean {
-  for (const session of Object.values(runtimeFile.sessionsById)) {
-    if (session.checkpointsById[checkpointId]) {
-      return true;
-    }
-  }
+function assertCheckpointBelongsToStorylineSession(
+  runtimeFile: RuntimeSessionsFile,
+  storyline: StorylineRecord,
+  checkpointId: string,
+): void {
+  const boundSession = resolveBoundSessionOrThrow(
+    runtimeFile,
+    storyline.activeSessionId,
+    storyline.storylineId,
+  );
 
-  return false;
+  if (!boundSession.checkpointsById[checkpointId]) {
+    throw new Error(
+      `Cannot branch storyline from checkpoint "${checkpointId}" because it is not reachable from source storyline "${storyline.storylineId}".`,
+    );
+  }
 }
 
 async function bootstrapDefaultStorylineSubstrate(packageName: string): Promise<void> {
@@ -499,12 +507,7 @@ async function createStorylineFromCheckpointAnchor(
 
     const sourceStoryline = resolveStorylineForMutationOrThrow(repository, input.sourceStorylineId);
     const sourceVariant = resolveVariantForMutationOrThrow(repository, sourceStoryline.variantId);
-
-    if (!hasCheckpoint(runtimeFile, input.checkpointId)) {
-      throw new Error(
-        `Cannot branch storyline from checkpoint "${input.checkpointId}" because it does not resolve in runtime-sessions.json.`,
-      );
-    }
+    assertCheckpointBelongsToStorylineSession(runtimeFile, sourceStoryline, input.checkpointId);
 
     const storylineId = createGeneratedScopedId('storyline');
     const variantId = createGeneratedScopedId('variant');
