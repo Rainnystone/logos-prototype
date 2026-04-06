@@ -49,14 +49,19 @@ describe('StoryPackageManagementSection', () => {
     );
   });
 
-  it('renders the package headline plus storyline status, provenance, and head summary', () => {
+  it('renders the package headline while keeping storyline rows focused on actions and rail only', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     expect(screen.getByRole('heading', { name: 'sample-scene' })).toBeInTheDocument();
     expect(screen.getByText('active')).toBeInTheDocument();
-    expect(screen.getByText('来源：从 Beat 2 分出')).toBeInTheDocument();
-    expect(screen.getByText('当前头部：Beat 3')).toBeInTheDocument();
-    expect(screen.getByText('头部摘要：Beat 3 · Nagi reaches the roof and spots the signal')).toBeInTheDocument();
+    expect(screen.queryAllByText('来源')).toHaveLength(0);
+    expect(screen.queryAllByText(/来源：/)).toHaveLength(0);
+    expect(screen.queryAllByText('当前头部')).toHaveLength(0);
+    expect(screen.queryAllByText(/当前头部：/)).toHaveLength(0);
+    expect(screen.queryAllByText('头部摘要')).toHaveLength(0);
+    expect(screen.queryAllByText(/头部摘要：/)).toHaveLength(0);
+    expect(screen.queryAllByText('继续状态')).toHaveLength(0);
+    expect(screen.queryAllByText('从当前包')).toHaveLength(0);
   });
 
   it('renders package switching as bounded navigation instead of client-side repository parsing', () => {
