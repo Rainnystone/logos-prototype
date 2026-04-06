@@ -486,6 +486,62 @@ export async function switchActiveStoryline(
   });
 }
 
+export async function updateStorylineDisplayName(input: {
+  readonly packageName: string;
+  readonly storylineId: string;
+  readonly nextDisplayName: string;
+}): Promise<StorylineMutationResult> {
+  return runWithSubstrateWriteQueue(input.packageName, async () => {
+    const context = await resolveActiveStorylineContextInternal(input.packageName, {
+      forWrite: true,
+    });
+    assertExplicitContext(context);
+    const repository = context.repository;
+    const storyline = resolveStorylineForMutationOrThrow(repository, input.storylineId);
+    const normalizedDisplayName = input.nextDisplayName.trim();
+
+    if (normalizedDisplayName.length === 0) {
+      throw new Error('Storyline display name cannot be empty.');
+    }
+
+    if (normalizedDisplayName === storyline.name.trim()) {
+      const variant = resolveVariantForMutationOrThrow(repository, storyline.variantId);
+
+      return {
+        repository,
+        storyline,
+        variant,
+        session: context.session,
+        authoredRoot: resolveVariantAuthoredRoot(input.packageName, variant.variantId),
+      };
+    }
+
+    const timestamp = new Date().toISOString();
+    const updatedStoryline = cloneStoryline(storyline, {
+      name: normalizedDisplayName,
+      updatedAt: timestamp,
+    });
+    const nextRepository: StorylineRepositoryFile = {
+      ...repository,
+      storylinesById: {
+        ...repository.storylinesById,
+        [updatedStoryline.storylineId]: updatedStoryline,
+      },
+    };
+
+    await writeStorylineRepository(input.packageName, nextRepository);
+    const variant = resolveVariantForMutationOrThrow(nextRepository, updatedStoryline.variantId);
+
+    return {
+      repository: nextRepository,
+      storyline: updatedStoryline,
+      variant,
+      session: context.session,
+      authoredRoot: resolveVariantAuthoredRoot(input.packageName, variant.variantId),
+    };
+  });
+}
+
 async function createStorylineFromCheckpointAnchor(
   input: {
     readonly packageName: string;
