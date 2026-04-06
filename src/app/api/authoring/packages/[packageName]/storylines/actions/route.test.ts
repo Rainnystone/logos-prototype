@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import * as storylineManagementTypes from '@/types/storyline-management';
 
 const mocks = vi.hoisted(() => {
   const resolveActiveStorylineContext = vi.fn(async () => ({
@@ -406,6 +407,37 @@ vi.mock('@/storylines/substrate', () => ({
 }));
 
 describe('POST storyline actions route', () => {
+  it('exposes a shared storyline action schema with the four supported actions', () => {
+    expect(storylineManagementTypes.StorylineActionSchema).toBeDefined();
+
+    expect(
+      storylineManagementTypes.StorylineActionSchema.safeParse({
+        kind: 'rename_display_name',
+        storylineId: 'storyline_main',
+        nextDisplayName: 'Side Route',
+      }).success,
+    ).toBe(true);
+    expect(
+      storylineManagementTypes.StorylineActionSchema.safeParse({
+        kind: 'create_from_source',
+        sourceStorylineId: 'storyline_main',
+      }).success,
+    ).toBe(true);
+    expect(
+      storylineManagementTypes.StorylineActionSchema.safeParse({
+        kind: 'branch_from_checkpoint',
+        sourceStorylineId: 'storyline_main',
+        checkpointId: 'chk_02',
+      }).success,
+    ).toBe(true);
+    expect(
+      storylineManagementTypes.StorylineActionSchema.safeParse({
+        kind: 'switch_active_storyline',
+        storylineId: 'storyline_alt',
+      }).success,
+    ).toBe(true);
+  });
+
   it('dispatches rename_display_name through the metadata-only seam', async () => {
     const { POST } = await import(
       '@/app/api/authoring/packages/[packageName]/storylines/actions/route'

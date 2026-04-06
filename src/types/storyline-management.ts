@@ -78,3 +78,41 @@ export const StoryPackageManagementWorkspaceViewSchema = z
 export type StoryPackageManagementWorkspaceView = z.infer<
   typeof StoryPackageManagementWorkspaceViewSchema
 >;
+
+export const StorylineRenameDisplayNameActionSchema = z
+  .object({
+    kind: z.literal('rename_display_name'),
+    storylineId: z.string(),
+    nextDisplayName: z.string(),
+  })
+  .strict();
+
+export const StorylineCreateFromSourceActionSchema = z
+  .object({
+    kind: z.literal('create_from_source'),
+    sourceStorylineId: z.string(),
+  })
+  .strict();
+
+export const StorylineBranchFromCheckpointActionSchema = z
+  .object({
+    kind: z.literal('branch_from_checkpoint'),
+    sourceStorylineId: z.string(),
+    checkpointId: z.string(),
+  })
+  .strict();
+
+export const StorylineSwitchActiveStorylineActionSchema = z
+  .object({
+    kind: z.literal('switch_active_storyline'),
+    storylineId: z.string(),
+  })
+  .strict();
+
+export const StorylineActionSchema = z.discriminatedUnion('kind', [
+  StorylineRenameDisplayNameActionSchema,
+  StorylineCreateFromSourceActionSchema,
+  StorylineBranchFromCheckpointActionSchema,
+  StorylineSwitchActiveStorylineActionSchema,
+]);
+export type StorylineAction = z.infer<typeof StorylineActionSchema>;

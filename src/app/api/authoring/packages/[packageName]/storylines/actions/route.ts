@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import {
   branchStorylineFromCheckpoint,
@@ -8,46 +7,8 @@ import {
   switchActiveStoryline,
   updateStorylineDisplayName,
 } from '@/storylines/substrate';
+import { StorylineActionSchema } from '@/types/storyline-management';
 import type { RuntimeCheckpoint, StorylineRepositoryFile } from '@/types';
-
-const RenameDisplayNameActionSchema = z
-  .object({
-    kind: z.literal('rename_display_name'),
-    storylineId: z.string(),
-    nextDisplayName: z.string(),
-  })
-  .strict();
-
-const CreateFromSourceActionSchema = z
-  .object({
-    kind: z.literal('create_from_source'),
-    sourceStorylineId: z.string(),
-  })
-  .strict();
-
-const BranchFromCheckpointActionSchema = z
-  .object({
-    kind: z.literal('branch_from_checkpoint'),
-    sourceStorylineId: z.string(),
-    checkpointId: z.string(),
-  })
-  .strict();
-
-const SwitchActiveStorylineActionSchema = z
-  .object({
-    kind: z.literal('switch_active_storyline'),
-    storylineId: z.string(),
-  })
-  .strict();
-
-const StorylineActionSchema = z.discriminatedUnion('kind', [
-  RenameDisplayNameActionSchema,
-  CreateFromSourceActionSchema,
-  BranchFromCheckpointActionSchema,
-  SwitchActiveStorylineActionSchema,
-]);
-
-type StorylineAction = z.infer<typeof StorylineActionSchema>;
 
 function getStorylineCount(repository: StorylineRepositoryFile): number {
   return Object.keys(repository.storylinesById).length;
@@ -96,13 +57,6 @@ function buildBranchFromCheckpointDisplayName(
 }
 
 function mapActionError(error: unknown): { status: number; message: string } {
-  if (error instanceof z.ZodError) {
-    return {
-      status: 400,
-      message: 'Invalid storyline action payload.',
-    };
-  }
-
   if (error instanceof Error) {
     if (error.message.includes('does not exist') || error.message.includes('does not resolve')) {
       return {
@@ -137,7 +91,7 @@ export async function POST(
     );
   }
 
-  const action: StorylineAction = parsed.data;
+  const action = parsed.data;
 
   try {
     switch (action.kind) {
