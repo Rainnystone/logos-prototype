@@ -5,17 +5,17 @@ import Link from 'next/link';
 import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
 
 interface TitleLandingSurfaceProps {
-  readonly packageName: string | null;
+  readonly playPackageName: string | null;
 }
 
-export function TitleLandingSurface({ packageName }: TitleLandingSurfaceProps) {
-  const playHref = packageName ? `/play?storyPackage=${encodeURIComponent(packageName)}` : null;
-  const editorHref = packageName
-    ? `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management`
+export function TitleLandingSurface({ playPackageName }: TitleLandingSurfaceProps) {
+  const playHref = playPackageName
+    ? `/play?storyPackage=${encodeURIComponent(playPackageName)}`
     : null;
+  const editorHref = '/edit?storyPackage=sample-scene&section=story-package-management';
 
   const actionSlot =
-    playHref && editorHref ? (
+    playHref ? (
       <div className="title-card__actions">
         <Link className="title-card__action title-card__action--secondary" href={playHref}>
           Play Workbench
@@ -46,7 +46,7 @@ export function TitleLandingSurface({ packageName }: TitleLandingSurfaceProps) {
             <p className="title-card__note">Stored in localStorage only.</p>
           </div>
           <RuntimeConfigForm actionSlot={actionSlot} onSave={() => {}} />
-          {!packageName ? (
+          {!playPackageName ? (
             <p className="title-card__fallback">No loadable story package is available.</p>
           ) : null}
         </section>

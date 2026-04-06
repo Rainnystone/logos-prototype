@@ -84,6 +84,10 @@ interface EditWorkbenchProps {
   readonly activeSection: EditorSectionId;
   readonly activeSurface: WorldbaseSurface;
   readonly storyPackageManagementView?: StoryPackageManagementWorkspaceView;
+  readonly renderStoryPackageManagementSection?: (input: {
+    readonly packageName: string;
+    readonly view?: StoryPackageManagementWorkspaceView;
+  }) => ReactNode;
   readonly initialState: AuthoringStateLoadResult;
 }
 
@@ -154,7 +158,7 @@ function SectionSurface({
   );
 }
 
-function StoryPackageManagementSection({
+function renderDefaultStoryPackageManagementSection({
   packageName,
   view,
 }: {
@@ -163,24 +167,8 @@ function StoryPackageManagementSection({
 }) {
   return (
     <SectionSurface sectionId="story-package-management">
-      <dl className="edit-surface__facts">
-        <div>
-          <dt>Package name</dt>
-          <dd>{packageName}</dd>
-        </div>
-        <div>
-          <dt>Workspace package</dt>
-          <dd>{view?.packageName ?? packageName}</dd>
-        </div>
-        <div>
-          <dt>Active storyline</dt>
-          <dd>{view?.activeStorylineId ?? 'legacy-main-line'}</dd>
-        </div>
-        <div>
-          <dt>Storyline count</dt>
-          <dd>{view?.storylines.length ?? 0}</dd>
-        </div>
-      </dl>
+      <p className="panel-note">故事包管理工作区会在后续任务中实现；当前任务只验证壳层接线。</p>
+      <p className="panel-note">当前故事包：{view?.packageName ?? packageName}</p>
     </SectionSurface>
   );
 }
@@ -207,6 +195,7 @@ export function EditWorkbench({
   activeSection,
   activeSurface,
   storyPackageManagementView,
+  renderStoryPackageManagementSection,
   initialState,
 }: EditWorkbenchProps) {
   const [currentState, setCurrentState] = useState(initialState.state);
@@ -282,6 +271,11 @@ export function EditWorkbench({
           : null;
   const activeCoordinatorSummary = coordinatorSummaries[activeSection] ?? null;
   const activeCoordinatorPathFailure = coordinatorPathFailures[activeSection] ?? false;
+  const storyPackageManagementSection = (renderStoryPackageManagementSection ??
+    renderDefaultStoryPackageManagementSection)({
+    packageName,
+    ...(storyPackageManagementView ? { view: storyPackageManagementView } : {}),
+  });
 
   const pageHelperPanel = (
     <PageHelperPanel
@@ -830,12 +824,7 @@ export function EditWorkbench({
       <section className="edit-layout">
         {currentPageStatus}
         {activeSection === 'story-package-management' ? (
-          <StoryPackageManagementSection
-            packageName={packageName}
-            {...(storyPackageManagementView
-              ? { view: storyPackageManagementView }
-              : {})}
-          />
+          storyPackageManagementSection
         ) : activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
             packageName={packageName}

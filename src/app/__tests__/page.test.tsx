@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const readyEntry = {
-  packageName: 'sample-scene',
+  packageName: 'alt-scene',
   sceneId: 'scene-signal-room',
   sceneName: 'Signal Room',
   mainAxis: 'Track a hostile signal through a sealed campus wing.',
@@ -37,7 +37,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Play Workbench' })).toHaveAttribute(
       'href',
-      '/play?storyPackage=sample-scene',
+      '/play?storyPackage=alt-scene',
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',

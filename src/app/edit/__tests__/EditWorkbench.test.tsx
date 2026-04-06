@@ -7,6 +7,7 @@ import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
+const renderStoryPackageManagementSection = vi.hoisted(() => vi.fn());
 
 const storyPackageManagementViewFixture = {
   packages: [{ packageName: 'sample-scene' }],
@@ -39,6 +40,7 @@ describe('EditWorkbench', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     renderScenePhaseAuthoringSection.mockReset();
+    renderStoryPackageManagementSection.mockReset();
   });
 
   it('renders six tabs with story-package-management first while keeping 控制台 reachable', () => {
@@ -48,6 +50,10 @@ describe('EditWorkbench', () => {
         activeSection="story-package-management"
         activeSurface="world"
         storyPackageManagementView={storyPackageManagementViewFixture}
+        renderStoryPackageManagementSection={(props) => {
+          renderStoryPackageManagementSection(props);
+          return <div data-testid="story-package-management-section-mock" />;
+        }}
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -106,7 +112,11 @@ describe('EditWorkbench', () => {
     expect(within(pageHelper).getByText('State source')).toBeInTheDocument();
     expect(within(pageHelper).getByText('Active section')).toBeInTheDocument();
     expect(within(pageHelper).getByText('故事包管理')).toBeInTheDocument();
-    expect(screen.getByText('storyline_main')).toBeInTheDocument();
+    expect(screen.getByTestId('story-package-management-section-mock')).toBeInTheDocument();
+    expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
+      packageName: 'sample-scene',
+      view: storyPackageManagementViewFixture,
+    });
   });
 
   it('ignores the surface selector outside worldbase-cast', () => {

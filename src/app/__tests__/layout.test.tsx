@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
 describe('RootLayout', () => {
   it('renders the global LOGOS header and navigation links', () => {
     usePathname.mockReturnValue('/play');
-    useSearchParams.mockReturnValue(new URLSearchParams('storyPackage=sample-scene'));
+    useSearchParams.mockReturnValue(new URLSearchParams('storyPackage=alt-scene'));
 
     render(
       <AppShell>
@@ -35,7 +35,7 @@ describe('RootLayout', () => {
     expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Restart Workbench' })).toHaveAttribute(
       'href',
-      '/play?storyPackage=sample-scene',
+      '/play?storyPackage=alt-scene',
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
