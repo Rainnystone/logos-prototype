@@ -74,10 +74,17 @@ function buildStorylineRow(
   session: RuntimeSession | null,
 ): StoryPackageManagementStorylineRowView {
   const isActive = storyline.storylineId === activeStorylineId;
-  const checkpointRail = session ? buildCheckpointRail(session, storyline) : [];
   const headCheckpointId = storyline.headCheckpointId;
   const headCheckpoint =
     session && headCheckpointId ? session.checkpointsById[headCheckpointId] ?? null : null;
+
+  if (headCheckpointId && !headCheckpoint) {
+    throw new Error(
+      `Storyline structural mismatch: storyline "${storyline.storylineId}" headCheckpointId "${headCheckpointId}" does not resolve in runtime-sessions.json.`,
+    );
+  }
+
+  const checkpointRail = session ? buildCheckpointRail(session, storyline) : [];
 
   return {
     storylineId: storyline.storylineId,

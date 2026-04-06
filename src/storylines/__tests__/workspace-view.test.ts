@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type {
   StoryPackageManagementWorkspaceView,
@@ -352,6 +352,188 @@ describe('story package management workspace view', () => {
         existsSync(path.resolve(storyPackagesRoot, packageName, 'storyline-repository.json')),
       ).toBe(false);
     } finally {
+      await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
+    }
+  });
+
+  it('fails loudly when a storyline headCheckpointId drifts away from its bound session', async () => {
+    const packageName = '__storyline-workspace-head-drift__';
+    await resetPackageRoot(packageName);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_main',
+        sessionsById: {
+          sess_main: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: 'chk_02',
+            activeCheckpointId: 'chk_02',
+            orderedCheckpointIds: ['chk_01', 'chk_02'],
+            checkpointsById: {
+              chk_01: makeCheckpoint('chk_01', 1, {
+                isHead: false,
+                isBranchSource: true,
+                playerInput: 'input-1',
+                beatText: 'beat-1',
+              }),
+              chk_02: makeCheckpoint('chk_02', 2, {
+                isHead: true,
+                isBranchSource: false,
+                playerInput: 'input-2',
+                beatText: 'beat-2',
+              }),
+            },
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      });
+      await writeStorylineRepositoryFile(packageName, {
+        version: 1,
+        activeStorylineId: 'storyline_main',
+        storylinesById: {
+          storyline_main: {
+            storylineId: 'storyline_main',
+            name: 'Main Line',
+            status: 'active',
+            sourceCheckpointId: 'chk_01',
+            headCheckpointId: 'chk_missing',
+            variantId: 'variant_main',
+            activeSessionId: 'sess_main',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+          },
+        },
+        variantsById: {
+          variant_main: {
+            variantId: 'variant_main',
+            workspaceRoot: 'variants/variant_main',
+            createdFromStorylineId: null,
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+          },
+        },
+      });
+
+      vi.resetModules();
+      vi.doMock('@/storylines/substrate', () => ({
+        resolveActiveStorylineContext: vi.fn(async () => ({
+          packageName,
+          repository: {
+            version: 1,
+            activeStorylineId: 'storyline_main',
+            storylinesById: {
+              storyline_main: {
+                storylineId: 'storyline_main',
+                name: 'Main Line',
+                status: 'active',
+                sourceCheckpointId: 'chk_01',
+                headCheckpointId: 'chk_missing',
+                variantId: 'variant_main',
+                activeSessionId: 'sess_main',
+                createdAt: '2026-04-06T00:00:00.000Z',
+                updatedAt: '2026-04-06T00:00:00.000Z',
+              },
+            },
+            variantsById: {
+              variant_main: {
+                variantId: 'variant_main',
+                workspaceRoot: 'variants/variant_main',
+                createdFromStorylineId: null,
+                createdAt: '2026-04-06T00:00:00.000Z',
+                updatedAt: '2026-04-06T00:00:00.000Z',
+              },
+            },
+          },
+          storyline: {
+            storylineId: 'storyline_main',
+            headCheckpointId: 'chk_02',
+            variantId: 'variant_main',
+            activeSessionId: 'sess_main',
+          },
+          variant: {
+            variantId: 'variant_main',
+            workspaceRoot: 'variants/variant_main',
+          },
+          session: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: 'chk_02',
+            activeCheckpointId: 'chk_02',
+            orderedCheckpointIds: ['chk_01', 'chk_02'],
+            checkpointsById: {
+              chk_01: makeCheckpoint('chk_01', 1, {
+                isHead: false,
+                isBranchSource: true,
+                playerInput: 'input-1',
+                beatText: 'beat-1',
+              }),
+              chk_02: makeCheckpoint('chk_02', 2, {
+                isHead: true,
+                isBranchSource: false,
+                playerInput: 'input-2',
+                beatText: 'beat-2',
+              }),
+            },
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+          runtimeFile: {
+            version: 1,
+            activeSessionId: 'sess_main',
+            sessionsById: {
+              sess_main: {
+                sessionId: 'sess_main',
+                lifecycle: 'in_progress',
+                createdAt: '2026-04-06T00:00:00.000Z',
+                updatedAt: '2026-04-06T00:00:00.000Z',
+                headCheckpointId: 'chk_02',
+                activeCheckpointId: 'chk_02',
+                orderedCheckpointIds: ['chk_01', 'chk_02'],
+                checkpointsById: {
+                  chk_01: makeCheckpoint('chk_01', 1, {
+                    isHead: false,
+                    isBranchSource: true,
+                    playerInput: 'input-1',
+                    beatText: 'beat-1',
+                  }),
+                  chk_02: makeCheckpoint('chk_02', 2, {
+                    isHead: true,
+                    isBranchSource: false,
+                    playerInput: 'input-2',
+                    beatText: 'beat-2',
+                  }),
+                },
+                lastStableRelationshipLayer: {
+                  highlightedDeltasText: '',
+                  stableBackgroundText: '',
+                },
+              },
+            },
+          },
+          authoredRoot: path.resolve(storyPackagesRoot, packageName),
+          isLegacyImplicit: false,
+        })),
+      }));
+
+      const { loadStoryPackageManagementWorkspaceView } = await import('@/storylines/workspace-view');
+
+      await expect(loadStoryPackageManagementWorkspaceView(packageName)).rejects.toThrow(
+        /headCheckpointId/i,
+      );
+    } finally {
+      vi.doUnmock('@/storylines/substrate');
+      vi.resetModules();
       await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
     }
   });
