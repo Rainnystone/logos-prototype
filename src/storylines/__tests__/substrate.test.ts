@@ -356,12 +356,18 @@ describe('storyline substrate', () => {
   it('fails loudly on structural mismatch instead of inventing missing storyline bindings', async () => {
     const { packageName } = await seedExplicitStorylinePackage();
     const repositoryFile = await readStorylineRepositoryJson(packageName);
+    const storylineMain = repositoryFile.storylinesById.storyline_main;
+
+    if (!storylineMain) {
+      throw new Error('Seeded storyline_main record was unexpectedly missing.');
+    }
+
     await writeStorylineRepositoryFile(packageName, {
       ...repositoryFile,
       storylinesById: {
         ...repositoryFile.storylinesById,
         storyline_main: {
-          ...repositoryFile.storylinesById.storyline_main,
+          ...storylineMain,
           activeSessionId: 'sess_missing',
         },
       },
@@ -414,6 +420,10 @@ describe('storyline substrate', () => {
     });
 
     expect(context.storyline.activeSessionId).toBe('sess_main');
+    if (!context.session) {
+      throw new Error('Expected the active storyline context to resolve a runtime session.');
+    }
+
     expect(context.session.sessionId).toBe('sess_main');
   });
 
