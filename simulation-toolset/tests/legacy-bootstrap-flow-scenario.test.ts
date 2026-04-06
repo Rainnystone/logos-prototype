@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLegacyBootstrapFlowScenario } from '../src/scenarios/storyline-flows/legacy-bootstrap-flow';
+import { createLegacyBootstrapFlowScenario } from '../scenarios/storyline-flows/legacy-bootstrap-flow';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 

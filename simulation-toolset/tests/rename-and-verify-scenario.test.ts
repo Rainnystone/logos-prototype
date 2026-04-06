@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createRenameAndVerifyScenario } from '../src/scenarios/storyline-flows/rename-and-verify';
+import { createRenameAndVerifyScenario } from '../scenarios/storyline-flows/rename-and-verify';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 

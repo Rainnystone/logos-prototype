@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createBranchFromCheckpointFlowScenario } from '../src/scenarios/storyline-flows/branch-from-checkpoint-flow';
+import { createBranchFromCheckpointFlowScenario } from '../scenarios/storyline-flows/branch-from-checkpoint-flow';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 
