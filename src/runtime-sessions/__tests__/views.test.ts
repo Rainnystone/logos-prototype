@@ -1,4 +1,4 @@
-import { cpSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, rmSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -6,12 +6,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadAuthoringState } from '@/authoring/persistence/package-state';
 import { loadEditRuntimeContinuityView, loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const sourcePackageName = 'sample-scene';
 const testPackageName = '__runtime-session-views-test__';
 const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+const variantsRootPath = path.resolve(testPackagePath, 'variants');
 
 function resetTestPackage(): void {
   rmSync(testPackagePath, { recursive: true, force: true });
@@ -66,7 +69,6 @@ async function writeRuntimeSessionsFile(file: RuntimeSessionsFile): Promise<void
 }
 
 async function writeStorylineRepositoryFile(file: StorylineRepositoryFile): Promise<void> {
-  const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
   await writeFile(storylineRepositoryPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
 }
 
@@ -364,6 +366,167 @@ describe('runtime session views', () => {
     expect(playViewAgain.activeSessionId).toBe(playView.activeSessionId);
   });
 
+  it('uses the provided storyline context as the continuity source instead of re-resolving package-global active session pointers', async () => {
+    prepareTestPackage();
+    await writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_storyline_main',
+      sessionsById: {
+        sess_storyline_main: {
+          sessionId: 'sess_storyline_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:05.000Z',
+          headCheckpointId: 'chk_storyline',
+          activeCheckpointId: 'chk_storyline',
+          orderedCheckpointIds: ['chk_storyline'],
+          checkpointsById: {
+            chk_storyline: {
+              checkpointId: 'chk_storyline',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_storyline',
+              acceptedTranscript: {
+                playerInput: 'follow storyline',
+                beatText: 'Storyline-bound checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Storyline-bound checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'storyline delta',
+                stableBackgroundText: 'storyline background',
+              },
+              createdAt: '2026-04-03T00:00:01.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'storyline delta',
+            stableBackgroundText: 'storyline background',
+          },
+        },
+        sess_storyline_alt: {
+          sessionId: 'sess_storyline_alt',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-03T00:10:00.000Z',
+          updatedAt: '2026-04-03T00:10:05.000Z',
+          headCheckpointId: 'chk_alt',
+          activeCheckpointId: 'chk_alt',
+          orderedCheckpointIds: ['chk_alt'],
+          checkpointsById: {
+            chk_alt: {
+              checkpointId: 'chk_alt',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_alt',
+              acceptedTranscript: {
+                playerInput: 'follow alt',
+                beatText: 'Alt storyline checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Alt storyline checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'alt delta',
+                stableBackgroundText: 'alt background',
+              },
+              createdAt: '2026-04-03T00:10:01.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'alt delta',
+            stableBackgroundText: 'alt background',
+          },
+        },
+      },
+    });
+    await writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_main',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_storyline',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_storyline_main',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+        storyline_alt: {
+          storylineId: 'storyline_alt',
+          name: 'Alt Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_alt',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_storyline_alt',
+          createdAt: '2026-04-03T00:10:00.000Z',
+          updatedAt: '2026-04-03T00:10:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+      },
+    });
+    const pinnedContext = await resolveActiveStorylineContext(testPackageName, {
+      forWrite: false,
+    });
+    await writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_alt',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_storyline',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_storyline_main',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+        storyline_alt: {
+          storylineId: 'storyline_alt',
+          name: 'Alt Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_alt',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_storyline_alt',
+          createdAt: '2026-04-03T00:10:00.000Z',
+          updatedAt: '2026-04-03T00:10:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+      },
+    });
+
+    const playView = await loadPlayRuntimeSessionView(testPackageName, {
+      storylineContext: pinnedContext,
+    });
+
+    expect(playView.activeSessionId).toBe('sess_storyline_main');
+    expect(playView.activeCheckpointId).toBe('chk_storyline');
+    expect(playView.beatHistory[0]?.beatText).toBe('Storyline-bound checkpoint');
+  });
+
   it('resolves runtime continuity through the active storyline binding instead of unbound sessions', async () => {
     prepareTestPackage();
     await writeRuntimeSessionsFile({
@@ -473,6 +636,16 @@ describe('runtime session views', () => {
     expect(playView.beatHistory[0]?.beatText).toBe('Storyline-bound checkpoint');
     expect(editView.kind).toBe('active');
     expect(editView.activeSession?.sessionId).toBe('sess_storyline_main');
+  });
+
+  it('keeps pure-read continuity loaders non-materializing on legacy packages', async () => {
+    prepareTestPackage();
+
+    await loadPlayRuntimeSessionView(testPackageName);
+    await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantsRootPath)).toBe(false);
   });
 
   it('adds a bounded runtime continuity view to loadAuthoringState without exposing raw checkpoints', async () => {

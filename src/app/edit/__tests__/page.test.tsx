@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { listStoryPackageCatalog } from '@/app/story-package-catalog';
+import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 const loadAuthoringState = vi.fn(async () => ({
   source: 'latest-saved' as const,
@@ -76,9 +78,39 @@ const loadAuthoringState = vi.fn(async () => ({
     },
   },
 }));
+const initialStorylineContext = {
+  packageName: 'sample-scene',
+  repository: null,
+  storyline: {
+    storylineId: 'storyline_main',
+    headCheckpointId: null,
+    variantId: 'variant_main',
+    activeSessionId: null,
+  },
+  variant: {
+    variantId: 'variant_main',
+    workspaceRoot: '.',
+  },
+  session: null,
+  runtimeFile: null,
+  authoredRoot: '/tmp/sample-scene',
+  isLegacyImplicit: true,
+} as const;
+const runtimeContinuityView = {
+  kind: 'empty',
+  activeSession: null,
+} as const;
 
 vi.mock('@/authoring/persistence/package-state', () => ({
   loadAuthoringState,
+}));
+
+vi.mock('@/runtime-sessions/views', () => ({
+  loadEditRuntimeContinuityView: vi.fn(async () => runtimeContinuityView),
+}));
+
+vi.mock('@/storylines/substrate', () => ({
+  resolveActiveStorylineContext: vi.fn(async () => initialStorylineContext),
 }));
 
 vi.mock('@/app/story-package-catalog', async (importOriginal) => {
@@ -101,6 +133,10 @@ vi.mock('@/app/story-package-catalog', async (importOriginal) => {
 });
 
 describe('EditPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('defaults worldbase-cast to the world surface', async () => {
     const { default: EditPage } = await import('@/app/edit/page');
 
@@ -115,7 +151,13 @@ describe('EditPage', () => {
 
     expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
       includeAgentSurfaceItems: false,
-      includeRuntimeContinuity: true,
+      includeRuntimeContinuity: false,
+    });
+    expect(resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(loadEditRuntimeContinuityView).toHaveBeenCalledWith('sample-scene', {
+      storylineContext: initialStorylineContext,
     });
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
@@ -163,7 +205,13 @@ describe('EditPage', () => {
 
     expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
       includeAgentSurfaceItems: false,
-      includeRuntimeContinuity: true,
+      includeRuntimeContinuity: false,
+    });
+    expect(resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(loadEditRuntimeContinuityView).toHaveBeenCalledWith('sample-scene', {
+      storylineContext: initialStorylineContext,
     });
     expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
       'href',
@@ -192,6 +240,8 @@ describe('EditPage', () => {
       includeAgentSurfaceItems: true,
       includeRuntimeContinuity: false,
     });
+    expect(resolveActiveStorylineContext).not.toHaveBeenCalled();
+    expect(loadEditRuntimeContinuityView).not.toHaveBeenCalled();
   });
 
   it('falls back to the world surface when section is missing even if surface=character', async () => {

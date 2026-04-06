@@ -8,6 +8,8 @@ import {
 } from '@/app/story-package-catalog';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
+import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -82,10 +84,25 @@ export default async function EditPage({ searchParams }: EditPageProps) {
   const activeSection = requestedSection ?? 'worldbase-cast';
 
   try {
+    const shouldLoadRuntimeContinuity = activeSection === 'worldbase-cast';
     const authoringState = await loadAuthoringState(selectedPackageName, {
       includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
-      includeRuntimeContinuity: activeSection === 'worldbase-cast',
+      includeRuntimeContinuity: false,
     });
+    const runtimeContinuityView = shouldLoadRuntimeContinuity
+      ? await loadEditRuntimeContinuityView(selectedPackageName, {
+          storylineContext: await resolveActiveStorylineContext(selectedPackageName, {
+            forWrite: false,
+          }),
+        })
+      : undefined;
+    const initialState =
+      runtimeContinuityView === undefined
+        ? authoringState
+        : {
+            ...authoringState,
+            runtimeContinuityView,
+          };
     const activeSurface =
       activeSection === 'worldbase-cast' ? requestedSurface : 'world';
 
@@ -94,7 +111,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
         packageName={selectedPackageName}
         activeSection={activeSection}
         activeSurface={activeSurface}
-        initialState={authoringState}
+        initialState={initialState}
       />
     );
   } catch (error) {

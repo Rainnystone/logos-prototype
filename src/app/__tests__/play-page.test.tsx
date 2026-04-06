@@ -4,8 +4,52 @@ import { describe, expect, it, vi } from 'vitest';
 import { listStoryPackageCatalog } from '@/app/story-package-catalog';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
 import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 const loadPlayWorkbenchProps = vi.fn();
+const activeStorylineContext = {
+  packageName: 'sample-scene',
+  repository: {
+    version: 1,
+    activeStorylineId: 'storyline_main',
+    storylinesById: {
+      storyline_main: {
+        storylineId: 'storyline_main',
+        name: 'Main Line',
+        status: 'active',
+        sourceCheckpointId: null,
+        headCheckpointId: null,
+        variantId: 'variant_main',
+        activeSessionId: 'sess_waiting',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+    },
+    variantsById: {
+      variant_main: {
+        variantId: 'variant_main',
+        workspaceRoot: 'variants/variant_main',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+    },
+  },
+  storyline: {
+    storylineId: 'storyline_main',
+    headCheckpointId: null,
+    variantId: 'variant_main',
+    activeSessionId: 'sess_waiting',
+  },
+  variant: {
+    variantId: 'variant_main',
+    workspaceRoot: 'variants/variant_main',
+  },
+  session: null,
+  runtimeFile: null,
+  authoredRoot: '/tmp/sample-scene/variants/variant_main',
+  isLegacyImplicit: false,
+} as const;
 const initialRuntimeSessionView = {
   kind: 'awaiting_start',
   activeSessionId: 'sess_waiting',
@@ -121,6 +165,10 @@ vi.mock('@/runtime-sessions/views', () => ({
   loadPlayRuntimeSessionView: vi.fn(async () => initialRuntimeSessionView),
 }));
 
+vi.mock('@/storylines/substrate', () => ({
+  resolveActiveStorylineContext: vi.fn(async () => activeStorylineContext),
+}));
+
 describe('PlayPage', () => {
   it('loads the bounded runtime continuity view on the server before rendering the workbench', async () => {
     const { default: PlayPage } = await import('@/app/play/page');
@@ -133,8 +181,15 @@ describe('PlayPage', () => {
 
     render(element);
 
-    expect(loadPlayRuntimeSessionView).toHaveBeenCalledWith('sample-scene');
-    expect(loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene');
+    expect(resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(loadPlayRuntimeSessionView).toHaveBeenCalledWith('sample-scene', {
+      storylineContext: activeStorylineContext,
+    });
+    expect(loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene', {
+      authoredRootOverride: activeStorylineContext.authoredRoot,
+    });
     expect(loadPlayWorkbenchProps).toHaveBeenCalledWith(
       expect.objectContaining({
         storyPackageName: 'sample-scene',

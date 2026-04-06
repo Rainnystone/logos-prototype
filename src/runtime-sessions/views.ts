@@ -3,6 +3,7 @@ import {
   PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
 } from '@/runtime-sessions/copy';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import type { ActiveStorylineContext } from '@/storylines/substrate';
 import type { RuntimeCheckpoint, RuntimeSessionLifecycle, StateSnapshot } from '@/types';
 
 export interface RuntimeRelationshipSummary {
@@ -36,6 +37,10 @@ export interface EditRuntimeContinuityView {
     readonly relationshipStatus: RuntimeRelationshipSummary;
   } | null;
   readonly reason?: string;
+}
+
+export interface RuntimeSessionViewLoadOptions {
+  readonly storylineContext?: ActiveStorylineContext;
 }
 
 const emptyRelationshipSummary: RuntimeRelationshipSummary = {
@@ -105,11 +110,16 @@ function buildUnavailableView(): PlayRuntimeSessionView {
   };
 }
 
-export async function loadPlayRuntimeSessionView(packageName: string): Promise<PlayRuntimeSessionView> {
+export async function loadPlayRuntimeSessionView(
+  packageName: string,
+  options?: RuntimeSessionViewLoadOptions,
+): Promise<PlayRuntimeSessionView> {
   try {
-    const context = await resolveActiveStorylineContext(packageName, {
-      forWrite: false,
-    });
+    const context =
+      options?.storylineContext ??
+      (await resolveActiveStorylineContext(packageName, {
+        forWrite: false,
+      }));
     const activeSession = context.session;
 
     if (!activeSession) {
@@ -163,8 +173,9 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
 
 export async function loadEditRuntimeContinuityView(
   packageName: string,
+  options?: RuntimeSessionViewLoadOptions,
 ): Promise<EditRuntimeContinuityView> {
-  const playView = await loadPlayRuntimeSessionView(packageName);
+  const playView = await loadPlayRuntimeSessionView(packageName, options);
 
   if (playView.kind === 'unavailable') {
     return {
