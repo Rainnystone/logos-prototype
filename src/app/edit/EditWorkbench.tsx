@@ -36,6 +36,7 @@ import {
   buildPackageDiagnostics,
   type PackageDiagnostics,
 } from '@/authoring/sections/package-diagnostics';
+import { StoryPackageManagementSection } from '@/app/edit/sections/StoryPackageManagementSection';
 import { isSuccessfulSaveResult } from '@/authoring/persistence/save-results';
 import type { StoryPackageManagementWorkspaceView } from '@/types';
 
@@ -165,6 +166,10 @@ function renderDefaultStoryPackageManagementSection({
   readonly packageName: string;
   readonly view?: StoryPackageManagementWorkspaceView;
 }) {
+  if (view) {
+    return <StoryPackageManagementSection packageName={packageName} view={view} />;
+  }
+
   return (
     <SectionSurface sectionId="story-package-management">
       <p className="panel-note">故事包管理工作区会在后续任务中实现；当前任务只验证壳层接线。</p>

@@ -4,30 +4,23 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
+import { workspaceViewFixture } from '@/app/edit/sections/__tests__/story-package-management.fixtures';
 import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
 const renderStoryPackageManagementSection = vi.hoisted(() => vi.fn());
 
-const storyPackageManagementViewFixture = {
-  packages: [{ packageName: 'sample-scene' }],
-  packageName: 'sample-scene',
-  activeStorylineId: 'storyline_main',
-  storylines: [
-    {
-      storylineId: 'storyline_main',
-      displayName: 'Main Line',
-      status: 'active',
-      isActive: true,
-      sourceCheckpointId: null,
-      headCheckpointId: 'chk_main',
-      headSummary: 'checkpoint summary',
-      canCreateFromSource: true,
-      canContinue: true,
-      checkpointRail: [],
-    },
-  ],
-} as const;
+vi.mock('@/app/edit/sections/StoryPackageManagementSection', () => ({
+  StoryPackageManagementSection: (props: unknown) => {
+    renderStoryPackageManagementSection(props);
+    return (
+      <section aria-label="Storyline workspace">
+        <h2>故事包管理</h2>
+        <div data-testid="story-package-management-section-mock" />
+      </section>
+    );
+  },
+}));
 
 vi.mock('@/app/edit/sections/ScenePhaseAuthoringSection', () => ({
   ScenePhaseAuthoringSection: (props: unknown) => {
@@ -49,11 +42,7 @@ describe('EditWorkbench', () => {
         packageName="sample-scene"
         activeSection="story-package-management"
         activeSurface="world"
-        storyPackageManagementView={storyPackageManagementViewFixture}
-        renderStoryPackageManagementSection={(props) => {
-          renderStoryPackageManagementSection(props);
-          return <div data-testid="story-package-management-section-mock" />;
-        }}
+        storyPackageManagementView={workspaceViewFixture}
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -63,6 +52,7 @@ describe('EditWorkbench', () => {
 
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '故事包管理' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '故事包管理' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=story-package-management',
@@ -115,7 +105,7 @@ describe('EditWorkbench', () => {
     expect(screen.getByTestId('story-package-management-section-mock')).toBeInTheDocument();
     expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
       packageName: 'sample-scene',
-      view: storyPackageManagementViewFixture,
+      view: workspaceViewFixture,
     });
   });
 
