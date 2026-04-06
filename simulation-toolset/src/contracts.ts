@@ -11,7 +11,7 @@ export const SimulationAssertionSchema = z.object({
   name: z.string(),
   pass: z.boolean(),
   evidenceEventId: z.string().optional(),
-  details: z.string().optional(),
+  details: z.unknown().optional(),
 });
 
 export const SimulationAuthoringTraceSchema = z.object({

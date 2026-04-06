@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createCreateFromSourceAndContinueScenario } from '../scenarios/storyline-flows/create-from-source-and-continue';
+import { createCreateFromSourceAndContinueScenario } from '../src/scenarios/storyline-flows/create-from-source-and-continue';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 
@@ -28,14 +28,6 @@ describe('create from source and continue scenario', () => {
       }),
     );
 
-    // Active storyline should switch to new one
-    expect(report.assertions).toContainEqual(
-      expect.objectContaining({
-        name: 'active-storyline-switched',
-        pass: true,
-      }),
-    );
-
     // Variant should be copied from source
     expect(report.assertions).toContainEqual(
       expect.objectContaining({
@@ -48,6 +40,14 @@ describe('create from source and continue scenario', () => {
     expect(report.assertions).toContainEqual(
       expect.objectContaining({
         name: 'session-bound-to-new-storyline',
+        pass: true,
+      }),
+    );
+
+    // Active storyline should NOT switch (per spec Section 9.4)
+    expect(report.assertions).toContainEqual(
+      expect.objectContaining({
+        name: 'active-storyline-unchanged',
         pass: true,
       }),
     );
