@@ -29,7 +29,8 @@
 | 8 | complete | 完成 Phase 3：fixture isolation、delay adapter、batch runner、timing trace |
 | 9 | complete | 完成 Phase 4：route smoke、轻量 UI smoke、sidecar trace normalization、governance/reuse minimums |
 | 10 | complete | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
-| 11 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
+| 11 | in_progress | 完成 Phase 6：Storyline Mock & E2E Flow（覆盖 Phase 3 Part 1/2 storyline capabilities） |
+| 12 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
 
 ## Phase 4 Scope
 
@@ -135,4 +136,40 @@
 - Explicit rules:
   - 使用 `createTempStoryPackage` 做隔离
   - 在 `finally` 块中清理 temp package
+  - 所有场景保持 story-agnostic
+
+## 2026-04-06 Phase 6 Storyline Mock & E2E Flow
+
+- Status: in_progress
+- Design: `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-design.md`
+- Scope:
+  - 覆盖 Phase 3 Part 1/2 引入的 storyline 能力
+  - 新增 MockKernel 作为统一状态管理核心
+  - 新增 SubstrateMock 封装 storyline/variant/session 操作
+  - 新增 RouteMock 模拟 HTTP API
+  - 新增 StorylineE2ESimulator 支持完整人类操作流程
+  - 重构现有工具绑定 MockKernel
+- Architecture:
+  - MockKernel（统一核心）→ SubstrateMock → RouteMock → E2ESimulator
+  - SessionSimulator 重构绑定 MockKernel
+  - ScriptedAdapter 扩展接入 trace 系统
+  - ScenarioRunner 扩展支持 record/replay
+- E2E Flows:
+  - F1: create_from_source_and_continue
+  - F2: branch_from_checkpoint_flow
+  - F3: switch_and_continue
+  - F4: rename_and_verify
+  - F5: legacy_bootstrap_flow
+  - F6: full_storyline_runtime_flow
+- Done Criteria:
+  - Phase 0 验证：现有工具兼容 Phase 3 结构
+  - Phase 1-4 验证：MockKernel、SubstrateMock、RouteMock、E2E Simulator 测试通过
+  - `npm run test:simulation` 通过
+  - `npm run type-check:simulation` 通过
+  - 跨边界回归 (`npm test -- src/storylines/__tests__/ src/runtime-sessions/__tests__/`) 通过
+  - 不修改 product storyline 代码
+- Explicit rules:
+  - Mock 工具是内存中的 API mock，不依赖文件系统
+  - 遵循 systematic-debugging 思路：完整 trace、根因追踪
+  - 扩展现有工具优先于新建
   - 所有场景保持 story-agnostic

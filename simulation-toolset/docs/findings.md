@@ -157,3 +157,30 @@
   - 使用 ScriptedAdapter 的 delay 模式模拟异步
   - 在 pending refresh 期间触发 reset
   - 验证最终结果符合 sessionId/checkpointId 绑定语义
+
+## 2026-04-06 Phase 6 Storyline Mock Architecture Decision
+
+- Phase 3 Part 1/2 引入了新的对象模型（Storyline、Variant Workspace、Storyline Repository），现有 toolset 完全没有覆盖。
+- 关键差距：
+  - 无法验证 storyline 创建/分支/切换操作
+  - 无法验证 variant workspace 物化和复制
+  - 无法验证 session 绑定到 storyline
+  - 无法验证 workspace view 投影
+- 架构决策：
+  - 采用统一 MockKernel 方案，而非渐进打补丁
+  - MockKernel 作为内存状态机，支持 Record/Replay
+  - SubstrateMock 封装 storyline 操作，RouteMock 模拟 HTTP API
+  - E2ESimulator 支持完整人类操作流程模拟
+- 设计原则：
+  1. 模拟人类行为（代码形式，不依赖浏览器）
+  2. Systematic-debugging 思路（完整 trace，根因追踪）
+  3. 扩展现有工具优先于新建
+- Mock vs 真实文件系统：
+  - Mock 工具应该是内存中的 API mock
+  - 不依赖文件系统（不稳定且难以 replay）
+  - 现有 temp-package 继续用于需要真实文件系统的场景（route smoke）
+- 现有工具重构：
+  - SessionSimulator 重构绑定 MockKernel
+  - TempPackage 扩展支持 Phase 3 结构
+  - ScriptedAdapter 扩展接入 trace 系统
+  - ScenarioRunner 扩展支持 record/replay

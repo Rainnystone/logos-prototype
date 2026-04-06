@@ -119,3 +119,35 @@
   - `npm run type-check:simulation` passed
   - `npm run test:simulation` passed with 20 files and 64 tests
   - `npm test -- src/runtime-sessions/__tests__/ src/agents/gossipelog/__tests__/ src/app/play/runtime.test.ts` passed with 6 files and 55 tests
+
+## 2026-04-06
+
+- 启动 Phase 6：Storyline Mock & E2E Flow
+- 目标：覆盖 Phase 3 Part 1/2 引入的 storyline 能力
+- 完成设计文档：
+  - `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-design.md`
+- 架构决策：
+  - 采用统一 MockKernel 方案
+  - MockKernel 作为内存状态机 + Record/Replay
+  - SubstrateMock → RouteMock → E2ESimulator 分层
+- 规划新增模块：
+  - `mock-kernel.ts` — 统一状态管理核心
+  - `substrate-mock.ts` — Substrate 操作 mock
+  - `route-mock.ts` — Route 层 mock
+  - `storyline-e2e-simulator.ts` — E2E Flow 模拟器
+  - `storyline-observer.ts` — Storyline 状态观测
+  - `mock-fixture-builder.ts` — 内存 fixture 构造器
+  - `serialized-trace.ts` — Trace 序列化
+- 规划重构模块：
+  - `session-simulator.ts` — 绑定 MockKernel
+  - `temp-package.ts` — 扩展 Phase 3 结构支持
+  - `scripted-adapter.ts` — 接入 trace 系统
+  - `scenario-runner.ts` — 支持 record/replay
+- 规划 6 个 E2E Flow：
+  - F1: create_from_source_and_continue
+  - F2: branch_from_checkpoint_flow
+  - F3: switch_and_continue
+  - F4: rename_and_verify
+  - F5: legacy_bootstrap_flow
+  - F6: full_storyline_runtime_flow
+- 下一步：Spec review → Implementation plan
