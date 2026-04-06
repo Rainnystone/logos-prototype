@@ -112,12 +112,39 @@ describe('StoryPackageManagementSection', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     const branchRow = screen.getByLabelText('Branch Line storyline');
+    expect(within(branchRow).queryAllByRole('button', { name: '确认', hidden: true })).toHaveLength(0);
+    expect(within(branchRow).queryAllByRole('button', { name: '取消', hidden: true })).toHaveLength(0);
     await user.click(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 2' }));
 
     expect(within(branchRow).getByRole('button', { name: '确认' })).toBeInTheDocument();
     expect(within(branchRow).getByRole('button', { name: '取消' })).toBeInTheDocument();
     expect(within(branchRow).queryByText(/分出新故事线/i)).not.toBeInTheDocument();
     await user.click(within(branchRow).getByRole('button', { name: '取消' }));
+
+    await waitFor(() => {
+      expect(within(branchRow).queryByRole('button', { name: '确认' })).not.toBeInTheDocument();
+    });
+    expect(within(branchRow).queryAllByRole('button', { name: '确认', hidden: true })).toHaveLength(0);
+  });
+
+  it('clears an open beat drawer when an unrelated row action starts', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'switch_active_storyline', activeStorylineId: 'storyline_branch' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    const branchRow = screen.getByLabelText('Branch Line storyline');
+    await user.click(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 2' }));
+    expect(within(branchRow).getByRole('button', { name: '确认' })).toBeInTheDocument();
+
+    await user.click(within(branchRow).getByRole('button', { name: '切换到 Branch Line' }));
 
     await waitFor(() => {
       expect(within(branchRow).queryByRole('button', { name: '确认' })).not.toBeInTheDocument();
@@ -332,6 +359,9 @@ describe('StoryPackageManagementSection', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={extendedView} />);
 
     const branchRow = screen.getByLabelText('Branch Line storyline');
+    expect(within(branchRow).getByLabelText('Branch Line checkpoint rail')).toHaveClass(
+      'storyline-row__rail--horizontal',
+    );
     expect(within(branchRow).getByText('Phase 1')).toBeInTheDocument();
     expect(within(branchRow).getByText('Phase 2')).toBeInTheDocument();
     expect(within(branchRow).getAllByText(/^Beat \d+$/)).toHaveLength(5);

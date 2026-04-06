@@ -57,14 +57,12 @@ export function StorylineWorkspaceRow({
     nextPendingAction: NonNullable<typeof pendingAction>,
     action: () => Promise<void>,
   ) {
+    setOpenCheckpointId(null);
     setPendingAction(nextPendingAction);
     setFeedback(null);
 
     try {
       await action();
-      if (nextPendingAction === 'branch') {
-        setOpenCheckpointId(null);
-      }
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : '操作失败。');
     } finally {
@@ -77,6 +75,7 @@ export function StorylineWorkspaceRow({
       return;
     }
 
+    setOpenCheckpointId(null);
     const normalizedDraft = normalizeDisplayName(draftDisplayName);
     const normalizedCurrent = normalizeDisplayName(displayName);
     if (normalizedDraft === normalizedCurrent) {
@@ -176,7 +175,10 @@ export function StorylineWorkspaceRow({
         </div>
       </div>
 
-      <div className="storyline-row__rail" aria-label={`${row.displayName} checkpoint rail`}>
+      <div
+        className="storyline-row__rail storyline-row__rail--horizontal"
+        aria-label={`${row.displayName} checkpoint rail`}
+      >
         {row.checkpointRail.length > 0 ? (
           row.checkpointRail.map((checkpoint, checkpointIndex) => (
             <div key={checkpoint.checkpointId} className="storyline-row__checkpoint-node">
@@ -206,42 +208,34 @@ export function StorylineWorkspaceRow({
                 }}
               />
               <span className="storyline-row__checkpoint-beat">{`Beat ${checkpoint.beatIndex}`}</span>
-              <div
-                className={[
-                  'storyline-row__branch-drawer',
-                  openCheckpointId === checkpoint.checkpointId
-                    ? 'storyline-row__branch-drawer--open'
-                    : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                aria-hidden={openCheckpointId !== checkpoint.checkpointId}
-              >
-                <div className="storyline-row__branch-actions">
-                  <button
-                    type="button"
-                    className="storyline-row__branch-button"
-                    disabled={pendingAction !== null}
-                    onClick={() => {
-                      void runRowAction('branch', async () => {
-                        await onBranchFromCheckpoint(row.storylineId, checkpoint.checkpointId);
-                      });
-                    }}
-                  >
-                    确认
-                  </button>
-                  <button
-                    type="button"
-                    className="storyline-row__branch-button storyline-row__branch-button--ghost"
-                    disabled={pendingAction !== null}
-                    onClick={() => {
-                      setOpenCheckpointId(null);
-                    }}
-                  >
-                    取消
-                  </button>
+              {openCheckpointId === checkpoint.checkpointId ? (
+                <div className="storyline-row__branch-drawer">
+                  <div className="storyline-row__branch-actions">
+                    <button
+                      type="button"
+                      className="storyline-row__branch-button"
+                      disabled={pendingAction !== null}
+                      onClick={() => {
+                        void runRowAction('branch', async () => {
+                          await onBranchFromCheckpoint(row.storylineId, checkpoint.checkpointId);
+                        });
+                      }}
+                    >
+                      确认
+                    </button>
+                    <button
+                      type="button"
+                      className="storyline-row__branch-button storyline-row__branch-button--ghost"
+                      disabled={pendingAction !== null}
+                      onClick={() => {
+                        setOpenCheckpointId(null);
+                      }}
+                    >
+                      取消
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           ))
         ) : (

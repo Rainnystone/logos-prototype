@@ -568,12 +568,17 @@ ul {
 
 .storyline-row__rail {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: flex-start;
   gap: 0.5rem;
   padding-top: 0.15rem;
   overflow-x: auto;
   overflow-y: visible;
   padding-bottom: 4.5rem;
+}
+
+.storyline-row__rail--horizontal {
+  flex-wrap: nowrap;
 }
 
 .storyline-row__checkpoint,
@@ -655,12 +660,6 @@ ul {
   transform: translate(-50%, -0.35rem);
   pointer-events: none;
   transition: opacity 140ms ease, transform 140ms ease;
-}
-
-.storyline-row__branch-drawer--open {
-  opacity: 1;
-  transform: translate(-50%, 0);
-  pointer-events: auto;
 }
 
 .storyline-row__branch-actions {
