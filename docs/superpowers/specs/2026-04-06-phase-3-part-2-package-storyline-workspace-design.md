@@ -1,15 +1,15 @@
 # Phase 3 Part 2 Package & Storyline Workspace Design
 
 Date: 2026-04-06
-Status: Reviewed, pending user confirmation
+Status: Approved
 Scope: `Phase 3 Part 2`
 Depends on:
 - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
 - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
 
 Reference inputs:
-- `docs/superpowers/phase-3/结构布局示意图.png`
-- `docs/superpowers/phase-3/截屏2026-04-06 17.55.50.png`
+- [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
+- [`../phase-3/截屏2026-04-06 17.55.50.png`](../phase-3/截屏2026-04-06%2017.55.50.png)
 
 ## 1. Goal
 
@@ -37,8 +37,6 @@ Part 2 is successful when the package/storyline workspace becomes the primary au
 - Show current storyline state, including:
   - display name
   - active state
-  - head checkpoint summary
-  - branch provenance summary
   - checkpoint rail
 - Allow storyline creation from a source storyline.
 - Allow switching the active storyline.
@@ -119,6 +117,9 @@ Part 2 must follow the current LOGOS editor visual language:
 - no glossy gradients
 
 This page must feel like the same product, not a design-system fork.
+The intended visible structure and density should stay close to the approved sketch:
+
+- [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
 
 ### 4.5 Storyline Names Are Editable, Ids Are Not
 
@@ -188,12 +189,12 @@ The left column is a package-first index.
 
 It should:
 
-- list available story packages
+- list available story packages by package name only
 - make the active package visually obvious
 - use slight press / state-change animation on selection
 - support overflow through vertical scrolling
 
-It should not try to show detailed storyline structure itself.
+It should not try to show detailed storyline structure, summaries, or descriptive blurbs.
 
 ### 6.3 Right Column: Storyline Workspace
 
@@ -202,12 +203,12 @@ The right column is the main work surface for the selected package.
 It should contain:
 
 - package headline
-- package status / metadata summary
 - primary workspace actions
 - a vertical list of storyline rows
 
 The right column is `list-first`, not `detail-first`.
 Authors should see the whole set of worklines before drilling into one.
+It should stay visually restrained and avoid a second fact panel, package echo, or explanatory copy that is not present in the approved sketch.
 
 ### 6.4 Workspace Read Model Contract
 
@@ -266,10 +267,16 @@ Minimum row content:
 
 - editable display name
 - active / inactive status
-- lightweight provenance summary
-- head checkpoint summary
 - checkpoint rail
 - row-level actions for switching / continuing
+
+Part 2 should keep the row visually restrained.
+The workspace must not introduce a wide fact block for provenance, head summary, package echo, or similar secondary metadata by default.
+Those details can exist in the bounded read model for future use, but the v1 row surface should stay close to the approved sketch:
+
+- storyline name
+- status / row-local actions
+- phase / beat rail
 
 Preferred row rhythm:
 
@@ -285,6 +292,14 @@ The row itself should not depend on story-specific labels.
 Each accepted beat checkpoint should be rendered as a small clickable dot on the storyline rail.
 
 The rail may group beats visually by phase, but the interactive unit is still the beat checkpoint dot.
+
+The rendered rail should grow dynamically with the storyline's accepted checkpoint history.
+If the storyline advances from later beats in a later phase, the visible rail should naturally extend to include those new phase / beat positions.
+
+Phase labels and beat labels should both be legible in the rail, matching the approved structure sketch:
+
+- phase labels appear at the start of each visible phase segment
+- beat labels appear beneath their corresponding clickable dots
 
 The rail should support horizontal scrolling inside each storyline row without breaking the vertical list layout.
 

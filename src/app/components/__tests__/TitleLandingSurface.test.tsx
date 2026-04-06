@@ -15,7 +15,7 @@ vi.mock('@/app/components/RuntimeConfigForm', () => ({
 
 describe('TitleLandingSurface', () => {
   it('renders the approved title composition and package-aware actions', () => {
-    render(<TitleLandingSurface packageName="sample-scene" />);
+    render(<TitleLandingSurface playPackageName="alt-scene" />);
 
     expect(screen.getByText('LOGOS')).toBeInTheDocument();
     expect(screen.getByText('Linguistic Oriented Game Orchestration Studio')).toBeInTheDocument();
@@ -24,19 +24,22 @@ describe('TitleLandingSurface', () => {
     expect(screen.getByRole('button', { name: 'Save Runtime Config' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Play Workbench' })).toHaveAttribute(
       'href',
-      '/play?storyPackage=sample-scene',
+      '/play?storyPackage=alt-scene',
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+      '/edit?storyPackage=alt-scene&section=story-package-management',
     );
   });
 
-  it('shows a quiet fallback when no loadable package is available', () => {
-    render(<TitleLandingSurface packageName={null} />);
+  it('falls back to the default editor route when no loadable play package is available', () => {
+    render(<TitleLandingSurface playPackageName={null} />);
 
     expect(screen.getByText('No loadable story package is available.')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Play Workbench' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Narrative Editor' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?section=story-package-management',
+    );
   });
 });

@@ -2,6 +2,60 @@
 
 ## 2026-04-06
 
+- `Part 2` 已在独立 worktree 中完成最终实现、UI / UX 收口、mock 验收与最终验证，当前执行状态更新为：
+  - `Task 4 complete`
+  - `Task 5 complete`
+  - `Part 2 complete`
+- 这轮收尾实现完成了 `故事包管理` 的最后一段交互层：
+  - 每条 storyline row 现在都有独立的 `switch`、`continue`、`create from source` 动作
+  - `continue` 在目标 row 非 active 时会先走 `switch_active_storyline`，成功后再进入 `/edit?storyPackage=...&section=worldbase-cast&surface=world`
+  - inline rename 通过 metadata-only seam 提交，`blur` 与 `Enter` 都会触发提交；规范化后未变化的名称视为成功 no-op
+  - beat dot 点击后会在该点位下方打开 split-down confirm / cancel drawer；确认后执行 `branch_from_checkpoint` 并刷新工作区
+- UI 收口保持了已批准的 shell 语言，没有引入第二套持久 `selected storyline` 状态，也没有提前混入 archive / duplicate / delete。
+- 在用户继续对照结构草图提出反馈后，当前又追加了最后一轮收口要求：
+  - 左侧 ready package selector 只显示 package name
+  - 右侧 workspace 去掉 package summary / provenance / head summary 一类冗余事实块
+  - beat rail 必须按 checkpoint history 动态增长，并保持 phase / beat 标签可见
+  - split-down drawer 里只保留 `确认` / `取消`
+- 结构与信息密度的当前基准图已固定为：
+  - `../phase-3/结构布局示意图.png`
+- 本轮最终收口还额外完成了两项稳态修正：
+  - 去掉 `StorylineWorkspaceRow` 中已无实际用途的 `packageName` 参数，消除新增 lint warning
+  - 把 `Part 2` spec / plan 的 UI 参考统一改成相对路径引用结构草图，避免后续 review 继续按旧口径检查
+- 当前最终验证结果如下：
+  - `npm test -- src/storylines/__tests__/workspace-view.test.ts src/storylines/__tests__/substrate.test.ts 'src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts' src/app/__tests__/layout.test.tsx src/app/components/__tests__/TitleLandingSurface.test.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
+    - 结果：`8` 个测试文件、`78` 个测试通过
+  - `npm run type-check:simulation`
+    - 结果：通过
+  - `npm run test:simulation`
+    - 结果：`20` 个测试文件、`63` 个测试通过
+  - `npm run build`
+    - 结果：构建通过；仅保留仓库既有 `src/engine/__tests__/orchestrator.test.ts` unused vars warning
+  - `npm test`
+    - 结果：`81` 个测试文件、`641` 个测试通过
+- 浏览器与 mock 验收结论：
+  - 显式访问 `/edit?storyPackage=sample-scene&section=story-package-management` 时，页面结构和信息密度已对齐当前草图与 LOGOS 视觉风格
+  - 真实 `sample-scene` 仍然没有可直接展示 rail 的 live 数据，因此 beat-dot branch flow 的最终验收采用了 bounded fixture / route / substrate 组合测试，而不是伪造真实包内容
+  - 独立只读 code reviewer 最终结论：`APPROVED`
+- 本轮先按严格 TDD 完成了交互层 RED/GREEN：
+  - `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
+  - RED：新增 8 条交互测试先失败，定位到缺少 row actions、rename input、beat-dot drawer 与 router/fetch 接线
+  - GREEN：同一组测试在最小实现后转为通过，累计 `2` 个测试文件、`37` 个测试通过
+- 按 `Task 5` 要求完成的最终验证结果如下：
+  - `npm test -- src/storylines/__tests__/workspace-view.test.ts src/storylines/__tests__/substrate.test.ts 'src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts' src/app/__tests__/layout.test.tsx src/app/components/__tests__/TitleLandingSurface.test.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
+    - 结果：`8` 个测试文件、`75` 个测试通过
+  - `npm run type-check:simulation`
+    - 首次运行暴露 `src/storylines/__tests__/substrate.test.ts` 中已有的 `sess_alt` narrowing 类型问题；通过最小测试收窄修复后复跑通过
+  - `npm run test:simulation`
+    - 结果：`20` 个测试文件、`63` 个测试通过
+  - `npm run build`
+    - 结果：构建成功；仅保留仓库既有 `src/engine/__tests__/orchestrator.test.ts` unused vars warning
+  - `npm test`
+    - 结果：`81` 个测试文件、`638` 个测试通过
+- 这次为了完成 `Task 5` 的必需验证，只额外修改了一处测试辅助代码：
+  - `src/storylines/__tests__/substrate.test.ts` 对 `sess_alt` 增加显式 narrowing，消除 `type-check:simulation` 下的假阳性
+  - 该修正没有改变 `Part 2` 产品语义，也不需要回写 `findings.md`
+
 - `PR #6 feat: complete phase 3 part 1 storyline substrate` 当前已处于 merged 状态，不再是待合并执行面。
 - 在对齐 `Part 2` 前，主线程还完成了一次 follow-up hotfix，并已直接推到 `branch/narrative-editor`：
   - 限制 `branch from checkpoint` 只能从 source storyline 当前绑定 session 可达的 checkpoint 分叉

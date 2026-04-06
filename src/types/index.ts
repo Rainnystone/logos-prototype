@@ -9,5 +9,6 @@ export * from '@/types/phase-plan';
 export * from '@/types/prompt-object';
 export * from '@/types/runtime-sessions';
 export * from '@/types/state-snapshot';
+export * from '@/types/storyline-management';
 export * from '@/types/storyline-repository';
 export * from '@/types/story-package';

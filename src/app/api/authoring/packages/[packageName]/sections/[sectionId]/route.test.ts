@@ -1,41 +1,55 @@
 import { describe, expect, it, vi } from 'vitest';
 
-const saveSectionDraft = vi.fn(async () => ({
-  kind: 'save_applied' as const,
-  requestId: 'request-route',
-  packageName: 'sample-scene',
-  sectionId: 'worldbase-cast' as const,
-  showLocally: true,
-  showInGlobalDiagnostics: false,
-  reloadedSectionState: {
-    sceneSpec: {
-      sceneId: 'scene-signal-room',
-      sceneName: 'Signal Room',
-      mainAxis: 'Track a hostile signal through a sealed campus wing.',
-      endLine: 'The source is isolated and the public space returns to calm.',
-    },
-    phasePlans: [],
-    routerProfiles: [],
-    auditQuestionSet: {
-      sceneId: 'scene-signal-room',
-      globalQuestions: [],
-      controlQuestions: [],
-      phaseSpecificQuestions: {},
-      selectionPolicy: {
-        default: [],
-        phaseOverrides: {},
+const saveSectionDraft = vi.fn(async (request: { sectionId: string; requestId: string; packageName: string }) => {
+  if (request.sectionId === 'story-package-management') {
+    return {
+      kind: 'save_blocked' as const,
+      requestId: request.requestId,
+      packageName: request.packageName,
+      sectionId: 'story-package-management',
+      showLocally: true,
+      showInGlobalDiagnostics: false,
+      blockingIssues: ['不支持的页面 "story-package-management"。'],
+    };
+  }
+
+  return {
+    kind: 'save_applied' as const,
+    requestId: 'request-route',
+    packageName: 'sample-scene',
+    sectionId: 'worldbase-cast' as const,
+    showLocally: true,
+    showInGlobalDiagnostics: false,
+    reloadedSectionState: {
+      sceneSpec: {
+        sceneId: 'scene-signal-room',
+        sceneName: 'Signal Room',
+        mainAxis: 'Track a hostile signal through a sealed campus wing.',
+        endLine: 'The source is isolated and the public space returns to calm.',
+      },
+      phasePlans: [],
+      routerProfiles: [],
+      auditQuestionSet: {
+        sceneId: 'scene-signal-room',
+        globalQuestions: [],
+        controlQuestions: [],
+        phaseSpecificQuestions: {},
+        selectionPolicy: {
+          default: [],
+          phaseOverrides: {},
+        },
+      },
+      worldBase: {
+        mainCharacters: '主文本',
+        npcCharacters: '配角',
+        locationPatch: '地点',
       },
     },
-    worldBase: {
-      mainCharacters: '主文本',
-      npcCharacters: '配角',
-      locationPatch: '地点',
+    runtimeImpactSummary: {
+      changedFiles: ['world-base.yaml'],
     },
-  },
-  runtimeImpactSummary: {
-    changedFiles: ['world-base.yaml'],
-  },
-}));
+  };
+});
 
 vi.mock('@/authoring/persistence/bridge', () => ({
   saveSectionDraft,
@@ -102,5 +116,48 @@ describe('PATCH section save route', () => {
       }),
     );
     expect(response.status).toBe(200);
+  });
+
+  it('returns a blocked response when story-package-management is patched through the save route', async () => {
+    const { PATCH } = await import(
+      '@/app/api/authoring/packages/[packageName]/sections/[sectionId]/route'
+    );
+
+    const response = await PATCH(
+      new Request(
+        'http://localhost/api/authoring/packages/sample-scene/sections/story-package-management',
+        {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: 'story-package-management-save',
+            payload: {
+              uiFields: {},
+            },
+          }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+          sectionId: 'story-package-management',
+        }),
+      },
+    );
+
+    expect(saveSectionDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: 'story-package-management-save',
+        packageName: 'sample-scene',
+        sectionId: 'story-package-management',
+      }),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      kind: 'save_blocked',
+      sectionId: 'story-package-management',
+    });
   });
 });

@@ -5,5 +5,5 @@ export default async function HomePage() {
   const packages = await listStoryPackageCatalog();
   const firstReadyPackage = packages.find(isReadyStoryPackageEntry);
 
-  return <TitleLandingSurface packageName={firstReadyPackage?.packageName ?? null} />;
+  return <TitleLandingSurface playPackageName={firstReadyPackage?.packageName ?? null} />;
 }

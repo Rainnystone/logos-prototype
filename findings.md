@@ -43,6 +43,9 @@
   - `故事包管理` 只能消费 bounded workspace read model
   - row-level `switch`、`continue`、`create from source`、beat-dot `branch + switch` 必须保持清晰分工
   - 默认入口、标题落点、管理页 UI 以及 simulation 回归都已进入最终验收范围
+- 当前最终验收还额外确认了两条现实边界：
+  - 真实 `sample-scene` 没有可直接展示 rail 的 live checkpoint 数据，因此 beat-dot branch flow 需要依赖 bounded fixture / route / substrate 的 mock 组合验证
+  - UI / UX 文档与 review 结论应直接 refer 到 `docs/superpowers/phase-3/结构布局示意图.png` 的相对路径，而不是只在聊天里口头描述
 
 ## 2026-04-06 Phase 3 文档治理结论
 

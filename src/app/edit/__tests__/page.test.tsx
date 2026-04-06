@@ -158,6 +158,135 @@ afterEach(() => {
 });
 
 describe('EditPage', () => {
+  it('defaults /edit to story-package-management and loads the workspace view separately from authored state', async () => {
+    prepareTestPackage();
+    setupVariantWorkspace('variant_main', 'main-world-setting');
+    setupVariantWorkspace('variant_alt', 'alt-world-setting');
+    writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_main',
+      sessionsById: {
+        sess_main: {
+          sessionId: 'sess_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_main',
+          activeCheckpointId: 'chk_main',
+          orderedCheckpointIds: ['chk_main'],
+          checkpointsById: {
+            chk_main: {
+              checkpointId: 'chk_main',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_main',
+              acceptedTranscript: {
+                playerInput: 'follow main',
+                beatText: 'Main checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Main checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'main delta',
+                stableBackgroundText: 'main background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'main delta',
+            stableBackgroundText: 'main background',
+          },
+        },
+        sess_alt: {
+          sessionId: 'sess_alt',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_alt',
+          activeCheckpointId: 'chk_alt',
+          orderedCheckpointIds: ['chk_alt'],
+          checkpointsById: {
+            chk_alt: {
+              checkpointId: 'chk_alt',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_alt',
+              acceptedTranscript: {
+                playerInput: 'follow alt',
+                beatText: 'Alt checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Alt checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'alt delta',
+                stableBackgroundText: 'alt background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'alt delta',
+            stableBackgroundText: 'alt background',
+          },
+        },
+      },
+    });
+    writeStorylineRepositoryFile(buildStorylineRepository('storyline_main'));
+
+    const originalResolve = storylineSubstrate.resolveActiveStorylineContext;
+    let resolveCallCount = 0;
+    vi.spyOn(storylineSubstrate, 'resolveActiveStorylineContext').mockImplementation(
+      async (packageName, options) => {
+        const resolved = await originalResolve(packageName, options);
+        resolveCallCount += 1;
+
+        if (resolveCallCount === 1) {
+          writeStorylineRepositoryFile(buildStorylineRepository('storyline_alt'));
+        }
+
+        return resolved;
+      },
+    );
+
+    const { default: EditPage } = await import('@/app/edit/page');
+    render(
+      await EditPage({
+        searchParams: {
+          storyPackage: testPackageName,
+        },
+      }),
+    );
+
+    const workbenchProps = loadEditWorkbenchProps.mock.calls[0]?.[0] as {
+      activeSection: string;
+      storyPackageManagementView?: {
+        packageName: string;
+        activeStorylineId: string;
+      };
+      initialState: {
+        state: {
+          worldBase: {
+            worldBaseSetting: string;
+          };
+        };
+        runtimeContinuityView?: unknown;
+      };
+    };
+
+    expect(resolveCallCount).toBe(1);
+    expect(workbenchProps.activeSection).toBe('story-package-management');
+    expect(workbenchProps.storyPackageManagementView).toMatchObject({
+      packageName: testPackageName,
+      activeStorylineId: 'storyline_main',
+    });
+    expect(workbenchProps.initialState.state.worldBase.worldBaseSetting).toBe('main-world-setting');
+    expect(workbenchProps.initialState.runtimeContinuityView).toBeUndefined();
+    expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
+  });
+
   it('loads authored projection and bounded continuity from the same resolved storyline context', async () => {
     prepareTestPackage();
     setupVariantWorkspace('variant_main', 'main-world-setting');
@@ -283,6 +412,7 @@ describe('EditPage', () => {
     expect(workbenchProps.initialState.runtimeContinuityView?.activeSession?.sessionId).toBe(
       'sess_main',
     );
+    expect((workbenchProps as { storyPackageManagementView?: unknown }).storyPackageManagementView).toBeUndefined();
     expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
   });
 

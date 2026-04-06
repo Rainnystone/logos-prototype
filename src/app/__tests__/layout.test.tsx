@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
 describe('RootLayout', () => {
   it('renders the global LOGOS header and navigation links', () => {
     usePathname.mockReturnValue('/play');
-    useSearchParams.mockReturnValue(new URLSearchParams('storyPackage=sample-scene'));
+    useSearchParams.mockReturnValue(new URLSearchParams('storyPackage=alt-scene'));
 
     render(
       <AppShell>
@@ -35,11 +35,27 @@ describe('RootLayout', () => {
     expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Restart Workbench' })).toHaveAttribute(
       'href',
-      '/play?storyPackage=sample-scene',
+      '/play?storyPackage=alt-scene',
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+      '/edit?storyPackage=alt-scene&section=story-package-management',
+    );
+  });
+
+  it('falls back to the default editor route when no package is in context', () => {
+    usePathname.mockReturnValue('/play');
+    useSearchParams.mockReturnValue(new URLSearchParams());
+
+    render(
+      <AppShell>
+        <div>Workbench Child</div>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?section=story-package-management',
     );
   });
 

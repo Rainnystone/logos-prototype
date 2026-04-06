@@ -14,7 +14,8 @@
 - `Phase 2` 已完成实现、验证与手验，当前作为已冻结基础层保留。
 - 当前活跃主线切换为 `Phase 3: Package & Storyline Layer`。
 - `Phase 3 Part 1` 已完成实现、验证、浏览器手验与 PR 提交。
-- `Phase 3 Part 2` 已完成 spec 与 implementation plan；当前等待执行方式选择。
+- `Phase 3 Part 2` 已在独立 worktree 中完成实现、验证与独立 review；当前等待用户决定是先集成分支还是继续进入 `Part 3`。
+- `Phase 3` 总 design spec 已同步吸收 `Part 2` 的最终 UI / UX 口径，避免后续 `Part 3` 再沿用旧的 workspace 语义。
 - `Phase 3` 主工作记忆入口：
   - [docs/superpowers/phase-3/README.md](docs/superpowers/phase-3/README.md)
   - [docs/superpowers/phase-3/task_plan.md](docs/superpowers/phase-3/task_plan.md)
@@ -37,7 +38,7 @@
 | 10 | complete | 已冻结 `Phase 2` 的 runtime continuity substrate、checkpoint 边界与后续 `Phase 3` 可承接的落点，并完成正式 spec 与 implementation plan 的独立 review loop。 |
 | 11 | complete | 已完成 `Phase 2` 实现、验证、手验与 reopen fix 收口；该阶段当前作为 `Phase 3` 的冻结底座保留。 |
 | 12 | complete | 已完成 `Phase 3 Part 1` 的总 spec、part spec、implementation plan、代码实现、最终验证与 PR 提交。 |
-| 13 | in_progress | `Phase 3 Part 2` 已完成 spec 与 implementation plan，下一步进入实现与验证。 |
+| 13 | complete | `Phase 3 Part 2` 已完成实现、验证、mock 验收与独立 review。 |
 
 ## Frozen Product Decisions
 

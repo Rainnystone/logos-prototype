@@ -163,6 +163,25 @@ function buildCoordinatorStyleSaveRequest(heroName: string) {
 }
 
 describe('saveSectionDraft', () => {
+  it('blocks save attempts for story-package-management because the workspace view is not a writable section', async () => {
+    prepareTestPackage();
+
+    const result = await saveSectionDraft({
+      requestId: 'request-story-package-management',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'story-package-management' as never,
+      payload: {
+        uiFields: {},
+      },
+    });
+
+    expect(result.kind).toBe('save_blocked');
+    if (result.kind === 'save_blocked') {
+      expect(result.blockingIssues).toContain('不支持的页面 "story-package-management"。');
+    }
+  });
+
   it('routes page-style and coordinator-style adapters through one deterministic bridge', async () => {
     prepareTestPackage();
     const originalWorldBaseContents = readAuthoredFile('world-base.yaml');

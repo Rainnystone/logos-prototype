@@ -68,6 +68,8 @@
 ## 2026-04-06 Part 2 workspace sketch / UIUX 收口
 
 - 用户已提供 `Part 2` 的结构布局草图和当前 editor shell 截图，当前 UI 方向已足够冻结到 spec。
+- UI / UX 文档现应直接引用相对路径草图，作为可追溯的结构基准：
+  - `../phase-3/结构布局示意图.png`
 - 页面正式命名为：
   - `故事包管理`
 - 当前更准确的页面定位不是“删除控制台”，而是：
@@ -79,10 +81,13 @@
   - 右侧当前 package 的 storyline workspace
   - storyline 列表纵向滚动
   - 单条 storyline 的 beat rail 横向滚动
+- 左侧 selector 对 ready package 只显示包名，不显示额外简介或摘要。
+- 右侧 workspace 只保留 package headline 与 restrained storyline rows，不额外展示 provenance / head summary / package summary 这类大块事实面板。
 - checkpoint 交互也已冻结：
   - 每个 beat 用一个小点表示
   - 点击后在该点位下方向下“劈开”展开确认层
   - 展开层里只承接本次 branch-and-switch 的确认 / 取消动作
+- rail 必须根据 checkpoint history 动态增长，并同时显示 phase label 与对应 beat label。
 - 当前视觉约束已冻结：
   - 严格延续现有 editor shell 的 neue brutalism 语言
   - 继续使用仓库当前字体栈与硬边框 / 黑投影 / 直角面板
@@ -110,7 +115,7 @@
   - legacy package 在没有 `storyline-repository.json` 时，管理页仍必须可读且不得触发物化
   - `create storyline from source` 与 `branch from checkpoint` 的 route 合同都以“成功后自动 switch active storyline”为正式语义
   - row-level `switch storyline` 必须是独立动作，不能借 `continue` 或 beat-dot confirm drawer 代替
-  - UI 验收不仅看交互，还必须覆盖 package selector、package headline、row status、来源摘要与 head summary
+  - UI 验收不仅看交互，还必须覆盖 package selector、package headline、row-local actions、dynamic phase/beat rail 与 confirm drawer
   - 最终验证必须包含 `npm run type-check:simulation` 与 `npm run test:simulation`
 - 最后一轮 reviewer 已明确确认：
   - 当前 plan 没有剩余阻塞性执行缺口

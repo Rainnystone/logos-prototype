@@ -10,6 +10,7 @@ import {
   ensureStorylineAwareActiveSession,
   executeStorylineRuntimeSessionCommand,
   resolveActiveStorylineContext,
+  updateStorylineDisplayName,
   switchActiveStoryline,
 } from '@/storylines/substrate';
 import { MANAGED_VARIANT_AUTHORING_FILES, resolveVariantWorkspacePath } from '@/storylines/workspaces';
@@ -308,6 +309,70 @@ describe('storyline substrate', () => {
     expect(runtimeFile.activeSessionId).toBe('sess_main');
   });
 
+  it('updates only storyline.name and updatedAt for display-name edits', async () => {
+    const { packageName } = await seedExplicitStorylinePackage();
+    const beforeRepository = await readStorylineRepositoryJson(packageName);
+    const beforeRuntime = await readRuntimeSessionsJson(packageName);
+
+    const result = await updateStorylineDisplayName({
+      packageName,
+      storylineId: 'storyline_main',
+      nextDisplayName: '  Side Route  ',
+    });
+
+    const afterRepository = await readStorylineRepositoryJson(packageName);
+    const afterRuntime = await readRuntimeSessionsJson(packageName);
+
+    expect(result.storyline.name).toBe('Side Route');
+    expect(afterRepository.storylinesById.storyline_main).toEqual({
+      ...beforeRepository.storylinesById.storyline_main,
+      name: 'Side Route',
+      updatedAt: expect.any(String),
+    });
+    expect(afterRepository.storylinesById.storyline_main?.updatedAt).not.toBe(
+      beforeRepository.storylinesById.storyline_main?.updatedAt,
+    );
+    expect(afterRepository.variantsById).toEqual(beforeRepository.variantsById);
+    expect(afterRepository.activeStorylineId).toBe(beforeRepository.activeStorylineId);
+    expect(afterRuntime).toEqual(beforeRuntime);
+  });
+
+  it('treats a normalized no-op rename as success without rewriting runtime mirrors', async () => {
+    const { packageName } = await seedExplicitStorylinePackage();
+    const beforeRepository = await readStorylineRepositoryJson(packageName);
+    const beforeRuntime = await readRuntimeSessionsJson(packageName);
+
+    const result = await updateStorylineDisplayName({
+      packageName,
+      storylineId: 'storyline_main',
+      nextDisplayName: 'Main Line',
+    });
+
+    const afterRepository = await readStorylineRepositoryJson(packageName);
+    const afterRuntime = await readRuntimeSessionsJson(packageName);
+
+    expect(result.storyline).toEqual(beforeRepository.storylinesById.storyline_main);
+    expect(afterRepository).toEqual(beforeRepository);
+    expect(afterRuntime).toEqual(beforeRuntime);
+  });
+
+  it('returns the renamed storyline bound session when renaming a non-active storyline', async () => {
+    const { packageName } = await seedExplicitStorylinePackage({
+      includeAlternateStoryline: true,
+      runtimeActiveSessionId: 'sess_main',
+    });
+
+    const result = await updateStorylineDisplayName({
+      packageName,
+      storylineId: 'storyline_alt',
+      nextDisplayName: '  Alt Route  ',
+    });
+
+    expect(result.storyline.storylineId).toBe('storyline_alt');
+    expect(result.session.sessionId).toBe('sess_alt');
+    expect(result.session.sessionId).not.toBe('sess_main');
+  });
+
   it('updates runtime-sessions.json activeSessionId as a mirror when switching storylines', async () => {
     const { packageName } = await seedExplicitStorylinePackage({
       includeAlternateStoryline: true,
@@ -343,18 +408,24 @@ describe('storyline substrate', () => {
     });
     const runtimeFile = await readRuntimeSessionsJson(packageName);
     const alternateCheckpoint = makeCheckpoint('chk_alt_only', 3);
+    const alternateSession = runtimeFile.sessionsById.sess_alt;
+
+    expect(alternateSession).toBeDefined();
+    if (!alternateSession) {
+      throw new Error('Expected alternate session to exist for this test fixture.');
+    }
 
     await writeRuntimeSessionsFile(packageName, {
       ...runtimeFile,
       sessionsById: {
         ...runtimeFile.sessionsById,
         sess_alt: {
-          ...runtimeFile.sessionsById.sess_alt,
+          ...alternateSession,
           headCheckpointId: 'chk_alt_only',
           activeCheckpointId: 'chk_alt_only',
           orderedCheckpointIds: ['chk_01', 'chk_alt_only'],
           checkpointsById: {
-            ...runtimeFile.sessionsById.sess_alt.checkpointsById,
+            ...alternateSession.checkpointsById,
             chk_alt_only: alternateCheckpoint,
           },
         },

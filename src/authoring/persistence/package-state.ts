@@ -4,9 +4,9 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import type { AgentSurfaceItem } from '@/agents/agent-surface';
+import { SAVE_SECTION_IDS } from '@/authoring/contracts';
 import { resolveAuthoringPersistenceTarget } from '@/authoring/persistence/repository';
 import { parseWithSchema } from '@/lib/validation';
-import { SECTION_IDS } from '@/authoring/contracts';
 import { loadStoryPackage } from '@/engine/story-loader';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
 import type { ActiveStorylineContext } from '@/storylines/substrate';
@@ -14,7 +14,7 @@ import type { StoryPackage } from '@/types';
 import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
 
-const AuthoringSectionIdSchema = z.enum(SECTION_IDS);
+const AuthoringSectionIdSchema = z.enum(SAVE_SECTION_IDS);
 const ReviewableSectionIdSchema = z.enum([
   'worldbase-cast',
   'scene-phase-authoring',

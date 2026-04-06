@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { SECTION_IDS, type SectionId } from '@/authoring/contracts';
+import { EDITOR_SECTION_IDS, type EditorSectionId } from '@/authoring/contracts';
 import { loadAuthoringState } from '@/authoring/persistence/package-state';
 import {
   isReadyStoryPackageEntry,
@@ -9,6 +9,7 @@ import {
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import { loadStoryPackageManagementWorkspaceView } from '@/storylines/workspace-view';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -35,12 +36,16 @@ function getRequestedPackageName(value: string | readonly string[] | undefined):
   return null;
 }
 
-function getRequestedSectionId(value: string | readonly string[] | undefined): SectionId | null {
+function getRequestedSectionId(
+  value: string | readonly string[] | undefined,
+): EditorSectionId | null {
   if (typeof value !== 'string') {
     return null;
   }
 
-  return (SECTION_IDS as readonly string[]).includes(value) ? (value as SectionId) : null;
+  return (EDITOR_SECTION_IDS as readonly string[]).includes(value)
+    ? (value as EditorSectionId)
+    : null;
 }
 
 function getRequestedSurface(
@@ -80,17 +85,25 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     );
   }
 
-  const activeSection = requestedSection ?? 'worldbase-cast';
+  const activeSection = requestedSection ?? 'story-package-management';
 
   try {
     const storylineContext = await resolveActiveStorylineContext(selectedPackageName, {
       forWrite: false,
     });
-    const authoringState = await loadAuthoringState(selectedPackageName, {
-      includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
-      includeRuntimeContinuity: activeSection === 'worldbase-cast',
-      storylineContext,
-    });
+    const [authoringState, storyPackageManagementView] = await Promise.all([
+      loadAuthoringState(selectedPackageName, {
+        includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
+        includeRuntimeContinuity: activeSection === 'worldbase-cast',
+        storylineContext,
+      }),
+      activeSection === 'story-package-management'
+        ? loadStoryPackageManagementWorkspaceView(selectedPackageName, {
+            packages: catalog,
+            storylineContext,
+          })
+        : Promise.resolve(undefined),
+    ]);
     const activeSurface =
       activeSection === 'worldbase-cast' ? requestedSurface : 'world';
 
@@ -99,6 +112,9 @@ export default async function EditPage({ searchParams }: EditPageProps) {
         packageName={selectedPackageName}
         activeSection={activeSection}
         activeSurface={activeSurface}
+        {...(storyPackageManagementView
+          ? { storyPackageManagementView }
+          : {})}
         initialState={authoringState}
       />
     );

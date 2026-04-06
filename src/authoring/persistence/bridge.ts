@@ -1,4 +1,4 @@
-import { SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/contracts';
+import { SAVE_SECTION_IDS, type SaveRequest, type SaveResult } from '@/authoring/contracts';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import {
   type AuthoringPersistenceTarget,
@@ -48,7 +48,7 @@ import type { StoryPackage } from '@/types';
 import type { WorldLocationDraft } from '@/authoring/sections/world-locations';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
-const supportedSectionIds = new Set<SaveRequest['sectionId']>(SECTION_IDS);
+const supportedSectionIds = new Set<SaveRequest['sectionId']>(SAVE_SECTION_IDS);
 const supportedSaveSources = new Set<SaveRequest['source']>(['page', 'coordinator', 'repair']);
 const supportedModuleScopes = new Set<NonNullable<SaveRequest['moduleScope']>>([
   'light-cone',
@@ -58,11 +58,7 @@ const supportedModuleScopes = new Set<NonNullable<SaveRequest['moduleScope']>>([
   'router-profile-set',
 ]);
 
-const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>([
-  SECTION_IDS[0],
-  SECTION_IDS[1],
-  SECTION_IDS[2],
-]);
+const supportedDeterministicWriteSections = new Set<SaveRequest['sectionId']>(SAVE_SECTION_IDS);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
