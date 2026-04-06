@@ -18,8 +18,8 @@
 | 1 | complete | 建立 `docs/superpowers/phase-3/` 工作区，并把根目录三件套切换为 `Phase 3` 总控索引模式。 |
 | 2 | complete | `Phase 3` 总 design spec 已写出并通过独立 review。 |
 | 3 | complete | `Phase 3` 的 part 边界、依赖关系与每个 part 的完成标准已在总 spec 中冻结。 |
-| 4 | in_progress | `Part 1` spec 已写出，当前进入独立 review 与用户确认前的收口。 |
-| 5 | pending | 编写 `Part 1` implementation plan。 |
+| 4 | complete | `Part 1` spec 已写出、完成多轮 review 收口，并进入用户确认后的正式基线。 |
+| 5 | complete | `Part 1` implementation plan 已写出并通过独立 plan review。 |
 | 6 | pending | 执行并验证 `Part 1`。 |
 | 7 | pending | 编写 `Part 2` spec。 |
 | 8 | pending | 编写 `Part 2` implementation plan。 |
@@ -134,3 +134,13 @@
 - 下一步：
   - 交给用户确认
   - 如用户认可，则进入 `Part 1` implementation plan
+
+## Part 1 Implementation Plan Status
+
+- 正式 `Part 1` implementation plan 已写出：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
+- 当前状态：
+  - `Approved, pending execution choice`
+- 下一步：
+  - 由用户选择执行方式
+  - 然后进入 `Part 1` 代码实现与验证

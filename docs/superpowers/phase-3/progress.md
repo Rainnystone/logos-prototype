@@ -138,3 +138,41 @@
 - 当前下一步更新为：
   - 交给用户确认
   - 如认可，则进入 `Part 1` implementation plan
+- 用户随后明确要求按 `using-superpowers + writing-plans` 继续推进 `Part 1 implementation plan`。
+- 已写出正式 implementation plan：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
+- 计划写作过程中，已重新核对：
+  - `Part 1` spec
+  - `Phase 2` implementation plan 写法
+  - 现有 `src/authoring/persistence/`
+  - 现有 `src/runtime-sessions/`
+  - `src/engine/story-loader.ts`
+  - `/edit` 与 `/play` 页面入口
+  - 现有测试文件分布与命令可执行性
+- 已完成一轮独立 plan review，reviewer 指出 3 个会阻止直接执行的问题：
+  - 没有把 load-time repair 与 structural mismatch 失败路径拆成任务
+  - 没有给 `/play` legacy pure-read non-materialization 足够明确的覆盖
+  - Task 1 的 `StorylineVariantSchema` 示例代码会误导低上下文执行者
+- 这 3 点已全部收口并回写进 plan。
+- 已完成第二轮独立 plan review，reviewer 结论：
+  - `Approved`
+- reviewer 还给出 2 条非阻塞强化建议：
+  - 在 Task 2 的测试示例里显式补一个 `branch_storyline_from_checkpoint`
+  - 在 Task 5 的手验清单里补一条 `/play` pure-read non-materialization
+- 上述 2 条也已吸收回 plan。
+- 随后又补收一轮外部 reviewer 建议；经主线程判断，其中 4 条都值得吸收：
+  - 3 条 failure-handling 测试补充：
+    - staged workspace promotion 前失败时必须清理 staging
+    - 正常解析必须忽略未登记在 `variantsById` 的 orphan workspace
+    - 正常解析必须忽略未绑定到 storyline repo 的 orphan session
+  - 1 条 lifecycle 澄清：
+    - `awaiting_start` 通过首个 accepted-beat 写入进入正常 active lifecycle，不单独再发明一套 storyline-specific transition
+- 这 4 条已补入 `Task 2`。
+- 在最终复核通过后，又继续吸收了 2 条非阻塞加强建议：
+  - 为 `/edit` legacy pure-read non-materialization 增加单独自动化断言
+  - 在最终验证环节加入 `simulation-toolset` 的 type-check 与 test 回归
+- 当前 `Part 1` implementation plan 状态更新为：
+  - `Approved, pending execution choice`
+- 当前下一步更新为：
+  - 由用户选择执行方式
+  - 然后开始 `Part 1` 实现与验证
