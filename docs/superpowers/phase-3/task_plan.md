@@ -20,7 +20,7 @@
 | 3 | complete | `Phase 3` 的 part 边界、依赖关系与每个 part 的完成标准已在总 spec 中冻结。 |
 | 4 | complete | `Part 1` spec 已写出、完成多轮 review 收口，并进入用户确认后的正式基线。 |
 | 5 | complete | `Part 1` implementation plan 已写出并通过独立 plan review。 |
-| 6 | pending | 执行并验证 `Part 1`。 |
+| 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与记录同步。 |
 | 7 | pending | 编写 `Part 2` spec。 |
 | 8 | pending | 编写 `Part 2` implementation plan。 |
 | 9 | pending | 执行并验证 `Part 2`。 |
@@ -140,7 +140,17 @@
 - 正式 `Part 1` implementation plan 已写出：
   - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
 - 当前状态：
-  - `Approved, pending execution choice`
+  - `Execution complete`
 - 下一步：
-  - 由用户选择执行方式
-  - 然后进入 `Part 1` 代码实现与验证
+  - 进入 `Part 2` spec
+  - 基于已冻结的 `Part 1` substrate 开始设计故事包管理工作区
+
+## Part 1 Execution Checkpoints
+
+| Task | 状态 | 说明 |
+|---|---|---|
+| `Task 1` | complete | storyline repository contract、workspace helpers、定向测试和双 review 已通过。 |
+| `Task 2` | complete | storyline substrate service、runtime-session 同步、失败路径收口与双 review 已通过。 |
+| `Task 3` | complete | authored load/save target-resolution seam、legacy/non-materializing 兼容与双 review 已通过。 |
+| `Task 4` | complete | `/edit` 与 `/play` 页面级默认解析已接到 active storyline，补齐了单次 context resolve 与页面级 storyline-aware 覆盖，并通过双 review。 |
+| `Task 5` | complete | 已完成定向回归、`build`、simulation type-check / test、全量 `npm test`、浏览器手验以及 Phase 3 记录同步。 |

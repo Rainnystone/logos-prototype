@@ -176,3 +176,148 @@
 - 当前下一步更新为：
   - 由用户选择执行方式
   - 然后开始 `Part 1` 实现与验证
+- 用户随后明确要求按 `test-driven-development + subagent-driven-development` 启动 `Part 1` 执行，并要求遵循 `AGENTS.md` 中的 subagent discipline。
+- 已按 `using-git-worktrees` 创建独立执行 worktree：
+  - `/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-phase-3-part-1`
+  - branch: `codex/phase-3-part-1-substrate`
+- 已在独立 worktree 中完成 baseline 准备：
+  - `npm install --package-lock=false`
+  - `npm test -- src/types/__tests__/type-conformance.test.ts src/runtime-sessions/__tests__/repository.test.ts src/engine/__tests__/story-loader.test.ts`
+  - 基线结果：3 个测试文件、36 个测试通过
+- `Task 1` 已按 TDD 完成首轮实现并提交：
+  - `b55cad4 feat: add storyline repository contracts`
+- 首轮 `Task 1` review 结论分化：
+  - spec compliance review 通过
+  - code-quality review 指出 3 类真实问题：
+    - `variantId` / `stageId` 缺少安全约束，存在路径逃逸风险
+    - promote / clone 会静默覆盖已有 workspace，存在数据丢失风险
+    - 对上述失败路径的测试覆盖不足
+- 主线程未因等待超时直接关闭 implementer，而是保留上下文并追加同一任务的修复指令。
+- implementer 已完成 `Task 1` 后续修复并提交：
+  - `6858ef7 fix: harden storyline workspace helpers`
+- 这轮修复已补上：
+  - storyline-scoped safe ID 规则与 schema 校验
+  - workspace path containment 断言
+  - promote / clone 的“目标已存在则失败”保护
+  - 缺失 stage、安全失败与递归复制的定向测试
+- 主线程已复跑 `Task 1` 定向测试：
+  - `npm test -- src/types/__tests__/type-conformance.test.ts src/storylines/__tests__/repository.test.ts src/storylines/__tests__/workspaces.test.ts`
+  - 结果：3 个测试文件、28 个测试通过
+- 第二轮 `Task 1` review 已全部通过：
+  - spec compliance review：`✅ Spec compliant`
+  - code-quality review：`✅ Ready for Task 1 merge`
+- `Task 1` 实现 subagent 与两位 reviewer 在确认不再需要后已关闭。
+- 当前执行状态已推进到：
+  - `Task 1 complete`
+  - `Task 2 in progress`
+- `Task 2` 已按 TDD 完成首轮实现并提交：
+  - `55c8c62 feat: add storyline substrate primitives`
+- 主线程复跑 `Task 2` 定向测试通过：
+  - `npm test -- src/storylines/__tests__/substrate.test.ts src/runtime-sessions/__tests__/repository.test.ts src/runtime-sessions/__tests__/views.test.ts 'src/app/api/play/packages/[packageName]/runtime-session/route.test.ts'`
+  - 结果：4 个测试文件、42 个测试通过
+- 首轮 `Task 2` review 没有放行，并确认 3 个真实 blocker：
+  - create / branch 成功后 runtime mirror 被新 storyline session 抢占，违反 active storyline mirror 语义
+  - `finalize_relationship_layer` 仍可越过 active storyline 绑定去修改 inactive / orphan session
+  - substrate 引入后，missing-package 的 route 错误映射从 404 回退成了 500
+- 已保留同一 implementer subagent，并在原上下文上追加一次性修复任务；未因 review 未过而关闭或更换 implementer。
+- implementer 已完成这轮 blocker 修复并提交：
+  - `55d26cd fix: enforce storyline-bound runtime mirror invariants`
+- 这轮修复已补上：
+  - `createSessionFromCheckpoint()` 不再改写 runtime active-session mirror
+  - create-from-source / branch-from-checkpoint 后 runtime mirror 保持跟随当前 active storyline
+  - substrate 对 `finalize_relationship_layer` 增加 active storyline 绑定约束
+  - storyline repository 层对 missing package 改抛 `RuntimeStoryPackageNotFoundError`，恢复 route 404 语义
+  - 对应 invariant、冲突路径与 404 映射的定向测试
+- 主线程已复跑同一组 `Task 2` 定向测试：
+  - 结果：4 个测试文件、46 个测试通过
+- 第二轮 `Task 2` review 已全部通过：
+  - spec compliance review：`✅ Spec compliant`
+  - code-quality review：`✅ Ready for Task 2 merge`
+- 当前执行状态已推进到：
+  - `Task 2 complete`
+  - `Task 3 in progress`
+- `Task 3` 已按 TDD 完成首轮实现并提交：
+  - `0714706 feat: resolve authoring through active storyline variants`
+- 主线程复跑 `Task 3` 定向测试通过：
+  - `npm test -- src/engine/__tests__/story-loader.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/authoring/persistence/__tests__/bridge.test.ts`
+  - 结果：3 个测试文件、53 个测试通过
+- `Task 3` 首轮 spec review 通过，但 code-quality review 确认 1 个真实 blocker：
+  - legacy package 上一次会返回 `save_blocked` 的首次保存，仍会提前触发 bootstrap，错误物化 `storyline-repository.json` 与 `variants/variant_main`
+- 已保留同一 implementer subagent，并在原上下文上追加 follow-up 修复；未更换 implementer，也未关闭后重开。
+- implementer 已完成这轮 blocker 修复并提交：
+  - `5ca5f10 fix: defer storyline bootstrap until deterministic validation passes`
+- 这轮修复已补上：
+  - bridge save 流程改为先走 `forWrite: false` 的只读 target 与 deterministic 校验
+  - 只有确认不会返回 `save_blocked` 后，才懒触发 `forWrite: true` 的 write target 解析与 bootstrap
+  - blocked first save 不再物化 Phase 3 文件，而 successful first save 仍正常 bootstrap 到 variant workspace
+  - 对应 blocked-first-save / successful-first-save 分叉测试
+- 主线程已复跑同一组 `Task 3` 定向测试：
+  - 结果：3 个测试文件、54 个测试通过
+- 第二轮 `Task 3` review 已全部通过：
+  - spec compliance review：`✅ Spec compliant`
+  - code-quality review：`✅ Ready for Task 3 merge`
+- 当前执行状态已推进到：
+  - `Task 3 complete`
+  - `Task 4 in progress`
+- `Task 4` 已按 TDD 完成首轮页面级 storyline-aware 接线并提交：
+  - `18afbdc feat: resolve play and edit through active storylines`
+- 主线程复跑 `Task 4` 定向测试通过：
+  - `npm test -- src/app/__tests__/play-page.test.tsx src/app/edit/__tests__/page.test.tsx src/runtime-sessions/__tests__/views.test.ts`
+  - 结果：3 个测试文件、20 个测试通过
+- `Task 4` 首轮 spec review 通过，但 code-quality review 指出 2 个真实 blocker：
+  - `/edit` 仍分两次解析 storyline context，存在 authored projection 与 runtime continuity 错位风险
+  - 页面测试仍过度依赖 mock，没有真正证明 active storyline authored/runtime 落点与 legacy pure-read non-materialization
+- 已保留同一 implementer subagent，并在原上下文上追加 follow-up 修复；未因超时或 review 未过而关闭后重开。
+- implementer 已完成这轮 blocker 修复并提交：
+  - `6cf3501 fix: lock edit reads to a single storyline context`
+- 这轮修复已补上：
+  - `/edit` 页面在 server load 时只解析一次 active storyline context，并把同一 context 注入 `loadAuthoringState`
+  - `loadAuthoringState` authored load 与 continuity load 共用同一 pinned context
+  - `/play` 与 `/edit` 页面测试改成真实 fixture 驱动，补齐了 legacy pure-read non-materialization 覆盖
+  - `package-state` 增加 injected context 回归测试，防止 authored / continuity 再次漂移
+- 主线程已复跑扩展后的 `Task 4` 定向测试：
+  - `npm test -- src/app/__tests__/play-page.test.tsx src/app/edit/__tests__/page.test.tsx src/runtime-sessions/__tests__/views.test.ts src/authoring/persistence/__tests__/package-state.test.ts`
+  - 结果：4 个测试文件、31 个测试通过
+- 第二轮 `Task 4` review 已全部通过：
+  - spec compliance review：`✅ Spec compliant`
+  - code-quality review：`✅ Ready for Task 4 merge`
+- `Task 5` 启动后，主线程按 implementation plan 先跑最终验证，先后完成：
+  - `npm test -- src/types/__tests__/type-conformance.test.ts src/storylines/__tests__/repository.test.ts src/storylines/__tests__/workspaces.test.ts src/storylines/__tests__/substrate.test.ts src/runtime-sessions/__tests__/repository.test.ts src/runtime-sessions/__tests__/views.test.ts src/engine/__tests__/story-loader.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/authoring/persistence/__tests__/bridge.test.ts 'src/app/api/play/packages/[packageName]/runtime-session/route.test.ts' src/app/__tests__/play-page.test.tsx src/app/edit/__tests__/page.test.tsx`
+    - 结果：12 个测试文件、135 个测试通过
+  - `npm run build`
+    - 结果：成功构建；仅保留既有 `orchestrator.test.ts` unused vars warning
+- 在 simulation 验证阶段首次发现 4 个问题：
+  - `npm run type-check:simulation` 暴露 `src/storylines/__tests__/substrate.test.ts` 的 2 个类型收紧错误
+  - `npm run test:simulation` 暴露 2 个旧假设回归：
+    - `route-smoke` 仍在保存后读取 package-root baseline runtime projection
+    - `validation-success` 仍在保存后读取 package-root baseline authored projection
+- 经根因排查后确认：
+  - 这不是产品实现边界回退，而是 simulation / test 辅助层还停留在单线 package-root 心智
+  - 修复应限定在 simulation / test 层，不回头改已通过 review 的 `Part 1` 产品实现
+- 已派出一个受限 implementer subagent，只允许修改：
+  - `src/storylines/__tests__/substrate.test.ts`
+  - `simulation-toolset/src/route-smoke.ts`
+  - `simulation-toolset/scenarios/validation-failure.ts`
+- implementer 按 TDD 完成修复，主线程复核 diff 后复跑通过：
+  - `npm run type-check:simulation`
+  - `npm run test:simulation`
+- 这轮 verification fix 的两轮只读 review 也已全部通过：
+  - spec compliance review：`✅ Spec compliant`
+  - code-quality review：`✅ Ready`
+- 该修复没有扩大 `Phase 3` 语义，只做了 3 个对齐动作：
+  - `substrate.test.ts` 补显式 narrowing，消除类型收紧后的假阳性
+  - `route-smoke.ts` 改为先解析 active storyline，再用 `authoredRootOverride` 读取 runtime projection
+  - `validation-failure.ts` 的 valid-save 场景改为验证 bridge 返回的 `reloadedSectionState`
+- 主线程随后完成剩余最终验证：
+  - `npm test`
+    - 结果：78 个测试文件、604 个测试通过
+- 主线程还完成了浏览器手验，使用临时 story package 并在结束后清理：
+  - `/edit` 在 legacy package 上真实打开后不物化 `storyline-repository.json` 或 `variants/`
+  - `/play` 的纯读检查需要禁用 JS 来隔离 SSR，因为客户端挂载后会自动执行 `Start Round` 前的运行时初始化；在 JS-disabled 纯读下，legacy package 不物化
+  - `/edit` 首次保存会创建 `storyline-repository.json` 与 `variants/variant_main/...`，且保存内容确实落入 variant workspace
+  - `/play` 在 bootstrap 后会读取 active storyline authored projection，并保持 runtime `activeSessionId` 不漂移
+  - 通过 direct substrate primitive 创建第二条 storyline、切换 active storyline 后，下一次 `/edit` 与 `/play` 都读取到了新的 variant 内容
+- 当前执行状态已推进到：
+  - `Task 4 complete`
+  - `Task 5 complete`
+  - `Part 1 complete`
