@@ -83,8 +83,8 @@ export interface OperationTraceEntry {
   output: unknown;
   stateBefore: StateSnapshotRef;
   stateAfter: StateSnapshotRef;
-  mode?: ScriptedMode;
-  error?: string;
+  mode?: ScriptedMode | undefined;
+  error?: string | undefined;
 }
 
 /**
