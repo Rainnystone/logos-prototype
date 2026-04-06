@@ -364,7 +364,7 @@ git commit -m "feat: add storyline workspace actions"
 - Test: `src/app/edit/__tests__/page.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing routing and shell tests**
+- [x] **Step 1: Write the failing routing and shell tests**
 
 ```ts
 it('defaults /edit to story-package-management when section is omitted', async () => {
@@ -467,13 +467,13 @@ it('renders the 故事包管理 tab before 世界 while keeping 控制台 reacha
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify RED**
+- [x] **Step 2: Run the tests to verify RED**
 
 Run: `npm test -- src/app/__tests__/layout.test.tsx src/app/__tests__/page.test.tsx 'src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts' src/app/components/__tests__/TitleLandingSurface.test.tsx src/authoring/persistence/__tests__/bridge.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/authoring/sections/__tests__/package-diagnostics.test.ts src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because the new section id, default route, and workbench prop surface are missing.
 
-- [ ] **Step 3: Implement the minimal section and page wiring**
+- [x] **Step 3: Implement the minimal section and page wiring**
 
 ```ts
 export const SECTION_IDS = [
@@ -513,13 +513,13 @@ Implementation notes:
 - Preserve the current `worldbase-cast` surface rules. `story-package-management` has no `surface` sub-mode.
 - Keep `控制台` reachable; only change default landing and tab order.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run: `npm test -- src/app/__tests__/layout.test.tsx src/app/__tests__/page.test.tsx 'src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts' src/app/components/__tests__/TitleLandingSurface.test.tsx src/authoring/persistence/__tests__/bridge.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/authoring/sections/__tests__/package-diagnostics.test.ts src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS with the new default section and six-tab shell order.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/authoring/contracts.ts src/authoring/persistence/bridge.ts src/authoring/persistence/package-state.ts src/authoring/sections/package-diagnostics.ts src/app/AppShell.tsx src/app/page.tsx src/app/edit/page.tsx src/app/components/TitleLandingSurface.tsx src/app/edit/EditWorkbench.tsx src/app/edit/shared/SectionTabs.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/page.test.tsx src/app/api/authoring/packages/[packageName]/sections/[sectionId]/route.test.ts src/app/components/__tests__/TitleLandingSurface.test.tsx src/authoring/persistence/__tests__/bridge.test.ts src/authoring/persistence/__tests__/package-state.test.ts src/authoring/sections/__tests__/package-diagnostics.test.ts src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
