@@ -337,6 +337,40 @@ describe('storyline substrate', () => {
     expect(runtimeFile.activeSessionId).toBe('sess_main');
   });
 
+  it('rejects branching from a checkpoint that is not reachable from the source storyline session', async () => {
+    const { packageName } = await seedExplicitStorylinePackage({
+      includeAlternateStoryline: true,
+    });
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
+    const alternateCheckpoint = makeCheckpoint('chk_alt_only', 3);
+
+    await writeRuntimeSessionsFile(packageName, {
+      ...runtimeFile,
+      sessionsById: {
+        ...runtimeFile.sessionsById,
+        sess_alt: {
+          ...runtimeFile.sessionsById.sess_alt,
+          headCheckpointId: 'chk_alt_only',
+          activeCheckpointId: 'chk_alt_only',
+          orderedCheckpointIds: ['chk_01', 'chk_alt_only'],
+          checkpointsById: {
+            ...runtimeFile.sessionsById.sess_alt.checkpointsById,
+            chk_alt_only: alternateCheckpoint,
+          },
+        },
+      },
+    });
+
+    await expect(
+      branchStorylineFromCheckpoint({
+        packageName,
+        sourceStorylineId: 'storyline_main',
+        checkpointId: 'chk_alt_only',
+        name: 'Invalid Branch',
+      }),
+    ).rejects.toThrow(/source storyline/i);
+  });
+
   it('repairs mirror drift on the next storyline-aware preflight instead of trusting stale mirrors', async () => {
     const { packageName } = await seedExplicitStorylinePackage({
       includeAlternateStoryline: true,
