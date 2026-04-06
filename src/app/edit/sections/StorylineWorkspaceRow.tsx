@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { StoryPackageManagementStorylineRowView } from '@/types';
 
 interface StorylineWorkspaceRowProps {
-  readonly packageName: string;
   readonly row: StoryPackageManagementStorylineRowView;
   readonly onSwitchStoryline: (storylineId: string) => Promise<void>;
   readonly onContinueStoryline: (storylineId: string, isActive: boolean) => Promise<void>;
@@ -23,7 +22,6 @@ function formatCheckpointButtonLabel(checkpoint: StoryPackageManagementStoryline
 }
 
 export function StorylineWorkspaceRow({
-  packageName: _packageName,
   row,
   onSwitchStoryline,
   onContinueStoryline,

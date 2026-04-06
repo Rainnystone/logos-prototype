@@ -2,8 +2,27 @@
 
 ## 2026-04-06
 
-- `Phase 3 Part 2` 已完成正式 spec 与 implementation plan，并通过独立 review。
-- 当前 `Part 2` 已进入“等待执行方式选择”的状态，不再停留在 spec 对齐阶段。
+- `Phase 3 Part 2` 已在独立 worktree 中完成实现、最终验证与独立 code review。
+- 当前 `Part 2` 已不再停留在 spec / plan 阶段，下一步只剩用户决定是先集成分支还是继续推进 `Part 3`。
+- `Phase 3` 总 design spec 也已完成同步，现已吸收 `Part 2` 最终冻结下来的 UI / UX 与 row-level action 语义：
+  - package selector 按 name-only 呈现
+  - workspace 保持 restrained row surface
+  - `create storyline` 在 `Part 2` workspace 中按 `create + switch` 复合动作理解
+  - beat-dot confirm 继续代表 `branch + switch`
+- 本轮最终 UI / UX 收口吸收了用户对结构草图的最后一批明确反馈：
+  - 左侧 ready package selector 只显示包名
+  - 右侧 workspace 保持最小信息密度，不显示 package summary、provenance、head summary 一类宽事实块
+  - beat rail 必须按 checkpoint history 动态增长，并显示 phase / beat 标签
+  - beat-dot 展开的 drawer 只保留 `确认` / `取消`
+- 最终验证已经完成：
+  - 定向 `Part 2` 主链测试：`8` 个文件、`78` 个测试通过
+  - `npm run type-check:simulation` 通过
+  - `npm run test:simulation` 通过，`20` 个文件、`63` 个测试通过
+  - `npm run build` 通过，仅保留仓库既有 warning
+  - `npm test` 全量通过，`81` 个文件、`641` 个测试通过
+- 浏览器手验补充结论：
+  - 显式进入 `section=story-package-management` 的页面结构已与草图和现有 LOGOS 视觉壳子对齐
+  - 真实 `sample-scene` 没有 live rail 数据，因此 rollback / branch flow 的最终验收采用 fixture + route + substrate 的 mock 组合验证
 - 已确认主工作区中的根目录三件套与 `docs/superpowers/phase-3/` 一度停留在 `Part 1` 执行前状态；当前已开始补同步，避免后续恢复时误判 `Part 1` 仍未执行。
 - `Phase 3 Part 1` 当前已实际完成：
   - 总 spec、`Part 1` spec、`Part 1` implementation plan 都已完成并通过 review

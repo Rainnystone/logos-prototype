@@ -16,12 +16,6 @@ interface StoryPackageSelectorProps {
 export function StoryPackageSelector({ packageName, packages }: StoryPackageSelectorProps) {
   return (
     <aside className="story-package-selector panel" aria-label="Story package selector">
-      <div className="story-package-selector__intro">
-        <p className="panel-eyebrow">故事包选择器</p>
-        <h3>包列表</h3>
-        <p className="panel-note">使用链接切换工作区，保持服务端读取路径不变。</p>
-      </div>
-
       <div className="story-package-selector__list">
         {packages.map((item) =>
           isReadyPackageItem(item) ? (

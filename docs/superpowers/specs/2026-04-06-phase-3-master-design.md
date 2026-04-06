@@ -453,7 +453,8 @@ At the product-contract level:
 - creating from another storyline's current state uses that storyline's current head checkpoint as the new anchor
 - creating from an explicitly chosen checkpoint uses that selected checkpoint as the new anchor
 - the new storyline gets its own bound session rooted at that anchor
-- creation does not implicitly switch the package `activeStorylineId`; switching remains a separate action
+- the non-UI substrate primitive may keep switching separate
+- but the Part 2 workspace flow is allowed to compose create + switch so the newly created storyline becomes active immediately after the author confirms the row action
 
 ### 7.2 Continue Storyline
 
@@ -462,6 +463,9 @@ Continuing a storyline means:
 - load that storyline’s authoring variant
 - resolve that storyline’s active session
 - continue from that storyline’s active checkpoint or current resumable state
+
+In the Part 2 workspace, `continue` remains a row-local action.
+If the target row is not already active, the workspace may switch `activeStorylineId` first and then enter the editor continuation flow.
 
 ### 7.3 Checkpoint-Driven Fallback As New Storyline
 
@@ -556,15 +560,20 @@ Primary delivery target:
 - dedicated `故事包管理` page
 - editor-top navigation entry placed before `世界`
 - default `/edit` landing target
-- package selector
+- package selector showing ready packages by package name only
 - storyline list workspace
-- read views for current storyline state
+- restrained storyline rows instead of a wide fact grid
 - create storyline
 - inline storyline display-name editing
 - branch from checkpoint
 - switch storyline
 - continue storyline
+- beat-dot checkpoint rail with dynamic phase / beat growth
 - beat-dot checkpoint rail with split-down confirm / cancel interaction
+
+Approved structural reference:
+
+- [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
 
 Companion slice:
 
@@ -574,6 +583,9 @@ Completion means:
 
 - storyline substrate is no longer hidden behind internal state only
 - authors can use the editor to manage and continue lines directly
+- the left selector stays package-first and name-only
+- the right workspace stays visually restrained and does not default to package summary / provenance / head-summary fact blocks
+- clicking a beat dot opens a confirmation drawer with only `确认` and `取消`, and confirmation creates a new storyline from that checkpoint before switching to it
 - the package/storyline workspace, not the diagnostics console, is the default editor entry surface
 
 ### 9.3 Part 3: Management Actions And UX Closure

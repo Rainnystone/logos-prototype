@@ -23,7 +23,7 @@
 | 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与 PR 提交。 |
 | 7 | complete | `Part 2` spec 已完成、通过独立 review，并进入用户确认后的正式基线。 |
 | 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
-| 9 | complete | `Part 2` 已完成实现、验证与文档同步。 |
+| 9 | complete | `Part 2` 已完成实现、独立 review、mock 验收、最终验证与文档同步。 |
 | 10 | pending | 编写 `Part 3` spec。 |
 | 11 | pending | 编写 `Part 3` implementation plan。 |
 | 12 | pending | 执行并验证 `Part 3`，收口 `Phase 3`。 |
@@ -162,7 +162,7 @@
   - `Execution complete`
 - 下一步：
   - 进入 `Part 3` spec
-  - 基于已完成的故事包管理工作区，收口剩余管理动作与 UX 边界
+  - 或按用户要求先 commit / push / PR 当前 `Part 2` 分支
 
 ## Part 2 Execution Checkpoints
 
@@ -172,7 +172,7 @@
 | `Task 2` | complete | metadata-only rename seam 与 storyline action route 已完成，并通过定向测试。 |
 | `Task 3` | complete | editor 默认入口与 shell 接线已完成，并通过定向测试。 |
 | `Task 4` | complete | 故事包管理页的 selector、workspace 布局与 brutalist shell 集成已完成。 |
-| `Task 5` | complete | row-local actions、beat-dot confirm drawer、最终验证与 Phase 3 文档同步已完成。 |
+| `Task 5` | complete | row-local actions、beat-dot confirm drawer、最小信息密度收口、mock 验收与最终文档同步均已完成。 |
 
 ## Part 1 Delivery Status
 
@@ -209,6 +209,7 @@
   - 顶部按钮放在 `世界` 左边
   - `控制台` 保留为 diagnostics 页，不从产品中删除
   - 页面主体采用左侧 package selector + 右侧 storyline workspace 的双栏结构
+  - 结构基准图见 `../phase-3/结构布局示意图.png`
 - 这里的 `fallback` / “从 beat 2 重来”语义已进一步更新为：
   - 不是完整历史重演
   - 也不再是“在同一条 storyline 上原地回退再继续”
@@ -233,6 +234,10 @@
 - 这次 scope 调整后：
   - inline storyline display-name editing 提前进入 `Part 2`
   - archive / duplicate / delete 仍留在 `Part 3`
+- 当前又额外冻结了 3 条最终 UI 收口约束：
+  - 左侧 ready package selector 只显示 package name，不显示简介或摘要
+  - 右侧 workspace 不显示 provenance / head summary / package summary 这类宽事实块
+  - beat rail 必须按 checkpoint history 动态增长，并清晰区分 phase label 与 beat label
 - `new story package` 仍保持 companion-slice 定位：
   - 当前架构在本地仓库模式下可以做
   - 但不作为 `Part 2` 主体 workspace 的阻塞前提

@@ -47,13 +47,22 @@ describe('StoryPackageManagementSection', () => {
       'aria-current',
       'page',
     );
+    expect(screen.queryByText('故事包选择器')).not.toBeInTheDocument();
+    expect(screen.queryByText('包列表')).not.toBeInTheDocument();
+    expect(screen.queryByText(/使用链接切换工作区/i)).not.toBeInTheDocument();
   });
 
-  it('renders the package headline while keeping storyline rows focused on actions and rail only', () => {
+  it('keeps the right workspace visually restrained with only the package name and storyline rows', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     expect(screen.getByRole('heading', { name: 'sample-scene' })).toBeInTheDocument();
     expect(screen.getByText('active')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Package summary')).not.toBeInTheDocument();
+    expect(screen.queryByText('当前页')).not.toBeInTheDocument();
+    expect(screen.queryByText('故事包管理')).not.toBeInTheDocument();
+    expect(screen.queryByText('工作区')).not.toBeInTheDocument();
+    expect(screen.queryByText(/当前故事包的故事线状态会在这里按行展开/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/左侧切换故事包/i)).not.toBeInTheDocument();
     expect(screen.queryAllByText('来源')).toHaveLength(0);
     expect(screen.queryAllByText(/来源：/)).toHaveLength(0);
     expect(screen.queryAllByText('当前头部')).toHaveLength(0);

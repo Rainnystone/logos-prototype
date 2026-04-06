@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Vitest, Testing Library, Node `fs/promises`, existing storyline substrate under `src/storylines/`, global CSS in `src/app/globals.css`
 
+**UI Reference Sketch:** [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
+
 ---
 
 **Preflight:** Execute this plan in a dedicated git worktree created with `superpowers:using-git-worktrees` before touching code.
@@ -554,7 +556,7 @@ it('renders a two-column package selector plus storyline workspace layout', () =
   expect(screen.getByRole('link', { name: 'sample-scene' })).toHaveAttribute('aria-current', 'page');
 });
 
-it('renders the package headline plus storyline status, provenance, and head summary', () => {
+it('renders the package headline plus storyline name and row actions without a fact grid', () => {
   render(
     <StoryPackageManagementSection
       packageName="sample-scene"
@@ -564,8 +566,10 @@ it('renders the package headline plus storyline status, provenance, and head sum
 
   expect(screen.getByRole('heading', { name: 'sample-scene' })).toBeInTheDocument();
   expect(screen.getByText('active')).toBeInTheDocument();
-  expect(screen.getByText(/来源|从 Beat 2 分出/i)).toBeInTheDocument();
-  expect(screen.getByText(/当前头部|Beat 3/i)).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: '故事线名称 Main Line' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '继续 Main Line' })).toBeInTheDocument();
+  expect(screen.queryByText(/来源|当前头部|头部摘要/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/左侧切换故事包|状态会在这里按行展开/i)).not.toBeInTheDocument();
 });
 
 it('renders package switching as bounded navigation instead of client-side repository parsing', () => {
@@ -632,6 +636,7 @@ Implementation notes:
 - Use plain CSS transitions in `src/app/globals.css`; do not add a new animation library.
 - Reuse the existing font stack and panel language from `src/app/globals.css`. No rounded corners, no new font families, no soft shadows.
 - Keep package selection link-based or router-based so changing packages updates the URL and benefits from the existing server page reload path.
+- Keep the visible information density aligned to the approved sketch at [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png): left column package names only; right column headline plus restrained storyline rows; no extra package summary card or explainer copy.
 
 - [x] **Step 4: Run the targeted tests to verify GREEN**
 
