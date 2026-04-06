@@ -58,7 +58,15 @@ function buildBranchFromCheckpointDisplayName(
 
 function mapActionError(error: unknown): { status: number; message: string } {
   if (error instanceof Error) {
-    if (error.message.includes('does not exist') || error.message.includes('does not resolve')) {
+    const normalizedMessage = error.message.toLowerCase();
+
+    if (
+      normalizedMessage.includes('does not exist') ||
+      normalizedMessage.includes('does not resolve') ||
+      normalizedMessage.includes('cannot be empty') ||
+      normalizedMessage.includes('cannot branch storyline from checkpoint') ||
+      normalizedMessage.includes('not reachable from source storyline')
+    ) {
       return {
         status: 400,
         message: error.message,

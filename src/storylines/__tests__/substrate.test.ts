@@ -356,6 +356,23 @@ describe('storyline substrate', () => {
     expect(afterRuntime).toEqual(beforeRuntime);
   });
 
+  it('returns the renamed storyline bound session when renaming a non-active storyline', async () => {
+    const { packageName } = await seedExplicitStorylinePackage({
+      includeAlternateStoryline: true,
+      runtimeActiveSessionId: 'sess_main',
+    });
+
+    const result = await updateStorylineDisplayName({
+      packageName,
+      storylineId: 'storyline_alt',
+      nextDisplayName: '  Alt Route  ',
+    });
+
+    expect(result.storyline.storylineId).toBe('storyline_alt');
+    expect(result.session.sessionId).toBe('sess_alt');
+    expect(result.session.sessionId).not.toBe('sess_main');
+  });
+
   it('updates runtime-sessions.json activeSessionId as a mirror when switching storylines', async () => {
     const { packageName } = await seedExplicitStorylinePackage({
       includeAlternateStoryline: true,

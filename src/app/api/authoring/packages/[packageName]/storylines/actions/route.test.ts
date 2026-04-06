@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as storylineManagementTypes from '@/types/storyline-management';
 
 const mocks = vi.hoisted(() => {
@@ -406,6 +406,10 @@ vi.mock('@/storylines/substrate', () => ({
   switchActiveStoryline: mocks.switchActiveStoryline,
 }));
 
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
 describe('POST storyline actions route', () => {
   it('exposes a shared storyline action schema with the four supported actions', () => {
     expect(storylineManagementTypes.StorylineActionSchema).toBeDefined();
@@ -436,6 +440,70 @@ describe('POST storyline actions route', () => {
         storylineId: 'storyline_alt',
       }).success,
     ).toBe(true);
+  });
+
+  it('returns 400 when rename_display_name rejects an empty display name', async () => {
+    mocks.updateStorylineDisplayName.mockRejectedValueOnce(
+      new Error('Storyline display name cannot be empty.'),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'rename_display_name',
+          storylineId: 'storyline_main',
+          nextDisplayName: '   ',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 400 when branch_from_checkpoint rejects an unreachable checkpoint', async () => {
+    mocks.branchStorylineFromCheckpoint.mockRejectedValueOnce(
+      new Error(
+        'Cannot branch storyline from checkpoint "chk_alt_only" because it is not reachable from source storyline "storyline_main".',
+      ),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'branch_from_checkpoint',
+          sourceStorylineId: 'storyline_main',
+          checkpointId: 'chk_alt_only',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
   });
 
   it('dispatches rename_display_name through the metadata-only seam', async () => {
@@ -505,6 +573,49 @@ describe('POST storyline actions route', () => {
   });
 
   it('dispatches branch_from_checkpoint through the action route and switches to the branched storyline', async () => {
+    mocks.branchStorylineFromCheckpoint.mockReset();
+    mocks.branchStorylineFromCheckpoint.mockImplementation(async () => ({
+      repository: {
+        version: 1,
+        activeStorylineId: 'storyline_branched',
+        storylinesById: {},
+        variantsById: {},
+      },
+      storyline: {
+        storylineId: 'storyline_branched',
+        name: '从 Beat 2 分出',
+        status: 'active',
+        sourceCheckpointId: 'chk_02',
+        headCheckpointId: 'chk_02',
+        variantId: 'variant_branched',
+        activeSessionId: 'sess_branched',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      variant: {
+        variantId: 'variant_branched',
+        workspaceRoot: 'variants/variant_branched',
+        createdFromStorylineId: 'storyline_main',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      session: {
+        sessionId: 'sess_branched',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+        headCheckpointId: 'chk_02',
+        activeCheckpointId: 'chk_02',
+        orderedCheckpointIds: ['chk_02'],
+        checkpointsById: {},
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: 'delta-branched',
+          stableBackgroundText: 'background-branched',
+        },
+      },
+      authoredRoot: 'variants/variant_branched',
+    }));
+
     const { POST } = await import(
       '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
     );

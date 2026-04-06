@@ -506,12 +506,17 @@ export async function updateStorylineDisplayName(input: {
 
     if (normalizedDisplayName === storyline.name.trim()) {
       const variant = resolveVariantForMutationOrThrow(repository, storyline.variantId);
+      const boundSession = resolveBoundSessionOrThrow(
+        context.runtimeFile,
+        storyline.activeSessionId,
+        storyline.storylineId,
+      );
 
       return {
         repository,
         storyline,
         variant,
-        session: context.session,
+        session: boundSession,
         authoredRoot: resolveVariantAuthoredRoot(input.packageName, variant.variantId),
       };
     }
@@ -531,12 +536,17 @@ export async function updateStorylineDisplayName(input: {
 
     await writeStorylineRepository(input.packageName, nextRepository);
     const variant = resolveVariantForMutationOrThrow(nextRepository, updatedStoryline.variantId);
+    const boundSession = resolveBoundSessionOrThrow(
+      context.runtimeFile,
+      updatedStoryline.activeSessionId,
+      updatedStoryline.storylineId,
+    );
 
     return {
       repository: nextRepository,
       storyline: updatedStoryline,
       variant,
-      session: context.session,
+      session: boundSession,
       authoredRoot: resolveVariantAuthoredRoot(input.packageName, variant.variantId),
     };
   });
