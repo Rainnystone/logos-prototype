@@ -53,12 +53,15 @@ MockKernel 作为统一的状态管理核心，提供：
 ### 3.2 Data Structures
 
 ```typescript
+// State snapshot reference for trace linking
+type StateSnapshotRef = string; // Reference ID to a state snapshot in stateSnapshots[]
+
 interface MockKernelState {
   packageName: string;
 
   // Storyline layer
   storylineRepository: StorylineRepositoryFile | null;
-  variantsById: Map<string, VariantWorkspaceState>;
+  variantsById: Record<string, VariantWorkspaceState>; // Record, not Map, for JSON serialization
 
   // Runtime layer
   runtimeSessions: RuntimeSessionsFile;
@@ -82,6 +85,10 @@ interface OperationTraceEntry {
   sequenceId: number;
   timestamp: string;
   layer: 'substrate' | 'route' | 'runtime';
+  // layer semantics:
+  // - 'substrate': Direct MockKernel/SubstrateMock operation
+  // - 'route': HTTP route layer operation (wraps substrate)
+  // - 'runtime': Runtime engine operation (beat execution, session management)
   operation: string;
   input: unknown;
   output: unknown;
@@ -172,6 +179,12 @@ type SubstrateOperation =
   // Session commands
   | { kind: 'ensure_storyline_aware_active_session'; input: { packageName: string } }
   | { kind: 'execute_storyline_runtime_session_command'; input: { packageName: string; command: RuntimeSessionCommand } };
+
+// RuntimeSessionCommand variants covered:
+// - 'ensure_active_session': Ensure active session exists for storyline
+// - 'record_accepted_beat': Record accepted beat and update checkpoint
+// - 'finalize_relationship_layer': Finalize gossipelog relationship to session/checkpoint
+// - 'reset_workbench': Create new session, preserve old, return to awaiting_start
 ```
 
 ### 4.2 Execution Flow
@@ -243,19 +256,49 @@ State changes:
 Output: { activeSessionId, activeCheckpointId }
 ```
 
+**execute_storyline_runtime_session_command (finalize_relationship_layer):**
+```
+Input: { command: { kind: 'finalize_relationship_layer', payload: { sessionId, checkpointId } } }
+Precondition: sessionId matches active storyline's session, checkpointId belongs to that session
+State changes:
+  - Write relationship layer to checkpoint
+Output: { activeSessionId, activeCheckpointId }
+```
+
+**execute_storyline_runtime_session_command (reset_workbench):**
+```
+Input: { command: { kind: 'reset_workbench' } }
+Precondition: None
+State changes:
+  - Create new session (lifecycle: awaiting_start)
+  - Old session preserved in sessionsById
+  - runtimeSessions.activeSessionId → new sessionId
+  - active storyline.activeSessionId → new sessionId
+  - active storyline.headCheckpointId → null
+Output: { activeSessionId: new sessionId }
+```
+
 ### 4.4 Legacy Compatibility Path
+
+**Important:** When `forWrite: true`, `bootstrapDefaultStorylineSubstrate` creates actual files on disk, not just in-memory structures.
 
 ```typescript
 // When storylineRepository is null
 resolve_active_storyline_context(forWrite: false):
   - Return synthesized legacy context
-  - Do not create storyline-repository.json
+  - Do NOT create storyline-repository.json
+  - Do NOT create variant workspace directory
 
 resolve_active_storyline_context(forWrite: true):
   - Trigger bootstrapDefaultStorylineSubstrate
-  - Create default storyline structure in memory
+  - Creates actual storyline-repository.json on disk
+  - Creates actual variant workspace directory (variants/variant_main/)
+  - Copies package-root baseline YAMLs to variant workspace
+  - Creates or reuses runtime session
   - Subsequent operations proceed normally
 ```
+
+This behavior is important for simulation: when testing the bootstrap flow, the mock must be aware that real file system writes occur.
 
 ## 5. RouteMock Layer
 
@@ -375,6 +418,47 @@ type E2EFlow =
 ### 6.3 E2E Simulator API
 
 ```typescript
+// State assertion for verification
+interface StateAssertion {
+  kind: 'storyline_count' | 'active_storyline' | 'checkpoint_count' | 'variant_exists' | 'session_bound';
+  expected: unknown;
+}
+
+// Serialized flow trace for record/replay
+interface SerializedFlowTrace {
+  schemaVersion: number;
+  flowId: E2EFlow;
+  packageName: string;
+  operations: OperationTraceEntry[];
+  snapshots: StateSnapshot[];
+}
+
+// Kernel-based scenario definition
+interface KernelBasedScenario {
+  scenarioId: string;
+  packageName: string;
+  setup: (kernel: MockKernel) => Promise<void>;
+  run: (kernel: MockKernel) => Promise<ScenarioRunResult>;
+  teardown: (kernel: MockKernel) => Promise<void>;
+}
+
+// Flow execution result
+interface FlowResult {
+  flowId: E2EFlow;
+  success: boolean;
+  operations: OperationTraceEntry[];
+  finalState: MockKernelState;
+  error?: string;
+}
+
+// Replay result
+interface ReplayResult {
+  success: boolean;
+  operationsMatched: boolean;
+  stateMatched: boolean;
+  errors: string[];
+}
+
 interface StorylineE2ESimulator {
   // Flow execution
   runFlow(flow: E2EFlow): Promise<FlowResult>;
@@ -423,6 +507,30 @@ interface SessionSimulator {
 
 **Extension approach:**
 ```typescript
+// Storyline repository configuration for fixture builder
+interface StorylineRepositoryConfig {
+  activeStorylineId?: string;
+  storylines?: Array<{
+    storylineId: string;
+    name: string;
+    status: 'active' | 'archived';
+    sourceCheckpointId?: string;
+    headCheckpointId?: string;
+    variantId: string;
+    activeSessionId?: string;
+  }>;
+}
+
+// Variant files for fixture builder
+interface VariantFiles {
+  worldBase?: WorldBaseYaml;
+  scene?: SceneYaml;
+  phasePlans?: PhasePlansYaml;
+  routerLexicon?: RouterLexiconYaml;
+  auditQuestions?: AuditQuestionsYaml;
+  controlModules?: ControlModulesYaml;
+}
+
 interface TempStoryPackageFixture {
   readonly sourcePackageName: string;
   readonly packageName: string;
@@ -478,13 +586,13 @@ interface ScenarioRunner {
 ```
 simulation-toolset/
 ├── src/
-│   ├── mock-kernel.ts              # MockKernel core
-│   ├── substrate-mock.ts           # Substrate operations mock
-│   ├── route-mock.ts               # Route layer mock
-│   ├── storyline-e2e-simulator.ts  # E2E Flow simulator
-│   ├── storyline-observer.ts       # Storyline state observation
-│   ├── mock-fixture-builder.ts     # In-memory fixture builder
-│   └── serialized-trace.ts         # Trace serialization/deserialization
+│   ├── mock-kernel.ts              # MockKernel core - unified state machine with record/replay
+│   ├── substrate-mock.ts           # SubstrateMock - storyline/variant/session operations mock
+│   ├── route-mock.ts               # RouteMock - HTTP API simulation layer
+│   ├── storyline-e2e-simulator.ts  # StorylineE2ESimulator - full human workflow simulation
+│   ├── storyline-observer.ts       # Storyline state observation and verification
+│   ├── mock-fixture-builder.ts     # In-memory fixture builder (alternative to temp-package for pure mock)
+│   └── serialized-trace.ts         # Trace serialization/deserialization for JSON export/import
 ├── tests/
 │   ├── mock-kernel.test.ts
 │   ├── substrate-mock.test.ts
@@ -524,8 +632,13 @@ simulation-toolset/
 
 ```bash
 npm run test:simulation
-# Expected: All existing tests pass (may need fixes)
+# Expected: All existing tests pass (may need fixes for Phase 3 structure)
 ```
+
+**Key verifications:**
+- `TempPackageFixture` correctly copies `storyline-repository.json` and `variants/` directory
+- `SessionSimulator` works with storyline-bound sessions
+- Existing scenarios (S1-S6) continue to pass
 
 ### 9.2 Phase 1: MockKernel Basic Verification
 
@@ -534,12 +647,29 @@ npm run test:simulation -- simulation-toolset/tests/mock-kernel.test.ts
 # Expected: state machine, record, replay all pass
 ```
 
+**Key verifications:**
+- State machine initializes correctly with empty state
+- `execute()` records stateBefore and stateAfter snapshots
+- `scriptNext()` correctly injects preset mode
+- `getTrace()` returns ordered OperationTraceEntry list
+- `snapshot()` and `restore()` preserve full state
+- `replay()` reproduces trace sequence correctly
+- `exportTrace()` / `importTrace()` serialize/deserialize correctly to/from JSON
+
 ### 9.3 Phase 2: SubstrateMock Verification
 
 ```bash
 npm run test:simulation -- simulation-toolset/tests/substrate-mock.test.ts
 # Expected: All substrate operations execute correctly and record trace
 ```
+
+**Key verifications:**
+- Each SubstrateOperation executes with correct state transition
+- OperationTraceEntry captures `layer='substrate'`
+- Legacy path (null repository) handled correctly
+- Scripted modes inject correctly at substrate level
+- State transitions match Section 4.3 rules
+- Error cases throw appropriate errors and record error in trace
 
 ### 9.4 Phase 3: RouteMock Verification
 
@@ -548,12 +678,26 @@ npm run test:simulation -- simulation-toolset/tests/route-mock.test.ts
 # Expected: All route operations forward correctly and record
 ```
 
+**Key verifications:**
+- Each RouteOperation correctly forwards to SubstrateMock
+- OperationTraceEntry captures `layer='route'`
+- HTTP request/response format correct
+- Scripted modes propagate from kernel to route layer
+- Error responses formatted correctly as HTTP errors
+
 ### 9.5 Phase 4: E2E Flow Verification
 
 ```bash
 npm run test:simulation -- simulation-toolset/tests/storyline-e2e-simulator.test.ts
 # Expected: All 6 flows pass
 ```
+
+**Key verifications:**
+- Each flow in Section 6.2 executes completely
+- `recordFlow()` captures complete trace
+- `replayFlow()` reproduces exact state sequence
+- `verifyState()` assertions evaluate correctly
+- Trace can be serialized and reloaded
 
 ### 9.6 Full Regression
 
@@ -563,6 +707,12 @@ npm run test:simulation
 npm test -- src/storylines/__tests__/ src/runtime-sessions/__tests__/
 # Expected: All pass
 ```
+
+**Key verifications:**
+- No type errors in simulation-toolset
+- All simulation tests pass (including existing S1-S6)
+- Product storyline tests unaffected
+- Product runtime-sessions tests unaffected
 
 ## 10. Non-Goals
 
