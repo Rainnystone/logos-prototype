@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type {
   AuditPacket,
@@ -12,6 +12,7 @@ import type {
   PhasePlan,
   PromptObject,
   StateSnapshot,
+  StoryPackageManagementWorkspaceView,
 } from '@/types';
 
 describe('Phase 00 contract types', () => {
@@ -479,5 +480,28 @@ describe('Phase 00 contract types', () => {
         updatedAt: '2026-04-06T00:00:00.000Z',
       }),
     ).toThrow(/variantId/i);
+  });
+
+  it('defines a bounded story package management workspace view without raw repository maps', async () => {
+    const types = await import('@/types');
+
+    expect(
+      types.StoryPackageManagementWorkspaceViewSchema.parse({
+        packages: [],
+        packageName: 'sample-scene',
+        activeStorylineId: 'storyline_main',
+        storylines: [],
+      }),
+    ).toMatchObject({
+      packageName: 'sample-scene',
+      activeStorylineId: 'storyline_main',
+    });
+
+    expectTypeOf<StoryPackageManagementWorkspaceView>().toMatchTypeOf<{
+      packages: readonly { readonly packageName: string }[];
+      packageName: string;
+      activeStorylineId: string;
+      storylines: readonly { readonly storylineId: string }[];
+    }>();
   });
 });
