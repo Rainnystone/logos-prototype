@@ -1,12 +1,14 @@
-import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadAuthoringState, resolveAuthoringStatePath, writeAuthoringState } from '@/authoring/persistence/package-state';
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import { loadStoryPackage } from '@/engine/story-loader';
-import type { RuntimeSessionsFile, StateSnapshot } from '@/types';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const sourcePackageName = 'sample-scene';
@@ -18,6 +20,19 @@ const gossipelogStatePath = path.resolve(
   'agents/gossipelog/character-relationships.yaml',
 );
 const runtimeSessionsPath = path.resolve(testPackagePath, 'runtime-sessions.json');
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+const variantsRootPath = path.resolve(testPackagePath, 'variants');
+const variantWorldBasePath = path.resolve(testPackagePath, 'variants/variant_main/world-base.yaml');
+const variantAltWorldBasePath = path.resolve(testPackagePath, 'variants/variant_alt/world-base.yaml');
+const baselineWorldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
+const authoredContractFiles = [
+  'world-base.yaml',
+  'scene.yaml',
+  'phase-plans.yaml',
+  'router-lexicon.yaml',
+  'audit-questions.yaml',
+  'control-modules.yaml',
+] as const;
 
 function resetTestPackage(): void {
   rmSync(testPackagePath, { recursive: true, force: true });
@@ -68,6 +83,25 @@ function makeStateSnapshot(beatText: string): StateSnapshot {
 
 function writeRuntimeSessionsFile(file: RuntimeSessionsFile): void {
   writeFileSync(runtimeSessionsPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function writeStorylineRepositoryFile(file: StorylineRepositoryFile): void {
+  writeFileSync(storylineRepositoryPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function setupVariantWorkspace(variantId: string, worldBaseSetting: string): void {
+  const variantRoot = path.resolve(variantsRootPath, variantId);
+  mkdirSync(variantRoot, { recursive: true });
+
+  for (const fileName of authoredContractFiles) {
+    cpSync(path.resolve(testPackagePath, fileName), path.resolve(variantRoot, fileName));
+  }
+
+  const worldBase = YAML.parse(readFileSync(path.resolve(variantRoot, 'world-base.yaml'), 'utf8')) as {
+    worldBaseSetting: string;
+  };
+  worldBase.worldBaseSetting = worldBaseSetting;
+  writeFileSync(path.resolve(variantRoot, 'world-base.yaml'), YAML.stringify(worldBase), 'utf8');
 }
 
 afterEach(() => {
@@ -138,6 +172,52 @@ describe('loadAuthoringState', () => {
 
     expect(reopened.source).toBe('latest-saved');
     expect(reopened.state.worldBase.worldBaseSetting).toBe('reopened-world-base-setting');
+  });
+
+  it('keeps legacy read-only load on package-root baseline without materializing storyline files', async () => {
+    prepareTestPackage();
+    const baselineWorldBase = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    const loaded = await loadAuthoringState(testPackageName);
+
+    expect(loaded.state.worldBase.worldBaseSetting).toBe(baselineWorldBase.worldBaseSetting);
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantsRootPath)).toBe(false);
+  });
+
+  it('loads from active storyline variant workspace after first save bootstraps storyline substrate', async () => {
+    prepareTestPackage();
+    const baselineWorldBaseBeforeSave = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    const saveResult = await saveSectionDraft({
+      requestId: 'request-bootstrap-variant-load',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          worldBaseSetting: 'variant-world-setting',
+        },
+      },
+    });
+
+    expect(saveResult.kind).toBe('save_applied');
+    expect(existsSync(storylineRepositoryPath)).toBe(true);
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+
+    const reopened = await loadAuthoringState(testPackageName);
+    const baselineWorldBaseAfterSave = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    expect(reopened.state.worldBase.worldBaseSetting).toBe('variant-world-setting');
+    expect(baselineWorldBaseAfterSave.worldBaseSetting).toBe(
+      baselineWorldBaseBeforeSave.worldBaseSetting,
+    );
   });
 
   it('keeps the authoring marker tiny and readable when it is written directly', async () => {
@@ -236,6 +316,186 @@ describe('loadAuthoringState', () => {
     expect(JSON.stringify(withRuntimeContinuity.runtimeContinuityView)).not.toContain(
       'acceptedTranscript',
     );
+  });
+
+  it('uses an injected active storyline context to keep authored projection and continuity on the same storyline', async () => {
+    prepareTestPackage();
+    setupVariantWorkspace('variant_main', 'main-world-setting');
+    setupVariantWorkspace('variant_alt', 'alt-world-setting');
+    writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_main',
+      sessionsById: {
+        sess_main: {
+          sessionId: 'sess_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_main',
+          activeCheckpointId: 'chk_main',
+          orderedCheckpointIds: ['chk_main'],
+          checkpointsById: {
+            chk_main: {
+              checkpointId: 'chk_main',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_main',
+              acceptedTranscript: {
+                playerInput: 'follow main',
+                beatText: 'Main checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Main checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'main delta',
+                stableBackgroundText: 'main background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'main delta',
+            stableBackgroundText: 'main background',
+          },
+        },
+        sess_alt: {
+          sessionId: 'sess_alt',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_alt',
+          activeCheckpointId: 'chk_alt',
+          orderedCheckpointIds: ['chk_alt'],
+          checkpointsById: {
+            chk_alt: {
+              checkpointId: 'chk_alt',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_alt',
+              acceptedTranscript: {
+                playerInput: 'follow alt',
+                beatText: 'Alt checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Alt checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'alt delta',
+                stableBackgroundText: 'alt background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'alt delta',
+            stableBackgroundText: 'alt background',
+          },
+        },
+      },
+    });
+    writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_main',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_main',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_main',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        storyline_alt: {
+          storylineId: 'storyline_alt',
+          name: 'Alt Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_alt',
+          variantId: 'variant_alt',
+          activeSessionId: 'sess_alt',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        variant_alt: {
+          variantId: 'variant_alt',
+          workspaceRoot: 'variants/variant_alt',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+      },
+    });
+
+    const pinnedContext = await resolveActiveStorylineContext(testPackageName, {
+      forWrite: false,
+    });
+    writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_alt',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_main',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_main',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        storyline_alt: {
+          storylineId: 'storyline_alt',
+          name: 'Alt Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_alt',
+          variantId: 'variant_alt',
+          activeSessionId: 'sess_alt',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        variant_alt: {
+          variantId: 'variant_alt',
+          workspaceRoot: 'variants/variant_alt',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+      },
+    });
+
+    const result = await loadAuthoringState(testPackageName, {
+      includeRuntimeContinuity: true,
+      storylineContext: pinnedContext,
+    });
+
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+    expect(existsSync(variantAltWorldBasePath)).toBe(true);
+    expect(result.state.worldBase.worldBaseSetting).toBe('main-world-setting');
+    expect(result.runtimeContinuityView?.activeSession?.sessionId).toBe('sess_main');
   });
 
   it('loads bounded sidecar-agent surface items together with the package payload', async () => {

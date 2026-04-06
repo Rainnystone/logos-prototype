@@ -1,10 +1,11 @@
-import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import YAML from 'yaml';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
+import { loadAuthoringState } from '@/authoring/persistence/package-state';
 import * as authoringStatus from '@/authoring/persistence/authoring-status';
 import * as reloadModule from '@/authoring/persistence/reload';
 import * as repositoryModule from '@/authoring/persistence/repository';
@@ -15,10 +16,11 @@ const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const sourcePackageName = 'sample-scene';
 const testPackageName = '__authoring-bridge-test__';
 const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
-const worldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
-const scenePath = path.resolve(testPackagePath, 'scene.yaml');
-const controlModulesPath = path.resolve(testPackagePath, 'control-modules.yaml');
+const baselineWorldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
+const variantRootPath = path.resolve(testPackagePath, 'variants/variant_main');
+const variantWorldBasePath = path.resolve(variantRootPath, 'world-base.yaml');
 const authoringStatusPath = path.resolve(testPackagePath, 'authoring-state.json');
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
 const sourceWorldBaseFixture = YAML.parse(
   readFileSync(path.resolve(storyPackagesRoot, sourcePackageName, 'world-base.yaml'), 'utf8'),
 ) as {
@@ -88,8 +90,20 @@ function buildWorldBaseDraft(heroName: string) {
   };
 }
 
+function resolveAuthoredFilePath(fileName: string): string {
+  const variantPath = path.resolve(variantRootPath, fileName);
+  if (existsSync(variantPath)) {
+    return variantPath;
+  }
+  return path.resolve(testPackagePath, fileName);
+}
+
+function readAuthoredFile(fileName: string): string {
+  return readFileSync(resolveAuthoredFilePath(fileName), 'utf8');
+}
+
 function readSavedWorldBase() {
-  return YAML.parse(readFileSync(worldBasePath, 'utf8')) as {
+  return YAML.parse(readAuthoredFile('world-base.yaml')) as {
     worldBaseSetting: string;
     worldRules: string;
     toneBaseline: string;
@@ -119,6 +133,11 @@ function readSavedWorldBase() {
   };
 }
 
+async function loadSavedAuthoringPackage() {
+  const result = await loadAuthoringState(testPackageName);
+  return result.state;
+}
+
 function buildPageStyleSaveRequest(heroName: string) {
   return {
     requestId: 'request-page',
@@ -146,7 +165,7 @@ function buildCoordinatorStyleSaveRequest(heroName: string) {
 describe('saveSectionDraft', () => {
   it('routes page-style and coordinator-style adapters through one deterministic bridge', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBaseContents = readAuthoredFile('world-base.yaml');
 
     const pageStyleSave = (heroName: string) => saveSectionDraft(buildPageStyleSaveRequest(heroName));
     const coordinatorStyleSave = (heroName: string) =>
@@ -154,13 +173,13 @@ describe('saveSectionDraft', () => {
 
     const pageResult = await pageStyleSave('page-main-character-update');
 
-    const pageWorldBaseContents = readFileSync(worldBasePath, 'utf8');
-    const pageStoryPackage = await loadStoryPackage(testPackageName);
+    const pageWorldBaseContents = readAuthoredFile('world-base.yaml');
+    const pageStoryPackage = await loadSavedAuthoringPackage();
 
     const coordinatorResult = await coordinatorStyleSave('coordinator-main-character-update');
 
-    const coordinatorWorldBaseContents = readFileSync(worldBasePath, 'utf8');
-    const coordinatorStoryPackage = await loadStoryPackage(testPackageName);
+    const coordinatorWorldBaseContents = readAuthoredFile('world-base.yaml');
+    const coordinatorStoryPackage = await loadSavedAuthoringPackage();
     const savedWorldBase = readSavedWorldBase();
 
     expect(pageResult.kind).toBe('save_applied');
@@ -174,6 +193,30 @@ describe('saveSectionDraft', () => {
       characterId: 'chr_hero01',
       name: 'coordinator-main-character-update',
     });
+  });
+
+  it('writes deterministic bridge saves into active variant workspace and keeps package-root baseline untouched', async () => {
+    prepareTestPackage();
+    const baselineWorldBaseBeforeSave = readFileSync(baselineWorldBasePath, 'utf8');
+
+    const result = await saveSectionDraft({
+      requestId: 'request-variant-only-write',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          worldBaseSetting: 'variant-only-setting',
+        },
+      },
+    });
+
+    expect(result.kind).toBe('save_applied');
+    expect(existsSync(storylineRepositoryPath)).toBe(true);
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+    expect(readFileSync(variantWorldBasePath, 'utf8')).toContain('variant-only-setting');
+    expect(readFileSync(baselineWorldBasePath, 'utf8')).toBe(baselineWorldBaseBeforeSave);
+    expect(readFileSync(baselineWorldBasePath, 'utf8')).not.toContain('variant-only-setting');
   });
 
   it('writes structured worldbase yaml from a structured worldbase-cast save request', async () => {
@@ -241,7 +284,7 @@ describe('saveSectionDraft', () => {
     }
 
     const savedWorldBase = readSavedWorldBase();
-    const loaded = await loadStoryPackage(testPackageName);
+    const loaded = await loadSavedAuthoringPackage();
 
     expect(savedWorldBase.hero).toMatchObject({
       characterId: 'chr_hero01',
@@ -295,7 +338,7 @@ describe('saveSectionDraft', () => {
 
   it('returns a blocked save when no deterministic worldbase content is provided', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBaseContents = readAuthoredFile('world-base.yaml');
     const originalWorldBase = YAML.parse(originalWorldBaseContents) as {
       worldBaseSetting?: string;
       hero?: { name: string };
@@ -319,13 +362,13 @@ describe('saveSectionDraft', () => {
     if (result.kind === 'save_blocked') {
       expect(result.blockingIssues).toContain('没有提供可确定的世界基础更新。');
     }
-    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
+    expect(YAML.parse(readAuthoredFile('world-base.yaml'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('blocks control-modules saves instead of treating them as failures', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBaseContents = readAuthoredFile('world-base.yaml');
 
     const result = await saveSectionDraft({
       requestId: 'request-control-modules-blocked',
@@ -346,7 +389,7 @@ describe('saveSectionDraft', () => {
       );
     }
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
-    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(readAuthoredFile('world-base.yaml')).toBe(originalWorldBaseContents);
   });
 
   it('writes scene and phase authoring changes through the same shared bridge', async () => {
@@ -623,7 +666,7 @@ describe('saveSectionDraft', () => {
       ).toBe(true);
     }
 
-    const savedScene = YAML.parse(readFileSync(scenePath, 'utf8')) as {
+    const savedScene = YAML.parse(readAuthoredFile('scene.yaml')) as {
       locationIds?: string[];
     };
     expect(savedScene.locationIds).toEqual(currentStoryPackage.sceneSpec.locationIds);
@@ -631,7 +674,7 @@ describe('saveSectionDraft', () => {
 
   it('blocks scene-phase saves that include an unknown location id and keeps scene.yaml unchanged', async () => {
     prepareTestPackage();
-    const originalSceneContents = readFileSync(scenePath, 'utf8');
+    const originalSceneContents = readAuthoredFile('scene.yaml');
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase-unknown-location-id',
@@ -671,8 +714,65 @@ describe('saveSectionDraft', () => {
         '场景地点引用 "loc_missing" 不存在于当前世界地点列表中。',
       );
     }
-    expect(readFileSync(scenePath, 'utf8')).toBe(originalSceneContents);
+    expect(readAuthoredFile('scene.yaml')).toBe(originalSceneContents);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
+  });
+
+  it('does not bootstrap legacy storyline files when the first save is blocked, but bootstraps on the first successful save', async () => {
+    prepareTestPackage();
+
+    const blockedResult = await saveSectionDraft({
+      requestId: 'request-blocked-before-bootstrap',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: ['chr_core01'],
+            locationIds: ['loc_missing'],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(blockedResult.kind).toBe('save_blocked');
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantRootPath)).toBe(false);
+
+    const successfulResult = await saveSectionDraft({
+      requestId: 'request-success-after-blocked',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          worldBaseSetting: 'bootstrap-after-blocked',
+        },
+      },
+    });
+
+    expect(successfulResult.kind).toBe('save_applied');
+    expect(existsSync(storylineRepositoryPath)).toBe(true);
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+    expect(readFileSync(variantWorldBasePath, 'utf8')).toContain('bootstrap-after-blocked');
   });
 
   it('preserves the existing sample purpose while clearing other optional scene fields', async () => {
@@ -711,7 +811,7 @@ describe('saveSectionDraft', () => {
 
     expect(result.kind).toBe('save_applied');
 
-    const savedScene = YAML.parse(readFileSync(scenePath, 'utf8')) as Record<string, unknown>;
+    const savedScene = YAML.parse(readAuthoredFile('scene.yaml')) as Record<string, unknown>;
 
     expect(savedScene.sceneName).toBe('炎上直播间·改');
     expect(savedScene).not.toHaveProperty('openingSituation');
@@ -830,7 +930,7 @@ describe('saveSectionDraft', () => {
     });
 
     expect(result.kind).toBe('save_applied');
-    expect(readFileSync(controlModulesPath, 'utf8')).toContain('Collapse harder near the end line.');
+    expect(readAuthoredFile('control-modules.yaml')).toContain('Collapse harder near the end line.');
     if (result.kind === 'save_applied') {
       expect(result.runtimeImpactSummary.changedFiles).toEqual(
         expect.arrayContaining(['control-modules.yaml', 'authoring-state.json']),
@@ -872,7 +972,7 @@ describe('saveSectionDraft', () => {
       hasSuccessfulSave: true,
     });
 
-    const savedAuditQuestions = YAML.parse(readFileSync(path.resolve(testPackagePath, 'audit-questions.yaml'), 'utf8')) as {
+    const savedAuditQuestions = YAML.parse(readAuthoredFile('audit-questions.yaml')) as {
       selectionPolicy: {
         default: string[];
       };
@@ -936,7 +1036,7 @@ describe('saveSectionDraft', () => {
 
   it('blocks malformed explicit scene cast payloads instead of clearing cast to empty', async () => {
     prepareTestPackage();
-    const originalScene = readFileSync(scenePath, 'utf8');
+    const originalScene = readAuthoredFile('scene.yaml');
 
     const result = await saveSectionDraft({
       requestId: 'request-scene-phase-malformed-cast',
@@ -970,7 +1070,7 @@ describe('saveSectionDraft', () => {
     });
 
     expect(result.kind).toBe('save_blocked');
-    expect(readFileSync(scenePath, 'utf8')).toBe(originalScene);
+    expect(readAuthoredFile('scene.yaml')).toBe(originalScene);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
@@ -1011,7 +1111,7 @@ describe('saveSectionDraft', () => {
     expect(result.kind).toBe('save_applied');
     if (result.kind === 'save_applied') {
       expect(result.reloadedSectionState.sceneSpec.cast).toEqual([]);
-      expect(readFileSync(scenePath, 'utf8')).toContain('cast: []');
+      expect(readAuthoredFile('scene.yaml')).toContain('cast: []');
     }
   });
 
@@ -1058,7 +1158,7 @@ describe('saveSectionDraft', () => {
         '控制模块保存需要模块范围。',
       );
     }
-    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
+    expect(YAML.parse(readAuthoredFile('world-base.yaml'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
@@ -1084,7 +1184,7 @@ describe('saveSectionDraft', () => {
       expect(result.warnings).toContain('作者状态标记写入失败：marker write failed');
       expect(result.runtimeImpactSummary.changedFiles).toEqual(['world-base.yaml']);
     }
-    expect(await loadStoryPackage(testPackageName)).toMatchObject({
+    expect(await loadSavedAuthoringPackage()).toMatchObject({
       worldBase: {
         hero: {
           name: 'marker-warning-update',
@@ -1096,7 +1196,7 @@ describe('saveSectionDraft', () => {
 
   it('restores the original world-base file when reload fails', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBaseContents = readAuthoredFile('world-base.yaml');
     const reloadSpy = vi.spyOn(reloadModule, 'reloadStoryPackage').mockRejectedValueOnce(
       new Error('reload failed'),
     );
@@ -1105,13 +1205,13 @@ describe('saveSectionDraft', () => {
 
     expect(reloadSpy).toHaveBeenCalledTimes(1);
     expect(result.kind).toBe('save_failed');
-    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(readAuthoredFile('world-base.yaml')).toBe(originalWorldBaseContents);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
   it('restores the original world-base file when the write step throws after clobbering contents', async () => {
     prepareTestPackage();
-    const originalWorldBaseContents = readFileSync(worldBasePath, 'utf8');
+    const originalWorldBaseContents = readAuthoredFile('world-base.yaml');
     const persistSpy = vi
       .spyOn(repositoryModule, 'persistWorldBaseDraft')
       .mockImplementationOnce(async () => {
@@ -1123,7 +1223,7 @@ describe('saveSectionDraft', () => {
           },
         });
 
-        writeFileSync(worldBasePath, clobberedWorldBase, 'utf8');
+        writeFileSync(resolveAuthoredFilePath('world-base.yaml'), clobberedWorldBase, 'utf8');
         throw new Error('write step failed');
       });
 
@@ -1131,7 +1231,7 @@ describe('saveSectionDraft', () => {
 
     expect(persistSpy).toHaveBeenCalledTimes(1);
     expect(result.kind).toBe('save_failed');
-    expect(readFileSync(worldBasePath, 'utf8')).toBe(originalWorldBaseContents);
+    expect(readAuthoredFile('world-base.yaml')).toBe(originalWorldBaseContents);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
@@ -1155,7 +1255,7 @@ describe('saveSectionDraft', () => {
       expect(result.warnings).toContain('试运行已完成，但没有写入文件。');
       expect(result.runtimeImpactSummary.changedFiles).toEqual([]);
     }
-    expect(YAML.parse(readFileSync(worldBasePath, 'utf8'))).toEqual(originalWorldBase);
+    expect(YAML.parse(readAuthoredFile('world-base.yaml'))).toEqual(originalWorldBase);
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 });

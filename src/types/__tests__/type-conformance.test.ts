@@ -425,4 +425,59 @@ describe('Phase 00 contract types', () => {
     expect(auditQuestionSet.selectionPolicy.default).toContain('AQ-G-001');
     expect(auditQuestionSet.phaseSpecificQuestions?.['phase-01']).toHaveLength(1);
   });
+
+  it('requires a non-null activeStorylineId once a storyline repository exists', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.StorylineRepositoryFileSchema.parse({
+        version: 1,
+        activeStorylineId: null,
+        storylinesById: {},
+        variantsById: {},
+      }),
+    ).toThrow(/activeStorylineId/i);
+  });
+
+  it('pins workspaceRoot to variants/<variantId>', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.StorylineVariantSchema.parse({
+        variantId: 'variant_main',
+        workspaceRoot: 'variants/other',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      }),
+    ).toThrow(/workspaceRoot/i);
+  });
+
+  it('rejects unsafe storyline and variant ids in storyline repository contracts', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.StorylineRecordSchema.parse({
+        storylineId: '../escape',
+        name: 'Main Line',
+        status: 'active',
+        sourceCheckpointId: null,
+        headCheckpointId: null,
+        variantId: 'variant_main',
+        activeSessionId: 'sess_main',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      }),
+    ).toThrow(/storylineId/i);
+
+    expect(() =>
+      types.StorylineVariantSchema.parse({
+        variantId: 'variant/main',
+        workspaceRoot: 'variants/variant/main',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      }),
+    ).toThrow(/variantId/i);
+  });
 });

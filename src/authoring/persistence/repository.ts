@@ -4,7 +4,6 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 import { parseWithSchema } from '@/lib/validation';
-import { resolvePackageRoot } from '@/authoring/persistence/package-state';
 import {
   AuditQuestionSetSchema,
   type AuditQuestionSet,
@@ -24,7 +23,12 @@ import {
 } from '@/types/story-package';
 
 export function resolveStoryPackageRoot(packageName: string): string {
-  return resolvePackageRoot(packageName);
+  return path.resolve(process.cwd(), 'src/story-packages', packageName);
+}
+
+export interface AuthoringPersistenceTarget {
+  readonly packageName: string;
+  readonly authoredRoot: string;
 }
 
 export async function ensureStoryPackageExists(packageName: string): Promise<string> {
@@ -39,60 +43,102 @@ export async function ensureStoryPackageExists(packageName: string): Promise<str
   return packageRoot;
 }
 
-function resolveWorldBasePath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'world-base.yaml');
+export function resolveAuthoringPersistenceTarget(
+  packageName: string,
+  authoredRootOverride?: string,
+): AuthoringPersistenceTarget {
+  return {
+    packageName,
+    authoredRoot: authoredRootOverride ?? resolveStoryPackageRoot(packageName),
+  };
 }
 
-function resolveScenePath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'scene.yaml');
+function resolveTargetAuthoredRoot(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): string {
+  if (target && target.packageName !== packageName) {
+    throw new Error(
+      `Authoring persistence target package mismatch: expected "${packageName}" but received "${target.packageName}".`,
+    );
+  }
+
+  return target?.authoredRoot ?? resolveStoryPackageRoot(packageName);
 }
 
-function resolvePhasePlansPath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'phase-plans.yaml');
+function resolveWorldBasePath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'world-base.yaml');
 }
 
-function resolveRouterLexiconPath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'router-lexicon.yaml');
+function resolveScenePath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'scene.yaml');
 }
 
-function resolveAuditQuestionsPath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'audit-questions.yaml');
+function resolvePhasePlansPath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'phase-plans.yaml');
 }
 
-function resolveControlModulesPath(packageName: string): string {
-  return path.resolve(resolveStoryPackageRoot(packageName), 'control-modules.yaml');
+function resolveRouterLexiconPath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'router-lexicon.yaml');
 }
 
-export async function readWorldBaseDraftContents(packageName: string): Promise<string> {
-  const worldBasePath = resolveWorldBasePath(packageName);
+function resolveAuditQuestionsPath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'audit-questions.yaml');
+}
+
+function resolveControlModulesPath(packageName: string, target?: AuthoringPersistenceTarget): string {
+  return path.resolve(resolveTargetAuthoredRoot(packageName, target), 'control-modules.yaml');
+}
+
+export async function readWorldBaseDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  const worldBasePath = resolveWorldBasePath(packageName, target);
   return readFile(worldBasePath, 'utf8');
 }
 
-export async function readSceneDraftContents(packageName: string): Promise<string> {
-  return readFile(resolveScenePath(packageName), 'utf8');
+export async function readSceneDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  return readFile(resolveScenePath(packageName, target), 'utf8');
 }
 
-export async function readPhasePlansDraftContents(packageName: string): Promise<string> {
-  return readFile(resolvePhasePlansPath(packageName), 'utf8');
+export async function readPhasePlansDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  return readFile(resolvePhasePlansPath(packageName, target), 'utf8');
 }
 
-export async function readRouterLexiconDraftContents(packageName: string): Promise<string> {
-  return readFile(resolveRouterLexiconPath(packageName), 'utf8');
+export async function readRouterLexiconDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  return readFile(resolveRouterLexiconPath(packageName, target), 'utf8');
 }
 
-export async function readAuditQuestionsDraftContents(packageName: string): Promise<string> {
-  return readFile(resolveAuditQuestionsPath(packageName), 'utf8');
+export async function readAuditQuestionsDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  return readFile(resolveAuditQuestionsPath(packageName, target), 'utf8');
 }
 
-export async function readControlModulesDraftContents(packageName: string): Promise<string> {
-  return readFile(resolveControlModulesPath(packageName), 'utf8');
+export async function readControlModulesDraftContents(
+  packageName: string,
+  target?: AuthoringPersistenceTarget,
+): Promise<string> {
+  return readFile(resolveControlModulesPath(packageName, target), 'utf8');
 }
 
 export async function persistWorldBaseDraft(
   packageName: string,
   nextWorldBase: WorldBase,
+  target?: AuthoringPersistenceTarget,
 ): Promise<readonly string[]> {
-  const worldBasePath = resolveWorldBasePath(packageName);
+  const worldBasePath = resolveWorldBasePath(packageName, target);
   const validatedWorldBase = parseWithSchema(
     WorldBaseSchema,
     nextWorldBase,
@@ -107,9 +153,10 @@ export async function persistScenePhaseDraft(
   packageName: string,
   nextSceneSpec: SceneSpec,
   nextPhasePlans: readonly PhasePlan[],
+  target?: AuthoringPersistenceTarget,
 ): Promise<readonly string[]> {
-  const scenePath = resolveScenePath(packageName);
-  const phasePlansPath = resolvePhasePlansPath(packageName);
+  const scenePath = resolveScenePath(packageName, target);
+  const phasePlansPath = resolvePhasePlansPath(packageName, target);
 
   const currentPhasePlansFile = parseWithSchema(
     PhasePlansFileSchema,
@@ -134,8 +181,9 @@ export async function persistScenePhaseDraft(
 export async function persistRouterProfilesDraft(
   packageName: string,
   nextRouterProfiles: readonly RouterProfile[],
+  target?: AuthoringPersistenceTarget,
 ): Promise<readonly string[]> {
-  const routerLexiconPath = resolveRouterLexiconPath(packageName);
+  const routerLexiconPath = resolveRouterLexiconPath(packageName, target);
   const currentRouterLexiconFile = parseWithSchema(
     RouterLexiconFileSchema,
     YAML.parse(await readFile(routerLexiconPath, 'utf8')) as unknown,
@@ -155,8 +203,9 @@ export async function persistRouterProfilesDraft(
 export async function persistAuditQuestionSetDraft(
   packageName: string,
   nextAuditQuestionSet: AuditQuestionSet,
+  target?: AuthoringPersistenceTarget,
 ): Promise<readonly string[]> {
-  const auditQuestionsPath = resolveAuditQuestionsPath(packageName);
+  const auditQuestionsPath = resolveAuditQuestionsPath(packageName, target);
   const currentAuditQuestionSet = parseWithSchema(
     AuditQuestionSetSchema,
     YAML.parse(await readFile(auditQuestionsPath, 'utf8')) as unknown,
@@ -176,8 +225,9 @@ export async function persistAuditQuestionSetDraft(
 export async function persistControlModulesDraft(
   packageName: string,
   nextControlModules: ControlModules,
+  target?: AuthoringPersistenceTarget,
 ): Promise<readonly string[]> {
-  const controlModulesPath = resolveControlModulesPath(packageName);
+  const controlModulesPath = resolveControlModulesPath(packageName, target);
   const currentControlModules = parseWithSchema(
     ControlModulesSchema,
     YAML.parse(await readFile(controlModulesPath, 'utf8')) as unknown,
@@ -219,8 +269,9 @@ export async function persistControlModulesDraft(
 export async function restoreWorldBaseDraft(
   packageName: string,
   originalContents: string,
+  target?: AuthoringPersistenceTarget,
 ): Promise<void> {
-  const worldBasePath = resolveWorldBasePath(packageName);
+  const worldBasePath = resolveWorldBasePath(packageName, target);
   await writeFile(worldBasePath, originalContents, 'utf8');
 }
 
@@ -228,28 +279,32 @@ export async function restoreScenePhaseDraft(
   packageName: string,
   originalSceneContents: string,
   originalPhasePlansContents: string,
+  target?: AuthoringPersistenceTarget,
 ): Promise<void> {
-  await writeFile(resolveScenePath(packageName), originalSceneContents, 'utf8');
-  await writeFile(resolvePhasePlansPath(packageName), originalPhasePlansContents, 'utf8');
+  await writeFile(resolveScenePath(packageName, target), originalSceneContents, 'utf8');
+  await writeFile(resolvePhasePlansPath(packageName, target), originalPhasePlansContents, 'utf8');
 }
 
 export async function restoreRouterLexiconDraft(
   packageName: string,
   originalContents: string,
+  target?: AuthoringPersistenceTarget,
 ): Promise<void> {
-  await writeFile(resolveRouterLexiconPath(packageName), originalContents, 'utf8');
+  await writeFile(resolveRouterLexiconPath(packageName, target), originalContents, 'utf8');
 }
 
 export async function restoreAuditQuestionSetDraft(
   packageName: string,
   originalContents: string,
+  target?: AuthoringPersistenceTarget,
 ): Promise<void> {
-  await writeFile(resolveAuditQuestionsPath(packageName), originalContents, 'utf8');
+  await writeFile(resolveAuditQuestionsPath(packageName, target), originalContents, 'utf8');
 }
 
 export async function restoreControlModulesDraft(
   packageName: string,
   originalContents: string,
+  target?: AuthoringPersistenceTarget,
 ): Promise<void> {
-  await writeFile(resolveControlModulesPath(packageName), originalContents, 'utf8');
+  await writeFile(resolveControlModulesPath(packageName, target), originalContents, 'utf8');
 }

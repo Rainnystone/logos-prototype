@@ -8,6 +8,7 @@ import {
 } from '@/app/story-package-catalog';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -82,9 +83,13 @@ export default async function EditPage({ searchParams }: EditPageProps) {
   const activeSection = requestedSection ?? 'worldbase-cast';
 
   try {
+    const storylineContext = await resolveActiveStorylineContext(selectedPackageName, {
+      forWrite: false,
+    });
     const authoringState = await loadAuthoringState(selectedPackageName, {
       includeAgentSurfaceItems: activeSection === 'package-wiring-validation',
       includeRuntimeContinuity: activeSection === 'worldbase-cast',
+      storylineContext,
     });
     const activeSurface =
       activeSection === 'worldbase-cast' ? requestedSurface : 'world';

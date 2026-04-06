@@ -4,9 +4,12 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import type { AgentSurfaceItem } from '@/agents/agent-surface';
+import { resolveAuthoringPersistenceTarget } from '@/authoring/persistence/repository';
 import { parseWithSchema } from '@/lib/validation';
 import { SECTION_IDS } from '@/authoring/contracts';
 import { loadStoryPackage } from '@/engine/story-loader';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import type { ActiveStorylineContext } from '@/storylines/substrate';
 import type { StoryPackage } from '@/types';
 import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
@@ -51,6 +54,7 @@ export interface AuthoringStateLoadResult {
 export interface LoadAuthoringStateOptions {
   readonly includeAgentSurfaceItems?: boolean;
   readonly includeRuntimeContinuity?: boolean;
+  readonly storylineContext?: ActiveStorylineContext;
 }
 
 export function resolvePackageRoot(packageName: string): string {
@@ -87,11 +91,24 @@ export async function loadAuthoringState(
   packageName: string,
   options: LoadAuthoringStateOptions = {},
 ): Promise<AuthoringStateLoadResult> {
+  const storylineContext =
+    options.storylineContext ??
+    (await resolveActiveStorylineContext(packageName, {
+      forWrite: false,
+    }));
+  const target = resolveAuthoringPersistenceTarget(
+    packageName,
+    storylineContext.authoredRoot,
+  );
   const [state, authoringState, runtimeContinuityView] = await Promise.all([
-    loadStoryPackage(packageName),
+    loadStoryPackage(packageName, {
+      authoredRootOverride: target.authoredRoot,
+    }),
     readAuthoringState(packageName),
     options.includeRuntimeContinuity
-      ? loadEditRuntimeContinuityView(packageName)
+      ? loadEditRuntimeContinuityView(packageName, {
+          storylineContext,
+        })
       : Promise.resolve(undefined),
   ]);
   let agentSurfaceItems: readonly AgentSurfaceItem[] | undefined;

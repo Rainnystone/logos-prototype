@@ -16,6 +16,7 @@ const tempPackageNames = [
   '__runtime-cast-sample-scene__',
   '__runtime-location-sample-scene__',
   '__runtime-absent-location-sample-scene__',
+  '__authored-root-override-sample-scene__',
 ] as const;
 
 const tempPackagePaths = tempPackageNames.map((packageName) =>
@@ -230,6 +231,15 @@ function removeSceneLocationIds(packagePath: string): void {
   writeFileSync(path.resolve(packagePath, 'scene.yaml'), YAML.stringify(nextSceneSpec), 'utf8');
 }
 
+const managedAuthoredFileNames = [
+  'world-base.yaml',
+  'scene.yaml',
+  'phase-plans.yaml',
+  'router-lexicon.yaml',
+  'audit-questions.yaml',
+  'control-modules.yaml',
+] as const;
+
 describe('story loader', () => {
   it('loads a structured story package through the full-package path', async () => {
     const packageName = '__structured-sample-scene__';
@@ -343,6 +353,41 @@ describe('story loader', () => {
     expect(fullPackage.worldBase.coreCast).toHaveLength(2);
     expect(fullPackage.worldBase.antagonists).toHaveLength(1);
     expect(fullPackage.worldBase.coreCast[0]?.characterId).toBe('chr_core01');
+  });
+
+  it('supports authoredRootOverride without breaking default package-root loading', async () => {
+    const packageName = '__authored-root-override-sample-scene__';
+    const packagePath = copySamplePackage(packageName);
+    const authoredRootOverride = path.resolve(packagePath, 'variants', 'variant_main');
+
+    mkdirSync(authoredRootOverride, { recursive: true });
+    for (const fileName of managedAuthoredFileNames) {
+      writeFileSync(
+        path.resolve(authoredRootOverride, fileName),
+        readFileSync(path.resolve(packagePath, fileName), 'utf8'),
+        'utf8',
+      );
+    }
+
+    const overriddenWorldBase = YAML.parse(
+      readFileSync(path.resolve(authoredRootOverride, 'world-base.yaml'), 'utf8'),
+    ) as Record<string, unknown>;
+    writeFileSync(
+      path.resolve(authoredRootOverride, 'world-base.yaml'),
+      YAML.stringify({
+        ...overriddenWorldBase,
+        worldBaseSetting: 'variant-world-setting',
+      }),
+      'utf8',
+    );
+
+    const defaultPackage = await loadStoryPackage(packageName);
+    const overriddenPackage = await loadStoryPackage(packageName, {
+      authoredRootOverride,
+    });
+
+    expect(defaultPackage.worldBase.worldBaseSetting).not.toBe('variant-world-setting');
+    expect(overriddenPackage.worldBase.worldBaseSetting).toBe('variant-world-setting');
   });
 
   it('throws a descriptive error when the story package does not exist', async () => {

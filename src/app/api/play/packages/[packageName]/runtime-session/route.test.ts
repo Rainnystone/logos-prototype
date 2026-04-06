@@ -2,21 +2,33 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { stateSnapshotFixture } from '@/app/__tests__/fixtures';
 
-const ensureActiveSession = vi.fn(async () => ({
-  sessionId: 'sess-ensure',
-}));
-const recordAcceptedBeat = vi.fn(async () => ({
-  session: {
-    sessionId: 'sess-record',
+const executeStorylineRuntimeSessionCommand = vi.fn(
+  async (_packageName: string, command: { kind: string }) => {
+    if (command.kind === 'record_accepted_beat') {
+      return {
+        activeSessionId: 'sess-record',
+        activeCheckpointId: 'checkpoint-record',
+      };
+    }
+
+    if (command.kind === 'finalize_relationship_layer') {
+      return {
+        activeSessionId: 'sess-finalize',
+        activeCheckpointId: 'checkpoint-finalize',
+      };
+    }
+
+    if (command.kind === 'reset_workbench') {
+      return {
+        activeSessionId: 'sess-reset',
+      };
+    }
+
+    return {
+      activeSessionId: 'sess-ensure',
+    };
   },
-  checkpoint: {
-    checkpointId: 'checkpoint-record',
-  },
-}));
-const finalizeRelationshipLayer = vi.fn(async () => undefined);
-const resetWorkbench = vi.fn(async () => ({
-  sessionId: 'sess-reset',
-}));
+);
 class RuntimeStoryPackageNotFoundError extends Error {
   constructor(packageName: string) {
     super(`Story package "${packageName}" was not found.`);
@@ -31,12 +43,12 @@ class RuntimeSessionConflictError extends Error {
 }
 
 vi.mock('@/runtime-sessions/repository', () => ({
-  ensureActiveSession,
-  recordAcceptedBeat,
-  finalizeRelationshipLayer,
-  resetWorkbench,
   RuntimeStoryPackageNotFoundError,
   RuntimeSessionConflictError,
+}));
+
+vi.mock('@/storylines/substrate', () => ({
+  executeStorylineRuntimeSessionCommand,
 }));
 
 describe('POST runtime-session route', () => {
@@ -64,7 +76,9 @@ describe('POST runtime-session route', () => {
       },
     );
 
-    expect(resetWorkbench).toHaveBeenCalledWith('sample-scene');
+    expect(executeStorylineRuntimeSessionCommand).toHaveBeenCalledWith('sample-scene', {
+      kind: 'reset_workbench',
+    });
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       activeSessionId: expect.any(String),
@@ -72,7 +86,7 @@ describe('POST runtime-session route', () => {
   });
 
   it('returns non-2xx with an explicit error payload when reset_workbench persistence fails', async () => {
-    resetWorkbench.mockRejectedValueOnce(
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
       new Error(
         'Failed to load runtime sessions for "sample-scene" from /tmp/sample-scene/runtime-sessions.json: disk write failed',
       ),
@@ -142,11 +156,10 @@ describe('POST runtime-session route', () => {
       },
     );
 
-    expect(recordAcceptedBeat).toHaveBeenCalledWith(
+    expect(executeStorylineRuntimeSessionCommand).toHaveBeenCalledWith(
+      'sample-scene',
       expect.objectContaining({
-        packageName: 'sample-scene',
-        sessionId: 'sess-record',
-        checkpointId: 'checkpoint-record',
+        kind: 'record_accepted_beat',
       }),
     );
     expect(response.status).toBe(200);
@@ -185,11 +198,10 @@ describe('POST runtime-session route', () => {
       },
     );
 
-    expect(finalizeRelationshipLayer).toHaveBeenCalledWith(
+    expect(executeStorylineRuntimeSessionCommand).toHaveBeenCalledWith(
+      'sample-scene',
       expect.objectContaining({
-        packageName: 'sample-scene',
-        sessionId: 'sess-finalize',
-        checkpointId: 'checkpoint-finalize',
+        kind: 'finalize_relationship_layer',
       }),
     );
     expect(response.status).toBe(200);
@@ -200,7 +212,7 @@ describe('POST runtime-session route', () => {
   });
 
   it('returns a non-500 conflict status for inactive-session persistence conflicts', async () => {
-    recordAcceptedBeat.mockRejectedValueOnce(
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
       new RuntimeSessionConflictError('Cannot record accepted beat for inactive session.'),
     );
     const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
@@ -249,7 +261,7 @@ describe('POST runtime-session route', () => {
   });
 
   it('returns conflict without leaking internals when duplicate checkpoint ids are rejected', async () => {
-    recordAcceptedBeat.mockRejectedValueOnce(
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
       new RuntimeSessionConflictError(
         'Checkpoint "checkpoint-record" already exists for active session "sess-record".',
       ),
@@ -300,7 +312,9 @@ describe('POST runtime-session route', () => {
   });
 
   it('returns a safe non-500 missing-package error without local path leakage', async () => {
-    ensureActiveSession.mockRejectedValueOnce(new RuntimeStoryPackageNotFoundError('missing-pack'));
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
+      new RuntimeStoryPackageNotFoundError('missing-pack'),
+    );
     const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
 
     const response = await POST(
@@ -320,9 +334,53 @@ describe('POST runtime-session route', () => {
       },
     );
 
+    expect(executeStorylineRuntimeSessionCommand).toHaveBeenCalledWith('missing-pack', {
+      kind: 'ensure_active_session',
+    });
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       error: 'Story package "missing-pack" was not found.',
+    });
+  });
+
+  it('returns conflict when finalize_relationship_layer targets inactive storyline binding', async () => {
+    executeStorylineRuntimeSessionCommand.mockRejectedValueOnce(
+      new RuntimeSessionConflictError(
+        'Cannot finalize relationship layer for a session outside the active storyline binding.',
+      ),
+    );
+    const { POST } = await import('@/app/api/play/packages/[packageName]/runtime-session/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/packages/sample-scene/runtime-session', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'finalize_relationship_layer',
+          payload: {
+            packageName: 'sample-scene',
+            sessionId: 'sess-alt',
+            checkpointId: 'checkpoint-alt',
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: 'blocked',
+              stableBackgroundText: 'blocked',
+            },
+          },
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Cannot finalize relationship layer for a session outside the active storyline binding.',
     });
   });
 
@@ -366,7 +424,7 @@ describe('POST runtime-session route', () => {
       },
     );
 
-    expect(recordAcceptedBeat).not.toHaveBeenCalled();
+    expect(executeStorylineRuntimeSessionCommand).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       error:

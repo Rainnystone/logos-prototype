@@ -78,6 +78,11 @@ export interface FinalizeRelationshipLayerInput {
   readonly lastStableRelationshipLayer: RelationshipLayer;
 }
 
+export interface CreateSessionFromCheckpointInput {
+  readonly packageName: string;
+  readonly checkpointId: string;
+}
+
 export type RuntimeSessionCommand =
   | { kind: 'ensure_active_session' }
   | { kind: 'record_accepted_beat'; payload: RecordAcceptedBeatInput }
@@ -109,6 +114,18 @@ function cloneRelationshipLayer(layer: RelationshipLayer): RelationshipLayer {
   return {
     highlightedDeltasText: layer.highlightedDeltasText,
     stableBackgroundText: layer.stableBackgroundText,
+  };
+}
+
+function cloneCheckpoint(checkpoint: RuntimeCheckpoint): RuntimeCheckpoint {
+  return {
+    ...checkpoint,
+    acceptedTranscript: {
+      playerInput: checkpoint.acceptedTranscript.playerInput,
+      beatText: checkpoint.acceptedTranscript.beatText,
+    },
+    stateSnapshot: structuredClone(checkpoint.stateSnapshot),
+    lastStableRelationshipLayer: cloneRelationshipLayer(checkpoint.lastStableRelationshipLayer),
   };
 }
 
@@ -273,6 +290,86 @@ export async function ensureActiveSession(packageName: string): Promise<RuntimeS
     };
 
     await writeValidatedRuntimeSessionsFile(packageName, nextFile);
+    return session;
+  });
+}
+
+export async function setMirroredActiveSession(
+  packageName: string,
+  sessionId: string,
+): Promise<void> {
+  return runWithPackageWriteQueue(packageName, async () => {
+    const file = await loadRuntimeSessionsFileForWrite(packageName);
+    if (!file.sessionsById[sessionId]) {
+      throw new Error(
+        `Runtime session consistency violation: activeSessionId "${sessionId}" does not resolve.`,
+      );
+    }
+
+    if (file.activeSessionId === sessionId) {
+      return;
+    }
+
+    const nextFile: RuntimeSessionsFile = {
+      ...file,
+      activeSessionId: sessionId,
+    };
+    await writeValidatedRuntimeSessionsFile(packageName, nextFile);
+  });
+}
+
+function resolveCheckpointFromGraph(
+  file: RuntimeSessionsFile,
+  checkpointId: string,
+): RuntimeCheckpoint | null {
+  for (const session of Object.values(file.sessionsById)) {
+    const checkpoint = session.checkpointsById[checkpointId];
+    if (checkpoint) {
+      return checkpoint;
+    }
+  }
+
+  return null;
+}
+
+export async function createSessionFromCheckpoint(
+  input: CreateSessionFromCheckpointInput,
+): Promise<RuntimeSession> {
+  return runWithPackageWriteQueue(input.packageName, async () => {
+    const file = await loadRuntimeSessionsFileForWrite(input.packageName);
+    const sourceCheckpoint = resolveCheckpointFromGraph(file, input.checkpointId);
+
+    if (!sourceCheckpoint) {
+      throw new RuntimeSessionConflictError(
+        `Cannot create runtime session from unknown checkpoint "${input.checkpointId}".`,
+      );
+    }
+
+    const timestamp = new Date().toISOString();
+    const sessionId = createSessionId();
+    const checkpoint = cloneCheckpoint(sourceCheckpoint);
+    const session: RuntimeSession = {
+      sessionId,
+      lifecycle: 'in_progress',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      headCheckpointId: input.checkpointId,
+      activeCheckpointId: input.checkpointId,
+      orderedCheckpointIds: [input.checkpointId],
+      checkpointsById: {
+        [input.checkpointId]: checkpoint,
+      },
+      lastStableRelationshipLayer: cloneRelationshipLayer(checkpoint.lastStableRelationshipLayer),
+    };
+
+    const nextFile: RuntimeSessionsFile = {
+      ...file,
+      sessionsById: {
+        ...file.sessionsById,
+        [session.sessionId]: session,
+      },
+    };
+    await writeValidatedRuntimeSessionsFile(input.packageName, nextFile);
     return session;
   });
 }
