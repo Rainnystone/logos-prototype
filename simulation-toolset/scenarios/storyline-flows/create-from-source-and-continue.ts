@@ -19,7 +19,6 @@
 import type { MockKernel } from '@simulation/mock-kernel';
 import { createMockKernel } from '@simulation/mock-kernel';
 import { createSubstrateMock } from '@simulation/substrate-mock';
-import { createMockFixtureBuilder } from '@simulation/mock-fixture-builder';
 import type { ExecutableSimulationScenario } from '@simulation/scenario-runner';
 import type { StateSnapshot } from '@/types';
 
@@ -73,7 +72,6 @@ export function createCreateFromSourceAndContinueScenario(): ExecutableSimulatio
         // 1. Initialize MockKernel with test state
         kernel = createMockKernel('test-package');
         const substrate = createSubstrateMock(kernel);
-        const builder = createMockFixtureBuilder(kernel);
 
         // 2. Setup initial storyline with checkpoint
         // Bootstrap the repository with a default storyline
