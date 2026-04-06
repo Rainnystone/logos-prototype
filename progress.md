@@ -1,5 +1,18 @@
 # Progress
 
+## 2026-04-06
+
+- 已重新恢复根目录三件套上下文，并确认当前仓库状态已经从 `Phase 2` 收口切换到 `Phase 3` 规划启动。
+- 已补读 `master-record`、`Phase 2` spec / plan，以及当前 authoring persistence、runtime sessions、editor shell、story loader 相关实现，用来确认 `Phase 3` 的真实边界不是 UI 按钮，而是对象层与仓储层。
+- 已与用户对齐 `Phase 3` 的文档治理方式：
+  - 一份总 design spec
+  - 每个 part 各自独立的 spec 与 implementation plan
+  - 不再额外写一份总 implementation plan
+- 已与用户对齐 `Phase 3` 的工作记忆方式：
+  - 根目录三件套保留为跨 phase 总控索引
+  - `docs/superpowers/phase-3/` 承接 `Phase 3` 的详细 task plan / findings / progress
+- 已建立 `docs/superpowers/phase-3/` 目录，并准备把 `README` 与专属三件套作为后续总 spec / part spec / part plan 的主入口。
+
 ## 2026-04-01
 
 - 检查了 `planning-with-files-zh` 技能，确认它适合这次“事后补充可恢复上下文”的场景。

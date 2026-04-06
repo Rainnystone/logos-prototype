@@ -1,5 +1,41 @@
 # Findings
 
+## 2026-04-06 Phase 3 文档治理结论
+
+- 根目录三件套继续保留，但角色切换为：
+  - 跨 phase 总控索引
+  - 自动恢复入口
+  - 关键里程碑摘要
+- `Phase 3` 的详细工作记忆迁移到：
+  - `docs/superpowers/phase-3/task_plan.md`
+  - `docs/superpowers/phase-3/findings.md`
+  - `docs/superpowers/phase-3/progress.md`
+- `Phase 3` 采用：
+  - 一份总 design spec
+  - 多个 part 的增量 spec
+  - 多个 part 各自独立的 implementation plan
+- 当前明确不做：
+  - `Phase 3` 总 implementation plan
+  - 在总 spec 未冻结前就并行写出全部 part plan
+- 保留当前 `AGENTS.md` 既有规范：
+  - 正式 spec 仍放在 `docs/superpowers/specs/`
+  - 正式 implementation plan 仍放在 `docs/superpowers/plans/`
+  - `docs/superpowers/phase-3/` 只承接 `Phase 3` 的工作记忆与入口索引
+
+## 2026-04-06 Phase 3 当前推荐拆解
+
+- 当前推荐先写总 spec，再分 3 个主要 part 逐步推进。
+- 当前推荐的 part 切法是：
+  - `Part 1`：`checkpoint / storyline / session / authoring variant` 对象合同与 package-level repository seam
+  - `Part 2`：故事包管理页与 storyline workspace 的读取、展示与核心继续/分叉工作流
+  - `Part 3`：storyline 管理动作补齐，包括切换、重命名、归档、复制、删除，以及对应验证与 UX 收口
+- 这组切法当前是推荐方向，不算最终冻结；最终以总 spec 通过 review 后的版本为准。
+- 当前之所以不建议直接把 `Phase 3` 一次性写成一张大 plan，是因为：
+  - runtime continuity substrate 已经存在
+  - authoring 保存仍然是 package-global
+  - 编辑器“控制台”仍然只是 diagnostics surface
+  - 因此 `Phase 3` 的主要风险在对象边界，而不是单个页面动作
+
 ## planning-with-files-zh 是否适合这次场景
 
 - 适合。

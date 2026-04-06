@@ -1,0 +1,72 @@
+# Phase 3 Progress
+
+## 2026-04-06
+
+- 已恢复根目录 `task_plan.md`、`findings.md`、`progress.md`，并通过现有持久记录确认：
+  - `Phase 1` 已完成
+  - `Phase 2` 已完成实现、验证与手验
+  - 当前主线正式切换到 `Phase 3`
+- 已补读并对齐以下上下文，用于启动 `Phase 3`：
+  - `AGENTS.md`
+  - `README.md`
+  - `archive/docs/narrative-editor-redesign/master-record.md`
+  - `docs/superpowers/specs/2026-04-03-phase-2-session-continuity-design.md`
+  - `docs/superpowers/plans/2026-04-03-phase-2-session-continuity-implementation.md`
+  - `src/runtime-sessions/`
+  - `src/authoring/persistence/`
+  - `src/app/edit/`
+- 已与用户达成文档治理共识：
+  - `Phase 3` 采用一份总 design spec
+  - 各个 part 各自拥有独立 spec 与 implementation plan
+  - 不再额外维护一份总 implementation plan
+- 已与用户达成工作记忆共识：
+  - 根目录三件套保留为跨 phase 总控索引
+  - `docs/superpowers/phase-3/` 承接 `Phase 3` 的详细 task plan / findings / progress
+- 已创建：
+  - `docs/superpowers/phase-3/README.md`
+  - `docs/superpowers/phase-3/task_plan.md`
+  - `docs/superpowers/phase-3/findings.md`
+  - `docs/superpowers/phase-3/progress.md`
+- 已同步更新根目录三件套，使其把当前主工作流显式指向 `Phase 3` 专属工作区。
+- 已派出一个只读外部研究 subagent，检索高星 GitHub / 主流开源系统里和 branch、workspace、immutable checkpoint、repo seam 最接近的结构参考。
+- 已吸收外部研究结论并写回 `docs/superpowers/phase-3/findings.md`：
+  - `checkpoint` 与 `storyline` 必须保持 node / ref 分层
+  - `authoring variant` 与 `session` 应绑定到 `storyline`
+  - repository seam 应分为持久仓库层与工作区层
+- 用户已确认两条关键方向：
+  - `checkpoint` 继续保持 package-scoped immutable node
+  - `新建 story package` 不作为 `Part 1` 地基，改为 `Part 2` 的 companion slice
+- 已写出正式总 spec：
+  - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
+- 当前总 spec 已冻结的核心方向包括：
+  - `storyline` 是作者比较与继续的主边界
+  - `checkpoint` 继续是 package-scoped immutable node
+  - `authoring variant` 采用 storyline-bound materialized workspace / revision root 方向
+  - `session` 转为 storyline-bound mutable runtime state
+  - `Part 1 / Part 2 / Part 3` 的顺序与职责已经在总 spec 中明确写出
+- 已完成一轮独立 spec review，reviewer 没有直接通过，并指出 4 个会阻塞 `Part 1` 的硬缺口：
+  - `authoring variant` 的物理模型不够唯一
+  - `storyline head / active session / active checkpoint` 主从关系不够明确
+  - package-level repository seam 缺少责任切分与物理落点
+  - `Phase 2 -> Phase 3` 的兼容迁移语义不够具体
+- 用户已认可按主线程建议把上述 4 点正式回写总 spec。
+- 已完成这轮回写：
+  - `authoring variant` 正式冻结为 materialized workspace
+  - `storyline` 与 `session` 的 1:1 active 关系、head 推进与 restart 语义已冻结
+  - `storyline-repository.json`、`variants/<variantId>/...`、`runtime-sessions.json` 的责任边界已补入总 spec
+  - 旧 package 的兼容策略已冻结为 lazy bootstrap migration
+- 已在 `docs/superpowers/phase-3/task_plan.md` 中补出显式 `Frozen Part Map`，方便后续追溯 `Part 1 / Part 2 / Part 3` 的职责边界。
+- 已完成第二轮独立 spec review，reviewer 结论：
+  - `Approved`
+- reviewer 明确确认：
+  - `authoring variant` 的唯一物理模型已足够支撑 `Part 1`
+  - `storyline head / active session / active checkpoint` 的不变量已足够支撑 `Part 1`
+  - repository seam 的首版拓扑与 lazy bootstrap migration 已足够支撑 `Part 1`
+- reviewer 还给出 4 条可选强化建议，准备在 `Part 1` spec / plan 中吸收：
+  - 增加读写责任矩阵
+  - 补清 `activeSessionId` 生命周期边界
+  - 补一个最小迁移时序例子
+  - 在 `Part 1` plan 里把 variant 复制与 session 绑定更新拆成独立检查点
+- 当前下一步：
+  - 交给用户确认
+  - 在用户确认后进入 `Part 1` spec

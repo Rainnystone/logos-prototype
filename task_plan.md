@@ -2,14 +2,22 @@
 
 ## Goal
 
-把 `Phase 2: Session Continuity` 收敛成项目根目录可恢复的持久记录，明确：
+维护本仓库跨 phase 的总控索引，并把当前主工作流稳定指向 `Phase 3` 的专属规划文件。
 
-- 这一阶段真正要交付的连续性能力
-- 它与 `Phase 3` 故事线层的明确边界
-- 推荐的 runtime session / checkpoint substrate
-- 最小持久化对象、完成标准与下一步 spec / plan 目标
+- 根目录 `task_plan.md`、`findings.md`、`progress.md` 继续作为跨 phase 恢复入口。
+- `Phase 3` 的详细规划、发现与执行日志以 `docs/superpowers/phase-3/` 下的专属文档为准。
+- 正式 design spec 与 implementation plan 仍然写在 `docs/superpowers/specs/` 与 `docs/superpowers/plans/`。
 
-这样后续无论是继续 brainstorm、写 spec、写 implementation plan，还是换一个线程继续，都能直接接上，不需要重新把 `Phase 2` 的基础判断讨论一遍。
+## Current Active Track
+
+- `Phase 1` 已完成并验证。
+- `Phase 2` 已完成实现、验证与手验，当前作为已冻结基础层保留。
+- 当前活跃主线切换为 `Phase 3: Package & Storyline Layer`。
+- `Phase 3` 主工作记忆入口：
+  - [docs/superpowers/phase-3/README.md](docs/superpowers/phase-3/README.md)
+  - [docs/superpowers/phase-3/task_plan.md](docs/superpowers/phase-3/task_plan.md)
+  - [docs/superpowers/phase-3/findings.md](docs/superpowers/phase-3/findings.md)
+  - [docs/superpowers/phase-3/progress.md](docs/superpowers/phase-3/progress.md)
 
 ## Active Phases
 
@@ -25,7 +33,8 @@
 | 8 | complete | 已完成 `Phase 1` 全量验证、桌面端 UI / UX 复核与规划文件同步；当前仓库已可在此基础上进入下一阶段讨论。 |
 | 9 | complete | 已完成 `Phase 1` 的地点收尾回修：样例地点已从旧长文彻底转译为正式地点，场景地点选择器已与场景阵容对齐，并且 `locationIds` 已真实进入运行时组装链。 |
 | 10 | complete | 已冻结 `Phase 2` 的 runtime continuity substrate、checkpoint 边界与后续 `Phase 3` 可承接的落点，并完成正式 spec 与 implementation plan 的独立 review loop。 |
-| 11 | in_progress | 正在从已批准的 `Phase 2` implementation plan 进入执行前 handoff；下一步需要在 `subagent-driven-development` 与 inline execution 之间选择执行方式。 |
+| 11 | complete | 已完成 `Phase 2` 实现、验证、手验与 reopen fix 收口；该阶段当前作为 `Phase 3` 的冻结底座保留。 |
+| 12 | in_progress | 已建立 `Phase 3` 专属规划目录与索引，下一步进入总 spec，随后按 `part 1 -> part 2 -> part 3` 的顺序逐步准备 spec 与 implementation plan。 |
 
 ## Frozen Product Decisions
 
