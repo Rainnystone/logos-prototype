@@ -1,6 +1,7 @@
-import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadAuthoringState, resolveAuthoringStatePath, writeAuthoringState } from '@/authoring/persistence/package-state';
@@ -18,6 +19,10 @@ const gossipelogStatePath = path.resolve(
   'agents/gossipelog/character-relationships.yaml',
 );
 const runtimeSessionsPath = path.resolve(testPackagePath, 'runtime-sessions.json');
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+const variantsRootPath = path.resolve(testPackagePath, 'variants');
+const variantWorldBasePath = path.resolve(testPackagePath, 'variants/variant_main/world-base.yaml');
+const baselineWorldBasePath = path.resolve(testPackagePath, 'world-base.yaml');
 
 function resetTestPackage(): void {
   rmSync(testPackagePath, { recursive: true, force: true });
@@ -138,6 +143,52 @@ describe('loadAuthoringState', () => {
 
     expect(reopened.source).toBe('latest-saved');
     expect(reopened.state.worldBase.worldBaseSetting).toBe('reopened-world-base-setting');
+  });
+
+  it('keeps legacy read-only load on package-root baseline without materializing storyline files', async () => {
+    prepareTestPackage();
+    const baselineWorldBase = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    const loaded = await loadAuthoringState(testPackageName);
+
+    expect(loaded.state.worldBase.worldBaseSetting).toBe(baselineWorldBase.worldBaseSetting);
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantsRootPath)).toBe(false);
+  });
+
+  it('loads from active storyline variant workspace after first save bootstraps storyline substrate', async () => {
+    prepareTestPackage();
+    const baselineWorldBaseBeforeSave = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    const saveResult = await saveSectionDraft({
+      requestId: 'request-bootstrap-variant-load',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          worldBaseSetting: 'variant-world-setting',
+        },
+      },
+    });
+
+    expect(saveResult.kind).toBe('save_applied');
+    expect(existsSync(storylineRepositoryPath)).toBe(true);
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+
+    const reopened = await loadAuthoringState(testPackageName);
+    const baselineWorldBaseAfterSave = YAML.parse(readFileSync(baselineWorldBasePath, 'utf8')) as {
+      worldBaseSetting: string;
+    };
+
+    expect(reopened.state.worldBase.worldBaseSetting).toBe('variant-world-setting');
+    expect(baselineWorldBaseAfterSave.worldBaseSetting).toBe(
+      baselineWorldBaseBeforeSave.worldBaseSetting,
+    );
   });
 
   it('keeps the authoring marker tiny and readable when it is written directly', async () => {

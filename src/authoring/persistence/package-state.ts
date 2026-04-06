@@ -4,9 +4,11 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import type { AgentSurfaceItem } from '@/agents/agent-surface';
+import { resolveAuthoringPersistenceTarget } from '@/authoring/persistence/repository';
 import { parseWithSchema } from '@/lib/validation';
 import { SECTION_IDS } from '@/authoring/contracts';
 import { loadStoryPackage } from '@/engine/story-loader';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 import type { StoryPackage } from '@/types';
 import type { EditRuntimeContinuityView } from '@/runtime-sessions/views';
 import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
@@ -87,8 +89,18 @@ export async function loadAuthoringState(
   packageName: string,
   options: LoadAuthoringStateOptions = {},
 ): Promise<AuthoringStateLoadResult> {
+  const target = resolveAuthoringPersistenceTarget(
+    packageName,
+    (
+      await resolveActiveStorylineContext(packageName, {
+        forWrite: false,
+      })
+    ).authoredRoot,
+  );
   const [state, authoringState, runtimeContinuityView] = await Promise.all([
-    loadStoryPackage(packageName),
+    loadStoryPackage(packageName, {
+      authoredRootOverride: target.authoredRoot,
+    }),
     readAuthoringState(packageName),
     options.includeRuntimeContinuity
       ? loadEditRuntimeContinuityView(packageName)

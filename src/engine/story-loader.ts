@@ -53,11 +53,18 @@ async function loadValidatedWorldBase(filePath: string) {
   );
 }
 
+export interface StoryPackageLoadOptions {
+  readonly authoredRootOverride?: string;
+  readonly runtimeProjection?: boolean;
+}
+
 async function loadStoryPackageInternal(
   packageName: string,
-  options?: { readonly runtimeProjection?: boolean },
+  options?: StoryPackageLoadOptions,
 ): Promise<StoryPackage> {
-  const packageRoot = path.resolve(process.cwd(), 'src/story-packages', packageName);
+  const packageRoot = options?.authoredRootOverride
+    ? path.resolve(options.authoredRootOverride)
+    : path.resolve(process.cwd(), 'src/story-packages', packageName);
 
   try {
     await access(packageRoot);
@@ -117,12 +124,21 @@ async function loadStoryPackageInternal(
   );
 }
 
-export async function loadStoryPackage(packageName: string): Promise<StoryPackage> {
-  return loadStoryPackageInternal(packageName);
+export async function loadStoryPackage(
+  packageName: string,
+  options?: Omit<StoryPackageLoadOptions, 'runtimeProjection'>,
+): Promise<StoryPackage> {
+  return loadStoryPackageInternal(packageName, options);
 }
 
-export async function loadRuntimeStoryPackage(packageName: string): Promise<StoryPackage> {
-  return loadStoryPackageInternal(packageName, { runtimeProjection: true });
+export async function loadRuntimeStoryPackage(
+  packageName: string,
+  options?: Omit<StoryPackageLoadOptions, 'runtimeProjection'>,
+): Promise<StoryPackage> {
+  return loadStoryPackageInternal(packageName, {
+    ...options,
+    runtimeProjection: true,
+  });
 }
 
 export type { RouterProfile, SceneSpec, StoryPackage } from '@/types/story-package';
