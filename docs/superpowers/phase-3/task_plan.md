@@ -37,7 +37,7 @@
 - 仅有 `checkpoint + storyline ref` 还不够，因为当前 authoring 保存仍然是 package-global baseline。
 - `Phase 3` 必须补上 storyline-scoped authoring variant / revision 语义，用来支持“比较不同设置下的故事走向”。
 - package-level `Storage / Repository Substrate` 应先于 UI 落地。
-- “故事包管理”页应替换当前“控制台”页，但 UI 必须消费已冻结好的 substrate，而不是反向驱动底层对象边界。
+- “故事包管理”页应取代“控制台”作为 editor 默认入口，但保留“控制台”作为 diagnostics 页；UI 必须消费已冻结好的 substrate，而不是反向驱动底层对象边界。
 - `storyline v1` 的目标集合仍然包含：
   - 新建分支线
   - 切换
@@ -56,7 +56,7 @@
    - 引入 package-level repository seam
    - 明确 mutable state 与 package definition 的分层
 2. `Part 2`
-   - 用“故事包管理”替换当前“控制台”
+   - 新增“故事包管理”作为 editor 默认第一页
    - 接入 storyline workspace 的读取、展示与核心继续/分叉工作流
 3. `Part 3`
    - 补齐 storyline 管理动作与 UX 收口
@@ -69,8 +69,8 @@
 | Part | 核心目标 | 主要产物 | 明确不承担的事 |
 |---|---|---|---|
 | `Part 1` | 把 storyline substrate 做成正式底座 | storyline repository seam、variant workspace 模型、storyline-bound session 语义、兼容迁移、无 UI substrate primitives（create/switch/branch） | 不负责完整故事包管理 UI；不把新建 story package 当地基；不交付 rename/archive/delete 这类管理动作 |
-| `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表、checkpoint 浏览/选择，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型；不把新建 story package 当作主线阻塞项 |
-| `Part 3` | 补齐 storyline v1 管理动作并收口 UX | 重命名、归档、复制、删除、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界 |
+| `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表、checkpoint 浏览/选择、inline storyline 命名，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型；不把新建 story package 当作主线阻塞项 |
+| `Part 3` | 补齐 storyline v1 管理动作并收口 UX | 归档、复制、删除、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界 |
 
 ## Bootstrap Non-Goals
 
@@ -146,6 +146,16 @@
   - 把故事包管理工作区的交付边界与 `Part 3` 的管理动作边界重新确认一遍
   - 基于已冻结的 `Part 1` substrate 开始设计故事包管理工作区
 
+## Part 2 Spec Status
+
+- 正式 `Part 2` spec 已起草：
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
+- 当前状态：
+  - `Reviewed, pending user confirmation`
+- 下一步：
+  - 交给用户确认
+  - 如认可，则进入 `Part 2` implementation plan
+
 ## Part 1 Delivery Status
 
 - `Part 1` 已完成实现、验证与 PR 提交。
@@ -172,18 +182,39 @@
 
 - `Part 2` 当前正式对齐的核心作者动作包括：
   - `continue current storyline`
-  - `continue from checkpoint on the same storyline`
   - `branch from checkpoint as new storyline`
   - `switch active storyline`
   - `create storyline from source storyline`
-- 这里的 `fallback` / “从 beat 2 重来”语义，冻结为：
+- `Part 2` 当前已根据用户草图冻结新的入口与布局方向：
+  - 新页面正式命名为 `故事包管理`
+  - 它是 editor 默认第一页
+  - 顶部按钮放在 `世界` 左边
+  - `控制台` 保留为 diagnostics 页，不从产品中删除
+  - 页面主体采用左侧 package selector + 右侧 storyline workspace 的双栏结构
+- 这里的 `fallback` / “从 beat 2 重来”语义已进一步更新为：
   - 不是完整历史重演
-  - 不是强制先开新 storyline
-  - 而是把选中的 accepted-beat checkpoint 作为新的 generation 入口重新继续
-  - 同时继续消费当前 storyline 绑定的 authoring variant 与作者最新修改
-- 因此 `Part 2` 的 checkpoint UI 应至少支持两类动作：
-  - 在当前 storyline 上继续
-  - 从该 checkpoint 新建 storyline
+  - 也不再是“在同一条 storyline 上原地回退再继续”
+  - 而是用户点击某个 accepted-beat checkpoint 后，在该点下方向下展开确认层
+  - 用户确认后，系统自动基于该 checkpoint 创建一条新的 storyline
+  - 新 storyline 复制来源 storyline 当前 variant workspace，并绑定新的 runtime session
+  - 然后切换 package `activeStorylineId` 到这条新 storyline，让用户在新线上继续编辑
+- 因此 `Part 2` 的 checkpoint UI 当前正式承接的是：
+  - click beat dot
+  - open split-down confirm / cancel drawer
+  - confirm => branch-as-new-storyline and switch
+  - cancel => close drawer without mutation
+- `Part 2` 的 storyline naming 也已调整：
+  - 代码层继续使用 opaque、用户不可见的 `storylineId`
+  - 系统创建时自动生成默认显示名
+  - UI 层允许用户编辑 storyline 的显示名称
+  - 名称编辑不改变 `storylineId`
+- 为避免 `Part 2` implementation plan 再次猜边界，当前还额外冻结了 3 条实现前契约：
+  - inline display-name editing 必须通过 metadata-only server seam 落到 `storyline-repository.json`
+  - workspace 页面必须消费 bounded read model，而不是直接拼 raw repository / runtime JSON
+  - `continue` 与 `create from source` 都按 row-local action 定义，不再引入第二套持久“selected storyline”状态
+- 这次 scope 调整后：
+  - inline storyline display-name editing 提前进入 `Part 2`
+  - archive / duplicate / delete 仍留在 `Part 3`
 - `new story package` 仍保持 companion-slice 定位：
   - 当前架构在本地仓库模式下可以做
   - 但不作为 `Part 2` 主体 workspace 的阻塞前提

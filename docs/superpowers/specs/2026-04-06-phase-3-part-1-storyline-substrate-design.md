@@ -416,10 +416,9 @@ Part 1 must freeze the following runtime/storyline invariants.
    - `session.activeCheckpointId` advances
    - `storyline.headCheckpointId` advances
    - both still point to the same checkpoint after the write completes
-8. When a storyline is restarted from an older checkpoint:
-   - storyline identity stays the same
-   - the storyline head moves to the selected checkpoint
-   - a replacement storyline-bound active session is created or rebound at that checkpoint
+8. Part 1 does not define or require an in-place same-storyline restart-from-checkpoint primitive.
+   - historical checkpoint fallback in later workspace layers must use `branch_storyline_from_checkpoint`
+   - that fallback creates a new storyline instead of rebinding the existing storyline identity
 9. Archiving rules and multi-session-per-storyline behavior are not Part 1 substrate requirements.
 
 These invariants are intentionally strict so Part 2 can build UI on them without redefining lifecycle rules.
@@ -614,12 +613,13 @@ Part 1 does not require author-visible UI for them yet.
 
 Explicitly deferred:
 
-- rename storyline
+- broad storyline rename management flows
 - archive storyline
 - delete storyline
 - first-class duplicate storyline command
 
 Even though duplicate storyline is deferred as a command, Part 1 should still shape the lower-level workspace-clone behavior so Part 3 can reuse it without redefining variant semantics.
+Later workspace layers may still add a narrow metadata-only `storyline.name` update command without changing these Part 1 substrate acceptance criteria.
 
 ## 13. Part 1 Acceptance Criteria
 

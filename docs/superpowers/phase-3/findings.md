@@ -15,31 +15,34 @@
   - current storyline state read views
   - create / branch / switch / continue 这几条核心工作流
 - 当前明确不应混入 `Part 2` 的管理动作：
-  - rename
   - archive
   - duplicate
   - delete
+- 但随着用户确认 UI 需求，`storyline` 的显示名称编辑已不再适合拖到 `Part 3`：
+  - `Part 2` 现在应承担 inline display-name editing
+  - 代码层 id 继续 opaque，不与显示名绑定
 - `新建 story package` 仍维持 companion-slice 判断：
   - 如果 backend seam 够稳，可以在 `Part 2` 里一起规划
   - 但它不应阻塞 `Part 2` 主体 workspace 的 spec
 
 ## 2026-04-06 Part 2 fallback / checkpoint 继续语义
 
-- 用户已进一步把 `Part 2` 里的 storyline 内部 fallback 定义清楚：
-  - 作者在 beat 4 时不满意，可以回到 beat 2 改改再继续
-  - 这里的“回去”不是完整重演旧 prompt / audit 历史
-  - 而是把 beat 2 对应的 accepted-beat checkpoint 当成新的 generation 入口重新继续
-- 当前最准确的系统语义应写成：
-  - 用选中 checkpoint 重新组装下一轮 generation 入口
-  - 继续消费当前 storyline 绑定的 authoring variant
-  - 叠加作者最新可配置修改
-- 这条能力在产品上不强制要求先开新 storyline。
-- 但为了保留横向比较能力，同一个 checkpoint 在 `Part 2` 的 UI 上应同时支持两种作者动作：
-  - 在当前 storyline 上继续
-  - 从该 checkpoint 新建 storyline
-- 因此 `Part 2` 不应把 “rollback” 写成“ destructive 把当前 storyline 真正倒回旧历史”：
-  - 当前更合适的产品语义是 checkpoint-driven continue / branch
-  - 旧历史可以不再是 active path，但不应被强行当场删除
+- 用户在看完草图后又把这条产品语义进一步收紧：
+  - 点击某个 beat 小点后，不再是“在当前 storyline 上原地 fallback”
+  - 而是以该 checkpoint 为锚点，创建一条新的 storyline
+  - 用户在展开的确认层点确认后，系统完成 `branch + switch`
+- 这意味着 `Part 2` 当前更准确的产品动作是：
+  - `checkpoint-driven branch-and-switch`
+  - 而不是 `same-storyline restart`
+- 对应的系统语义应写成：
+  - 选中的 accepted-beat checkpoint 作为新 storyline 的 continuation anchor
+  - 新 storyline 复制 source storyline 当前绑定的 variant workspace
+  - 新 storyline 绑定新的 runtime session
+  - 原 storyline 保持不变，继续作为可比较的旧线保留
+- 这个决定比“原地回退”更符合 `Phase 3` 把 storyline 作为比较边界的初衷：
+  - 旧线不被污染
+  - 新线天然进入横向比较集合
+  - 用户无需自己先手动执行 duplicate 再 branch
 
 ## 2026-04-06 new story package 边界判断
 
@@ -61,6 +64,41 @@
   - SSR / no-JS 纯读路径不应物化
   - 正常开启 JS 后，`/play` 页面会进入运行时初始化链，因此不再是“纯读”语义
 - 这个判断不改变 `Part 1` 结论，但后续如果 `Part 2` spec 要描述页面级非物化语义，必须把 SSR 纯读与 hydrate 后 runtime 初始化分开写清楚，避免把正常运行副作用误判成 substrate 漏洞。
+
+## 2026-04-06 Part 2 workspace sketch / UIUX 收口
+
+- 用户已提供 `Part 2` 的结构布局草图和当前 editor shell 截图，当前 UI 方向已足够冻结到 spec。
+- 页面正式命名为：
+  - `故事包管理`
+- 当前更准确的页面定位不是“删除控制台”，而是：
+  - 新增一个 package/storyline workspace 页签
+  - 它取代 `控制台` 作为 editor 默认入口
+  - `控制台` 继续保留为 diagnostics surface
+- 页面主结构已冻结为：
+  - 左侧 `story package` 选择区
+  - 右侧当前 package 的 storyline workspace
+  - storyline 列表纵向滚动
+  - 单条 storyline 的 beat rail 横向滚动
+- checkpoint 交互也已冻结：
+  - 每个 beat 用一个小点表示
+  - 点击后在该点位下方向下“劈开”展开确认层
+  - 展开层里只承接本次 branch-and-switch 的确认 / 取消动作
+- 当前视觉约束已冻结：
+  - 严格延续现有 editor shell 的 neue brutalism 语言
+  - 继续使用仓库当前字体栈与硬边框 / 黑投影 / 直角面板
+  - 不引入圆角 SaaS 风组件或新的默认字体
+
+## 2026-04-06 Part 2 spec review blockers 收口
+
+- 第一轮 `Part 2` 独立 spec review 收敛出 4 个真实 blocker，当前已按最小改动原则回写 spec：
+  - 清除 `Part 1` 里残留的 same-storyline restart 旧语义
+  - 补出 inline `storyline.name` editing 的 metadata-only mutation contract
+  - 补出故事包管理页的 bounded workspace read model contract
+  - 补清 `continue` 与 `create from source` 的 row-local 用户流语义
+- 这些补丁都没有改变用户已经拍板的产品方向：
+  - 仍然是 beat-dot click -> confirm drawer -> branch-and-switch
+  - 仍然保持 `storylineId` opaque、显示名可编辑
+  - 仍然保持 `控制台` 保留、`故事包管理` 成为默认入口
 
 ## 文档治理结论
 
@@ -112,7 +150,7 @@
 ### Part 2
 
 - 核心任务：
-  - 用“故事包管理”替换当前“控制台”页
+  - 新增“故事包管理”作为 editor 默认第一页，并保留“控制台”作为 diagnostics 页
   - 接入 storyline workspace 的读取、展示与核心 workflow
 - 这部分应严格消费 `Part 1` 已冻结的 substrate，而不是自己定义底层边界。
 
@@ -120,7 +158,7 @@
 
 - 核心任务：
   - 补齐 storyline 管理动作
-  - 完成切换、重命名、归档、复制、删除的正式交付
+  - 完成归档、复制、删除的正式交付
   - 做该阶段的 UX 收口与验证
 
 ## 当前尚未冻结的关键问题

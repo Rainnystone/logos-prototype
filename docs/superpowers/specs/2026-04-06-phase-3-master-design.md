@@ -46,7 +46,7 @@ Phase 3 should make the following product statements true:
 2. A storyline is the main author-facing workline for comparison, branching, switching, and continuation.
 3. Authoring state is no longer forced to be package-global only.
 4. Runtime continuation is no longer forced to be package-global only.
-5. Authors can continue the current storyline directly, or restart from a prior accepted checkpoint within that storyline context.
+5. Authors can continue the current storyline directly, or create a new storyline from a prior accepted checkpoint and continue there.
 6. Storyline management is exposed through a dedicated package/storyline workspace instead of the current diagnostics-first console model.
 
 ## 3. Non-Goals
@@ -277,10 +277,11 @@ To keep Part 1 implementable, the following invariants are frozen now.
 5. Continuing a storyline and accepting a new beat advances both:
    - `session.activeCheckpointId`
    - `storyline.headCheckpointId`
-6. Restarting a storyline from an older checkpoint is a deliberate storyline-head move:
-   - the storyline head moves to the chosen checkpoint immediately
-   - the replacement active session is bound to that same checkpoint
-   - subsequent accepted beats advance forward from there
+6. Checkpoint-driven fallback in the management workspace creates a new storyline rooted at the chosen checkpoint:
+   - the source storyline remains unchanged
+   - the new storyline receives a copied variant workspace
+   - the new storyline receives a fresh active session rooted at that checkpoint
+   - the workspace may switch the package-level `activeStorylineId` to that new storyline after user confirmation
 7. Switching storylines changes the package-level `activeStorylineId`, then resolves that storyline’s:
    - variant workspace
    - active session
@@ -462,17 +463,22 @@ Continuing a storyline means:
 - resolve that storyline’s active session
 - continue from that storyline’s active checkpoint or current resumable state
 
-### 7.3 Restart From Prior Checkpoint
+### 7.3 Checkpoint-Driven Fallback As New Storyline
 
-An author should be able to choose an earlier accepted checkpoint and continue from there within storyline semantics.
+An author should be able to choose an earlier accepted checkpoint and branch from there directly inside the package/storyline workspace.
 
-That restart action should:
+In Phase 3, that fallback action is no longer modeled as an in-place restart of the same storyline.
+
+Instead, it should:
 
 - use the chosen checkpoint as the continuation anchor
-- preserve storyline identity
-- keep the storyline-bound authoring variant in effect unless the author explicitly switches storyline or variant
-- move the storyline head to the chosen checkpoint immediately
-- replace the storyline’s active session binding with a session rooted at that checkpoint
+- create a new storyline rather than mutating the source storyline identity
+- copy the source storyline’s current authoring variant into a fresh variant workspace
+- bind a fresh runtime session rooted at the chosen checkpoint
+- assign a system-generated default display name that the author may edit later
+- switch the package-level `activeStorylineId` to the new storyline after user confirmation in the workspace flow
+
+This preserves the source line for comparison while still giving the author a fast “go back to beat 2 and try again” workflow.
 
 ### 7.4 Switch Storyline
 
@@ -543,17 +549,22 @@ Completion means:
 
 Purpose:
 
-- replace the current console-first page with a real package/storyline workspace
+- introduce a real package/storyline workspace as the editor’s default first page, while retaining the console as a diagnostics page
 
 Primary delivery target:
 
+- dedicated `故事包管理` page
+- editor-top navigation entry placed before `世界`
+- default `/edit` landing target
 - package selector
 - storyline list workspace
 - read views for current storyline state
 - create storyline
+- inline storyline display-name editing
 - branch from checkpoint
 - switch storyline
 - continue storyline
+- beat-dot checkpoint rail with split-down confirm / cancel interaction
 
 Companion slice:
 
@@ -563,6 +574,7 @@ Completion means:
 
 - storyline substrate is no longer hidden behind internal state only
 - authors can use the editor to manage and continue lines directly
+- the package/storyline workspace, not the diagnostics console, is the default editor entry surface
 
 ### 9.3 Part 3: Management Actions And UX Closure
 
@@ -572,7 +584,6 @@ Purpose:
 
 Primary delivery target:
 
-- rename
 - archive
 - duplicate
 - delete

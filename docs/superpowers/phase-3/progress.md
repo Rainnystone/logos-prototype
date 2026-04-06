@@ -11,17 +11,53 @@
   - 解决了 `docs/superpowers/phase-3/task_plan.md` 的冲突
   - 当前本地 `branch/narrative-editor` 与远端已重新同步
 - 针对后续 `Part 2` brainstorming，又补冻结了两条关键产品语义：
-  - storyline 内部的 fallback / “从 beat 2 重来”允许作为同一条 storyline 的作者动作存在
-  - 但其系统语义不是 destructive rollback，而是 checkpoint-driven continue
-- 对应地，`Part 2` 里的 checkpoint 区域当前应至少承接两种作者动作：
-  - continue on current storyline
-  - branch as new storyline
+- 用户随后提供了 `Part 2` 的结构布局草图与当前 editor 截图，`Part 2` UI 方向因此进一步冻结：
+  - 新页签正式命名为 `故事包管理`
+  - 顶部按钮放在 `世界` 左边
+  - 成为 editor 默认第一页
+  - `控制台` 继续保留为 diagnostics 页
+- 在看完草图后，checkpoint fallback 的产品语义又进一步更新：
+  - 不再是同一条 storyline 内原地 continue
+  - 而是点击某个 beat 小点后，打开向下劈开的确认层
+  - 用户确认后，系统自动从该 checkpoint 创建新的 storyline，并切换到新 storyline
+- 这轮对齐还带来一个 scope 调整：
+  - inline storyline display-name editing 前移到 `Part 2`
+  - storyline internal id 继续保持 opaque，不与显示名绑定
 - 还再次确认了 `new story package` 的边界：
   - 当前本地仓库模式下技术上可做
   - 但仍保持 `Part 2` companion slice 定位，不作为主体 workspace 的阻塞前提
+- 已将上述决定同步回 `Phase 3` 主工作记忆与总 spec：
+  - `docs/superpowers/phase-3/task_plan.md`
+  - `docs/superpowers/phase-3/findings.md`
+  - `docs/superpowers/phase-3/progress.md`
+  - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
+- 已写出正式 `Part 2` spec 初稿：
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
+- 当前 `Part 2` spec 初稿已经冻结的核心点包括：
+  - `故事包管理` 作为 editor 默认首页
+  - 顶部导航位置在 `世界` 左侧
+  - 左 package selector / 右 storyline workspace 的双栏布局
+  - beat-dot rail + split-down confirm / cancel drawer
+  - confirm 后执行 checkpoint-driven `branch + switch`
+  - inline storyline display-name editing
+- 已完成第一轮独立 `Part 2` spec review，reviewers 一致指出 4 个会直接误导 implementation plan 的硬缺口：
+  - `Part 1` 仍残留 same-storyline restart 旧语义
+  - display-name editing 缺少正式服务端 mutation contract
+  - workspace read model 未冻结
+  - `continue` / `create from source` 的 row-level 用户流不够明确
+- 这些问题现已完成第一轮回写修复：
+  - `Part 1 spec` 已删除旧的 same-storyline restart invariant
+  - `Part 2 spec` 已补出 metadata-only `update_storyline_display_name` 契约
+  - `Part 2 spec` 已补出 bounded `loadStoryPackageManagementWorkspaceView(packageName)` 读模型
+  - `Part 2 spec` 已冻结 `continue` / `create from source` 的 row-local action 语义
+- 已完成修订后的第二轮独立 `Part 2` spec review，两位 reviewer 结论一致：
+  - 前一轮指出的 4 个 blocker 已全部收口
+  - 当前只剩非阻塞风险，例如 read-model 字段 shape 与 display-name 输入约束仍可在 implementation plan / typed contract 层进一步收紧
+- 当前 `Part 2` spec 状态已更新为：
+  - `Reviewed, pending user confirmation`
 - 当前下一步已更新为：
-  - 等用户提供 `Part 2` 的 UI / UX 草图
-  - 然后把已冻结的 storyline workspace、checkpoint continue / branch 语义写入 `Part 2` spec
+  - 交给用户确认
+  - 如认可，则进入 `Part 2` implementation plan
 
 - `Part 1` 已在独立 worktree 中完成实现、验证、浏览器手验与 PR 提交；当前 `Phase 3` 主线切换到 `Part 2` 目标对齐与 spec 准备。
 - `Part 1` 的当前 GitHub review surface：
