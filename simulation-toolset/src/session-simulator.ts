@@ -2,7 +2,6 @@ import { readFile, resetWorkbench } from '@/runtime-sessions/repository';
 import { readSession, readCheckpoint, type SessionObservation, type CheckpointObservation } from './session-observer';
 import type { RuntimeSession } from '@/types';
 import type { MockKernel } from './mock-kernel';
-import { createStorylineObserver } from './storyline-observer';
 
 export interface RestoreResult {
   /** Whether a session was found and restored */
