@@ -76,7 +76,7 @@
 - Test: `src/types/__tests__/type-conformance.test.ts`
 - Test: `src/storylines/__tests__/workspace-view.test.ts`
 
-- [ ] **Step 1: Write the failing type and read-model tests**
+- [x] **Step 1: Write the failing type and read-model tests**
 
 ```ts
 it('defines a bounded workspace view without exposing raw repository maps', () => {
@@ -121,13 +121,13 @@ it('returns a single implicit storyline row for legacy packages without material
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify RED**
+- [x] **Step 2: Run the tests to verify RED**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/storylines/__tests__/workspace-view.test.ts`
 
 Expected: FAIL because the management view contracts and loader do not exist yet.
 
-- [ ] **Step 3: Implement the minimal contracts and server read model**
+- [x] **Step 3: Implement the minimal contracts and server read model**
 
 ```ts
 export interface StoryPackageManagementCheckpointNode {
@@ -170,13 +170,13 @@ Implementation notes:
 - Derive `headSummary` from the bound session checkpoint transcript, but keep it bounded and presentation-ready.
 - Respect Part 1 legacy read rules. When `storyline-repository.json` is absent, synthesize one implicit default row from `resolveActiveStorylineContext(..., { forWrite: false })` and do not materialize any new files on read.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/storylines/__tests__/workspace-view.test.ts`
 
 Expected: PASS with the new contracts exported through `src/types/index.ts`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/types/storyline-management.ts src/storylines/workspace-view.ts src/types/index.ts src/types/__tests__/type-conformance.test.ts src/storylines/__tests__/workspace-view.test.ts
@@ -191,7 +191,7 @@ git commit -m "feat: add storyline workspace view"
 - Test: `src/storylines/__tests__/substrate.test.ts`
 - Test: `src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts`
 
-- [ ] **Step 1: Write the failing substrate and route tests**
+- [x] **Step 1: Write the failing substrate and route tests**
 
 ```ts
 it('updates only storyline.name and updatedAt for display-name edits', async () => {
@@ -283,13 +283,13 @@ it('dispatches switch_active_storyline through the action route', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify RED**
+- [x] **Step 2: Run the tests to verify RED**
 
 Run: `npm test -- src/storylines/__tests__/substrate.test.ts 'src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts'`
 
 Expected: FAIL because the rename seam and action route do not exist yet.
 
-- [ ] **Step 3: Implement the minimal mutation seam and action route**
+- [x] **Step 3: Implement the minimal mutation seam and action route**
 
 ```ts
 export async function updateStorylineDisplayName(input: {
@@ -328,13 +328,13 @@ Implementation notes:
   - `branch_from_checkpoint` must call `branchStorylineFromCheckpoint`, then `switchActiveStoryline`, then return the new active storyline id
 - Keep `rename_display_name` metadata-only. It must not trigger any runtime-session mirror write.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run: `npm test -- src/storylines/__tests__/substrate.test.ts 'src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts'`
 
 Expected: PASS with rename semantics frozen and the action route delegating to Part 1 primitives.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/storylines/substrate.ts src/app/api/authoring/packages/[packageName]/storylines/actions/route.ts src/storylines/__tests__/substrate.test.ts src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts
@@ -384,15 +384,15 @@ it('updates the global Narrative Editor entry link to land on 故事包管理', 
   );
   expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
     'href',
-    '/edit?storyPackage=sample-scene&section=story-package-management',
+    '/edit?storyPackage=alt-scene&section=story-package-management',
   );
 });
 
 it('updates the title landing Narrative Editor entry link to land on 故事包管理', () => {
-  render(<TitleLandingSurface packageName="sample-scene" />);
+  render(<TitleLandingSurface playPackageName="alt-scene" />);
   expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
     'href',
-    '/edit?storyPackage=sample-scene&section=story-package-management',
+    '/edit?storyPackage=alt-scene&section=story-package-management',
   );
 });
 
@@ -402,7 +402,7 @@ it('keeps the root page Narrative Editor CTA aligned with 故事包管理', asyn
   render(await RootPage());
   expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
     'href',
-    '/edit?storyPackage=sample-scene&section=story-package-management',
+    '/edit?storyPackage=alt-scene&section=story-package-management',
   );
 });
 
@@ -493,7 +493,10 @@ export type EditorSectionId = (typeof EDITOR_SECTION_IDS)[number];
 const activeSection = requestedSection ?? 'story-package-management';
 const storyPackageManagementView =
   activeSection === 'story-package-management'
-    ? await loadStoryPackageManagementWorkspaceView(selectedPackageName)
+    ? await loadStoryPackageManagementWorkspaceView(selectedPackageName, {
+        packages: catalog,
+        storylineContext,
+      })
     : undefined;
 ```
 
@@ -504,6 +507,7 @@ Implementation notes:
   - `EditorSectionId` for `/edit` query parsing, `EditWorkbench`, `SectionTabs`, and diagnostics/navigation surfaces
 - Update every consumer that currently assumes `SECTION_IDS` means “all visible editor tabs”, including `page.tsx`, `EditWorkbench.tsx`, `SectionTabs.tsx`, `package-state.ts`, `bridge.ts`, and `package-diagnostics.ts`.
 - Keep `loadAuthoringState()` unchanged as the authored-state loader; do not force the new workspace query into authoring persistence if page-level composition is enough.
+- Narrative Editor entry links should preserve the current package when one is already in context, and only fall back to `/edit?section=story-package-management` when package context is missing.
 - In `EditWorkbench.test.tsx`, mock `StoryPackageManagementSection` just like the existing scene-phase mock so Task 3 can verify shell wiring without depending on the real management UI or router mocks. Save the real workspace fixtures for Task 4.
 - Pass the new workspace view into `EditWorkbench` as a separate prop instead of overloading existing `runtimeContinuityView`.
 - Preserve the current `worldbase-cast` surface rules. `story-package-management` has no `surface` sub-mode.

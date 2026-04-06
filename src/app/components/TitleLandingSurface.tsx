@@ -8,18 +8,28 @@ interface TitleLandingSurfaceProps {
   readonly playPackageName: string | null;
 }
 
+function buildNarrativeEditorHref(packageName: string | null): string {
+  if (!packageName) {
+    return '/edit?section=story-package-management';
+  }
+
+  return `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management`;
+}
+
 export function TitleLandingSurface({ playPackageName }: TitleLandingSurfaceProps) {
   const playHref = playPackageName
     ? `/play?storyPackage=${encodeURIComponent(playPackageName)}`
     : null;
-  const editorHref = '/edit?storyPackage=sample-scene&section=story-package-management';
+  const editorHref = buildNarrativeEditorHref(playPackageName);
 
   const actionSlot =
-    playHref ? (
+    playHref || editorHref ? (
       <div className="title-card__actions">
-        <Link className="title-card__action title-card__action--secondary" href={playHref}>
-          Play Workbench
-        </Link>
+        {playHref ? (
+          <Link className="title-card__action title-card__action--secondary" href={playHref}>
+            Play Workbench
+          </Link>
+        ) : null}
         <Link className="title-card__action title-card__action--secondary" href={editorHref}>
           Narrative Editor
         </Link>

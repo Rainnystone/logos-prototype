@@ -1,5 +1,8 @@
 import { listStoryPackageCatalog } from '@/app/story-package-catalog';
-import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import {
+  resolveActiveStorylineContext,
+  type ActiveStorylineContext,
+} from '@/storylines/substrate';
 import type {
   RuntimeCheckpoint,
   RuntimeSession,
@@ -163,11 +166,17 @@ function buildLegacyWorkspaceView(
 
 export async function loadStoryPackageManagementWorkspaceView(
   packageName: string,
+  options: {
+    readonly packages?: Awaited<ReturnType<typeof listStoryPackageCatalog>>;
+    readonly storylineContext?: ActiveStorylineContext;
+  } = {},
 ): Promise<StoryPackageManagementWorkspaceView> {
-  const packages = await listStoryPackageCatalog();
-  const context = await resolveActiveStorylineContext(packageName, {
-    forWrite: false,
-  });
+  const packages = options.packages ?? (await listStoryPackageCatalog());
+  const context =
+    options.storylineContext ??
+    (await resolveActiveStorylineContext(packageName, {
+      forWrite: false,
+    }));
 
   if (context.repository) {
     if (!context.runtimeFile) {

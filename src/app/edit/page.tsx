@@ -98,7 +98,10 @@ export default async function EditPage({ searchParams }: EditPageProps) {
         storylineContext,
       }),
       activeSection === 'story-package-management'
-        ? loadStoryPackageManagementWorkspaceView(selectedPackageName)
+        ? loadStoryPackageManagementWorkspaceView(selectedPackageName, {
+            packages: catalog,
+            storylineContext,
+          })
         : Promise.resolve(undefined),
     ]);
     const activeSurface =

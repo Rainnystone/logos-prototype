@@ -39,7 +39,23 @@ describe('RootLayout', () => {
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=story-package-management',
+      '/edit?storyPackage=alt-scene&section=story-package-management',
+    );
+  });
+
+  it('falls back to the default editor route when no package is in context', () => {
+    usePathname.mockReturnValue('/play');
+    useSearchParams.mockReturnValue(new URLSearchParams());
+
+    render(
+      <AppShell>
+        <div>Workbench Child</div>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?section=story-package-management',
     );
   });
 

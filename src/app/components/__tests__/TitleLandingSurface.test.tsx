@@ -28,15 +28,18 @@ describe('TitleLandingSurface', () => {
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=story-package-management',
+      '/edit?storyPackage=alt-scene&section=story-package-management',
     );
   });
 
-  it('shows a quiet fallback when no loadable package is available', () => {
+  it('falls back to the default editor route when no loadable play package is available', () => {
     render(<TitleLandingSurface playPackageName={null} />);
 
     expect(screen.getByText('No loadable story package is available.')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Play Workbench' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Narrative Editor' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
+      'href',
+      '/edit?section=story-package-management',
+    );
   });
 });

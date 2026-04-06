@@ -8,6 +8,14 @@ type AppShellProps = Readonly<{
   children: ReactNode;
 }>;
 
+function buildNarrativeEditorHref(packageName: string | null): string {
+  if (!packageName) {
+    return '/edit?section=story-package-management';
+  }
+
+  return `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management`;
+}
+
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -16,7 +24,7 @@ export function AppShell({ children }: AppShellProps) {
   const restartWorkbenchHref = selectedPackageName
     ? `/play?storyPackage=${encodeURIComponent(selectedPackageName)}`
     : '/play';
-  const narrativeEditorHref = '/edit?storyPackage=sample-scene&section=story-package-management';
+  const narrativeEditorHref = buildNarrativeEditorHref(selectedPackageName);
 
   return (
     <div className="app-shell">
