@@ -30,28 +30,15 @@ export function StoryPackageSelector({ packageName, packages }: StoryPackageSele
               className={`story-package-selector__card ${
                 item.packageName === packageName ? 'story-package-selector__card--active' : ''
               }`}
-            >
-              <Link
-                className="story-package-selector__link"
-                href={`/edit?storyPackage=${encodeURIComponent(item.packageName)}&section=story-package-management`}
-                aria-current={item.packageName === packageName ? 'page' : undefined}
-                aria-label={item.packageName}
               >
-                <span className="story-package-selector__link-label">{item.packageName}</span>
-              </Link>
-              <div
-                className={`story-package-selector__card-copy ${
-                  item.packageName === packageName ? 'story-package-selector__card-copy--active' : ''
-                }`}
-              >
-                <p>{item.sceneName}</p>
-                <p className="panel-note">
-                  {item.phaseCount} 个 Phase · {item.totalBeatCount} 个 Beat
-                </p>
-                <p className="panel-note">
-                  {item.mainAxis} · {item.endLine}
-                </p>
-              </div>
+                <Link
+                  className="story-package-selector__link"
+                  href={`/edit?storyPackage=${encodeURIComponent(item.packageName)}&section=story-package-management`}
+                  aria-current={item.packageName === packageName ? 'page' : undefined}
+                  aria-label={item.packageName}
+                >
+                  <span className="story-package-selector__link-label">{item.packageName}</span>
+                </Link>
             </article>
           ) : (
             <article key={item.packageName} className="story-package-selector__card story-package-selector__card--error">

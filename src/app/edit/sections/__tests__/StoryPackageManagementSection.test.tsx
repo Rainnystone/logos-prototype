@@ -68,15 +68,25 @@ describe('StoryPackageManagementSection', () => {
     );
   });
 
-  it('marks the active package copy as an inverted block for higher contrast', () => {
+  it('shows ready package selector cards as package-name-only choices', () => {
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    expect(screen.getByRole('link', { name: 'sample-scene' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'alt-scene' })).toBeInTheDocument();
+    expect(screen.queryByText('Sample Scene')).not.toBeInTheDocument();
+    expect(screen.queryByText(/个 Phase/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/The corridor opens into daylight\./i)).not.toBeInTheDocument();
+  });
+
+  it('keeps the active package visually distinct in the name-only selector', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     expect(screen.getByRole('link', { name: 'sample-scene' }).closest('.story-package-selector__card')).toHaveClass(
       'story-package-selector__card--active',
     );
-    expect(
-      screen.getByText('Sample Scene').closest('.story-package-selector__card-copy'),
-    ).toHaveClass('story-package-selector__card-copy--active');
+    expect(screen.getByRole('link', { name: 'alt-scene' }).closest('.story-package-selector__card')).not.toHaveClass(
+      'story-package-selector__card--active',
+    );
   });
 
   it('keeps the workspace structure visible when a storyline has no head checkpoint', () => {
