@@ -38,6 +38,17 @@ describe('StoryPackageManagementSection', () => {
     );
   });
 
+  it('marks the active package copy as an inverted block for higher contrast', () => {
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    expect(screen.getByRole('link', { name: 'sample-scene' }).closest('.story-package-selector__card')).toHaveClass(
+      'story-package-selector__card--active',
+    );
+    expect(
+      screen.getByText('Sample Scene').closest('.story-package-selector__card-copy'),
+    ).toHaveClass('story-package-selector__card-copy--active');
+  });
+
   it('keeps the workspace structure visible when a storyline has no head checkpoint', () => {
     render(
       <StoryPackageManagementSection

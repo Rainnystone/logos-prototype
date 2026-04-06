@@ -39,7 +39,11 @@ export function StoryPackageSelector({ packageName, packages }: StoryPackageSele
               >
                 <span className="story-package-selector__link-label">{item.packageName}</span>
               </Link>
-              <div className="story-package-selector__card-copy">
+              <div
+                className={`story-package-selector__card-copy ${
+                  item.packageName === packageName ? 'story-package-selector__card-copy--active' : ''
+                }`}
+              >
                 <p>{item.sceneName}</p>
                 <p className="panel-note">
                   {item.phaseCount} 个 Phase · {item.totalBeatCount} 个 Beat

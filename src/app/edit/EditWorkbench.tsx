@@ -173,7 +173,7 @@ function renderDefaultStoryPackageManagementSection({
   return (
     <SectionSurface sectionId="story-package-management">
       <p className="panel-note">故事包管理工作区会在后续任务中实现；当前任务只验证壳层接线。</p>
-      <p className="panel-note">当前故事包：{view?.packageName ?? packageName}</p>
+      <p className="panel-note">当前故事包：{packageName}</p>
     </SectionSurface>
   );
 }
