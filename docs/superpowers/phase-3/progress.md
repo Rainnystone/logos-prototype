@@ -2,6 +2,27 @@
 
 ## 2026-04-06
 
+- `PR #6 feat: complete phase 3 part 1 storyline substrate` 当前已处于 merged 状态，不再是待合并执行面。
+- 在对齐 `Part 2` 前，主线程还完成了一次 follow-up hotfix，并已直接推到 `branch/narrative-editor`：
+  - 限制 `branch from checkpoint` 只能从 source storyline 当前绑定 session 可达的 checkpoint 分叉
+  - 这次修复避免了“variant 复制来自 A 线、runtime continuation 却锚到 B 线 checkpoint”的串线漏洞
+- 主线程随后完成了主工作区与 `origin/branch/narrative-editor` 的收口：
+  - 合并了此前仅存在于本地的 `Phase 3` 文档状态更新
+  - 解决了 `docs/superpowers/phase-3/task_plan.md` 的冲突
+  - 当前本地 `branch/narrative-editor` 与远端已重新同步
+- 针对后续 `Part 2` brainstorming，又补冻结了两条关键产品语义：
+  - storyline 内部的 fallback / “从 beat 2 重来”允许作为同一条 storyline 的作者动作存在
+  - 但其系统语义不是 destructive rollback，而是 checkpoint-driven continue
+- 对应地，`Part 2` 里的 checkpoint 区域当前应至少承接两种作者动作：
+  - continue on current storyline
+  - branch as new storyline
+- 还再次确认了 `new story package` 的边界：
+  - 当前本地仓库模式下技术上可做
+  - 但仍保持 `Part 2` companion slice 定位，不作为主体 workspace 的阻塞前提
+- 当前下一步已更新为：
+  - 等用户提供 `Part 2` 的 UI / UX 草图
+  - 然后把已冻结的 storyline workspace、checkpoint continue / branch 语义写入 `Part 2` spec
+
 - `Part 1` 已在独立 worktree 中完成实现、验证、浏览器手验与 PR 提交；当前 `Phase 3` 主线切换到 `Part 2` 目标对齐与 spec 准备。
 - `Part 1` 的当前 GitHub review surface：
   - `PR #6 feat: complete phase 3 part 1 storyline substrate`

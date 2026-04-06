@@ -23,6 +23,38 @@
   - 如果 backend seam 够稳，可以在 `Part 2` 里一起规划
   - 但它不应阻塞 `Part 2` 主体 workspace 的 spec
 
+## 2026-04-06 Part 2 fallback / checkpoint 继续语义
+
+- 用户已进一步把 `Part 2` 里的 storyline 内部 fallback 定义清楚：
+  - 作者在 beat 4 时不满意，可以回到 beat 2 改改再继续
+  - 这里的“回去”不是完整重演旧 prompt / audit 历史
+  - 而是把 beat 2 对应的 accepted-beat checkpoint 当成新的 generation 入口重新继续
+- 当前最准确的系统语义应写成：
+  - 用选中 checkpoint 重新组装下一轮 generation 入口
+  - 继续消费当前 storyline 绑定的 authoring variant
+  - 叠加作者最新可配置修改
+- 这条能力在产品上不强制要求先开新 storyline。
+- 但为了保留横向比较能力，同一个 checkpoint 在 `Part 2` 的 UI 上应同时支持两种作者动作：
+  - 在当前 storyline 上继续
+  - 从该 checkpoint 新建 storyline
+- 因此 `Part 2` 不应把 “rollback” 写成“ destructive 把当前 storyline 真正倒回旧历史”：
+  - 当前更合适的产品语义是 checkpoint-driven continue / branch
+  - 旧历史可以不再是 active path，但不应被强行当场删除
+
+## 2026-04-06 new story package 边界判断
+
+- 按当前仓库架构，`new story package` 在本地仓库模式下是可实现的：
+  - package root 已固定为 `src/story-packages/<packageName>/`
+  - server-side Node `fs/promises` 已经在 authoring / runtime persistence 链路里实际使用
+- 这项能力的主要复杂度不在 macOS / Windows 是否能写文件，而在：
+  - package name 的跨平台合法性约束
+  - 最小模板 YAML 是否可被 loader 立即加载
+  - 当前把 package 写进 repo 内 `src/story-packages/` 是否只是本地开发形态
+- 因而目前最稳的定位仍然是：
+  - `new story package` 可以作为 `Part 2` companion slice 规划
+  - 但不应阻塞 `Part 2` 主体 workspace spec
+  - 如果后续要面向打包后的桌面应用，再单独考虑把 package root 抽成用户目录
+
 ## 2026-04-06 浏览器手验补充判断
 
 - `Part 1` 浏览器手验里，`/play` 的“纯读不物化”需要区分两层：

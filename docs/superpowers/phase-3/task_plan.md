@@ -69,7 +69,7 @@
 | Part | 核心目标 | 主要产物 | 明确不承担的事 |
 |---|---|---|---|
 | `Part 1` | 把 storyline substrate 做成正式底座 | storyline repository seam、variant workspace 模型、storyline-bound session 语义、兼容迁移、无 UI substrate primitives（create/switch/branch） | 不负责完整故事包管理 UI；不把新建 story package 当地基；不交付 rename/archive/delete 这类管理动作 |
-| `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型 |
+| `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表、checkpoint 浏览/选择，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型；不把新建 story package 当作主线阻塞项 |
 | `Part 3` | 补齐 storyline v1 管理动作并收口 UX | 重命名、归档、复制、删除、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界 |
 
 ## Bootstrap Non-Goals
@@ -151,6 +151,9 @@
 - `Part 1` 已完成实现、验证与 PR 提交。
 - 当前 GitHub review surface：
   - `PR #6 feat: complete phase 3 part 1 storyline substrate`
+- `PR #6` 已合入 `branch/narrative-editor`。
+- 合入后又追加了一次主线热修：
+  - 限制 `branch from checkpoint` 只能从 source storyline 当前绑定 session 可达的 checkpoint 分叉，避免 variant 复制与 runtime continuity 串线。
 - 需要注意的恢复纪律：
   - 执行 `Part 1` 时使用过的临时 worktree 已在 push / PR 后删除
   - 后续继续 `Phase 3` 时，应以正式 spec / plan / progress 以及 PR 记录为恢复入口
@@ -164,3 +167,23 @@
 | `Task 3` | complete | authored load/save target-resolution seam、legacy/non-materializing 兼容与双 review 已通过。 |
 | `Task 4` | complete | `/edit` 与 `/play` 页面级默认解析已接到 active storyline，补齐了单次 context resolve 与页面级 storyline-aware 覆盖，并通过双 review。 |
 | `Task 5` | complete | 已完成定向回归、`build`、simulation type-check / test、全量 `npm test`、浏览器手验以及 Phase 3 记录同步。 |
+
+## Part 2 Clarifications
+
+- `Part 2` 当前正式对齐的核心作者动作包括：
+  - `continue current storyline`
+  - `continue from checkpoint on the same storyline`
+  - `branch from checkpoint as new storyline`
+  - `switch active storyline`
+  - `create storyline from source storyline`
+- 这里的 `fallback` / “从 beat 2 重来”语义，冻结为：
+  - 不是完整历史重演
+  - 不是强制先开新 storyline
+  - 而是把选中的 accepted-beat checkpoint 作为新的 generation 入口重新继续
+  - 同时继续消费当前 storyline 绑定的 authoring variant 与作者最新修改
+- 因此 `Part 2` 的 checkpoint UI 应至少支持两类动作：
+  - 在当前 storyline 上继续
+  - 从该 checkpoint 新建 storyline
+- `new story package` 仍保持 companion-slice 定位：
+  - 当前架构在本地仓库模式下可以做
+  - 但不作为 `Part 2` 主体 workspace 的阻塞前提
