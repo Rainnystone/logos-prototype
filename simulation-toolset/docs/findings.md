@@ -158,6 +158,28 @@
   - 在 pending refresh 期间触发 reset
   - 验证最终结果符合 sessionId/checkpointId 绑定语义
 
+## 2026-04-06 Phase 6 Storyline Mock Findings
+
+- 产品侧已经有可消费的正式 seam，不需要在 simulation-toolset 里再发明一套 storyline 写回模型：
+  - `src/storylines/substrate.ts`
+  - `src/storylines/workspace-view.ts`
+  - `src/storylines/repository.ts`
+  - `src/storylines/workspaces.ts`
+  - `src/types/storyline-management.ts`
+- simulation-toolset 现有的 session / adapter / runner 结构可以继续扩展，不需要推倒重做：
+  - `session-simulator.ts`
+  - `temp-package.ts`
+  - `scripted-adapter.ts`
+  - `scenario-runner.ts`
+- Phase 6 的核心复用策略应是：
+  - 一个 `MockKernel` 作为单一状态核心
+  - 现有工具向它绑定，而不是平行再建一套模拟层
+  - 先写 trace / schema / replay 约束，再补流转逻辑
+- 这次“卡住”的根因是流程门槛，而不是代码或测试失败：
+  - brainstorming 的“设计批准后再进入 implementation plan”这条门槛，被带进了已经 approved 的 spec 之后
+  - 这会让流程看起来像在等待用户，其实只是应该切换到 writing-plans
+  - 修正方式不是改代码，而是明确把 Phase 6 直接纳入 implementation-plan 阶段
+
 ## 2026-04-06 Phase 6 Storyline Mock Architecture Decision
 
 - Phase 3 Part 1/2 引入了新的对象模型（Storyline、Variant Workspace、Storyline Repository），现有 toolset 完全没有覆盖。

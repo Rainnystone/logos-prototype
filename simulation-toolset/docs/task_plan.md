@@ -84,6 +84,7 @@
 - `simulation-toolset/docs/2026-04-01-cloud-simulation-toolset-implementation-plan.md`
 - `simulation-toolset/docs/2026-04-04-session-continuity-simulation-design.md`
 - `simulation-toolset/docs/2026-04-04-session-continuity-simulation-implementation.md`
+- `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-implementation-plan.md`
 
 ## 2026-04-02 Agent Guide Hardening
 
@@ -142,6 +143,7 @@
 
 - Status: in_progress
 - Design: `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-design.md`
+- Implementation plan: `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-implementation-plan.md`
 - Scope:
   - 覆盖 Phase 3 Part 1/2 引入的 storyline 能力
   - 新增 MockKernel 作为统一状态管理核心
@@ -168,6 +170,16 @@
   - `npm run type-check:simulation` 通过
   - 跨边界回归 (`npm test -- src/storylines/__tests__/ src/runtime-sessions/__tests__/`) 通过
   - 不修改 product storyline 代码
+
+### Execution Slices
+
+- [ ] Slice 1: freeze shared contracts and serialized trace shapes
+- [ ] Slice 2: implement `MockKernel` as the single in-memory state and trace core
+- [ ] Slice 3: add `SubstrateMock`, `StorylineObserver`, and in-memory fixture building
+- [ ] Slice 4: add `RouteMock` and `StorylineE2ESimulator`
+- [ ] Slice 5: refactor existing toolset consumers (`session-simulator`, `temp-package`, `scripted-adapter`, `scenario-runner`)
+- [ ] Slice 6: add the six storyline scenarios and their tests
+- [ ] Slice 7: refresh manifest / README and run full simulation regression
 - Explicit rules:
   - Mock 工具是内存中的 API mock，不依赖文件系统
   - 遵循 systematic-debugging 思路：完整 trace、根因追踪

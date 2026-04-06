@@ -120,6 +120,28 @@
   - `npm run test:simulation` passed with 20 files and 64 tests
   - `npm test -- src/runtime-sessions/__tests__/ src/agents/gossipelog/__tests__/ src/app/play/runtime.test.ts` passed with 6 files and 55 tests
 
+## 2026-04-06 Plan Sync
+
+- 重新梳理 Phase 3 Part 2 / Phase 6 的当前状态，确认产品侧 storyline / workspace seam 已经落地，simulation-toolset 需要补的是云端可脚本化验证层，不是重做产品实现。
+- 读完并对齐了这些材料：
+  - `simulation-toolset/README.md`
+  - `simulation-toolset/agent-guide.md`
+  - `simulation-toolset/docs/2026-04-06-phase3-storyline-mock-design.md`
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
+  - `src/storylines/substrate.ts`
+  - `src/storylines/workspace-view.ts`
+  - `src/storylines/repository.ts`
+  - `src/storylines/workspaces.ts`
+  - `src/types/storyline-management.ts`
+- 发现上一轮看起来“卡住”不是代码问题，而是流程问题：
+  - brainstorming 的设计审批门槛被带到了 implementation-plan 阶段
+  - 这次已经有 approved spec，不应该再次等待设计批准
+  - 直接进入 writing-plans 才是正确的下一步
+- 已经把这个工作流修正同步到规划文件：
+  - `simulation-toolset/docs/task_plan.md`
+  - `simulation-toolset/docs/findings.md`
+- 接下来要做的是输出 Phase 6 的 implementation plan，并按 slice 推进模拟器实现
+
 ## 2026-04-06
 
 - 启动 Phase 6：Storyline Mock & E2E Flow
