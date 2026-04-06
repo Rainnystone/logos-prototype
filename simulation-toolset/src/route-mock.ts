@@ -217,7 +217,7 @@ export function createRouteMock(initialKernel: MockKernel): RouteMock {
 
             // Build display name
             const storylineCount = Object.keys(context.repository.storylinesById).length;
-            const displayName = `故事线 ${storylineCount + 1}`;
+            const displayName = `Storyline ${storylineCount + 1}`;
 
             // Create from source
             const created = await substrate.createStorylineFromSource({
@@ -264,8 +264,8 @@ export function createRouteMock(initialKernel: MockKernel): RouteMock {
             const checkpoint = session?.checkpointsById[action.checkpointId];
 
             const displayName = checkpoint
-              ? `故事线 ${storylineCount + 1} · 从 Beat ${checkpoint.acceptedBeatOrdinal} 分出`
-              : `故事线 ${storylineCount + 1}`;
+              ? `Storyline ${storylineCount + 1} (Branch from Beat ${checkpoint.acceptedBeatOrdinal})`
+              : `Storyline ${storylineCount + 1}`;
 
             // Branch from checkpoint
             const branched = await substrate.branchStorylineFromCheckpoint({

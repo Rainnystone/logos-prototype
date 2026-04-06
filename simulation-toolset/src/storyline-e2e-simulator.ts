@@ -177,7 +177,7 @@ export function createStorylineE2ESimulator(kernel: MockKernel): StorylineE2ESim
     const created = await substrate.createStorylineFromSource({
       packageName: state.packageName,
       sourceStorylineId: activeStoryline.storylineId,
-      name: `故事线 ${storylineCount + 1}`,
+      name: `Storyline ${storylineCount + 1}`,
     });
 
     // 3. Switch to new storyline
@@ -214,8 +214,8 @@ export function createStorylineE2ESimulator(kernel: MockKernel): StorylineE2ESim
     const storylineCount = Object.keys(state.storylineRepository.storylinesById).length;
     const checkpoint = session.checkpointsById[checkpointId];
     const displayName = checkpoint
-      ? `故事线 ${storylineCount + 1} · 从 Beat ${checkpoint.acceptedBeatOrdinal} 分出`
-      : `故事线 ${storylineCount + 1}`;
+      ? `Storyline ${storylineCount + 1} (Branch from Beat ${checkpoint.acceptedBeatOrdinal})`
+      : `Storyline ${storylineCount + 1}`;
 
     const branched = await substrate.branchStorylineFromCheckpoint({
       packageName: state.packageName,
@@ -311,7 +311,7 @@ export function createStorylineE2ESimulator(kernel: MockKernel): StorylineE2ESim
     const created = await substrate.createStorylineFromSource({
       packageName: state.packageName,
       sourceStorylineId: activeStoryline.storylineId,
-      name: `故事线 ${storylineCount + 1}`,
+      name: `Storyline ${storylineCount + 1}`,
     });
 
     // 2. Switch to new storyline
@@ -358,7 +358,7 @@ export function createStorylineE2ESimulator(kernel: MockKernel): StorylineE2ESim
       packageName: state.packageName,
       sourceStorylineId: updatedStoryline.storylineId,
       checkpointId: updatedStoryline.headCheckpointId,
-      name: `故事线 ${storylineCount + 2}`,
+      name: `Storyline ${storylineCount + 2}`,
     });
 
     // 7. Verify branch has copied variant (get fresh state)
