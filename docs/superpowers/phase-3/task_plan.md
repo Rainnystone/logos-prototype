@@ -21,8 +21,8 @@
 | 4 | complete | `Part 1` spec 已写出、完成多轮 review 收口，并进入用户确认后的正式基线。 |
 | 5 | complete | `Part 1` implementation plan 已写出并通过独立 plan review。 |
 | 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与 PR 提交。 |
-| 7 | in_progress | 对齐 `Part 2` 的交付目标，并开始编写 `Part 2` spec。 |
-| 8 | pending | 编写 `Part 2` implementation plan。 |
+| 7 | complete | `Part 2` spec 已完成、通过独立 review，并进入用户确认后的正式基线。 |
+| 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
 | 9 | pending | 执行并验证 `Part 2`。 |
 | 10 | pending | 编写 `Part 3` spec。 |
 | 11 | pending | 编写 `Part 3` implementation plan。 |
@@ -85,8 +85,7 @@
 - 当前状态：
   - `Approved`
 - 下一步：
-  - 交给用户确认
-  - 再进入 `Part 1` spec
+  - 继续作为 `Part 1` / `Part 2` / `Part 3` 的总边界基线
 
 ## Review Findings Absorbed Into Master Spec
 
@@ -130,10 +129,10 @@
 - 正式 `Part 1` spec 已写出：
   - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
 - 当前状态：
-  - `Reviewed, pending user confirmation`
+  - `Approved`
 - 下一步：
-  - 交给用户确认
-  - 如用户认可，则进入 `Part 1` implementation plan
+  - 维持为已执行完成的历史基线
+  - 继续为 `Part 2` / `Part 3` 提供 substrate 约束
 
 ## Part 1 Implementation Plan Status
 
@@ -148,13 +147,22 @@
 
 ## Part 2 Spec Status
 
-- 正式 `Part 2` spec 已起草：
+- 正式 `Part 2` spec 已写出：
   - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
 - 当前状态：
-  - `Reviewed, pending user confirmation`
+  - `Approved`
 - 下一步：
-  - 交给用户确认
-  - 如认可，则进入 `Part 2` implementation plan
+  - 进入 `Part 2` implementation plan
+
+## Part 2 Implementation Plan Status
+
+- 正式 `Part 2` implementation plan 已写出：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
+- 当前状态：
+  - `Approved, pending execution choice`
+- 下一步：
+  - 由用户选择执行方式
+  - 按 `subagent-driven-development` 或 `executing-plans` 开始 `Part 2` 实现与验证
 
 ## Part 1 Delivery Status
 

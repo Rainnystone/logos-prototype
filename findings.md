@@ -33,6 +33,17 @@
   - 如果 backend seam 已准备好，可作为 `Part 2` 的 companion slice
   - 但不应反过来阻塞 `Part 2` 主体 workspace 的 spec
 
+## 2026-04-06 Part 2 当前执行入口
+
+- `Part 2` 的正式 spec 已完成并获用户确认：
+  - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
+- `Part 2` 的正式 implementation plan 也已写出并通过独立 review：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
+- 当前最重要的执行约束是：
+  - `故事包管理` 只能消费 bounded workspace read model
+  - row-level `switch`、`continue`、`create from source`、beat-dot `branch + switch` 必须保持清晰分工
+  - 默认入口、标题落点、管理页 UI 以及 simulation 回归都已进入最终验收范围
+
 ## 2026-04-06 Phase 3 文档治理结论
 
 - 根目录三件套继续保留，但角色切换为：

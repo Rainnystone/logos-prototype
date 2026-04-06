@@ -53,11 +53,27 @@
 - 已完成修订后的第二轮独立 `Part 2` spec review，两位 reviewer 结论一致：
   - 前一轮指出的 4 个 blocker 已全部收口
   - 当前只剩非阻塞风险，例如 read-model 字段 shape 与 display-name 输入约束仍可在 implementation plan / typed contract 层进一步收紧
-- 当前 `Part 2` spec 状态已更新为：
-  - `Reviewed, pending user confirmation`
+- 用户随后确认 `Part 2` spec，可以进入 `implementation plan`。
+- 已写出正式 `Part 2` implementation plan：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
+- 计划写作与 review loop 中，已按最小改动原则补齐这些执行边界：
+  - `SaveSectionId` 与 `EditorSectionId` 的类型边界与文件落点
+  - legacy package 在无 `storyline-repository.json` 时仍可纯读展示管理页且不物化
+  - `create from source` 与 `branch from checkpoint` 的 route-level `create/branch + switch` 合成语义
+  - `switch_active_storyline` 的直接 route 覆盖
+  - editor 默认入口与标题落点需要覆盖 `src/app/AppShell.tsx`、`src/app/page.tsx`、`src/app/components/TitleLandingSurface.tsx`
+  - row-level `switch` 动作必须独立于 `continue`
+  - package headline、row status、source/head summary 与 package selector 都要有 UI 测试
+  - 最终验证必须包含 `simulation-toolset` 的 type-check 与 test
+- 最新一轮独立 reviewer 已明确给出结论：
+  - 当前 `Part 2` implementation plan 没有剩余的阻塞性执行缺口
+  - 计划可批准执行
+- 当前 `Part 2` 状态已更新为：
+  - `spec approved`
+  - `implementation plan approved, pending execution choice`
 - 当前下一步已更新为：
-  - 交给用户确认
-  - 如认可，则进入 `Part 2` implementation plan
+  - 由用户选择执行方式
+  - 然后开始 `Part 2` 实现与验证
 
 - `Part 1` 已在独立 worktree 中完成实现、验证、浏览器手验与 PR 提交；当前 `Phase 3` 主线切换到 `Part 2` 目标对齐与 spec 准备。
 - `Part 1` 的当前 GitHub review surface：

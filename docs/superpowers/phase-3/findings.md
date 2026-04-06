@@ -100,6 +100,22 @@
   - 仍然保持 `storylineId` opaque、显示名可编辑
   - 仍然保持 `控制台` 保留、`故事包管理` 成为默认入口
 
+## 2026-04-06 Part 2 implementation plan review 吸收
+
+- `Part 2` implementation plan 当前已形成正式执行输入：
+  - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
+- 多轮独立 plan review 后，当前已冻结的执行约束包括：
+  - `故事包管理` 页的读模型必须通过 bounded workspace view 提供，页面不能自己拼 raw repository / runtime JSON
+  - `SaveSectionId` 与 `EditorSectionId` 必须继续拆开，防止把新 section id 意外带进 authoring save route
+  - legacy package 在没有 `storyline-repository.json` 时，管理页仍必须可读且不得触发物化
+  - `create storyline from source` 与 `branch from checkpoint` 的 route 合同都以“成功后自动 switch active storyline”为正式语义
+  - row-level `switch storyline` 必须是独立动作，不能借 `continue` 或 beat-dot confirm drawer 代替
+  - UI 验收不仅看交互，还必须覆盖 package selector、package headline、row status、来源摘要与 head summary
+  - 最终验证必须包含 `npm run type-check:simulation` 与 `npm run test:simulation`
+- 最后一轮 reviewer 已明确确认：
+  - 当前 plan 没有剩余阻塞性执行缺口
+  - 可以进入执行方式选择
+
 ## 文档治理结论
 
 - `Phase 3` 采用“双层文档”：
