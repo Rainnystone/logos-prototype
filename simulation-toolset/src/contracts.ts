@@ -122,3 +122,38 @@ export type SimulationRunIndex = z.infer<typeof SimulationRunIndexSchema>;
 export type SimulationSessionTrace = z.infer<typeof SimulationSessionTraceSchema>;
 export type SimulationCheckpointTrace = z.infer<typeof SimulationCheckpointTraceSchema>;
 export type SimulationEditContinuityTrace = z.infer<typeof SimulationEditContinuityTraceSchema>;
+
+// ============================================================================
+// Phase 6 Storyline Mock Trace Contracts (Re-exported)
+// ============================================================================
+
+export {
+  SERIALIZED_TRACE_SCHEMA_VERSION,
+  SerializedScriptedModeSchema,
+  SerializedTraceLayerSchema,
+  StateSnapshotRefSchema,
+  SerializedOperationTraceSchema,
+  SerializedVariantWorkspaceStateSchema,
+  SerializedMockKernelStateSchema,
+  SerializedStateSnapshotSchema,
+  SerializedE2EFlowIdSchema,
+  SerializedFlowTraceSchema,
+} from './serialized-trace';
+
+export type {
+  SerializedScriptedMode,
+  SerializedTraceLayer,
+  StateSnapshotRef,
+  SerializedOperationTrace,
+  SerializedVariantWorkspaceState,
+  SerializedMockKernelState,
+  SerializedStateSnapshot,
+  SerializedE2EFlowId,
+  SerializedFlowTrace,
+  StorylineRepositoryFile,
+  StorylineRecord,
+  StorylineVariant,
+  RuntimeSessionsFile,
+  RuntimeSession,
+  RuntimeCheckpoint,
+} from './serialized-trace';
