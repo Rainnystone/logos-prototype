@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSwitchAndContinueScenario } from '../src/scenarios/storyline-flows/switch-and-continue';
+import { createSwitchAndContinueScenario } from '../scenarios/storyline-flows/switch-and-continue';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 

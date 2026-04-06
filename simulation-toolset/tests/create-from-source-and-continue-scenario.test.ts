@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createCreateFromSourceAndContinueScenario } from '../src/scenarios/storyline-flows/create-from-source-and-continue';
+import { createCreateFromSourceAndContinueScenario } from '../scenarios/storyline-flows/create-from-source-and-continue';
 
 import { runSimulationScenario } from '@simulation/scenario-runner';
 
@@ -44,10 +44,10 @@ describe('create from source and continue scenario', () => {
       }),
     );
 
-    // Active storyline should NOT switch (per spec Section 9.4)
+    // Active storyline should switch to the newly created one (per spec Section 10.2 step 3)
     expect(report.assertions).toContainEqual(
       expect.objectContaining({
-        name: 'active-storyline-unchanged',
+        name: 'active-storyline-switched',
         pass: true,
       }),
     );

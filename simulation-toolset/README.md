@@ -49,6 +49,22 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
   - Relationship finalization (gossipelog -> session/checkpoint binding)
   - Edit continuity bounded view (no raw checkpoint exposure)
 - Optional JSON report persistence under `simulation-toolset/reports/` or a caller-provided output directory
+- **Storyline Mock Stack** (Phase 3):
+  - MockKernel: in-memory state machine with operation tracing and replay
+  - SubstrateMock: storyline substrate operations (create, branch, switch, rename, ensure session, runtime commands)
+  - RouteMock: HTTP route layer over SubstrateMock
+  - MockFixtureBuilder: in-memory fixture construction for storyline state
+  - StorylineObserver: state assertions and summary queries
+  - StorylineE2ESimulator: complete human workflow simulation
+  - Six E2E flow scenarios:
+    - `create_from_source_and_continue`: Create new storyline from source and continue
+    - `branch_from_checkpoint_flow`: Branch from a reachable checkpoint
+    - `switch_and_continue`: Switch to existing storyline
+    - `rename_and_verify`: Rename storyline and verify consistency
+    - `legacy_bootstrap_flow`: Bootstrap from legacy runtime-sessions
+    - `full_storyline_runtime_flow`: Complete runtime flow with checkpoint branching
+  - Serialized trace support for record/replay
+  - Story-agnostic test fixtures
 
 ## Cloud Usage Direction
 
