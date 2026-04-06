@@ -17,8 +17,8 @@ export function AppShell({ children }: AppShellProps) {
     ? `/play?storyPackage=${encodeURIComponent(selectedPackageName)}`
     : '/play';
   const narrativeEditorHref = selectedPackageName
-    ? `/edit?storyPackage=${encodeURIComponent(selectedPackageName)}&section=worldbase-cast`
-    : '/edit?section=worldbase-cast';
+    ? `/edit?storyPackage=${encodeURIComponent(selectedPackageName)}&section=story-package-management`
+    : '/edit?storyPackage=sample-scene&section=story-package-management';
 
   return (
     <div className="app-shell">

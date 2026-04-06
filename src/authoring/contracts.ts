@@ -1,12 +1,18 @@
 import type { StoryPackage } from '@/types';
 
-export const SECTION_IDS = [
+export const SAVE_SECTION_IDS = [
   'worldbase-cast',
   'scene-phase-authoring',
   'control-modules',
+] as const;
+export type SaveSectionId = (typeof SAVE_SECTION_IDS)[number];
+
+export const EDITOR_SECTION_IDS = [
+  'story-package-management',
+  ...SAVE_SECTION_IDS,
   'package-wiring-validation',
 ] as const;
-export type SectionId = (typeof SECTION_IDS)[number];
+export type EditorSectionId = (typeof EDITOR_SECTION_IDS)[number];
 
 export type SaveSource = 'page' | 'coordinator' | 'repair';
 
@@ -29,7 +35,7 @@ export interface SaveRequestPayload {
 export interface SaveRequest {
   readonly requestId: string;
   readonly packageName: string;
-  readonly sectionId: SectionId;
+  readonly sectionId: SaveSectionId;
   readonly source: SaveSource;
   readonly payload: SaveRequestPayload;
   readonly moduleScope?: ModuleScope;
@@ -49,7 +55,7 @@ export interface RuntimeImpactSummary {
 export interface SaveResultBase {
   readonly requestId: string;
   readonly packageName: string;
-  readonly sectionId: SectionId;
+  readonly sectionId: EditorSectionId;
   readonly showLocally: boolean;
   readonly showInGlobalDiagnostics: boolean;
 }

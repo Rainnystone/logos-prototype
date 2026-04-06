@@ -11,7 +11,7 @@ interface TitleLandingSurfaceProps {
 export function TitleLandingSurface({ packageName }: TitleLandingSurfaceProps) {
   const playHref = packageName ? `/play?storyPackage=${encodeURIComponent(packageName)}` : null;
   const editorHref = packageName
-    ? `/edit?storyPackage=${encodeURIComponent(packageName)}&section=worldbase-cast`
+    ? `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management`
     : null;
 
   const actionSlot =

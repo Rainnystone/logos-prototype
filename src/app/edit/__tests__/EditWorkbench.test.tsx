@@ -8,6 +8,26 @@ import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostic
 
 const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
 
+const storyPackageManagementViewFixture = {
+  packages: [{ packageName: 'sample-scene' }],
+  packageName: 'sample-scene',
+  activeStorylineId: 'storyline_main',
+  storylines: [
+    {
+      storylineId: 'storyline_main',
+      displayName: 'Main Line',
+      status: 'active',
+      isActive: true,
+      sourceCheckpointId: null,
+      headCheckpointId: 'chk_main',
+      headSummary: 'checkpoint summary',
+      canCreateFromSource: true,
+      canContinue: true,
+      checkpointRail: [],
+    },
+  ],
+} as const;
+
 vi.mock('@/app/edit/sections/ScenePhaseAuthoringSection', () => ({
   ScenePhaseAuthoringSection: (props: unknown) => {
     renderScenePhaseAuthoringSection(props);
@@ -21,12 +41,13 @@ describe('EditWorkbench', () => {
     renderScenePhaseAuthoringSection.mockReset();
   });
 
-  it('renders five visible workspaces while keeping four save families', () => {
+  it('renders six tabs with story-package-management first while keeping 控制台 reachable', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
-        activeSection="worldbase-cast"
-        activeSurface="character"
+        activeSection="story-package-management"
+        activeSurface="world"
+        storyPackageManagementView={storyPackageManagementViewFixture}
         initialState={{
           source: 'latest-saved',
           state: storyPackageFixture,
@@ -36,6 +57,10 @@ describe('EditWorkbench', () => {
 
     expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '故事包管理' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=story-package-management',
+    );
     expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
@@ -58,8 +83,13 @@ describe('EditWorkbench', () => {
     );
     expect(
       screen.getByRole('navigation', { name: 'Editor sections' }).querySelectorAll('a'),
-    ).toHaveLength(5);
-    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute('aria-current', 'page');
+    ).toHaveLength(6);
+    expect(screen.getByRole('link', { name: '故事包管理' })).toHaveAttribute('aria-current', 'page');
+    expect(
+      Array.from(screen.getByRole('navigation', { name: 'Editor sections' }).querySelectorAll('a')).map(
+        (link) => link.textContent,
+      ),
+    ).toEqual(['故事包管理', '世界', '角色', '场景与阶段', '控制模块', '控制台']);
     expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
@@ -75,7 +105,8 @@ describe('EditWorkbench', () => {
     expect(within(pageHelper).getByText('Package')).toBeInTheDocument();
     expect(within(pageHelper).getByText('State source')).toBeInTheDocument();
     expect(within(pageHelper).getByText('Active section')).toBeInTheDocument();
-    expect(within(pageHelper).getByText('世界与角色')).toBeInTheDocument();
+    expect(within(pageHelper).getByText('故事包管理')).toBeInTheDocument();
+    expect(screen.getByText('storyline_main')).toBeInTheDocument();
   });
 
   it('ignores the surface selector outside worldbase-cast', () => {

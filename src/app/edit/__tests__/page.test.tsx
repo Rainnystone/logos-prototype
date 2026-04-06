@@ -158,6 +158,38 @@ afterEach(() => {
 });
 
 describe('EditPage', () => {
+  it('defaults /edit to story-package-management and loads the workspace view separately from authored state', async () => {
+    prepareTestPackage();
+
+    const { default: EditPage } = await import('@/app/edit/page');
+    render(
+      await EditPage({
+        searchParams: {
+          storyPackage: testPackageName,
+        },
+      }),
+    );
+
+    const workbenchProps = loadEditWorkbenchProps.mock.calls[0]?.[0] as {
+      activeSection: string;
+      storyPackageManagementView?: {
+        packageName: string;
+        activeStorylineId: string;
+      };
+      initialState: {
+        runtimeContinuityView?: unknown;
+      };
+    };
+
+    expect(workbenchProps.activeSection).toBe('story-package-management');
+    expect(workbenchProps.storyPackageManagementView).toMatchObject({
+      packageName: testPackageName,
+      activeStorylineId: 'storyline_main',
+    });
+    expect(workbenchProps.initialState.runtimeContinuityView).toBeUndefined();
+    expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
+  });
+
   it('loads authored projection and bounded continuity from the same resolved storyline context', async () => {
     prepareTestPackage();
     setupVariantWorkspace('variant_main', 'main-world-setting');
@@ -283,6 +315,7 @@ describe('EditPage', () => {
     expect(workbenchProps.initialState.runtimeContinuityView?.activeSession?.sessionId).toBe(
       'sess_main',
     );
+    expect((workbenchProps as { storyPackageManagementView?: unknown }).storyPackageManagementView).toBeUndefined();
     expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
   });
 

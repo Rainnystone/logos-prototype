@@ -1,4 +1,4 @@
-import type { SaveResult, SectionId } from '@/authoring/contracts';
+import type { EditorSectionId, SaveResult, SaveSectionId } from '@/authoring/contracts';
 import type {
   AuthoringState,
   AuthoringStateSource,
@@ -17,7 +17,7 @@ export interface OverallStatusView {
 }
 
 export interface SectionHealthView {
-  readonly sectionId: Exclude<SectionId, 'package-wiring-validation'>;
+  readonly sectionId: SaveSectionId;
   readonly label: string;
   readonly status: PackageDiagnosticsStatus;
   readonly summary: string;
@@ -37,8 +37,8 @@ export interface UnresolvedIssueView {
   readonly severity: PackageDiagnosticsSeverity;
   readonly title: string;
   readonly summary: string;
-  readonly repairDestination?: Exclude<SectionId, 'package-wiring-validation'>;
-  readonly sourceSection?: Exclude<SectionId, 'package-wiring-validation'>;
+  readonly repairDestination?: SaveSectionId;
+  readonly sourceSection?: SaveSectionId;
 }
 
 export interface DetailView {
@@ -46,7 +46,7 @@ export interface DetailView {
   readonly title: string;
   readonly summary: string;
   readonly detailLines: readonly string[];
-  readonly repairDestination?: Exclude<SectionId, 'package-wiring-validation'>;
+  readonly repairDestination?: SaveSectionId;
 }
 
 export interface GlobalDiagnosticsHelperView {
@@ -74,27 +74,30 @@ interface BuildPackageDiagnosticsInput {
   readonly recentSaveResults: readonly SaveResult[];
 }
 
-const SECTION_LABELS: Record<Exclude<SectionId, 'package-wiring-validation'>, string> = {
+const SECTION_LABELS: Record<SaveSectionId, string> = {
   'worldbase-cast': '世界与角色',
   'scene-phase-authoring': '场景与阶段',
   'control-modules': '控制模块',
 };
 
-const DIAGNOSTICS_PAGE_LABEL = '控制台';
-
-function getSectionLabel(sectionId: Exclude<SectionId, 'package-wiring-validation'>): string {
+function getSectionLabel(sectionId: SaveSectionId): string {
   return SECTION_LABELS[sectionId];
 }
 
+function isSaveSectionId(sectionId: EditorSectionId): sectionId is SaveSectionId {
+  return (
+    sectionId === 'worldbase-cast' ||
+    sectionId === 'scene-phase-authoring' ||
+    sectionId === 'control-modules'
+  );
+}
+
 function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView | null {
-  if (!result.showInGlobalDiagnostics) {
+  if (!result.showInGlobalDiagnostics || !isSaveSectionId(result.sectionId)) {
     return null;
   }
 
-  const sectionLabel =
-    result.sectionId === 'package-wiring-validation'
-      ? DIAGNOSTICS_PAGE_LABEL
-      : getSectionLabel(result.sectionId);
+  const sectionLabel = getSectionLabel(result.sectionId);
 
   const issueTitle =
     result.kind === 'save_applied_with_warnings'
@@ -109,15 +112,8 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
       severity: 'warning',
       title: `${sectionLabel} ${issueTitle}`,
       summary: result.warnings.join(' '),
-      ...(result.sectionId === 'package-wiring-validation'
-        ? {}
-        : {
-            repairDestination: result.sectionId as Exclude<
-              SectionId,
-              'package-wiring-validation'
-            >,
-            sourceSection: result.sectionId as Exclude<SectionId, 'package-wiring-validation'>,
-          }),
+      repairDestination: result.sectionId,
+      sourceSection: result.sectionId,
     };
   }
 
@@ -127,15 +123,8 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
       severity: 'blocked',
       title: `${sectionLabel} ${issueTitle}`,
       summary: result.blockingIssues.join(' '),
-      ...(result.sectionId === 'package-wiring-validation'
-        ? {}
-        : {
-            repairDestination: result.sectionId as Exclude<
-              SectionId,
-              'package-wiring-validation'
-            >,
-            sourceSection: result.sectionId as Exclude<SectionId, 'package-wiring-validation'>,
-          }),
+      repairDestination: result.sectionId,
+      sourceSection: result.sectionId,
     };
   }
 
@@ -145,15 +134,8 @@ function buildIssueViewFromSaveResult(result: SaveResult): UnresolvedIssueView |
       severity: 'blocked',
       title: `${sectionLabel} ${issueTitle}`,
       summary: result.errorMessage,
-      ...(result.sectionId === 'package-wiring-validation'
-        ? {}
-        : {
-            repairDestination: result.sectionId as Exclude<
-              SectionId,
-              'package-wiring-validation'
-            >,
-            sourceSection: result.sectionId as Exclude<SectionId, 'package-wiring-validation'>,
-          }),
+      repairDestination: result.sectionId,
+      sourceSection: result.sectionId,
     };
   }
 
@@ -206,7 +188,7 @@ function buildOverallSummary(blockedCount: number, warningCount: number): string
 }
 
 function buildSectionHealthViews(issues: readonly UnresolvedIssueView[]): SectionHealthView[] {
-  return (Object.keys(SECTION_LABELS) as Array<Exclude<SectionId, 'package-wiring-validation'>>).map(
+  return (Object.keys(SECTION_LABELS) as SaveSectionId[]).map(
     (sectionId) => {
       const relatedIssues = issues.filter((issue) => issue.repairDestination === sectionId);
       const blockedCount = relatedIssues.filter((issue) => issue.severity === 'blocked').length;
@@ -334,7 +316,7 @@ function buildGlobalHelperView(issues: readonly UnresolvedIssueView[]): GlobalDi
     new Set(
       issues
         .map((issue) => issue.repairDestination)
-        .filter((value): value is Exclude<SectionId, 'package-wiring-validation'> => value !== undefined),
+        .filter((value): value is SaveSectionId => value !== undefined),
     ),
   );
 

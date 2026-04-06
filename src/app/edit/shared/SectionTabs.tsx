@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
-import type { SectionId } from '@/authoring/contracts';
+import type { EditorSectionId } from '@/authoring/contracts';
 
-const SECTION_LABELS: Record<Exclude<SectionId, 'worldbase-cast'>, string> = {
+const SECTION_LABELS: Record<Exclude<EditorSectionId, 'worldbase-cast'>, string> = {
+  'story-package-management': '故事包管理',
   'scene-phase-authoring': '场景与阶段',
   'control-modules': '控制模块',
   'package-wiring-validation': '控制台',
@@ -11,6 +12,10 @@ const SECTION_LABELS: Record<Exclude<SectionId, 'worldbase-cast'>, string> = {
 export type WorldbaseSurface = 'world' | 'character';
 
 const EDIT_WORKSPACE_TABS = [
+  {
+    sectionId: 'story-package-management',
+    label: SECTION_LABELS['story-package-management'],
+  },
   {
     sectionId: 'worldbase-cast',
     label: '世界',
@@ -37,11 +42,15 @@ const EDIT_WORKSPACE_TABS = [
 
 interface SectionTabsProps {
   readonly packageName: string;
-  readonly activeSection: SectionId;
+  readonly activeSection: EditorSectionId;
   readonly activeSurface: WorldbaseSurface;
 }
 
-function buildSectionHref(packageName: string, sectionId: SectionId, surface?: WorldbaseSurface) {
+function buildSectionHref(
+  packageName: string,
+  sectionId: EditorSectionId,
+  surface?: WorldbaseSurface,
+) {
   const encodedPackageName = encodeURIComponent(packageName);
 
   if (sectionId === 'worldbase-cast') {

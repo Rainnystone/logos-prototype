@@ -81,4 +81,24 @@ describe('package-diagnostics', () => {
     ).toBe(false);
     expect(diagnostics.globalDiagnosticsHelperView.summary).toBe('当前没有未解决的整包问题。');
   });
+
+  it('keeps health views scoped to the three writable authoring pages', () => {
+    const diagnostics = buildPackageDiagnostics({
+      packageName: 'sample-scene',
+      source: 'latest-saved',
+      storyPackage: storyPackageFixture,
+      recentSaveResults: [],
+    });
+
+    expect(diagnostics.sectionHealthViews.map((view) => view.sectionId)).toEqual([
+      'worldbase-cast',
+      'scene-phase-authoring',
+      'control-modules',
+    ]);
+    expect(diagnostics.sectionHealthViews.map((view) => view.label)).toEqual([
+      '世界与角色',
+      '场景与阶段',
+      '控制模块',
+    ]);
+  });
 });

@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { AgentSurfaceItem } from '@/agents/agent-surface';
-import { type ModuleScope, type SaveResult, type SectionId } from '@/authoring/contracts';
+import {
+  type EditorSectionId,
+  type ModuleScope,
+  type SaveResult,
+  type SaveSectionId,
+} from '@/authoring/contracts';
 import type { CoordinatorRunResult } from '@/authoring/coordinator/dispatch';
 import type { AuthoringStateLoadResult } from '@/authoring/persistence/package-state';
 import { PageActionBar } from '@/app/edit/shared/PageActionBar';
@@ -32,15 +37,21 @@ import {
   type PackageDiagnostics,
 } from '@/authoring/sections/package-diagnostics';
 import { isSuccessfulSaveResult } from '@/authoring/persistence/save-results';
+import type { StoryPackageManagementWorkspaceView } from '@/types';
 
 const SECTION_SUMMARIES: Record<
-  SectionId,
+  EditorSectionId,
   {
     readonly eyebrow: string;
     readonly title: string;
     readonly description: string;
   }
 > = {
+  'story-package-management': {
+    eyebrow: '当前页',
+    title: '故事包管理',
+    description: '查看当前故事包工作区和故事线摘要；这一页不直接执行页面保存。',
+  },
   'worldbase-cast': {
     eyebrow: '当前页',
     title: '世界与角色',
@@ -70,12 +81,11 @@ const RESET_STATUS = '已恢复到最新保存版本。';
 
 interface EditWorkbenchProps {
   readonly packageName: string;
-  readonly activeSection: SectionId;
+  readonly activeSection: EditorSectionId;
   readonly activeSurface: WorldbaseSurface;
+  readonly storyPackageManagementView?: StoryPackageManagementWorkspaceView;
   readonly initialState: AuthoringStateLoadResult;
 }
-
-type EditableSectionId = Exclude<SectionId, 'package-wiring-validation'>;
 
 function didPersistAuthoringState(result: SaveResult): boolean {
   return (
@@ -129,7 +139,7 @@ function SectionSurface({
   sectionId,
   children,
 }: {
-  readonly sectionId: SectionId;
+  readonly sectionId: EditorSectionId;
   readonly children?: ReactNode;
 }) {
   const sectionSummary = SECTION_SUMMARIES[sectionId];
@@ -141,6 +151,37 @@ function SectionSurface({
       <p>{sectionSummary.description}</p>
       {children}
     </section>
+  );
+}
+
+function StoryPackageManagementSection({
+  packageName,
+  view,
+}: {
+  readonly packageName: string;
+  readonly view?: StoryPackageManagementWorkspaceView;
+}) {
+  return (
+    <SectionSurface sectionId="story-package-management">
+      <dl className="edit-surface__facts">
+        <div>
+          <dt>Package name</dt>
+          <dd>{packageName}</dd>
+        </div>
+        <div>
+          <dt>Workspace package</dt>
+          <dd>{view?.packageName ?? packageName}</dd>
+        </div>
+        <div>
+          <dt>Active storyline</dt>
+          <dd>{view?.activeStorylineId ?? 'legacy-main-line'}</dd>
+        </div>
+        <div>
+          <dt>Storyline count</dt>
+          <dd>{view?.storylines.length ?? 0}</dd>
+        </div>
+      </dl>
+    </SectionSurface>
   );
 }
 
@@ -165,6 +206,7 @@ export function EditWorkbench({
   packageName,
   activeSection,
   activeSurface,
+  storyPackageManagementView,
   initialState,
 }: EditWorkbenchProps) {
   const [currentState, setCurrentState] = useState(initialState.state);
@@ -180,10 +222,10 @@ export function EditWorkbench({
   const [remoteDiagnostics, setRemoteDiagnostics] = useState<PackageDiagnostics | null>(null);
   const [isDiagnosticsRefreshing, setIsDiagnosticsRefreshing] = useState(false);
   const [coordinatorSummaries, setCoordinatorSummaries] = useState<
-    Partial<Record<SectionId, string | null>>
+    Partial<Record<EditorSectionId, string | null>>
   >({});
   const [coordinatorPathFailures, setCoordinatorPathFailures] = useState<
-    Partial<Record<SectionId, boolean>>
+    Partial<Record<EditorSectionId, boolean>>
   >({});
   const [draftWorldBase, setDraftWorldBase] = useState<WorldBaseCastDraft>(
     createWorldBaseCastDraft(initialState.state.worldBase),
@@ -211,7 +253,7 @@ export function EditWorkbench({
   const [isControlModulesSaving, setIsControlModulesSaving] = useState(false);
   const previousRouteRef = useRef<{
     readonly packageName: string;
-    readonly activeSection: SectionId;
+    readonly activeSection: EditorSectionId;
     readonly activeSurface: WorldbaseSurface;
   } | null>(null);
   const activeSectionSummary = SECTION_SUMMARIES[activeSection];
@@ -333,21 +375,21 @@ export function EditWorkbench({
     setRemoteDiagnostics(null);
   }
 
-  function setCoordinatorSummary(sectionId: SectionId, summary: string | null) {
+  function setCoordinatorSummary(sectionId: EditorSectionId, summary: string | null) {
     setCoordinatorSummaries((currentSummaries) => ({
       ...currentSummaries,
       [sectionId]: summary,
     }));
   }
 
-  function setCoordinatorPathFailure(sectionId: SectionId, isPathFailure: boolean) {
+  function setCoordinatorPathFailure(sectionId: EditorSectionId, isPathFailure: boolean) {
     setCoordinatorPathFailures((currentPathFailures) => ({
       ...currentPathFailures,
       [sectionId]: isPathFailure,
     }));
   }
 
-  function rememberSuccessfulAuthoringSave(sectionId: EditableSectionId) {
+  function rememberSuccessfulAuthoringSave(sectionId: SaveSectionId) {
     setCurrentAuthoringState((currentAuthoringStatus) => ({
       hasSuccessfulSave: true,
       lastSavedAt: new Date().toISOString(),
@@ -764,8 +806,9 @@ export function EditWorkbench({
             <p className="panel-eyebrow">Unified Editor Shell</p>
             <h1>LOGOS Narrative Editor</h1>
             <p>
-              Move across the four authoring pages from one compact shell while keeping page-level
-              save and reset actions local to the active page.
+              Move across the management workspace, three writable authoring pages, and the
+              diagnostics console from one compact shell while keeping page-level save and reset
+              actions local to the active page.
             </p>
           </div>
           {pageHelperPanel}
@@ -786,7 +829,14 @@ export function EditWorkbench({
 
       <section className="edit-layout">
         {currentPageStatus}
-        {activeSection === 'worldbase-cast' ? (
+        {activeSection === 'story-package-management' ? (
+          <StoryPackageManagementSection
+            packageName={packageName}
+            {...(storyPackageManagementView
+              ? { view: storyPackageManagementView }
+              : {})}
+          />
+        ) : activeSection === 'worldbase-cast' ? (
           <WorldBaseCastSection
             packageName={packageName}
             activeSurface={activeSurface}

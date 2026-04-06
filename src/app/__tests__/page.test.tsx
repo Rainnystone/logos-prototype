@@ -41,7 +41,7 @@ describe('HomePage', () => {
     );
     expect(screen.getByRole('link', { name: 'Narrative Editor' })).toHaveAttribute(
       'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast',
+      '/edit?storyPackage=sample-scene&section=story-package-management',
     );
   });
 });
