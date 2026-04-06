@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { StoryPackageManagementSection } from '@/app/edit/sections/StoryPackageManagementSection';
 import {
@@ -7,7 +8,36 @@ import {
   workspaceViewWithoutHeadFixture,
 } from '@/app/edit/sections/__tests__/story-package-management.fixtures';
 
+const mockPush = vi.hoisted(() => vi.fn());
+const mockRefresh = vi.hoisted(() => vi.fn());
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    refresh: mockRefresh,
+  }),
+}));
+
 describe('StoryPackageManagementSection', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true, displayName: 'Side Route' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
   it('renders a two-column package selector plus storyline workspace layout', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
@@ -60,5 +90,184 @@ describe('StoryPackageManagementSection', () => {
     expect(screen.getByLabelText('Story package selector')).toBeInTheDocument();
     expect(screen.getByLabelText('Storyline workspace')).toBeInTheDocument();
     expect(screen.getByText('Main Line')).toBeInTheDocument();
+  });
+
+  it('opens a split-down confirm drawer when a beat dot is clicked and closes it on cancel', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    const branchRow = screen.getByLabelText('Branch Line storyline');
+    await user.click(within(branchRow).getByRole('button', { name: 'Beat 2' }));
+
+    expect(within(branchRow).getByRole('button', { name: '确认' })).toBeInTheDocument();
+    await user.click(within(branchRow).getByRole('button', { name: '取消' }));
+
+    await waitFor(() => {
+      expect(within(branchRow).queryByRole('button', { name: '确认' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('confirms a beat dot by calling branch_from_checkpoint and then refreshing the workspace', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'branch_from_checkpoint', activeStorylineId: 'storyline_new' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    const branchRow = screen.getByLabelText('Branch Line storyline');
+    await user.click(within(branchRow).getByRole('button', { name: 'Beat 2' }));
+    await user.click(within(branchRow).getByRole('button', { name: '确认' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/authoring/packages/sample-scene/storylines/actions',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"kind":"branch_from_checkpoint"'),
+        }),
+      );
+    });
+    expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('continues an inactive row by switching it first and then navigating into the world editor flow', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'switch_active_storyline', activeStorylineId: 'storyline_branch' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '继续 Branch Line' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/authoring/packages/sample-scene/storylines/actions',
+        expect.objectContaining({
+          body: expect.stringContaining('"kind":"switch_active_storyline"'),
+        }),
+      );
+    });
+    expect(mockPush).toHaveBeenCalledWith(
+      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    );
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('switches to another storyline from a row action without leaving 故事包管理', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'switch_active_storyline', activeStorylineId: 'storyline_branch' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '切换到 Branch Line' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/authoring/packages/sample-scene/storylines/actions',
+        expect.objectContaining({
+          body: expect.stringContaining('"kind":"switch_active_storyline"'),
+        }),
+      );
+    });
+    expect(mockRefresh).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('creates a new storyline from the source row action and refreshes into the new active row', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'create_from_source', activeStorylineId: 'storyline_created' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '从当前线派生 Branch Line' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/authoring/packages/sample-scene/storylines/actions',
+        expect.objectContaining({
+          body: expect.stringContaining('"kind":"create_from_source"'),
+        }),
+      );
+    });
+    expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('disables create-from-source when the row has no head checkpoint', () => {
+    render(
+      <StoryPackageManagementSection
+        packageName="sample-scene"
+        view={workspaceViewWithoutHeadFixture}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: '从当前线派生 Main Line' })).toBeDisabled();
+  });
+
+  it('submits inline rename through the metadata-only action seam on Enter', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ kind: 'rename_display_name', displayName: 'Side Route' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    const renameInput = screen.getByRole('textbox', { name: '故事线名称 Main Line' });
+    await user.clear(renameInput);
+    await user.type(renameInput, '  Side Route  {enter}');
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/authoring/packages/sample-scene/storylines/actions',
+        expect.objectContaining({
+          body: expect.stringContaining('"kind":"rename_display_name"'),
+        }),
+      );
+    });
+  });
+
+  it('treats an unchanged normalized rename as success without calling the action route', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    const renameInput = screen.getByRole('textbox', { name: '故事线名称 Main Line' });
+    await user.clear(renameInput);
+    await user.type(renameInput, '  Main Line  ');
+    await user.tab();
+
+    await waitFor(() => {
+      expect(renameInput).toHaveValue('Main Line');
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

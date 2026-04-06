@@ -408,18 +408,24 @@ describe('storyline substrate', () => {
     });
     const runtimeFile = await readRuntimeSessionsJson(packageName);
     const alternateCheckpoint = makeCheckpoint('chk_alt_only', 3);
+    const alternateSession = runtimeFile.sessionsById.sess_alt;
+
+    expect(alternateSession).toBeDefined();
+    if (!alternateSession) {
+      throw new Error('Expected alternate session to exist for this test fixture.');
+    }
 
     await writeRuntimeSessionsFile(packageName, {
       ...runtimeFile,
       sessionsById: {
         ...runtimeFile.sessionsById,
         sess_alt: {
-          ...runtimeFile.sessionsById.sess_alt,
+          ...alternateSession,
           headCheckpointId: 'chk_alt_only',
           activeCheckpointId: 'chk_alt_only',
           orderedCheckpointIds: ['chk_01', 'chk_alt_only'],
           checkpointsById: {
-            ...runtimeFile.sessionsById.sess_alt.checkpointsById,
+            ...alternateSession.checkpointsById,
             chk_alt_only: alternateCheckpoint,
           },
         },

@@ -481,6 +481,50 @@ ul {
   gap: 0.75rem;
 }
 
+.storyline-row__identity {
+  display: grid;
+  gap: 0.55rem;
+  min-width: min(100%, 18rem);
+}
+
+.storyline-row__rename {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 20rem;
+}
+
+.storyline-row__rename-label {
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.storyline-row__rename-input {
+  min-height: 2.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid #000000;
+  border-radius: 0;
+  background: #ffffff;
+  color: #000000;
+}
+
+.storyline-row__rename-input:focus {
+  outline: none;
+  background: #f5f5f5;
+}
+
+.storyline-row__rename-input:disabled {
+  cursor: not-allowed;
+  background: #e5e5e5;
+}
+
+.storyline-row__header-meta {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: end;
+}
+
 .storyline-row__status {
   display: inline-flex;
   align-items: center;
@@ -490,6 +534,52 @@ ul {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.storyline-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.storyline-row__action,
+.storyline-row__branch-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.8rem;
+  border: 2px solid #000000;
+  border-radius: 0;
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+.storyline-row__action:hover:not(:disabled),
+.storyline-row__branch-button:hover:not(:disabled) {
+  background: #e5e5e5;
+  transform: translate(-1px, -1px);
+}
+
+.storyline-row__action:disabled,
+.storyline-row__branch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.storyline-row__branch-button {
+  min-height: 2.2rem;
+  padding-inline: 0.75rem;
+}
+
+.storyline-row__branch-button--ghost {
+  background: #e5e5e5;
 }
 
 .storyline-row__facts {
@@ -519,6 +609,9 @@ ul {
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-top: 0.15rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 4.5rem;
 }
 
 .storyline-row__checkpoint,
@@ -534,6 +627,16 @@ ul {
 
 .storyline-row__checkpoint {
   background: #ffffff;
+  padding: 0;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.storyline-row__checkpoint:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+}
+
+.storyline-row__checkpoint:disabled {
+  cursor: not-allowed;
 }
 
 .storyline-row__checkpoint--head {
@@ -548,6 +651,58 @@ ul {
   padding: 0.2rem 0.55rem;
   background: #f5f5f5;
   font-size: 0.82rem;
+}
+
+.storyline-row__checkpoint-node {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.storyline-row__branch-drawer {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  min-width: 12rem;
+  max-width: min(18rem, 70vw);
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem;
+  border: 2px solid #000000;
+  background: #ffffff;
+  box-shadow: 3px 3px 0 #000000;
+  opacity: 0;
+  transform: translateY(-0.35rem);
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.storyline-row__branch-drawer--open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.storyline-row__branch-copy {
+  max-width: 16rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.storyline-row__branch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.storyline-row__feedback {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #000000;
+  background: #f5f5f5;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .selector-panel {

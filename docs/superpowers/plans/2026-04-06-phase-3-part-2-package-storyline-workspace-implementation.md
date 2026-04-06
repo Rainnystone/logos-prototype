@@ -538,7 +538,7 @@ git commit -m "feat: wire story package management entry"
 - Test: `src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing UI structure tests**
+- [x] **Step 1: Write the failing UI structure tests**
 
 ```ts
 it('renders a two-column package selector plus storyline workspace layout', () => {
@@ -598,13 +598,13 @@ it('keeps the existing brutalist editor shell and mounts the management section 
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify RED**
+- [x] **Step 2: Run the tests to verify RED**
 
 Run: `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because the management section components and shell integration do not exist yet.
 
-- [ ] **Step 3: Implement the minimal section components and layout**
+- [x] **Step 3: Implement the minimal section components and layout**
 
 ```tsx
 export function StoryPackageManagementSection(props: {
@@ -633,13 +633,13 @@ Implementation notes:
 - Reuse the existing font stack and panel language from `src/app/globals.css`. No rounded corners, no new font families, no soft shadows.
 - Keep package selection link-based or router-based so changing packages updates the URL and benefits from the existing server page reload path.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run: `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: PASS with the two-column structure rendered inside the existing shell.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/sections/StoryPackageManagementSection.tsx src/app/edit/sections/StoryPackageSelector.tsx src/app/edit/sections/StorylineWorkspaceRow.tsx src/app/edit/sections/__tests__/story-package-management.fixtures.ts src/app/edit/EditWorkbench.tsx src/app/globals.css src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -658,7 +658,7 @@ git commit -m "feat: add story package management workspace"
 - Test: `src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing interaction tests**
+- [x] **Step 1: Write the failing interaction tests**
 
 ```ts
 it('opens a split-down confirm drawer when a beat dot is clicked and closes it on cancel', async () => {
@@ -753,13 +753,13 @@ it('submits inline rename through the metadata-only action seam', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify RED**
+- [x] **Step 2: Run the tests to verify RED**
 
 Run: `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
 
 Expected: FAIL because the row actions, confirm drawer, and router/fetch wiring are not implemented yet.
 
-- [ ] **Step 3: Implement the minimal interaction layer and motion**
+- [x] **Step 3: Implement the minimal interaction layer and motion**
 
 ```tsx
 const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
@@ -782,7 +782,7 @@ Implementation notes:
 - Implement the seam-opening animation with CSS transitions on the row drawer and a small translate/opacity shift. Avoid modal overlays and floaty easing.
 - Keep destructive management actions out of this task. No archive, duplicate, or delete shortcuts here.
 
-- [ ] **Step 4: Run the targeted verification, then the full verification**
+- [x] **Step 4: Run the targeted verification, then the full verification**
 
 Run: `npm test -- src/storylines/__tests__/workspace-view.test.ts src/storylines/__tests__/substrate.test.ts 'src/app/api/authoring/packages/[packageName]/storylines/actions/route.test.ts' src/app/__tests__/layout.test.tsx src/app/components/__tests__/TitleLandingSurface.test.tsx src/app/edit/__tests__/page.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
 
@@ -815,7 +815,7 @@ Manual verification:
 - Clicking `继续` on an inactive row should switch and enter the normal `世界` authoring page.
 - Inline rename should update the visible display name without exposing any internal id.
 
-- [ ] **Step 5: Update planning docs and commit**
+- [x] **Step 5: Update planning docs and commit**
 
 ```bash
 git add src/app/edit/sections/StoryPackageManagementSection.tsx src/app/edit/sections/StorylineWorkspaceRow.tsx src/app/globals.css docs/superpowers/phase-3/task_plan.md docs/superpowers/phase-3/progress.md

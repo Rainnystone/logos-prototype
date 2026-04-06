@@ -23,7 +23,7 @@
 | 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与 PR 提交。 |
 | 7 | complete | `Part 2` spec 已完成、通过独立 review，并进入用户确认后的正式基线。 |
 | 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
-| 9 | pending | 执行并验证 `Part 2`。 |
+| 9 | complete | `Part 2` 已完成实现、验证与文档同步。 |
 | 10 | pending | 编写 `Part 3` spec。 |
 | 11 | pending | 编写 `Part 3` implementation plan。 |
 | 12 | pending | 执行并验证 `Part 3`，收口 `Phase 3`。 |
@@ -159,10 +159,20 @@
 - 正式 `Part 2` implementation plan 已写出：
   - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
 - 当前状态：
-  - `Approved, pending execution choice`
+  - `Execution complete`
 - 下一步：
-  - 由用户选择执行方式
-  - 按 `subagent-driven-development` 或 `executing-plans` 开始 `Part 2` 实现与验证
+  - 进入 `Part 3` spec
+  - 基于已完成的故事包管理工作区，收口剩余管理动作与 UX 边界
+
+## Part 2 Execution Checkpoints
+
+| Task | 状态 | 说明 |
+|---|---|---|
+| `Task 1` | complete | bounded workspace read model 与 legacy implicit-row 读取已完成，并通过定向测试。 |
+| `Task 2` | complete | metadata-only rename seam 与 storyline action route 已完成，并通过定向测试。 |
+| `Task 3` | complete | editor 默认入口与 shell 接线已完成，并通过定向测试。 |
+| `Task 4` | complete | 故事包管理页的 selector、workspace 布局与 brutalist shell 集成已完成。 |
+| `Task 5` | complete | row-local actions、beat-dot confirm drawer、最终验证与 Phase 3 文档同步已完成。 |
 
 ## Part 1 Delivery Status
 
