@@ -1,316 +1,308 @@
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import YAML from 'yaml';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { listStoryPackageCatalog } from '@/app/story-package-catalog';
-import { loadEditRuntimeContinuityView } from '@/runtime-sessions/views';
-import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import * as storylineSubstrate from '@/storylines/substrate';
+import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
-const loadAuthoringState = vi.fn(async () => ({
-  source: 'latest-saved' as const,
-  state: {
-    sceneSpec: {
-      sceneId: 'scene-signal-room',
-      sceneName: 'Signal Room',
-      mainAxis: 'Track a hostile signal through a sealed campus wing.',
-      endLine: 'The source is isolated and the public space returns to calm.',
-    },
-    phasePlans: [],
-    routerProfiles: [],
-    auditQuestionSet: {
-      sceneId: 'scene-signal-room',
-      globalQuestions: [],
-      controlQuestions: [],
-      phaseSpecificQuestions: {},
-      selectionPolicy: {
-        default: [],
-        phaseOverrides: {},
-      },
-    },
-    controlModules: {
-      sceneId: 'scene-signal-room',
-      lightConeCustomization: {
-        boundaryGuidance: 'boundary',
-        convergenceGuidance: 'convergence',
-        phaseSettlementGuidance: 'settlement',
-      },
-      directorNoteAdditions: {
-        beatConstraintsAdditions: 'beat additions',
-      },
-      beatVolumeDefinitions: {
-        Low: {
-          beatConstraints: 'low beat',
-          optionFormatting: 'low option',
-        },
-        Med: {
-          beatConstraints: 'med beat',
-          optionFormatting: 'med option',
-        },
-        High: {
-          beatConstraints: 'high beat',
-          optionFormatting: 'high option',
-        },
-      },
-    },
-    worldBase: {
-      worldBaseSetting: 'An operator tracks an overheating signal inside an ordinary school day.',
-      worldRules: 'No open magic.',
-      toneBaseline: 'Cold pressure.',
-      hero: {
-        characterId: 'chr_hero01',
-        name: 'Hero One',
-        identityRole: 'Lead breaker',
-        lightNovelTrait: 'Silent pressure',
-        gender: 'Female',
-        personality: 'Cold',
-        age: '17',
-        occupation: 'Student',
-        characterSummary: 'Keeps moving toward the threat.',
-        capabilityBoundary: 'No magic, only physical action.',
-        behaviorBoundary: 'Never abandons the trace.',
-        oocRedLine: 'No speeches.',
-        clothing: 'School uniform',
-        propsWeapon: 'Ceramic blade',
-      },
-      coreCast: [],
-      antagonists: [],
-      npcCharacters: 'A nearby witness who should stay outside the real danger.',
-      locationPatch: 'A sealed corridor with old lights, cameras, and echoing vents.',
-    },
+const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
+const sourcePackageName = 'sample-scene';
+const testPackageName = '__edit-page-storyline-test__';
+const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+const variantsPath = path.resolve(testPackagePath, 'variants');
+
+const loadEditWorkbenchProps = vi.fn();
+
+vi.mock('@/app/edit/EditWorkbench', () => ({
+  EditWorkbench: (props: unknown) => {
+    loadEditWorkbenchProps(props);
+    return <div data-testid="edit-workbench">Edit Workbench</div>;
   },
 }));
-const initialStorylineContext = {
-  packageName: 'sample-scene',
-  repository: null,
-  storyline: {
-    storylineId: 'storyline_main',
-    headCheckpointId: null,
-    variantId: 'variant_main',
-    activeSessionId: null,
-  },
-  variant: {
-    variantId: 'variant_main',
-    workspaceRoot: '.',
-  },
-  session: null,
-  runtimeFile: null,
-  authoredRoot: '/tmp/sample-scene',
-  isLegacyImplicit: true,
-} as const;
-const runtimeContinuityView = {
-  kind: 'empty',
-  activeSession: null,
-} as const;
 
-vi.mock('@/authoring/persistence/package-state', () => ({
-  loadAuthoringState,
-}));
+const authoredContractFiles = [
+  'world-base.yaml',
+  'scene.yaml',
+  'phase-plans.yaml',
+  'router-lexicon.yaml',
+  'audit-questions.yaml',
+  'control-modules.yaml',
+] as const;
 
-vi.mock('@/runtime-sessions/views', () => ({
-  loadEditRuntimeContinuityView: vi.fn(async () => runtimeContinuityView),
-}));
+function resetTestPackage(): void {
+  rmSync(testPackagePath, { recursive: true, force: true });
+}
 
-vi.mock('@/storylines/substrate', () => ({
-  resolveActiveStorylineContext: vi.fn(async () => initialStorylineContext),
-}));
+function prepareTestPackage(): void {
+  resetTestPackage();
+  cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
+    recursive: true,
+  });
+}
 
-vi.mock('@/app/story-package-catalog', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/app/story-package-catalog')>();
-
+function makeStateSnapshot(beatText: string): StateSnapshot {
   return {
-    ...actual,
-    listStoryPackageCatalog: vi.fn(async () => [
-      {
-        packageName: 'sample-scene',
-        sceneId: 'scene-signal-room',
-        sceneName: 'Signal Room',
-        mainAxis: 'Track a hostile signal through a sealed campus wing.',
-        endLine: 'The source is isolated and the public space returns to calm.',
-        phaseCount: 0,
-        totalBeatCount: 0,
-      },
-    ]),
+    sceneState: {
+      sceneId: 'scene_opening',
+      currentPhaseIndex: 1,
+      currentBeatIndexInPhase: 1,
+      mainAxis: 'main-axis',
+      endLine: 'end-line',
+      alpha: 'alpha',
+      beta: 'beta',
+      sceneProgress: beatText,
+      phaseConsequences: [],
+    },
+    roundState: {
+      phaseGoal: 'phase-goal',
+      currentVolume: 'Med',
+      currentRouter: 'router',
+      verbLexicon: ['observe'],
+      historyWindow: [],
+      directorConstraints: '',
+    },
+    generationState: {
+      directorNoteSummary: 'director summary',
+      promptObject: {},
+      currentBeatText: beatText,
+      currentOptions: [],
+    },
+    evaluationState: {
+      auditAnswers: [],
+      blockingFailures: [],
+      retryCount: 0,
+      rewriteFeedback: null,
+    },
   };
+}
+
+function writeRuntimeSessionsFile(file: RuntimeSessionsFile): void {
+  const runtimeSessionsPath = path.resolve(testPackagePath, 'runtime-sessions.json');
+  writeFileSync(runtimeSessionsPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function writeStorylineRepositoryFile(file: StorylineRepositoryFile): void {
+  writeFileSync(storylineRepositoryPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function setupVariantWorkspace(variantId: string, worldBaseSetting: string): void {
+  const variantRoot = path.resolve(testPackagePath, 'variants', variantId);
+  mkdirSync(variantRoot, { recursive: true });
+
+  for (const fileName of authoredContractFiles) {
+    cpSync(path.resolve(testPackagePath, fileName), path.resolve(variantRoot, fileName));
+  }
+
+  const worldBase = YAML.parse(readFileSync(path.resolve(variantRoot, 'world-base.yaml'), 'utf8')) as {
+    worldBaseSetting: string;
+  };
+  worldBase.worldBaseSetting = worldBaseSetting;
+  writeFileSync(path.resolve(variantRoot, 'world-base.yaml'), YAML.stringify(worldBase), 'utf8');
+}
+
+function buildStorylineRepository(activeStorylineId: 'storyline_main' | 'storyline_alt'): StorylineRepositoryFile {
+  return {
+    version: 1,
+    activeStorylineId,
+    storylinesById: {
+      storyline_main: {
+        storylineId: 'storyline_main',
+        name: 'Main Line',
+        status: 'active',
+        sourceCheckpointId: null,
+        headCheckpointId: 'chk_main',
+        variantId: 'variant_main',
+        activeSessionId: 'sess_main',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      storyline_alt: {
+        storylineId: 'storyline_alt',
+        name: 'Alt Line',
+        status: 'active',
+        sourceCheckpointId: null,
+        headCheckpointId: 'chk_alt',
+        variantId: 'variant_alt',
+        activeSessionId: 'sess_alt',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+    },
+    variantsById: {
+      variant_main: {
+        variantId: 'variant_main',
+        workspaceRoot: 'variants/variant_main',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      variant_alt: {
+        variantId: 'variant_alt',
+        workspaceRoot: 'variants/variant_alt',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+    },
+  };
+}
+
+afterEach(() => {
+  resetTestPackage();
+  vi.restoreAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('EditPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('defaults worldbase-cast to the world surface', async () => {
-    const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-        section: 'worldbase-cast',
+  it('loads authored projection and bounded continuity from the same resolved storyline context', async () => {
+    prepareTestPackage();
+    setupVariantWorkspace('variant_main', 'main-world-setting');
+    setupVariantWorkspace('variant_alt', 'alt-world-setting');
+    writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_main',
+      sessionsById: {
+        sess_main: {
+          sessionId: 'sess_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_main',
+          activeCheckpointId: 'chk_main',
+          orderedCheckpointIds: ['chk_main'],
+          checkpointsById: {
+            chk_main: {
+              checkpointId: 'chk_main',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_main',
+              acceptedTranscript: {
+                playerInput: 'follow main',
+                beatText: 'Main checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Main checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'main delta',
+                stableBackgroundText: 'main background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'main delta',
+            stableBackgroundText: 'main background',
+          },
+        },
+        sess_alt: {
+          sessionId: 'sess_alt',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_alt',
+          activeCheckpointId: 'chk_alt',
+          orderedCheckpointIds: ['chk_alt'],
+          checkpointsById: {
+            chk_alt: {
+              checkpointId: 'chk_alt',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_alt',
+              acceptedTranscript: {
+                playerInput: 'follow alt',
+                beatText: 'Alt checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Alt checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'alt delta',
+                stableBackgroundText: 'alt background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'alt delta',
+            stableBackgroundText: 'alt background',
+          },
+        },
       },
     });
+    writeStorylineRepositoryFile(buildStorylineRepository('storyline_main'));
 
-    render(element);
+    const originalResolve = storylineSubstrate.resolveActiveStorylineContext;
+    let resolveCallCount = 0;
+    vi.spyOn(storylineSubstrate, 'resolveActiveStorylineContext').mockImplementation(
+      async (packageName, options) => {
+        const resolved = await originalResolve(packageName, options);
+        resolveCallCount += 1;
 
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
-      includeAgentSurfaceItems: false,
-      includeRuntimeContinuity: false,
-    });
-    expect(resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
-      forWrite: false,
-    });
-    expect(loadEditRuntimeContinuityView).toHaveBeenCalledWith('sample-scene', {
-      storylineContext: initialStorylineContext,
-    });
-    expect(screen.getByRole('heading', { name: 'LOGOS Narrative Editor' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'LOGOS Authoring Editor' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
-    );
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
-    );
-    expect(screen.getByRole('link', { name: '场景与阶段' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=scene-phase-authoring',
-    );
-    expect(screen.getByRole('link', { name: '控制模块' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=control-modules',
-    );
-    expect(screen.getByRole('link', { name: '控制台' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=package-wiring-validation',
-    );
-    expect(screen.getByRole('navigation', { name: 'Editor sections' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
-      'href',
-      '/play?storyPackage=sample-scene',
-    );
-    expect(screen.getByRole('link', { name: '返回标题' })).toHaveAttribute('href', '/');
-  });
+        if (resolveCallCount === 1) {
+          writeStorylineRepositoryFile(buildStorylineRepository('storyline_alt'));
+        }
 
-  it('enters the character surface when worldbase-cast is selected with surface=character', async () => {
-    const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-        section: 'worldbase-cast',
-        surface: 'character',
+        return resolved;
       },
-    });
-
-    render(element);
-
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
-      includeAgentSurfaceItems: false,
-      includeRuntimeContinuity: false,
-    });
-    expect(resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
-      forWrite: false,
-    });
-    expect(loadEditRuntimeContinuityView).toHaveBeenCalledWith('sample-scene', {
-      storylineContext: initialStorylineContext,
-    });
-    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=character',
     );
-    expect(screen.getByRole('link', { name: '角色' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+
+    const { default: EditPage } = await import('@/app/edit/page');
+    render(
+      await EditPage({
+        searchParams: {
+          storyPackage: testPackageName,
+          section: 'worldbase-cast',
+        },
+      }),
     );
-  });
 
-  it('loads sidecar-agent surface items only when entering the diagnostics workspace', async () => {
-    const { default: EditPage } = await import('@/app/edit/page');
+    const workbenchProps = loadEditWorkbenchProps.mock.calls[0]?.[0] as {
+      initialState: {
+        state: {
+          worldBase: {
+            worldBaseSetting: string;
+          };
+        };
+        runtimeContinuityView?: {
+          kind: string;
+          activeSession: {
+            sessionId: string;
+          } | null;
+        };
+      };
+    };
 
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-        section: 'package-wiring-validation',
-      },
-    });
-
-    render(element);
-
-    expect(loadAuthoringState).toHaveBeenCalledWith('sample-scene', {
-      includeAgentSurfaceItems: true,
-      includeRuntimeContinuity: false,
-    });
-    expect(resolveActiveStorylineContext).not.toHaveBeenCalled();
-    expect(loadEditRuntimeContinuityView).not.toHaveBeenCalled();
-  });
-
-  it('falls back to the world surface when section is missing even if surface=character', async () => {
-    const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-        surface: 'character',
-      },
-    });
-
-    render(element);
-
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    expect(resolveCallCount).toBe(1);
+    expect(workbenchProps.initialState.state.worldBase.worldBaseSetting).toBe('main-world-setting');
+    expect(workbenchProps.initialState.runtimeContinuityView?.kind).toBe('active');
+    expect(workbenchProps.initialState.runtimeContinuityView?.activeSession?.sessionId).toBe(
+      'sess_main',
     );
+    expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
   });
 
-  it('falls back to the world surface when section is invalid even if surface=character', async () => {
+  it('keeps legacy pure-read /edit non-materializing', async () => {
+    prepareTestPackage();
+    rmSync(storylineRepositoryPath, { force: true });
+    rmSync(variantsPath, { recursive: true, force: true });
+
     const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-        section: 'not-a-real-section',
-        surface: 'character',
-      },
-    });
-
-    render(element);
-
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '世界' })).toHaveAttribute(
-      'href',
-      '/edit?storyPackage=sample-scene&section=worldbase-cast&surface=world',
+    render(
+      await EditPage({
+        searchParams: {
+          storyPackage: testPackageName,
+          section: 'worldbase-cast',
+        },
+      }),
     );
-  });
 
-  it('shows the Chinese fallback copy when no loadable package exists', async () => {
-    vi.mocked(listStoryPackageCatalog).mockResolvedValueOnce([]);
-    const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {},
-    });
-
-    render(element);
-
-    expect(screen.getByRole('heading', { name: '未找到可加载的故事包。' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回标题' })).toHaveAttribute('href', '/');
-  });
-
-  it('shows the Chinese load-failure copy when the package cannot be loaded', async () => {
-    loadAuthoringState.mockRejectedValueOnce(new Error('load failed'));
-    const { default: EditPage } = await import('@/app/edit/page');
-
-    const element = await EditPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
-      },
-    });
-
-    render(element);
-
-    expect(screen.getByRole('heading', { name: '故事包加载失败' })).toBeInTheDocument();
-    expect(screen.getByText('加载失败：load failed')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回标题' })).toHaveAttribute('href', '/');
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantsPath)).toBe(false);
+    expect(screen.getByTestId('edit-workbench')).toBeInTheDocument();
   });
 });
