@@ -97,9 +97,11 @@ describe('StoryPackageManagementSection', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     const branchRow = screen.getByLabelText('Branch Line storyline');
-    await user.click(within(branchRow).getByRole('button', { name: 'Beat 2' }));
+    await user.click(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 2' }));
 
     expect(within(branchRow).getByRole('button', { name: '确认' })).toBeInTheDocument();
+    expect(within(branchRow).getByRole('button', { name: '取消' })).toBeInTheDocument();
+    expect(within(branchRow).queryByText(/分出新故事线/i)).not.toBeInTheDocument();
     await user.click(within(branchRow).getByRole('button', { name: '取消' }));
 
     await waitFor(() => {
@@ -121,7 +123,7 @@ describe('StoryPackageManagementSection', () => {
     render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
 
     const branchRow = screen.getByLabelText('Branch Line storyline');
-    await user.click(within(branchRow).getByRole('button', { name: 'Beat 2' }));
+    await user.click(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 2' }));
     await user.click(within(branchRow).getByRole('button', { name: '确认' }));
 
     await waitFor(() => {
@@ -229,10 +231,10 @@ describe('StoryPackageManagementSection', () => {
     expect(screen.getByRole('button', { name: '从当前线派生 Main Line' })).toBeDisabled();
   });
 
-  it('submits inline rename through the metadata-only action seam on Enter', async () => {
+  it('submits inline rename through the metadata-only action seam on Enter while preserving internal whitespace', async () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ kind: 'rename_display_name', displayName: 'Side Route' }), {
+      new Response(JSON.stringify({ kind: 'rename_display_name', displayName: 'Side   Route' }), {
         status: 200,
         headers: {
           'content-type': 'application/json',
@@ -244,16 +246,82 @@ describe('StoryPackageManagementSection', () => {
 
     const renameInput = screen.getByRole('textbox', { name: '故事线名称 Main Line' });
     await user.clear(renameInput);
-    await user.type(renameInput, '  Side Route  {enter}');
+    await user.type(renameInput, '  Side   Route  {enter}');
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         '/api/authoring/packages/sample-scene/storylines/actions',
         expect.objectContaining({
-          body: expect.stringContaining('"kind":"rename_display_name"'),
+          body: expect.stringContaining('"nextDisplayName":"Side   Route"'),
         }),
       );
     });
+  });
+
+  it('renders dynamic phase and beat labels from checkpointRail as the history extends across phases', () => {
+    const extendedView = {
+      ...workspaceViewFixture,
+      storylines: workspaceViewFixture.storylines.map((row) =>
+        row.storylineId === 'storyline_branch'
+          ? {
+              ...row,
+              headCheckpointId: 'chk_06',
+              headSummary: 'Beat 6 · Branch reaches the phase-two control room',
+              checkpointRail: [
+                {
+                  checkpointId: 'chk_01',
+                  acceptedBeatOrdinal: 1,
+                  phaseIndex: 1,
+                  beatIndex: 1,
+                  isHead: false,
+                  isBranchSource: false,
+                },
+                {
+                  checkpointId: 'chk_02',
+                  acceptedBeatOrdinal: 2,
+                  phaseIndex: 1,
+                  beatIndex: 2,
+                  isHead: false,
+                  isBranchSource: true,
+                },
+                {
+                  checkpointId: 'chk_04',
+                  acceptedBeatOrdinal: 4,
+                  phaseIndex: 1,
+                  beatIndex: 4,
+                  isHead: false,
+                  isBranchSource: false,
+                },
+                {
+                  checkpointId: 'chk_05',
+                  acceptedBeatOrdinal: 5,
+                  phaseIndex: 2,
+                  beatIndex: 1,
+                  isHead: false,
+                  isBranchSource: false,
+                },
+                {
+                  checkpointId: 'chk_06',
+                  acceptedBeatOrdinal: 6,
+                  phaseIndex: 2,
+                  beatIndex: 2,
+                  isHead: true,
+                  isBranchSource: false,
+                },
+              ],
+            }
+          : row,
+      ),
+    };
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={extendedView} />);
+
+    const branchRow = screen.getByLabelText('Branch Line storyline');
+    expect(within(branchRow).getByText('Phase 1')).toBeInTheDocument();
+    expect(within(branchRow).getByText('Phase 2')).toBeInTheDocument();
+    expect(within(branchRow).getAllByText(/^Beat \d+$/)).toHaveLength(5);
+    expect(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 4' })).toBeInTheDocument();
+    expect(within(branchRow).getByRole('button', { name: 'Phase 2 Beat 2' })).toBeInTheDocument();
   });
 
   it('treats an unchanged normalized rename as success without calling the action route', async () => {

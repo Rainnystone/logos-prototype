@@ -59,7 +59,11 @@ function formatHeadSummaryText(row: StoryPackageManagementStorylineRowView): str
 }
 
 function normalizeDisplayName(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
+  return value.trim();
+}
+
+function formatCheckpointButtonLabel(checkpoint: StoryPackageManagementStorylineRowView['checkpointRail'][number]) {
+  return `Phase ${checkpoint.phaseIndex} Beat ${checkpoint.beatIndex}`;
 }
 
 export function StorylineWorkspaceRow({
@@ -241,8 +245,14 @@ export function StorylineWorkspaceRow({
 
       <div className="storyline-row__rail" aria-label={`${row.displayName} checkpoint rail`}>
         {row.checkpointRail.length > 0 ? (
-          row.checkpointRail.map((checkpoint) => (
+          row.checkpointRail.map((checkpoint, checkpointIndex) => (
             <div key={checkpoint.checkpointId} className="storyline-row__checkpoint-node">
+              <span className="storyline-row__checkpoint-phase">
+                {checkpointIndex === 0 ||
+                row.checkpointRail[checkpointIndex - 1]?.phaseIndex !== checkpoint.phaseIndex
+                  ? `Phase ${checkpoint.phaseIndex}`
+                  : ''}
+              </span>
               <button
                 type="button"
                 className={[
@@ -252,8 +262,8 @@ export function StorylineWorkspaceRow({
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                title={`Beat ${checkpoint.acceptedBeatOrdinal}`}
-                aria-label={`Beat ${checkpoint.acceptedBeatOrdinal}`}
+                title={formatCheckpointButtonLabel(checkpoint)}
+                aria-label={formatCheckpointButtonLabel(checkpoint)}
                 disabled={pendingAction !== null}
                 onClick={() => {
                   setFeedback(null);
@@ -262,6 +272,7 @@ export function StorylineWorkspaceRow({
                   );
                 }}
               />
+              <span className="storyline-row__checkpoint-beat">{`Beat ${checkpoint.beatIndex}`}</span>
               <div
                 className={[
                   'storyline-row__branch-drawer',
@@ -273,9 +284,6 @@ export function StorylineWorkspaceRow({
                   .join(' ')}
                 aria-hidden={openCheckpointId !== checkpoint.checkpointId}
               >
-                <p className="storyline-row__branch-copy">
-                  {`从 Beat ${checkpoint.acceptedBeatOrdinal} 分出新故事线？`}
-                </p>
                 <div className="storyline-row__branch-actions">
                   <button
                     type="button"
