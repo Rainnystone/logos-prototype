@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as storylineManagementTypes from '@/types/storyline-management';
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 
 const mocks = vi.hoisted(() => {
   const resolveActiveStorylineContext = vi.fn(async () => ({
@@ -504,6 +505,75 @@ describe('POST storyline actions route', () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it('returns 404 when the requested story package does not exist', async () => {
+    mocks.resolveActiveStorylineContext.mockRejectedValueOnce(
+      new RuntimeStoryPackageNotFoundError('missing-scene'),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/missing-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'create_from_source',
+          sourceStorylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'missing-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Story package "missing-scene" was not found.',
+    });
+  });
+
+  it('returns 400 when create_from_source rejects a source storyline with null headCheckpointId', async () => {
+    mocks.createStorylineFromSource.mockRejectedValueOnce(
+      new Error(
+        'Cannot create storyline from source "storyline_main" because source headCheckpointId is null.',
+      ),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'create_from_source',
+          sourceStorylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Cannot create storyline from source "storyline_main" because source headCheckpointId is null.',
+    });
   });
 
   it('dispatches rename_display_name through the metadata-only seam', async () => {

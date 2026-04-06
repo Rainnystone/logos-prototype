@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
@@ -57,6 +58,13 @@ function buildBranchFromCheckpointDisplayName(
 }
 
 function mapActionError(error: unknown): { status: number; message: string } {
+  if (error instanceof RuntimeStoryPackageNotFoundError) {
+    return {
+      status: 404,
+      message: error.message,
+    };
+  }
+
   if (error instanceof Error) {
     const normalizedMessage = error.message.toLowerCase();
 
@@ -64,6 +72,8 @@ function mapActionError(error: unknown): { status: number; message: string } {
       normalizedMessage.includes('does not exist') ||
       normalizedMessage.includes('does not resolve') ||
       normalizedMessage.includes('cannot be empty') ||
+      normalizedMessage.includes('cannot create storyline from source') ||
+      normalizedMessage.includes('headcheckpointid is null') ||
       normalizedMessage.includes('cannot branch storyline from checkpoint') ||
       normalizedMessage.includes('not reachable from source storyline')
     ) {
