@@ -1,24 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { listStoryPackageCatalog } from '@/app/story-package-catalog';
-import { loadRuntimeStoryPackage } from '@/engine/story-loader';
-import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
+import { render, screen } from '@testing-library/react';
+import YAML from 'yaml';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
+
+const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
+const sourcePackageName = 'sample-scene';
+const testPackageName = '__play-page-storyline-test__';
+const testPackagePath = path.resolve(storyPackagesRoot, testPackageName);
+const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+const variantsPath = path.resolve(testPackagePath, 'variants');
 
 const loadPlayWorkbenchProps = vi.fn();
-const initialRuntimeSessionView = {
-  kind: 'awaiting_start',
-  activeSessionId: 'sess_waiting',
-  activeCheckpointId: null,
-  beatHistory: [],
-  stateSnapshot: null,
-  relationshipSummary: {
-    highlightedDeltasText: '',
-    stableBackgroundText: '',
-    source: 'empty',
-  },
-  lifecycle: 'awaiting_start',
-} as const;
 
 vi.mock('@/app/play/PlayWorkbench', () => ({
   PlayWorkbench: (props: unknown) => {
@@ -27,134 +23,257 @@ vi.mock('@/app/play/PlayWorkbench', () => ({
   },
 }));
 
-vi.mock('@/app/story-package-catalog', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/app/story-package-catalog')>();
+const authoredContractFiles = [
+  'world-base.yaml',
+  'scene.yaml',
+  'phase-plans.yaml',
+  'router-lexicon.yaml',
+  'audit-questions.yaml',
+  'control-modules.yaml',
+] as const;
 
+function resetTestPackage(): void {
+  rmSync(testPackagePath, { recursive: true, force: true });
+}
+
+function prepareTestPackage(): void {
+  resetTestPackage();
+  cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
+    recursive: true,
+  });
+}
+
+function makeStateSnapshot(beatText: string): StateSnapshot {
   return {
-    ...actual,
-    listStoryPackageCatalog: vi.fn(async () => [
-      {
-        packageName: 'sample-scene',
-        sceneId: 'scene-signal-room',
-        sceneName: 'Signal Room',
-        mainAxis: 'Track a hostile signal through a sealed campus wing.',
-        endLine: 'The source is isolated and the public space returns to calm.',
-        phaseCount: 0,
-        totalBeatCount: 0,
-      },
-    ]),
+    sceneState: {
+      sceneId: 'scene_opening',
+      currentPhaseIndex: 1,
+      currentBeatIndexInPhase: 1,
+      mainAxis: 'main-axis',
+      endLine: 'end-line',
+      alpha: 'alpha',
+      beta: 'beta',
+      sceneProgress: beatText,
+      phaseConsequences: [],
+    },
+    roundState: {
+      phaseGoal: 'phase-goal',
+      currentVolume: 'Med',
+      currentRouter: 'router',
+      verbLexicon: ['observe'],
+      historyWindow: [],
+      directorConstraints: '',
+    },
+    generationState: {
+      directorNoteSummary: 'director summary',
+      promptObject: {},
+      currentBeatText: beatText,
+      currentOptions: [],
+    },
+    evaluationState: {
+      auditAnswers: [],
+      blockingFailures: [],
+      retryCount: 0,
+      rewriteFeedback: null,
+    },
   };
+}
+
+function writeRuntimeSessionsFile(file: RuntimeSessionsFile): void {
+  const runtimeSessionsPath = path.resolve(testPackagePath, 'runtime-sessions.json');
+  writeFileSync(runtimeSessionsPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function writeStorylineRepositoryFile(file: StorylineRepositoryFile): void {
+  writeFileSync(storylineRepositoryPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+function setupVariantWorkspace(variantId: string, worldBaseSetting: string, sceneName: string): void {
+  const variantRoot = path.resolve(testPackagePath, 'variants', variantId);
+  mkdirSync(variantRoot, { recursive: true });
+
+  for (const fileName of authoredContractFiles) {
+    cpSync(path.resolve(testPackagePath, fileName), path.resolve(variantRoot, fileName));
+  }
+
+  const worldBase = YAML.parse(readFileSync(path.resolve(variantRoot, 'world-base.yaml'), 'utf8')) as {
+    worldBaseSetting: string;
+  };
+  worldBase.worldBaseSetting = worldBaseSetting;
+  writeFileSync(path.resolve(variantRoot, 'world-base.yaml'), YAML.stringify(worldBase), 'utf8');
+
+  const sceneSpec = YAML.parse(readFileSync(path.resolve(variantRoot, 'scene.yaml'), 'utf8')) as {
+    sceneName: string;
+  };
+  sceneSpec.sceneName = sceneName;
+  writeFileSync(path.resolve(variantRoot, 'scene.yaml'), YAML.stringify(sceneSpec), 'utf8');
+}
+
+afterEach(() => {
+  resetTestPackage();
+  vi.clearAllMocks();
 });
 
-vi.mock('@/engine/story-loader', () => ({
-  loadRuntimeStoryPackage: vi.fn(async () => ({
-    sceneSpec: {
-      sceneId: 'scene_opening',
-      sceneName: 'Signal Room',
-      mainAxis: 'Track a hostile signal through a sealed campus wing.',
-      endLine: 'The source is isolated and the public space returns to calm.',
-    },
-    phasePlans: [],
-    routerProfiles: [],
-    auditQuestionSet: {
-      sceneId: 'scene_opening',
-      globalQuestions: [],
-      controlQuestions: [],
-      phaseSpecificQuestions: {},
-      selectionPolicy: {
-        default: [],
-        phaseOverrides: {},
-      },
-    },
-    controlModules: {
-      sceneId: 'scene_opening',
-      lightConeCustomization: {
-        boundaryGuidance: 'boundary',
-        convergenceGuidance: 'convergence',
-        phaseSettlementGuidance: 'settlement',
-      },
-      directorNoteAdditions: {
-        beatConstraintsAdditions: 'beat additions',
-      },
-      beatVolumeDefinitions: {
-        Low: {
-          beatConstraints: 'low beat',
-          optionFormatting: 'low option',
-        },
-        Med: {
-          beatConstraints: 'med beat',
-          optionFormatting: 'med option',
-        },
-        High: {
-          beatConstraints: 'high beat',
-          optionFormatting: 'high option',
-        },
-      },
-    },
-    worldBase: {
-      worldBaseSetting: 'world',
-      worldRules: 'rules',
-      toneBaseline: 'tone',
-      hero: {
-        characterId: 'hero_01',
-        name: 'Hero',
-        identityRole: 'Lead',
-        lightNovelTrait: 'Calm',
-        gender: 'Female',
-        personality: 'Cold',
-        age: '17',
-        occupation: 'Student',
-        characterSummary: 'summary',
-        capabilityBoundary: 'capability',
-        behaviorBoundary: 'behavior',
-        oocRedLine: 'red line',
-      },
-      coreCast: [],
-      antagonists: [],
-      npcCharacters: 'npc',
-      locations: [],
-    },
-  })),
-}));
-
-vi.mock('@/runtime-sessions/views', () => ({
-  loadPlayRuntimeSessionView: vi.fn(async () => initialRuntimeSessionView),
-}));
-
 describe('PlayPage', () => {
-  it('loads the bounded runtime continuity view on the server before rendering the workbench', async () => {
-    const { default: PlayPage } = await import('@/app/play/page');
-
-    const element = await PlayPage({
-      searchParams: {
-        storyPackage: 'sample-scene',
+  it('loads active storyline authored projection and active storyline runtime continuity', async () => {
+    prepareTestPackage();
+    setupVariantWorkspace('variant_main', 'main-world-setting', 'Main Storyline Scene');
+    setupVariantWorkspace('variant_alt', 'alt-world-setting', 'Alt Storyline Scene');
+    writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_main',
+      sessionsById: {
+        sess_main: {
+          sessionId: 'sess_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_main',
+          activeCheckpointId: 'chk_main',
+          orderedCheckpointIds: ['chk_main'],
+          checkpointsById: {
+            chk_main: {
+              checkpointId: 'chk_main',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_main',
+              acceptedTranscript: {
+                playerInput: 'follow main',
+                beatText: 'Main checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Main checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'main delta',
+                stableBackgroundText: 'main background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'main delta',
+            stableBackgroundText: 'main background',
+          },
+        },
+        sess_alt: {
+          sessionId: 'sess_alt',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+          headCheckpointId: 'chk_alt',
+          activeCheckpointId: 'chk_alt',
+          orderedCheckpointIds: ['chk_alt'],
+          checkpointsById: {
+            chk_alt: {
+              checkpointId: 'chk_alt',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_alt',
+              acceptedTranscript: {
+                playerInput: 'follow alt',
+                beatText: 'Alt checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Alt checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'alt delta',
+                stableBackgroundText: 'alt background',
+              },
+              createdAt: '2026-04-06T00:00:00.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'alt delta',
+            stableBackgroundText: 'alt background',
+          },
+        },
+      },
+    });
+    writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_alt',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_main',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_main',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        storyline_alt: {
+          storylineId: 'storyline_alt',
+          name: 'Alt Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_alt',
+          variantId: 'variant_alt',
+          activeSessionId: 'sess_alt',
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
+        variant_alt: {
+          variantId: 'variant_alt',
+          workspaceRoot: 'variants/variant_alt',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          updatedAt: '2026-04-06T00:00:00.000Z',
+        },
       },
     });
 
-    render(element);
-
-    expect(loadPlayRuntimeSessionView).toHaveBeenCalledWith('sample-scene');
-    expect(loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene');
-    expect(loadPlayWorkbenchProps).toHaveBeenCalledWith(
-      expect.objectContaining({
-        storyPackageName: 'sample-scene',
-        initialRuntimeSession: initialRuntimeSessionView,
+    const { default: PlayPage } = await import('@/app/play/page');
+    render(
+      await PlayPage({
+        searchParams: {
+          storyPackage: testPackageName,
+        },
       }),
     );
+
+    const workbenchProps = loadPlayWorkbenchProps.mock.calls[0]?.[0] as {
+      storyPackageName: string;
+      storyPackage: { sceneSpec: { sceneName: string } };
+      initialRuntimeSession: { activeSessionId: string | null; beatHistory: { beatText: string }[] };
+    };
+
+    expect(workbenchProps.storyPackageName).toBe(testPackageName);
+    expect(workbenchProps.storyPackage.sceneSpec.sceneName).toBe('Alt Storyline Scene');
+    expect(workbenchProps.initialRuntimeSession.activeSessionId).toBe('sess_alt');
+    expect(workbenchProps.initialRuntimeSession.beatHistory[0]?.beatText).toBe('Alt checkpoint');
     expect(screen.getByTestId('play-workbench')).toBeInTheDocument();
   });
 
-  it('shows the existing package fallback when no loadable package exists', async () => {
-    vi.mocked(listStoryPackageCatalog).mockResolvedValueOnce([]);
+  it('keeps legacy pure-read /play non-materializing', async () => {
+    prepareTestPackage();
+    rmSync(storylineRepositoryPath, { force: true });
+    rmSync(variantsPath, { recursive: true, force: true });
+
     const { default: PlayPage } = await import('@/app/play/page');
+    render(
+      await PlayPage({
+        searchParams: {
+          storyPackage: testPackageName,
+        },
+      }),
+    );
 
-    const element = await PlayPage({
-      searchParams: {},
-    });
-
-    render(element);
-
-    expect(screen.getByRole('heading', { name: 'No loadable story package was found.' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Return to Title' })).toHaveAttribute('href', '/');
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantsPath)).toBe(false);
+    expect(screen.getByTestId('play-workbench')).toBeInTheDocument();
   });
 });

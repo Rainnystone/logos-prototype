@@ -4,6 +4,7 @@ import { PlayWorkbench } from '@/app/play/PlayWorkbench';
 import { isReadyStoryPackageEntry, listStoryPackageCatalog } from '@/app/story-package-catalog';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
 import { loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 type SearchParamsInput =
   | Promise<Record<string, string | string[] | undefined>>
@@ -52,9 +53,14 @@ export default async function PlayPage({ searchParams }: PlayPageProps) {
   }
 
   try {
+    const storylineContext = await resolveActiveStorylineContext(selectedPackageName, {
+      forWrite: false,
+    });
     const [storyPackage, initialRuntimeSession] = await Promise.all([
-      loadRuntimeStoryPackage(selectedPackageName),
-      loadPlayRuntimeSessionView(selectedPackageName),
+      loadRuntimeStoryPackage(selectedPackageName, {
+        authoredRootOverride: storylineContext.authoredRoot,
+      }),
+      loadPlayRuntimeSessionView(selectedPackageName, { storylineContext }),
     ]);
 
     return (

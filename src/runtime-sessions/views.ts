@@ -1,8 +1,9 @@
-import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
 import {
   EDIT_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
   PLAY_RUNTIME_CONTINUITY_UNAVAILABLE_REASON,
 } from '@/runtime-sessions/copy';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import type { ActiveStorylineContext } from '@/storylines/substrate';
 import type { RuntimeCheckpoint, RuntimeSessionLifecycle, StateSnapshot } from '@/types';
 
 export interface RuntimeRelationshipSummary {
@@ -36,6 +37,10 @@ export interface EditRuntimeContinuityView {
     readonly relationshipStatus: RuntimeRelationshipSummary;
   } | null;
   readonly reason?: string;
+}
+
+export interface RuntimeSessionViewLoadOptions {
+  readonly storylineContext?: ActiveStorylineContext;
 }
 
 const emptyRelationshipSummary: RuntimeRelationshipSummary = {
@@ -105,10 +110,19 @@ function buildUnavailableView(): PlayRuntimeSessionView {
   };
 }
 
-export async function loadPlayRuntimeSessionView(packageName: string): Promise<PlayRuntimeSessionView> {
+export async function loadPlayRuntimeSessionView(
+  packageName: string,
+  options?: RuntimeSessionViewLoadOptions,
+): Promise<PlayRuntimeSessionView> {
   try {
-    const runtimeFile = await runtimeSessionsRepository.readFile(packageName);
-    if (!runtimeFile || runtimeFile.activeSessionId === null) {
+    const context =
+      options?.storylineContext ??
+      (await resolveActiveStorylineContext(packageName, {
+        forWrite: false,
+      }));
+    const activeSession = context.session;
+
+    if (!activeSession) {
       return {
         kind: 'empty',
         activeSessionId: null,
@@ -118,11 +132,6 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
         relationshipSummary: emptyRelationshipSummary,
         lifecycle: null,
       };
-    }
-
-    const activeSession = runtimeFile.sessionsById[runtimeFile.activeSessionId];
-    if (!activeSession) {
-      return buildUnavailableView();
     }
 
     const activeCheckpoint = activeSession.activeCheckpointId
@@ -139,7 +148,7 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
     if (!activeCheckpoint) {
       return {
         kind: 'awaiting_start',
-        activeSessionId: activeSession.sessionId,
+        activeSessionId: context.storyline.activeSessionId ?? activeSession.sessionId,
         activeCheckpointId: null,
         beatHistory: buildBeatHistory(orderedCheckpoints),
         stateSnapshot: null,
@@ -150,7 +159,7 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
 
     return {
       kind: 'restorable',
-      activeSessionId: activeSession.sessionId,
+      activeSessionId: context.storyline.activeSessionId ?? activeSession.sessionId,
       activeCheckpointId: activeCheckpoint.checkpointId,
       beatHistory: buildBeatHistory(orderedCheckpoints),
       stateSnapshot: activeCheckpoint.stateSnapshot,
@@ -164,8 +173,9 @@ export async function loadPlayRuntimeSessionView(packageName: string): Promise<P
 
 export async function loadEditRuntimeContinuityView(
   packageName: string,
+  options?: RuntimeSessionViewLoadOptions,
 ): Promise<EditRuntimeContinuityView> {
-  const playView = await loadPlayRuntimeSessionView(packageName);
+  const playView = await loadPlayRuntimeSessionView(packageName, options);
 
   if (playView.kind === 'unavailable') {
     return {

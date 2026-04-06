@@ -144,6 +144,7 @@
 - 下一步：
   - 进入 `Part 2` spec
   - 把故事包管理工作区的交付边界与 `Part 3` 的管理动作边界重新确认一遍
+  - 基于已冻结的 `Part 1` substrate 开始设计故事包管理工作区
 
 ## Part 1 Delivery Status
 
@@ -153,3 +154,13 @@
 - 需要注意的恢复纪律：
   - 执行 `Part 1` 时使用过的临时 worktree 已在 push / PR 后删除
   - 后续继续 `Phase 3` 时，应以正式 spec / plan / progress 以及 PR 记录为恢复入口
+
+## Part 1 Execution Checkpoints
+
+| Task | 状态 | 说明 |
+|---|---|---|
+| `Task 1` | complete | storyline repository contract、workspace helpers、定向测试和双 review 已通过。 |
+| `Task 2` | complete | storyline substrate service、runtime-session 同步、失败路径收口与双 review 已通过。 |
+| `Task 3` | complete | authored load/save target-resolution seam、legacy/non-materializing 兼容与双 review 已通过。 |
+| `Task 4` | complete | `/edit` 与 `/play` 页面级默认解析已接到 active storyline，补齐了单次 context resolve 与页面级 storyline-aware 覆盖，并通过双 review。 |
+| `Task 5` | complete | 已完成定向回归、`build`、simulation type-check / test、全量 `npm test`、浏览器手验以及 Phase 3 记录同步。 |

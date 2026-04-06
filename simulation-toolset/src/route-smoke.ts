@@ -1,6 +1,7 @@
 import { createScenePhaseAuthoringDraft } from '@/authoring/sections/scene-phase-authoring';
 import { createWorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import { loadRuntimeStoryPackage, loadStoryPackage } from '@/engine/story-loader';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 import type { PromptObject, StoryPackage } from '@/types';
 
 import { createPlayerSimulator } from '@simulation/player-simulator';
@@ -164,7 +165,14 @@ async function capturePromptLocationPatch(packageName: string): Promise<{
   readonly runtimeLocationNames: readonly string[];
   readonly promptLocationPatch: string;
 }> {
-  const runtimeStoryPackage = disableAuditQuestions(await loadRuntimeStoryPackage(packageName));
+  const storylineContext = await resolveActiveStorylineContext(packageName, {
+    forWrite: false,
+  });
+  const runtimeStoryPackage = disableAuditQuestions(
+    await loadRuntimeStoryPackage(packageName, {
+      authoredRootOverride: storylineContext.authoredRoot,
+    }),
+  );
   const adapter = createScriptedAdapter({
     collapse: [{ alpha: 'alpha-init', beta: 'beta-init', inferenceTrace: 'collapse-trace' }],
     route: [{ routerName: 'investigation', inferenceTrace: 'route-trace' }],

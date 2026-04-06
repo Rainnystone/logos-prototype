@@ -83,8 +83,6 @@ export function createValidationSuccessScenario(): ExecutableSimulationScenario 
           payload: { uiFields: modifiedDraft },
         });
 
-        const afterPackage = await loadStoryPackage(fixture.packageName);
-
         recorder.recordAction({
           kind: 'author.save.valid',
           details: {
@@ -101,7 +99,9 @@ export function createValidationSuccessScenario(): ExecutableSimulationScenario 
         });
         recorder.recordAssertion({
           name: 'worldbase-changed',
-          pass: afterPackage.worldBase.hero.name === 'Test Hero Updated',
+          pass:
+            (saveResult.kind === 'save_applied' || saveResult.kind === 'save_applied_with_warnings') &&
+            saveResult.reloadedSectionState.worldBase.hero.name === 'Test Hero Updated',
         });
 
         return {
