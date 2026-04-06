@@ -676,56 +676,72 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
 
   try {
     await ensureStoryPackageExists(request.packageName);
-    const target = await resolveSaveTarget(request.packageName, true);
+    const readTarget = await resolveSaveTarget(request.packageName, false);
     const currentStoryPackage = await reloadStoryPackage(request.packageName, {
-      forWrite: true,
-      target,
+      forWrite: false,
+      target: readTarget,
     });
     let changedFiles: readonly string[];
     let reloadedSectionState: StoryPackage;
+    let writeTarget: AuthoringPersistenceTarget | null = null;
+
+    const ensureWriteTarget = async (): Promise<AuthoringPersistenceTarget> => {
+      if (!writeTarget) {
+        writeTarget = await resolveSaveTarget(request.packageName, true);
+      }
+
+      return writeTarget;
+    };
 
     try {
       if (request.sectionId === 'worldbase-cast') {
-        const originalWorldBaseContents = await readWorldBaseDraftContents(request.packageName, target);
+        const nextWorldBase = applyWorldBaseCastDraft(
+          currentStoryPackage.worldBase,
+          nextWorldBaseDraft!,
+        );
+        const locationReferenceIssues = getDeletedSceneLocationReferenceIssues(
+          currentStoryPackage,
+          nextWorldBase,
+        );
+
+        if (locationReferenceIssues.length > 0) {
+          return createSaveBlockedResult(
+            {
+              requestId: request.requestId,
+              packageName: request.packageName,
+              sectionId: request.sectionId,
+              showLocally: true,
+              showInGlobalDiagnostics: false,
+            },
+            locationReferenceIssues,
+          );
+        }
+
+        const activeWriteTarget = await ensureWriteTarget();
+        const originalWorldBaseContents = await readWorldBaseDraftContents(
+          request.packageName,
+          activeWriteTarget,
+        );
 
         try {
-          const nextWorldBase = applyWorldBaseCastDraft(
-            currentStoryPackage.worldBase,
-            nextWorldBaseDraft!,
-          );
-          const locationReferenceIssues = getDeletedSceneLocationReferenceIssues(
-            currentStoryPackage,
+          changedFiles = await persistWorldBaseDraft(
+            request.packageName,
             nextWorldBase,
+            activeWriteTarget,
           );
-
-          if (locationReferenceIssues.length > 0) {
-            return createSaveBlockedResult(
-              {
-                requestId: request.requestId,
-                packageName: request.packageName,
-                sectionId: request.sectionId,
-                showLocally: true,
-                showInGlobalDiagnostics: false,
-              },
-              locationReferenceIssues,
-            );
-          }
-
-          changedFiles = await persistWorldBaseDraft(request.packageName, nextWorldBase, target);
           reloadedSectionState = await reloadStoryPackage(request.packageName, {
             forWrite: true,
-            target,
+            target: activeWriteTarget,
           });
         } catch (writeOrReloadError) {
-          await restoreWorldBaseDraft(request.packageName, originalWorldBaseContents, target);
+          await restoreWorldBaseDraft(
+            request.packageName,
+            originalWorldBaseContents,
+            activeWriteTarget,
+          );
           throw writeOrReloadError;
         }
       } else if (request.sectionId === 'scene-phase-authoring') {
-        const originalSceneContents = await readSceneDraftContents(request.packageName, target);
-        const originalPhasePlansContents = await readPhasePlansDraftContents(
-          request.packageName,
-          target,
-        );
         const routerOptions = currentStoryPackage.routerProfiles.map((profile) => profile.routerName);
         const locationOptions = currentStoryPackage.worldBase.locations.map(
           (location) => location.locationId,
@@ -749,24 +765,34 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
           );
         }
 
+        const activeWriteTarget = await ensureWriteTarget();
+        const originalSceneContents = await readSceneDraftContents(
+          request.packageName,
+          activeWriteTarget,
+        );
+        const originalPhasePlansContents = await readPhasePlansDraftContents(
+          request.packageName,
+          activeWriteTarget,
+        );
+
         try {
           const renderedScenePhase = renderScenePhaseAuthoring(currentStoryPackage, nextScenePhaseDraft!);
           changedFiles = await persistScenePhaseDraft(
             request.packageName,
             renderedScenePhase.sceneSpec,
             renderedScenePhase.phasePlans,
-            target,
+            activeWriteTarget,
           );
           reloadedSectionState = await reloadStoryPackage(request.packageName, {
             forWrite: true,
-            target,
+            target: activeWriteTarget,
           });
         } catch (writeOrReloadError) {
           await restoreScenePhaseDraft(
             request.packageName,
             originalSceneContents,
             originalPhasePlansContents,
-            target,
+            activeWriteTarget,
           );
           throw writeOrReloadError;
         }
@@ -799,74 +825,77 @@ export async function saveSectionDraft(input: SaveRequest): Promise<SaveResult> 
           );
 
           if (moduleScope === 'router-profile-set') {
+            const activeWriteTarget = await ensureWriteTarget();
             const originalRouterLexiconContents = await readRouterLexiconDraftContents(
               request.packageName,
-              target,
+              activeWriteTarget,
             );
 
             try {
               changedFiles = await persistRouterProfilesDraft(
                 request.packageName,
                 renderedControlModules.routerProfiles ?? currentStoryPackage.routerProfiles,
-                target,
+                activeWriteTarget,
               );
               reloadedSectionState = await reloadStoryPackage(request.packageName, {
                 forWrite: true,
-                target,
+                target: activeWriteTarget,
               });
             } catch (writeOrReloadError) {
               await restoreRouterLexiconDraft(
                 request.packageName,
                 originalRouterLexiconContents,
-                target,
+                activeWriteTarget,
               );
               throw writeOrReloadError;
             }
           } else if (moduleScope === 'auditor-question-set') {
+            const activeWriteTarget = await ensureWriteTarget();
             const originalAuditQuestionsContents = await readAuditQuestionsDraftContents(
               request.packageName,
-              target,
+              activeWriteTarget,
             );
 
             try {
               changedFiles = await persistAuditQuestionSetDraft(
                 request.packageName,
                 renderedControlModules.auditQuestionSet ?? currentStoryPackage.auditQuestionSet,
-                target,
+                activeWriteTarget,
               );
               reloadedSectionState = await reloadStoryPackage(request.packageName, {
                 forWrite: true,
-                target,
+                target: activeWriteTarget,
               });
             } catch (writeOrReloadError) {
               await restoreAuditQuestionSetDraft(
                 request.packageName,
                 originalAuditQuestionsContents,
-                target,
+                activeWriteTarget,
               );
               throw writeOrReloadError;
             }
           } else {
+            const activeWriteTarget = await ensureWriteTarget();
             const originalControlModulesContents = await readControlModulesDraftContents(
               request.packageName,
-              target,
+              activeWriteTarget,
             );
 
             try {
               changedFiles = await persistControlModulesDraft(
                 request.packageName,
                 renderedControlModules.controlModules ?? currentStoryPackage.controlModules,
-                target,
+                activeWriteTarget,
               );
               reloadedSectionState = await reloadStoryPackage(request.packageName, {
                 forWrite: true,
-                target,
+                target: activeWriteTarget,
               });
             } catch (writeOrReloadError) {
               await restoreControlModulesDraft(
                 request.packageName,
                 originalControlModulesContents,
-                target,
+                activeWriteTarget,
               );
               throw writeOrReloadError;
             }

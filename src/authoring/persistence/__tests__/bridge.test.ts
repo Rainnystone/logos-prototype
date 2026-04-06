@@ -718,6 +718,63 @@ describe('saveSectionDraft', () => {
     expect(() => readFileSync(authoringStatusPath, 'utf8')).toThrow();
   });
 
+  it('does not bootstrap legacy storyline files when the first save is blocked, but bootstraps on the first successful save', async () => {
+    prepareTestPackage();
+
+    const blockedResult = await saveSectionDraft({
+      requestId: 'request-blocked-before-bootstrap',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'scene-phase-authoring',
+      payload: {
+        uiFields: {
+          sceneSpec: {
+            sceneName: '炎上直播间·改',
+            openingSituation: '',
+            startPoint: '日常走廊先出现异常升温，凪从人群表层脱离。',
+            endLine: '灰谷烈失势，校园恢复表面平静。',
+            openingHook: '',
+            castMode: 'explicit',
+            cast: ['chr_core01'],
+            locationIds: ['loc_missing'],
+          },
+          phasePlans: [
+            {
+              phaseId: 'phase-01-prologue',
+              phaseName: '序幕裂缝',
+              phaseGoal: '先确认事故源头。',
+              phaseEndPoint: '',
+              gradientType: 'Rising',
+              routerHint: '日常/闲暇',
+              notes: '',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(blockedResult.kind).toBe('save_blocked');
+    expect(existsSync(storylineRepositoryPath)).toBe(false);
+    expect(existsSync(variantRootPath)).toBe(false);
+
+    const successfulResult = await saveSectionDraft({
+      requestId: 'request-success-after-blocked',
+      source: 'page',
+      packageName: testPackageName,
+      sectionId: 'worldbase-cast',
+      payload: {
+        uiFields: {
+          worldBaseSetting: 'bootstrap-after-blocked',
+        },
+      },
+    });
+
+    expect(successfulResult.kind).toBe('save_applied');
+    expect(existsSync(storylineRepositoryPath)).toBe(true);
+    expect(existsSync(variantWorldBasePath)).toBe(true);
+    expect(readFileSync(variantWorldBasePath, 'utf8')).toContain('bootstrap-after-blocked');
+  });
+
   it('preserves the existing sample purpose while clearing other optional scene fields', async () => {
     prepareTestPackage();
     const originalStoryPackage = await loadStoryPackage(testPackageName);
