@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadAuthoringState } from '@/authoring/persistence/package-state';
 import { loadEditRuntimeContinuityView, loadPlayRuntimeSessionView } from '@/runtime-sessions/views';
-import type { RuntimeSessionsFile, StateSnapshot } from '@/types';
+import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const sourcePackageName = 'sample-scene';
@@ -63,6 +63,11 @@ function makeStateSnapshot(beatText: string): StateSnapshot {
 async function writeRuntimeSessionsFile(file: RuntimeSessionsFile): Promise<void> {
   const runtimeSessionsPath = path.resolve(testPackagePath, 'runtime-sessions.json');
   await writeFile(runtimeSessionsPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+}
+
+async function writeStorylineRepositoryFile(file: StorylineRepositoryFile): Promise<void> {
+  const storylineRepositoryPath = path.resolve(testPackagePath, 'storyline-repository.json');
+  await writeFile(storylineRepositoryPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
 }
 
 async function writeValidRuntimeSessionsFile(): Promise<void> {
@@ -357,6 +362,117 @@ describe('runtime session views', () => {
 
     expect(editState.runtimeContinuityView?.activeSession?.sessionId).toBe(playView.activeSessionId);
     expect(playViewAgain.activeSessionId).toBe(playView.activeSessionId);
+  });
+
+  it('resolves runtime continuity through the active storyline binding instead of unbound sessions', async () => {
+    prepareTestPackage();
+    await writeRuntimeSessionsFile({
+      version: 1,
+      activeSessionId: 'sess_orphan',
+      sessionsById: {
+        sess_storyline_main: {
+          sessionId: 'sess_storyline_main',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:05.000Z',
+          headCheckpointId: 'chk_storyline',
+          activeCheckpointId: 'chk_storyline',
+          orderedCheckpointIds: ['chk_storyline'],
+          checkpointsById: {
+            chk_storyline: {
+              checkpointId: 'chk_storyline',
+              acceptedBeatOrdinal: 1,
+              sceneId: 'scene_opening',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_storyline',
+              acceptedTranscript: {
+                playerInput: 'follow storyline',
+                beatText: 'Storyline-bound checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Storyline-bound checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'storyline delta',
+                stableBackgroundText: 'storyline background',
+              },
+              createdAt: '2026-04-03T00:00:01.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'storyline delta',
+            stableBackgroundText: 'storyline background',
+          },
+        },
+        sess_orphan: {
+          sessionId: 'sess_orphan',
+          lifecycle: 'in_progress',
+          createdAt: '2026-04-03T00:10:00.000Z',
+          updatedAt: '2026-04-03T00:10:00.000Z',
+          headCheckpointId: 'chk_orphan',
+          activeCheckpointId: 'chk_orphan',
+          orderedCheckpointIds: ['chk_orphan'],
+          checkpointsById: {
+            chk_orphan: {
+              checkpointId: 'chk_orphan',
+              acceptedBeatOrdinal: 99,
+              sceneId: 'scene_orphan',
+              phaseIndex: 1,
+              beatIndex: 1,
+              roundId: 'round_orphan',
+              acceptedTranscript: {
+                playerInput: 'follow orphan',
+                beatText: 'Orphan checkpoint',
+              },
+              stateSnapshot: makeStateSnapshot('Orphan checkpoint'),
+              lastStableRelationshipLayer: {
+                highlightedDeltasText: 'orphan delta',
+                stableBackgroundText: 'orphan background',
+              },
+              createdAt: '2026-04-03T00:10:01.000Z',
+            },
+          },
+          lastStableRelationshipLayer: {
+            highlightedDeltasText: 'orphan delta',
+            stableBackgroundText: 'orphan background',
+          },
+        },
+      },
+    });
+    await writeStorylineRepositoryFile({
+      version: 1,
+      activeStorylineId: 'storyline_main',
+      storylinesById: {
+        storyline_main: {
+          storylineId: 'storyline_main',
+          name: 'Main Line',
+          status: 'active',
+          sourceCheckpointId: null,
+          headCheckpointId: 'chk_storyline',
+          variantId: 'variant_main',
+          activeSessionId: 'sess_storyline_main',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+      },
+      variantsById: {
+        variant_main: {
+          variantId: 'variant_main',
+          workspaceRoot: 'variants/variant_main',
+          createdFromStorylineId: null,
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        },
+      },
+    });
+
+    const playView = await loadPlayRuntimeSessionView(testPackageName);
+    const editView = await loadEditRuntimeContinuityView(testPackageName);
+
+    expect(playView.activeSessionId).toBe('sess_storyline_main');
+    expect(playView.activeCheckpointId).toBe('chk_storyline');
+    expect(playView.beatHistory[0]?.beatText).toBe('Storyline-bound checkpoint');
+    expect(editView.kind).toBe('active');
+    expect(editView.activeSession?.sessionId).toBe('sess_storyline_main');
   });
 
   it('adds a bounded runtime continuity view to loadAuthoringState without exposing raw checkpoints', async () => {

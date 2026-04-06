@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import * as storylineSubstrate from '@/storylines/substrate';
 import type { RuntimeSessionCommand, RuntimeSessionCommandResult } from '@/runtime-sessions/repository';
 import { RelationshipLayerSchema, RuntimeSessionLifecycleSchema, StateSnapshotSchema } from '@/types';
 
@@ -130,58 +131,8 @@ export async function POST(
   }
 
   try {
-    let result: RuntimeSessionCommandResult;
-
-    switch (command.kind) {
-      case 'ensure_active_session': {
-        const session = await runtimeSessionsRepository.ensureActiveSession(params.packageName);
-        result = {
-          activeSessionId: session.sessionId,
-        };
-        break;
-      }
-
-      case 'record_accepted_beat': {
-        const persisted = await runtimeSessionsRepository.recordAcceptedBeat({
-          ...command.payload,
-          packageName: params.packageName,
-        });
-        result = {
-          activeSessionId: persisted.session.sessionId,
-          activeCheckpointId: persisted.checkpoint.checkpointId,
-        };
-        break;
-      }
-
-      case 'finalize_relationship_layer': {
-        await runtimeSessionsRepository.finalizeRelationshipLayer({
-          ...command.payload,
-          packageName: params.packageName,
-        });
-        result = {
-          activeSessionId: command.payload.sessionId,
-          activeCheckpointId: command.payload.checkpointId,
-        };
-        break;
-      }
-
-      case 'reset_workbench': {
-        const session = await runtimeSessionsRepository.resetWorkbench(params.packageName);
-        result = {
-          activeSessionId: session.sessionId,
-        };
-        break;
-      }
-
-      default: {
-        return NextResponse.json(
-          {
-            error: 'Unsupported runtime session command.',
-          },
-          { status: 400 },
-        );
-      }
-    }
+    const result: RuntimeSessionCommandResult =
+      await storylineSubstrate.executeStorylineRuntimeSessionCommand(params.packageName, command);
 
     return NextResponse.json(result);
   } catch (error) {

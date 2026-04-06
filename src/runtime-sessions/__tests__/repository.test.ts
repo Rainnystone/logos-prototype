@@ -267,6 +267,110 @@ describe('runtime sessions repository', () => {
     }
   });
 
+  it('updates runtime-sessions activeSessionId as a mirror without mutating persisted sessions', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-mirror-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_main',
+        sessionsById: {
+          sess_main: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:01.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: makeRelationshipLayer(),
+          },
+          sess_alt: {
+            sessionId: 'sess_alt',
+            lifecycle: 'awaiting_start',
+            createdAt: '2026-04-03T00:05:00.000Z',
+            updatedAt: '2026-04-03T00:05:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: makeRelationshipLayer('alt'),
+          },
+        },
+      });
+
+      await repository.setMirroredActiveSession(packageName, 'sess_alt');
+
+      const persisted = await repository.readFile(packageName);
+      expect(persisted?.activeSessionId).toBe('sess_alt');
+      expect(Object.keys(persisted?.sessionsById ?? {})).toEqual(['sess_main', 'sess_alt']);
+      expect(persisted?.sessionsById.sess_main?.sessionId).toBe('sess_main');
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('creates a new active session rooted at a known checkpoint', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-branch-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_main',
+        sessionsById: {
+          sess_main: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:02.000Z',
+            headCheckpointId: 'chk_01',
+            activeCheckpointId: 'chk_01',
+            orderedCheckpointIds: ['chk_01'],
+            checkpointsById: {
+              chk_01: {
+                checkpointId: 'chk_01',
+                acceptedBeatOrdinal: 1,
+                sceneId: 'scene_opening',
+                phaseIndex: 1,
+                beatIndex: 1,
+                roundId: 'round_01',
+                acceptedTranscript: {
+                  playerInput: 'open the door',
+                  beatText: 'The door swings open.',
+                },
+                stateSnapshot: makeStateSnapshot(),
+                lastStableRelationshipLayer: makeRelationshipLayer(),
+                createdAt: '2026-04-03T00:00:01.000Z',
+              },
+            },
+            lastStableRelationshipLayer: makeRelationshipLayer(),
+          },
+        },
+      });
+
+      const branched = await repository.createSessionFromCheckpoint({
+        packageName,
+        checkpointId: 'chk_01',
+      });
+
+      expect(branched.activeCheckpointId).toBe('chk_01');
+      expect(branched.headCheckpointId).toBe('chk_01');
+      expect(branched.orderedCheckpointIds).toEqual(['chk_01']);
+
+      const persisted = await repository.readFile(packageName);
+      expect(persisted?.activeSessionId).toBe(branched.sessionId);
+      expect(persisted?.sessionsById[branched.sessionId]).toBeDefined();
+      expect(persisted?.sessionsById[branched.sessionId]?.checkpointsById.chk_01?.checkpointId).toBe(
+        'chk_01',
+      );
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
   it('serializes conflicting writes so stale finalization cannot overwrite a newer active session', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-serial-'));
     const packageName = path.basename(packageRoot);
