@@ -4,11 +4,15 @@ import fs from 'node:fs/promises';
 
 import {
   createSessionSimulator,
+  createKernelSessionSimulator,
   type RestoreResult,
   type ResetResult,
+  type KernelSessionSimulator,
 } from '@simulation/session-simulator';
-import { createTempStoryPackage } from '@simulation/temp-package';
+import { createTempStoryPackage, type TempStoryPackageFixture } from '@simulation/temp-package';
 import { resetWorkbench, readFile } from '@/runtime-sessions/repository';
+import { createMockKernel } from '@simulation/mock-kernel';
+import { createMockFixtureBuilder } from '@simulation/mock-fixture-builder';
 
 /**
  * Minimal valid StateSnapshot for test fixtures.
@@ -456,6 +460,86 @@ describe('session simulator', () => {
       expect(result.newSessionUnaffected).toBe(false);
 
       await fixture.cleanup();
+    });
+  });
+
+  // ============================================================================
+  // Kernel-backed SessionSimulator Tests (Task 5)
+  // ============================================================================
+
+  describe('createKernelSessionSimulator', () => {
+    let kernel: ReturnType<typeof createMockKernel>;
+
+    beforeEach(() => {
+      kernel = createMockKernel('test-package-kernel');
+    });
+
+    it('creates simulator bound to MockKernel', async () => {
+      const simulator = createKernelSessionSimulator({ kernel });
+
+      expect(simulator).toBeDefined();
+      expect(simulator.packageName).toBe('test-package-kernel');
+      expect(simulator.getKernel()).toBe(kernel);
+    });
+
+    it('attemptRestore reads from kernel state', async () => {
+      // Build fixture state in kernel
+      const builder = createMockFixtureBuilder(kernel);
+      builder.withSession({ sessionId: 'sess_kernel_01', lifecycle: 'awaiting_start', isActive: true });
+
+      const simulator = createKernelSessionSimulator({ kernel });
+      const result = await simulator.attemptRestore();
+
+      expect(result.restored).toBe(true);
+      expect(result.session).not.toBeNull();
+      expect(result.session!.sessionId).toBe('sess_kernel_01');
+      expect(result.session!.lifecycle).toBe('awaiting_start');
+    });
+
+    it('attemptRestore returns null when no sessions in kernel', async () => {
+      const simulator = createKernelSessionSimulator({ kernel });
+      const result = await simulator.attemptRestore();
+
+      expect(result.restored).toBe(false);
+      expect(result.session).toBeNull();
+      expect(result.activeCheckpoint).toBeNull();
+    });
+
+    it('reset creates new session in kernel state', async () => {
+      // Setup initial session
+      const builder = createMockFixtureBuilder(kernel);
+      builder
+        .withSession({ sessionId: 'sess_old', lifecycle: 'in_progress', isActive: true })
+        .withCheckpoint({ sessionId: 'sess_old', checkpointId: 'ckpt_01', acceptedBeatOrdinal: 1 });
+
+      const simulator = createKernelSessionSimulator({ kernel });
+      const result = await simulator.reset();
+
+      expect(result.oldSessionId).toBe('sess_old');
+      expect(result.newSessionId).toBeDefined();
+      expect(result.newSessionId).not.toBe('sess_old');
+      expect(result.newSession.lifecycle).toBe('awaiting_start');
+
+      // Verify kernel state
+      const state = kernel.getState();
+      expect(state.runtimeSessions.activeSessionId).toBe(result.newSessionId);
+      expect(state.runtimeSessions.sessionsById['sess_old']).toBeDefined(); // Old session preserved
+    });
+
+    it('verifyStaleRefreshProtection works with kernel state', async () => {
+      const builder = createMockFixtureBuilder(kernel);
+      builder.withSession({ sessionId: 'sess_new', lifecycle: 'awaiting_start', isActive: true });
+
+      const simulator = createKernelSessionSimulator({ kernel });
+
+      const result = await simulator.verifyStaleRefreshProtection({
+        targetSessionId: 'sess_old',
+        newSessionId: 'sess_new',
+      });
+
+      expect(result.isProtected).toBe(true);
+      expect(result.newSessionUnaffected).toBe(true);
+      expect(result.activeSessionId).toBe('sess_new');
     });
   });
 });

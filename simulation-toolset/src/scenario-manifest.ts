@@ -4,6 +4,28 @@ export type SimulationScenarioManifestEntry = {
   readonly tags: readonly string[];
 };
 
+/**
+ * Storyline flow identifiers.
+ * These correspond to SerializedE2EFlowId in the shared trace contracts.
+ */
+export type StorylineFlowId =
+  | 'create_from_source_and_continue'
+  | 'branch_from_checkpoint_flow'
+  | 'switch_and_continue'
+  | 'rename_and_verify'
+  | 'legacy_bootstrap_flow'
+  | 'full_storyline_runtime_flow';
+
+/**
+ * Storyline flow manifest entry.
+ */
+export type StorylineFlowManifestEntry = {
+  readonly flowId: StorylineFlowId;
+  readonly title: string;
+  readonly description: string;
+  readonly tags: readonly string[];
+};
+
 const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
   {
     scenarioId: 'happy-path',
@@ -57,6 +79,49 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
   },
 ] as const;
 
+/**
+ * Built-in storyline flow manifest.
+ * Reference: SerializedE2EFlowId in serialized-trace.ts
+ */
+const BUILT_IN_STORYLINE_FLOW_MANIFEST: readonly StorylineFlowManifestEntry[] = [
+  {
+    flowId: 'create_from_source_and_continue',
+    title: 'Create from Source and Continue',
+    description: 'Create a new storyline from a source package and continue play',
+    tags: ['storyline', 'create', 'source'],
+  },
+  {
+    flowId: 'branch_from_checkpoint_flow',
+    title: 'Branch from Checkpoint',
+    description: 'Branch a new storyline from an existing checkpoint',
+    tags: ['storyline', 'branch', 'checkpoint'],
+  },
+  {
+    flowId: 'switch_and_continue',
+    title: 'Switch and Continue',
+    description: 'Switch to an existing storyline and continue play',
+    tags: ['storyline', 'switch'],
+  },
+  {
+    flowId: 'rename_and_verify',
+    title: 'Rename and Verify',
+    description: 'Rename a storyline and verify workspace consistency',
+    tags: ['storyline', 'rename', 'workspace'],
+  },
+  {
+    flowId: 'legacy_bootstrap_flow',
+    title: 'Legacy Bootstrap',
+    description: 'Bootstrap from legacy runtime-sessions file without storyline repository',
+    tags: ['storyline', 'legacy', 'bootstrap'],
+  },
+  {
+    flowId: 'full_storyline_runtime_flow',
+    title: 'Full Storyline Runtime Flow',
+    description: 'Complete runtime flow with storyline context',
+    tags: ['storyline', 'runtime', 'e2e'],
+  },
+] as const;
+
 export function listBuiltInScenarioManifestEntries(): readonly SimulationScenarioManifestEntry[] {
   return [...BUILT_IN_SCENARIO_MANIFEST];
 }
@@ -65,4 +130,20 @@ export function getScenarioManifestEntry(
   scenarioId: string,
 ): SimulationScenarioManifestEntry | undefined {
   return BUILT_IN_SCENARIO_MANIFEST.find((entry) => entry.scenarioId === scenarioId);
+}
+
+/**
+ * List all built-in storyline flow manifest entries.
+ */
+export function listBuiltInStorylineFlowManifestEntries(): readonly StorylineFlowManifestEntry[] {
+  return [...BUILT_IN_STORYLINE_FLOW_MANIFEST];
+}
+
+/**
+ * Get a specific storyline flow manifest entry by flow ID.
+ */
+export function getStorylineFlowManifestEntry(
+  flowId: StorylineFlowId,
+): StorylineFlowManifestEntry | undefined {
+  return BUILT_IN_STORYLINE_FLOW_MANIFEST.find((entry) => entry.flowId === flowId);
 }

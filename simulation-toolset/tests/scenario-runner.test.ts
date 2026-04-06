@@ -13,6 +13,8 @@ import {
   runSimulationScenario,
   runSimulationScenarioBatch,
 } from '@simulation/scenario-runner';
+import { createMockKernel } from '@simulation/mock-kernel';
+import { createMockFixtureBuilder } from '@simulation/mock-fixture-builder';
 
 describe('simulation contracts', () => {
   it('accepts a minimal happy-path scenario', () => {
@@ -214,5 +216,123 @@ describe('simulation contracts', () => {
     await expect(access(secondReportPath as string)).resolves.toBeUndefined();
 
     await rm(outputDir, { recursive: true, force: true });
+  });
+
+  // ============================================================================
+  // Kernel-backed Scenario Tests (Task 5)
+  // ============================================================================
+
+  describe('kernel-backed scenarios', () => {
+    it('accepts kernel-backed scenario input', async () => {
+      const kernel = createMockKernel('kernel-test-package');
+      const builder = createMockFixtureBuilder(kernel);
+      builder.buildStoryline({
+        storylineId: 'storyline_test',
+        name: 'Test Storyline',
+        withCheckpoints: [1],
+      });
+
+      const report = await runSimulationScenario({
+        scenarioId: 'kernel-backed-test',
+        packageName: 'kernel-test-package',
+        run({ recorder }) {
+          recorder.recordAction({ kind: 'kernel.init' });
+          recorder.recordAssertion({ name: 'kernel-state-valid', pass: true });
+
+          return Promise.resolve({
+            finalState: {
+              kernelState: kernel.getState(),
+              status: 'kernel-ok',
+            },
+          });
+        },
+      });
+
+      expect(report.scenarioMeta.scenarioId).toBe('kernel-backed-test');
+      expect(report.finalState.status).toBe('kernel-ok');
+
+      await kernel.cleanup();
+    });
+
+    it('kernel-backed batch scenarios write manifest correctly', async () => {
+      const kernel1 = createMockKernel('kernel-batch-1');
+      const kernel2 = createMockKernel('kernel-batch-2');
+
+      const outputDir = path.resolve(
+        process.cwd(),
+        'reports',
+        'kernel-batch-test',
+      );
+
+      const batchResult = await runSimulationScenarioBatch({
+        scenarios: [
+          {
+            scenarioId: 'kernel-scenario-1',
+            packageName: 'kernel-batch-1',
+            run({ recorder }) {
+              recorder.recordAssertion({ name: 'kernel-1-pass', pass: true });
+              return Promise.resolve({
+                finalState: { kernelActive: true },
+              });
+            },
+          },
+          {
+            scenarioId: 'kernel-scenario-2',
+            packageName: 'kernel-batch-2',
+            run({ recorder }) {
+              recorder.recordAssertion({ name: 'kernel-2-pass', pass: true });
+              return Promise.resolve({
+                finalState: { kernelActive: true },
+              });
+            },
+          },
+        ],
+        outputDir,
+      });
+
+      expect(batchResult.reports).toHaveLength(2);
+      expect(batchResult.writtenIndexPath).toBeDefined();
+
+      // Verify run index contains manifest entries
+      const indexContent = await readFile(batchResult.writtenIndexPath as string, 'utf8');
+      const indexParsed = JSON.parse(indexContent);
+
+      expect(indexParsed.schemaVersion).toBe(1);
+      expect(indexParsed.reports).toHaveLength(2);
+      expect(indexParsed.reports[0].scenarioId).toBe('kernel-scenario-1');
+
+      await rm(outputDir, { recursive: true, force: true });
+      await kernel1.cleanup();
+      await kernel2.cleanup();
+    });
+
+    it('kernel state is captured in finalState', async () => {
+      const kernel = createMockKernel('kernel-state-capture');
+      const builder = createMockFixtureBuilder(kernel);
+
+      builder.withSession({ sessionId: 'sess_capture', lifecycle: 'awaiting_start', isActive: true });
+      builder.withVariantWorkspace({ variantId: 'variant_test', hasWorldBase: true });
+
+      const report = await runSimulationScenario({
+        scenarioId: 'kernel-state-capture-test',
+        packageName: 'kernel-state-capture',
+        run({ recorder }) {
+          const state = kernel.getState();
+          recorder.recordAction({ kind: 'kernel.snapshot', details: { snapshotId: kernel.snapshot() } });
+
+          return Promise.resolve({
+            finalState: {
+              activeSessionId: state.runtimeSessions.activeSessionId,
+              variantCount: Object.keys(state.variantsById).length,
+            },
+          });
+        },
+      });
+
+      expect(report.finalState.activeSessionId).toBe('sess_capture');
+      expect(report.finalState.variantCount).toBe(1);
+
+      await kernel.cleanup();
+    });
   });
 });

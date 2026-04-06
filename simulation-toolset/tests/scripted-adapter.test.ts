@@ -120,4 +120,120 @@ describe('scripted adapter', () => {
       adapter.getTrace().operations[0]?.startedAtMs ?? 0,
     );
   });
+
+  // ============================================================================
+  // Trace Compatibility Tests (Task 5)
+  // ============================================================================
+
+  describe('trace compatibility with shared storyline trace format', () => {
+    it('trace entries contain operation and outcome fields', async () => {
+      const adapter = createScriptedAdapter({
+        route: [{ routerName: 'test-router', inferenceTrace: 'trace' }],
+        generate: [{ beatText: 'test', options: ['a', 'b'] }],
+      });
+
+      await adapter.route?.({} as never);
+      await adapter.generate?.({} as never);
+
+      const trace = adapter.getTrace();
+
+      // First operation (route)
+      expect(trace.operations[0]).toMatchObject({
+        operation: 'route',
+        outcome: 'result',
+        request: {},
+        response: { routerName: 'test-router', inferenceTrace: 'trace' },
+      });
+
+      // Second operation (generate)
+      expect(trace.operations[1]).toMatchObject({
+        operation: 'generate',
+        outcome: 'result',
+      });
+    });
+
+    it('trace entries preserve request input', async () => {
+      const adapter = createScriptedAdapter({
+        collapse: [{ alpha: 'alpha-val', beta: 'beta-val', inferenceTrace: 'collapse-trace' }],
+      });
+
+      const requestInput = {
+        sceneId: 'scene_001',
+        currentPhaseIndex: 1,
+        currentBeatIndexInPhase: 1,
+      };
+
+      await adapter.collapse?.(requestInput);
+
+      const trace = adapter.getTrace();
+      expect(trace.operations[0]?.request).toMatchObject(requestInput);
+    });
+
+    it('trace entries preserve error information', async () => {
+      const adapter = createScriptedAdapter({
+        generate: [{ kind: 'error', message: 'provider error' }],
+      });
+
+      await expect(adapter.generate?.({} as never)).rejects.toThrow();
+
+      const trace = adapter.getTrace();
+      expect(trace.operations[0]).toMatchObject({
+        operation: 'generate',
+        outcome: 'error',
+        error: 'provider error',
+      });
+    });
+
+    it('trace supports gossipelog operations', async () => {
+      const adapter = createScriptedAdapter({
+        gossipelogUpdate: [
+          {
+            involvedRoleIds: ['role_001'],
+            invocationNoOp: false,
+            edgeUpdates: [{ from: 'char_001', to: 'char_002', edge: 'friendship' }],
+          },
+        ],
+        gossipelogInjection: [
+          {
+            highlightedDeltasText: 'delta text',
+            stableBackgroundText: 'background text',
+          },
+        ],
+      });
+
+      await adapter.gossipelogUpdate?.({} as never);
+      await adapter.gossipelogInjection?.({} as never);
+
+      const trace = adapter.getTrace();
+
+      expect(trace.operations[0]?.operation).toBe('gossipelogUpdate');
+      expect(trace.operations[0]?.outcome).toBe('result');
+
+      expect(trace.operations[1]?.operation).toBe('gossipelogInjection');
+      expect(trace.operations[1]?.outcome).toBe('result');
+    });
+
+    it('trace can be exported for report integration', async () => {
+      const adapter = createScriptedAdapter({
+        generate: [{ beatText: 'test-beat', options: ['a', 'b', 'c', 'd'] }],
+      });
+
+      await adapter.generate?.({} as never);
+
+      const trace = adapter.getTrace();
+
+      // Trace format should be compatible with SimulationAdapterTrace schema
+      const adapterTraceEntry = trace.operations[0];
+      expect(adapterTraceEntry).toBeDefined();
+      expect(typeof adapterTraceEntry?.operation).toBe('string');
+      expect(typeof adapterTraceEntry?.outcome).toBe('string');
+      // Optional fields for timing metadata
+      if (adapterTraceEntry?.delayMs !== undefined) {
+        expect(typeof adapterTraceEntry.delayMs).toBe('number');
+      }
+      if (adapterTraceEntry?.error !== undefined) {
+        expect(typeof adapterTraceEntry.error).toBe('string');
+      }
+    });
+  });
 });
