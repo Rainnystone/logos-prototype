@@ -116,10 +116,15 @@ describe('StoryPackageManagementSection', () => {
     expect(within(branchRow).queryAllByRole('button', { name: '取消', hidden: true })).toHaveLength(0);
     await user.click(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 2' }));
 
-    expect(within(branchRow).getByRole('button', { name: '确认' })).toBeInTheDocument();
-    expect(within(branchRow).getByRole('button', { name: '取消' })).toBeInTheDocument();
+    const confirmButton = within(branchRow).getByRole('button', { name: '确认' });
+    const cancelButton = within(branchRow).getByRole('button', { name: '取消' });
+    expect(confirmButton).toBeVisible();
+    expect(cancelButton).toBeVisible();
+    expect(confirmButton.closest('.storyline-row__branch-drawer')).toHaveClass(
+      'storyline-row__branch-drawer--visible',
+    );
     expect(within(branchRow).queryByText(/分出新故事线/i)).not.toBeInTheDocument();
-    await user.click(within(branchRow).getByRole('button', { name: '取消' }));
+    await user.click(cancelButton);
 
     await waitFor(() => {
       expect(within(branchRow).queryByRole('button', { name: '确认' })).not.toBeInTheDocument();

@@ -209,7 +209,7 @@ export function StorylineWorkspaceRow({
               />
               <span className="storyline-row__checkpoint-beat">{`Beat ${checkpoint.beatIndex}`}</span>
               {openCheckpointId === checkpoint.checkpointId ? (
-                <div className="storyline-row__branch-drawer">
+                <div className="storyline-row__branch-drawer storyline-row__branch-drawer--visible">
                   <div className="storyline-row__branch-actions">
                     <button
                       type="button"
