@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { StorylineDeleteControl } from '@/app/edit/sections/StorylineDeleteControl';
 import type { StoryPackageManagementStorylineRowView } from '@/types';
 
 interface StorylineWorkspaceRowProps {
@@ -11,6 +12,7 @@ interface StorylineWorkspaceRowProps {
   readonly onCreateFromSource: (storylineId: string) => Promise<void>;
   readonly onBranchFromCheckpoint: (storylineId: string, checkpointId: string) => Promise<void>;
   readonly onRenameDisplayName: (storylineId: string, nextDisplayName: string) => Promise<string>;
+  readonly onDeleteStoryline: (storylineId: string) => Promise<void>;
 }
 
 function normalizeDisplayName(value: string): string {
@@ -28,12 +30,13 @@ export function StorylineWorkspaceRow({
   onCreateFromSource,
   onBranchFromCheckpoint,
   onRenameDisplayName,
+  onDeleteStoryline,
 }: StorylineWorkspaceRowProps) {
   const [displayName, setDisplayName] = useState(row.displayName);
   const [draftDisplayName, setDraftDisplayName] = useState(row.displayName);
   const [openCheckpointId, setOpenCheckpointId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<
-    'rename' | 'switch' | 'continue' | 'create' | 'branch' | null
+    'rename' | 'switch' | 'continue' | 'create' | 'branch' | 'delete' | null
   >(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const renameSubmittingRef = useRef(false);
@@ -169,6 +172,17 @@ export function StorylineWorkspaceRow({
             >
               {`从当前线派生 ${displayName}`}
             </button>
+            <StorylineDeleteControl
+              displayName={displayName}
+              canDelete={row.canDelete}
+              deleteDisabledReason={row.deleteDisabledReason}
+              disabled={pendingAction !== null}
+              onDelete={() => {
+                void runRowAction('delete', async () => {
+                  await onDeleteStoryline(row.storylineId);
+                });
+              }}
+            />
           </div>
         </div>
       </div>

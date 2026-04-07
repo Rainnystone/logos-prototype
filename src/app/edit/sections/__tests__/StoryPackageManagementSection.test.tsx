@@ -5,15 +5,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StoryPackageManagementSection } from '@/app/edit/sections/StoryPackageManagementSection';
 import {
   workspaceViewFixture,
+  workspaceViewSingleLineFixture,
   workspaceViewWithoutHeadFixture,
 } from '@/app/edit/sections/__tests__/story-package-management.fixtures';
 
 const mockPush = vi.hoisted(() => vi.fn());
+const mockReplace = vi.hoisted(() => vi.fn());
 const mockRefresh = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+    replace: mockReplace,
     refresh: mockRefresh,
   }),
 }));
@@ -100,6 +103,50 @@ describe('StoryPackageManagementSection', () => {
     );
     expect(screen.getByRole('link', { name: 'alt-scene' }).closest('.story-package-selector__card')).not.toHaveClass(
       'story-package-selector__card--active',
+    );
+  });
+
+  it('renders a dashed 新建故事包 tile below the ready package list', () => {
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    expect(screen.getByRole('button', { name: '新建故事包' })).toBeInTheDocument();
+  });
+
+  it('opens an inline package-creation state on the right without leaving 故事包管理', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+
+    expect(screen.getByRole('heading', { name: '新建故事包' })).toBeInTheDocument();
+    expect(screen.getByLabelText('故事包名称')).toBeInTheDocument();
+    expect(screen.getByText(/slug/i)).toBeInTheDocument();
+  });
+
+  it('submits package creation and replaces into the new management route on success', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          packageName: 'new-story-package',
+          activeStorylineId: 'storyline_main',
+          createdAt: '2026-04-07T00:00:00.000Z',
+        }),
+        {
+          status: 201,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.type(screen.getByLabelText('故事包名称'), '新故事包');
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      '/edit?storyPackage=new-story-package&section=story-package-management',
     );
   });
 
@@ -274,6 +321,44 @@ describe('StoryPackageManagementSection', () => {
       );
     });
     expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('requires secondary confirmation before deleting a storyline', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '删除 Branch Line' }));
+    expect(screen.getByRole('button', { name: '确认删除' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '取消删除' })).toBeVisible();
+  });
+
+  it('shows bounded inline feedback when delete fails after confirmation', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: '目标故事线已不存在。' }), {
+        status: 404,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '删除 Branch Line' }));
+    await user.click(screen.getByRole('button', { name: '确认删除' }));
+
+    expect(await screen.findByText('目标故事线已不存在。')).toBeInTheDocument();
+  });
+
+  it('disables delete for the last remaining usable storyline', () => {
+    render(
+      <StoryPackageManagementSection
+        packageName="sample-scene"
+        view={workspaceViewSingleLineFixture}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: '删除 Main Line' })).toBeDisabled();
+    expect(screen.getByText('至少保留一条故事线')).toBeInTheDocument();
   });
 
   it('disables create-from-source when the row has no head checkpoint', () => {

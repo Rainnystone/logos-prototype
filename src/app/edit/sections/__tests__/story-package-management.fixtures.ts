@@ -38,6 +38,8 @@ export const workspaceViewFixture: StoryPackageManagementWorkspaceView = {
       headSummary: 'Beat 3 · Nagi reaches the roof and spots the signal',
       canCreateFromSource: false,
       canContinue: true,
+      canDelete: true,
+      deleteDisabledReason: null,
       checkpointRail: [
         {
           checkpointId: 'chk_01',
@@ -75,6 +77,8 @@ export const workspaceViewFixture: StoryPackageManagementWorkspaceView = {
       headSummary: 'Beat 5 · The branch reaches the second door',
       canCreateFromSource: true,
       canContinue: true,
+      canDelete: true,
+      deleteDisabledReason: null,
       checkpointRail: [
         {
           checkpointId: 'chk_01',
@@ -118,7 +122,21 @@ export const workspaceViewWithoutHeadFixture: StoryPackageManagementWorkspaceVie
       headSummary: null,
       canCreateFromSource: false,
       canContinue: false,
+      canDelete: false,
+      deleteDisabledReason: '至少保留一条故事线',
       checkpointRail: [],
+    },
+  ],
+};
+
+export const workspaceViewSingleLineFixture: StoryPackageManagementWorkspaceView = {
+  ...workspaceViewFixture,
+  activeStorylineId: 'storyline_main',
+  storylines: [
+    {
+      ...workspaceViewFixture.storylines[0],
+      canDelete: false,
+      deleteDisabledReason: '至少保留一条故事线',
     },
   ],
 };
