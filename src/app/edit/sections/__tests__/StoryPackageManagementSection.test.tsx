@@ -218,9 +218,14 @@ describe('StoryPackageManagementSection', () => {
       />,
     );
 
+    const mainRow = screen.getByLabelText('Main Line storyline');
     expect(screen.getByLabelText('Story package selector')).toBeInTheDocument();
     expect(screen.getByLabelText('Storyline workspace')).toBeInTheDocument();
-    expect(screen.getByText('Main Line')).toBeInTheDocument();
+    expect(within(mainRow).getByText('Main Line')).toBeInTheDocument();
+    expect(within(mainRow).getByText('Phase 1')).toBeInTheDocument();
+    expect(within(mainRow).getByText('Beat 1')).toBeInTheDocument();
+    expect(mainRow.querySelector('.storyline-row__checkpoint--placeholder')).not.toBeNull();
+    expect(within(mainRow).queryByText('暂无可视轨道')).not.toBeInTheDocument();
   });
 
   it('opens a split-down confirm drawer when a beat dot is clicked and closes it on cancel', async () => {
@@ -536,6 +541,7 @@ describe('StoryPackageManagementSection', () => {
     expect(within(branchRow).getAllByText(/^Beat \d+$/)).toHaveLength(5);
     expect(within(branchRow).getByRole('button', { name: 'Phase 1 Beat 4' })).toBeInTheDocument();
     expect(within(branchRow).getByRole('button', { name: 'Phase 2 Beat 2' })).toBeInTheDocument();
+    expect(branchRow.querySelectorAll('.storyline-row__checkpoint-connector')).toHaveLength(4);
   });
 
   it('treats an unchanged normalized rename as success without calling the action route', async () => {

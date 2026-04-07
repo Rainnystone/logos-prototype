@@ -15,7 +15,7 @@
 - 当前活跃主线切换为 `Phase 3: Package & Storyline Layer`。
 - `Phase 3 Part 1` 已完成实现、验证、浏览器手验与 PR 提交。
 - `Phase 3 Part 2` 已完成实现、验证、独立 review、commit、push 与 PR 提交。
-- `Phase 3 Part 3` spec 与 implementation plan 都已完成独立 review，当前等待执行方式选择。
+- `Phase 3 Part 3` 已完成实现、最终验证与浏览器手验，当前等待分支收尾。
 - `Phase 3` 总 design spec 已同步吸收 `Part 2` 的最终 UI / UX 口径，避免后续 `Part 3` 再沿用旧的 workspace 语义。
 - `Phase 3` 主工作记忆入口：
   - [docs/superpowers/phase-3/README.md](docs/superpowers/phase-3/README.md)
@@ -42,6 +42,7 @@
 | 13 | complete | `Phase 3 Part 2` 已完成实现、验证、mock 验收与独立 review。 |
 | 14 | complete | `Phase 3 Part 3` spec 已完成、通过独立 review，并进入正式基线。 |
 | 15 | complete | `Phase 3 Part 3` implementation plan 已完成并通过独立 plan review。 |
+| 16 | complete | `Phase 3 Part 3` 已完成实现、最终验证、浏览器手验与文档同步。 |
 
 ## Frozen Product Decisions
 

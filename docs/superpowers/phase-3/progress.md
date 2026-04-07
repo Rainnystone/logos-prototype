@@ -2,6 +2,26 @@
 
 ## 2026-04-07
 
+- `Part 3` 代码实现、最终验证与浏览器手验已完成：
+  - `Task 1` 到 `Task 6` 全部收口
+  - 当前 `Phase 3` 主线实现已经完成，等待 branch 收尾（commit / push / PR）
+- 本轮最终额外收口了两个真实问题：
+  - 修复 `src/story-packages/__tests__/scaffold.test.ts` 中局部变量名 `module` 触发的 Next lint build blocker
+  - 按用户最新视觉反馈，把左侧 `新建故事包` tile 收成浅灰底、单层虚线，不再使用双层虚线感
+- `Part 3` 最终验证结果：
+  - targeted `Part 3` 测试通过：`9` 个测试文件、`119` 个测试通过
+  - `npm run type-check:simulation` 通过
+  - `npm run test:simulation` 通过：`35` 个测试文件、`349` 个测试通过
+  - `npm run build` 通过；仅保留仓库既有 warning
+  - `npm test` 全量通过：`84` 个测试文件、`686` 个测试通过
+- 真实浏览器验收已完成，结论如下：
+  - 左侧 package selector 现在只显示 package name
+  - `新建故事包` tile 已收口为浅灰底、单层虚线，符合 `phase 3 part 3 新增story package视觉参考图.png`
+  - 点击 `新建故事包` 后会在右侧打开 inline create state，slug preview 会实时更新
+  - 实际创建新包后，URL 会切到 `?storyPackage=<new>&section=story-package-management`，并且磁盘上会生成完整显式 `Phase 3` scaffold
+  - 删除 active storyline 会先出现二次确认；确认后旧 row 消失、邻近 row 自动晋升为 active；最后一条 storyline 的删除按钮会禁用
+- 浏览器验收过程中曾用真实新建包做过代表性输入验证；这些临时包与 Playwright 产物已在验证结束后清理，不会进入提交范围
+
 - 已写出正式 `Part 3` implementation plan：
   - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
 - 已完成 `Part 3` implementation plan review loop：
@@ -498,3 +518,16 @@
   - `Task 4 complete`
   - `Task 5 complete`
   - `Part 1 complete`
+- `Part 3` 交互收尾阶段补做了一轮 storyline rail 视觉收口：
+  - `checkpointRail` 现在使用显式横向 track + connector 渲染，不再把 checkpoint 节点堆成纵向块
+  - 空白 history 的 storyline 不再显示“暂无可视轨道”，改为展示 `Phase 1 / Beat 1` 的起始占位点
+  - 主线程已按 TDD 补测试并复跑通过：
+    - `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
+    - 结果：2 个测试文件、50 个测试通过
+  - 主线程已补做构建与全量回归：
+    - `npm run build`
+    - `npm test`
+    - 结果：构建通过；84 个测试文件、686 个测试通过
+  - 浏览器实看已覆盖两种状态：
+    - `sample-scene` 显示起始占位点
+    - 临时验证包显示跨 `Phase 1 -> Phase 2` 的横向连接 rail；验证后已清理临时包

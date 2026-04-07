@@ -26,7 +26,7 @@
 | 9 | complete | `Part 2` 已完成实现、独立 review、mock 验收、最终验证与文档同步。 |
 | 10 | complete | `Part 3` spec 已写出，完成独立 review 收口并进入用户确认。 |
 | 11 | complete | `Part 3` implementation plan 已写出并通过独立 plan review。 |
-| 12 | pending | 执行并验证 `Part 3`，收口 `Phase 3`。 |
+| 12 | complete | 已完成 `Part 3` 的实现、验证、浏览器手验与最终文档同步，`Phase 3` 主线实现已收口。 |
 
 ## Frozen Inputs From Earlier Phases
 
@@ -195,10 +195,20 @@
 - 正式 `Part 3` implementation plan 已写出：
   - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
 - 当前状态：
-  - `Approved, pending execution choice`
+  - `Execution complete`
 - 下一步：
-  - 由用户选择执行方式
-  - 然后开始 `Part 3` 代码实现、验证与最终收尾
+  - 进入 `Phase 3` 分支收尾：commit / push / PR
+
+## Part 3 Execution Checkpoints
+
+| Task | 状态 | 说明 |
+|---|---|---|
+| `Task 1` | complete | delete substrate primitive、active replacement 与 last-line protection 已实现并通过 review。 |
+| `Task 2` | complete | delete route / bounded error mapping / UI delete contract 已实现并通过 review。 |
+| `Task 3` | complete | cross-platform package slug 与显式 `Phase 3` scaffold service 已实现并通过 review。 |
+| `Task 4` | complete | package creation route、typed scaffold errors 与 route tests 已实现并通过 review。 |
+| `Task 5` | complete | `故事包管理` UI 已接入创建与删除能力，并完成视觉收口。 |
+| `Task 6` | complete | 已完成 targeted tests、simulation 验证、build、全量测试、真实浏览器验收与 planning sync。 |
 
 ## Part 1 Delivery Status
 

@@ -74,8 +74,8 @@ afterEach(async () => {
 });
 
 async function loadCreateStoryPackageScaffold() {
-  const module = await import('@/story-packages/scaffold');
-  return module.createStoryPackageScaffold;
+  const scaffoldModule = await import('@/story-packages/scaffold');
+  return scaffoldModule.createStoryPackageScaffold;
 }
 
 function requireMainStoryline(
