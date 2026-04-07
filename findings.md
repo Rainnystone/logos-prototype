@@ -10,6 +10,22 @@
   - GitHub PR `#6`
 - 不应再假设本地 `codex/phase-3-part-1-substrate` worktree 仍然存在；用户已按工作纪律在 push / PR 后删除该临时工作树。
 
+## 2026-04-07 Part 3 当前收窄结论
+
+- 经过 `Part 2` 最终实现与用户进一步澄清，`Part 3` 已不再保留最早那版“archive / duplicate / delete 全套管理动作”的范围。
+- 当前更稳的结论是：
+  - `archive` 没有明确的作者价值，也不是当前产品必需，因此从 `Phase 3` 主线移出
+  - `duplicate` 的主要作者价值已被 `Part 2` 的 `create from source` 覆盖，不再作为独立主线能力
+  - `Part 3` 的主线收敛为：`delete storyline + destructive-action UX + empty/edge-case closure`
+- 用户随后明确把 `new story package` 提升为 `Part 3` 必做项：
+  - 它不再只是 companion-slice 候选
+  - 它应作为 `Part 3` 的正式主线交付之一
+  - 并且必须直接创建显式 `Phase 3` package，而不是 legacy bootstrap 包
+- 这轮 `Part 3` spec review 又进一步补死了一个实施边界：
+  - 新包的“立即可用”不只等于 YAML loader 通过
+  - 还必须同时通过 storyline / runtime repository 的结构与一致性校验
+  - 成功后前端必须切回 `story-package-management` 并选中新包
+
 ## 2026-04-06 Part 2 已冻结目标
 
 - `Part 2` 不是再回头补 substrate；`Part 1` 已经把 repository seam、storyline substrate、variant workspace、storyline-bound session 和默认 `/edit` `/play` 解析链做成正式地基。
@@ -37,6 +53,7 @@
 - `新建 story package` 仍保持原判断：
   - 如果 backend seam 已准备好，可作为 `Part 2` 的 companion slice
   - 但不应反过来阻塞 `Part 2` 主体 workspace 的 spec
+  - 这条历史判断现已被后续 `Part 3` 必做项结论覆盖
 
 ## 2026-04-06 Part 2 当前执行入口
 

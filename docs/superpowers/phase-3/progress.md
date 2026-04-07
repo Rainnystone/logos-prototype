@@ -1,5 +1,32 @@
 # Phase 3 Progress
 
+## 2026-04-07
+
+- 已把 `Part 3` 的最终范围正式重写为：
+  - safe `delete storyline`
+  - local `new story package` scaffolding
+  - destructive-action UX
+  - final verification
+- 已写出正式 `Part 3` spec：
+  - `docs/superpowers/specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md`
+- 已同步修正总 spec 与两层 planning 文档中的旧口径，清除“`new story package` 仍只是 companion slice”的当前漂移。
+- 已完成 `Part 3` spec review loop：
+  - 第一轮 reviewer 指出 1 条真实实施口径缺口：新包创建后的验证应明确分为 YAML loader 校验与 storyline/runtime repository 结构校验，并写死成功后的 workspace 切换路径
+  - 其余两条被主线程复核为已在此前补丁中解决，不再重复回修
+  - 回写该缺口后，两位独立 reviewer 最终结论均为 `Approved`
+- 已重新核对 `Part 2` 的 spec / plan / 实现 / 测试，确认当前没有独立交付一个泛化 `duplicate storyline` 动作。
+- 当前用户感知上“像 duplicate”的能力，实际是 `create from source`：
+  - 它从 source storyline 当前 head 发起受控派生
+  - 已覆盖大部分“复制一条线再继续改”的作者价值
+- 基于这次复查和用户进一步澄清，`Part 3` 范围已正式收窄：
+  - `archive` 从当前 phase 主线移出
+  - `duplicate` 不再保留为独立目标
+  - 当前主线先收窄为 `delete storyline + destructive-action UX + empty/edge-case closure + final verification`
+- 用户随后又冻结了 `Part 3` 的最终补充范围：
+  - `new story package` 必须实现
+  - 并且要以显式 `Phase 3` package scaffold 作为交付目标
+  - 因而当前真正的 `Part 3` 主线是：`delete storyline + local package scaffolding + destructive-action UX + final verification`
+
 ## 2026-04-06
 
 - `Part 2` 的集成动作也已完成：
@@ -83,6 +110,7 @@
 - 还再次确认了 `new story package` 的边界：
   - 当前本地仓库模式下技术上可做
   - 但仍保持 `Part 2` companion slice 定位，不作为主体 workspace 的阻塞前提
+  - 该判断属于当时的 `Part 2` 边界，现已被后续 `Part 3` 必做项结论覆盖
 - 已将上述决定同步回 `Phase 3` 主工作记忆与总 spec：
   - `docs/superpowers/phase-3/task_plan.md`
   - `docs/superpowers/phase-3/findings.md`

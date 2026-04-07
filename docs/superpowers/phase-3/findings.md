@@ -1,5 +1,29 @@
 # Phase 3 Findings
 
+## 2026-04-07 Part 3 当前收窄结论
+
+- 这轮重新对照 `Part 2` 实现后，当前已可确认：
+  - `create from source` 虽然不叫 `duplicate storyline`，但已经覆盖了大部分作者真正想要的“先复制出一条线再改”的价值
+  - 因此 `duplicate` 不再需要作为 `Phase 3 Part 3` 的独立主线能力继续保留
+- `archive` 也已重新评估：
+  - 当前没有清晰的作者价值主张
+  - 它既不是恢复功能，也不是当前 workspace 必需的整理动作
+  - 因此从 `Phase 3` 主线移出
+- 当前更稳的 `Part 3` 主线是：
+  - `delete storyline`
+  - destructive-action UX
+  - empty / edge-case closure
+  - local `new story package` scaffolding
+  - final verification
+- 用户随后明确冻结了一个新的最终要求：
+  - `new story package` 不再是 companion-slice 候选
+  - 它必须成为 `Part 3` 的正式交付能力
+  - 并且要直接创建显式 `Phase 3` package，而不是 legacy bootstrap 包
+- `Part 3` spec review loop 又补死了 1 条容易误导 implementation plan 的实施边界：
+  - “新包可用”不能只等于 YAML package loader 通过
+  - 还必须同时通过 `storyline-repository.json` 与 `runtime-sessions.json` 的结构 / 一致性校验
+  - 成功后前端也必须切到 `?storyPackage=<new>&section=story-package-management`
+
 ## 2026-04-06 Part 2 入口判断
 
 - `Part 2` 的目标不是重新设计 `storyline` / `checkpoint` / `session` / `variant` 这些对象边界；这些边界已经在总 spec 和 `Part 1` 中冻结。
@@ -15,8 +39,6 @@
   - current storyline state read views
   - create / branch / switch / continue 这几条核心工作流
 - 当前明确不应混入 `Part 2` 的管理动作：
-  - archive
-  - duplicate
   - delete
 - 但随着用户确认 UI 需求，`storyline` 的显示名称编辑已不再适合拖到 `Part 3`：
   - `Part 2` 现在应承担 inline display-name editing
@@ -28,6 +50,7 @@
 - `新建 story package` 仍维持 companion-slice 判断：
   - 如果 backend seam 够稳，可以在 `Part 2` 里一起规划
   - 但它不应阻塞 `Part 2` 主体 workspace 的 spec
+  - 这只是当时的 `Part 2` 边界判断，现已被 2026-04-07 的 `Part 3` 必做项结论覆盖
 
 ## 2026-04-06 Part 2 fallback / checkpoint 继续语义
 
@@ -61,6 +84,7 @@
   - `new story package` 可以作为 `Part 2` companion slice 规划
   - 但不应阻塞 `Part 2` 主体 workspace spec
   - 如果后续要面向打包后的桌面应用，再单独考虑把 package root 抽成用户目录
+  - 其中 “作为 `Part 2` companion slice” 这条已被后续冻结结果覆盖；当前正式定位是 `Part 3` 必做项
 
 ## 2026-04-06 浏览器手验补充判断
 

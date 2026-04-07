@@ -15,7 +15,7 @@
 - 当前活跃主线切换为 `Phase 3: Package & Storyline Layer`。
 - `Phase 3 Part 1` 已完成实现、验证、浏览器手验与 PR 提交。
 - `Phase 3 Part 2` 已完成实现、验证、独立 review、commit、push 与 PR 提交。
-- 当前主线已从 `Part 2` 集成收尾切换为 `Phase 3 Part 3` 范围对齐与 spec 准备。
+- `Phase 3 Part 3` spec 已写出并通过独立 review，当前等待用户确认后进入 implementation plan。
 - `Phase 3` 总 design spec 已同步吸收 `Part 2` 的最终 UI / UX 口径，避免后续 `Part 3` 再沿用旧的 workspace 语义。
 - `Phase 3` 主工作记忆入口：
   - [docs/superpowers/phase-3/README.md](docs/superpowers/phase-3/README.md)
@@ -40,6 +40,7 @@
 | 11 | complete | 已完成 `Phase 2` 实现、验证、手验与 reopen fix 收口；该阶段当前作为 `Phase 3` 的冻结底座保留。 |
 | 12 | complete | 已完成 `Phase 3 Part 1` 的总 spec、part spec、implementation plan、代码实现、最终验证与 PR 提交。 |
 | 13 | complete | `Phase 3 Part 2` 已完成实现、验证、mock 验收与独立 review。 |
+| 14 | complete | `Phase 3 Part 3` spec 已完成、通过独立 review，并进入用户确认节点。 |
 
 ## Frozen Product Decisions
 
@@ -122,8 +123,10 @@
   - 切换
   - 删除
   - 重命名
-  - 归档
-  - 复制
+- `Part 2` 最终收口后，这组范围已进一步收窄：
+  - `重命名` 已在 `Part 2` 提前落地
+  - `复制` 的主要作者价值已由 `create from source` 覆盖
+  - `归档` 因缺少明确作者价值，当前已从 `Phase 3` 主线移出
 - 这些能力可以分批交付，但不再被当成“以后再说”的附加项。
 
 ### E. 故事包管理页心智
@@ -198,7 +201,7 @@
 - 故事包管理页正式接入故事线工作区
 - 一个故事包内多条故事线 / 多份进展
 - 从某个检查点创建分支线
-- 切换、删除、重命名、归档、复制
+- 切换、删除、重命名
 - session 与 storyline 绑定
 
 推荐实现心智：
@@ -208,6 +211,7 @@
 - 一个 checkpoint 可以作为多条 storyline 的共同祖先
 - 创建分支线优先表现为“新建一个指向既有 checkpoint 的 storyline ref”，而不是复制整段历史
 - storyline 的人类可读名称、归档状态、复制语义属于管理层，不属于 checkpoint 主键设计
+- 经过 `Part 2` 收口后，`归档` 已从当前 `Phase 3` 主线移出，`复制` 也不再作为独立目标保留；当前 `Part 3` 主线收敛为 `safe delete + local new story package scaffolding + destructive UX + final verification`
 
 优先顺序：
 

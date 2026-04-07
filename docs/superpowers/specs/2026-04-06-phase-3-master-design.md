@@ -139,7 +139,7 @@ The foundational problem is:
 - multiple storylines inside one package
 - with storyline-scoped authoring and continuation
 
-Therefore new package scaffolding should be treated as a companion slice to the storyline workspace, not as a prerequisite for the substrate itself.
+Therefore new package scaffolding should be treated as a separate closeout slice after the storyline workspace lands, not as a prerequisite for the substrate itself.
 
 ## 5. Global Object Model
 
@@ -198,10 +198,9 @@ A storyline is the thing authors will:
 
 - continue
 - switch to
-- duplicate
-- archive
 - rename
 - branch from
+- delete when safe
 - compare against another storyline
 
 ### 5.4 Authoring Variant
@@ -499,17 +498,19 @@ The package-level `activeStorylineId` becomes the default selection source for b
 Storyline management includes:
 
 - rename
-- archive
-- duplicate
 - delete
+- destructive-action safeguards
+- final usability closure
 
-These remain in `Phase 3` scope, but they do not all need to land in the same initial part.
+At this point, `rename` has already landed in `Part 2`.
+The remaining `Phase 3` mainline management work is therefore centered on safe deletion and the UX needed to make that action trustworthy.
+`archive` is intentionally removed from the current phase scope because it no longer has a clear author-facing purpose, and `duplicate` is materially covered by the `Part 2` `create from source` flow.
 
 ## 8. Package Creation Boundary
 
 Creating a new story package is a valid product goal for a truly usable editor.
 
-However, it should be treated as:
+It should be treated as:
 
 - a controlled scaffolding workflow
 - server-mediated
@@ -518,10 +519,12 @@ However, it should be treated as:
 
 It should not block `Part 1`.
 
-Recommended placement:
+Now that `Part 1` substrate and `Part 2` workspace have both landed, package creation is no longer just a companion candidate.
 
-- companion slice in `Part 2`
-- or adjacent follow-up if the package/storyline workspace already lands first
+Current placement:
+
+- required `Part 3` delivery
+- paired with safe storyline deletion as the final product-completeness closeout for Phase 3
 
 ## 9. Part Decomposition
 
@@ -575,10 +578,6 @@ Approved structural reference:
 
 - [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
 
-Companion slice:
-
-- controlled new story package scaffolding, if the backend seam is ready
-
 Completion means:
 
 - storyline substrate is no longer hidden behind internal state only
@@ -592,20 +591,22 @@ Completion means:
 
 Purpose:
 
-- finish the storyline management surface and close the usability gaps
+- finish the destructive management surface and close the remaining usability gaps
 
 Primary delivery target:
 
-- archive
-- duplicate
 - delete
+- controlled local new story package scaffolding
 - bounded failure handling
 - empty-state and edge-case UX
 - final verification and UI/UX review
 
 Completion means:
 
-- storyline v1 scope is materially complete for author use
+- storyline deletion is safe, comprehensible, and bounded
+- the package never falls into a “no usable storyline” state
+- authors can create a new local package from the workspace and land directly in an explicit `Phase 3` package
+- the remaining `Phase 3` storyline-management surface is materially complete for author use
 
 ## 10. Global Acceptance Criteria
 

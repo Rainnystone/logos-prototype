@@ -24,7 +24,7 @@
 | 7 | complete | `Part 2` spec 已完成、通过独立 review，并进入用户确认后的正式基线。 |
 | 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
 | 9 | complete | `Part 2` 已完成实现、独立 review、mock 验收、最终验证与文档同步。 |
-| 10 | pending | 编写 `Part 3` spec。 |
+| 10 | complete | `Part 3` spec 已写出，完成独立 review 收口并进入用户确认。 |
 | 11 | pending | 编写 `Part 3` implementation plan。 |
 | 12 | pending | 执行并验证 `Part 3`，收口 `Phase 3`。 |
 
@@ -43,8 +43,10 @@
   - 切换
   - 删除
   - 重命名
-  - 归档
-  - 复制
+- 经过 `Part 2` 收口后的当前结论是：
+  - `重命名` 已在 `Part 2` 落地
+  - `复制` 的主要作者价值已被 `create from source` 覆盖
+  - `归档` 因缺少明确的作者价值，当前从 `Phase 3` 主线移出
 - 每个 part 收口前都要做一次独立的 UI / UX 复核。
 
 ## Current Recommended Shape
@@ -59,8 +61,8 @@
    - 新增“故事包管理”作为 editor 默认第一页
    - 接入 storyline workspace 的读取、展示与核心继续/分叉工作流
 3. `Part 3`
-   - 补齐 storyline 管理动作与 UX 收口
-   - 完成归档、复制、删除等动作的正式交付
+   - 补齐删除与本地新建故事包这两条最终产品闭环
+   - 完成删除动作、local package scaffolding、相关 destructive UX 与最终收尾验证
 
 这组切法当前是推荐方向，最终以总 spec review 通过后的版本为准。
 
@@ -70,7 +72,7 @@
 |---|---|---|---|
 | `Part 1` | 把 storyline substrate 做成正式底座 | storyline repository seam、variant workspace 模型、storyline-bound session 语义、兼容迁移、无 UI substrate primitives（create/switch/branch） | 不负责完整故事包管理 UI；不把新建 story package 当地基；不交付 rename/archive/delete 这类管理动作 |
 | `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表、checkpoint 浏览/选择、inline storyline 命名，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型；不把新建 story package 当作主线阻塞项 |
-| `Part 3` | 补齐 storyline v1 管理动作并收口 UX | 归档、复制、删除、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界 |
+| `Part 3` | 补齐 storyline 删除能力并完成本地新建故事包闭环 | 删除、本地 package scaffolding、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界；`archive` 不再作为当前 phase 主线；`duplicate` 不再作为独立目标保留 |
 
 ## Bootstrap Non-Goals
 
@@ -109,7 +111,7 @@
 | 迁移方式 | 采用 lazy bootstrap migration |
 | “从 checkpoint 继续”的作者可见入口 | 不在 `Part 1` 暴露作者可见入口；只在底层能力上为 `Part 2` 做好地基 |
 | storyline 管理动作 | `Part 1` 不承担 rename / archive / copy / delete 等管理动作 |
-| 新建 story package | 继续留在 `Part 2` companion slice |
+| 新建 story package | 当时先留在 `Part 2` companion slice；此判断现已被后续 `Part 3` 必做项结论覆盖 |
 
 当前仍待冻结的问题：
 
@@ -174,6 +176,21 @@
 | `Task 4` | complete | 故事包管理页的 selector、workspace 布局与 brutalist shell 集成已完成。 |
 | `Task 5` | complete | row-local actions、beat-dot confirm drawer、最小信息密度收口、mock 验收与最终文档同步均已完成。 |
 
+## Part 3 Spec Status
+
+- 正式 `Part 3` spec 已写出：
+  - `docs/superpowers/specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md`
+- 当前状态：
+  - `Approved, pending user confirmation`
+- 当前已冻结的 `Part 3` 主线：
+  - safe `delete storyline`
+  - local `new story package` scaffolding
+  - destructive-action UX
+  - final verification
+- 下一步：
+  - 请用户 review 该 spec
+  - 用户确认后进入 `Part 3` implementation plan
+
 ## Part 1 Delivery Status
 
 - `Part 1` 已完成实现、验证与 PR 提交。
@@ -233,14 +250,16 @@
   - `continue` 与 `create from source` 都按 row-local action 定义，不再引入第二套持久“selected storyline”状态
 - 这次 scope 调整后：
   - inline storyline display-name editing 提前进入 `Part 2`
-  - archive / duplicate / delete 仍留在 `Part 3`
+  - `archive` 不再保留在当前主线
+  - `duplicate` 不再保留为独立目标
+  - `delete` 与 `new story package` 一起进入 `Part 3`
 - 需要额外记住的一条边界是：
   - `create from source` 已在 `Part 2` 交付，但它只是从 source storyline 当前 head 触发的受控派生动作
-  - 它不等于完整的 `duplicate storyline` 管理动作，因此不会替代 `Part 3` 的 duplicate 范围
+  - 它不等于独立的 `duplicate storyline` 产品动作，但其主要作者价值已被 `Part 2` 覆盖
 - 当前又额外冻结了 3 条最终 UI 收口约束：
   - 左侧 ready package selector 只显示 package name，不显示简介或摘要
   - 右侧 workspace 不显示 provenance / head summary / package summary 这类宽事实块
   - beat rail 必须按 checkpoint history 动态增长，并清晰区分 phase label 与 beat label
-- `new story package` 仍保持 companion-slice 定位：
-  - 当前架构在本地仓库模式下可以做
-  - 但不作为 `Part 2` 主体 workspace 的阻塞前提
+- `new story package` 当前已提升为 `Part 3` 必做项：
+  - 当前架构在本地仓库模式下可做
+  - 以显式 `Phase 3` package scaffold 为正式交付目标
