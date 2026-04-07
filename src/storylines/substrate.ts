@@ -434,12 +434,15 @@ function listUsableStorylineRecordsOrThrow(
   });
 }
 
-function buildStorylineReplacementOrder(storylines: readonly StorylineRecord[]): string[] {
+function buildStorylineReplacementOrderFromActiveStorylineId(
+  storylines: readonly StorylineRecord[],
+  activeStorylineId: string | null,
+): string[] {
   return [...storylines]
     .map(
       (storyline) =>
         ({
-          isActive: false,
+          isActive: storyline.storylineId === activeStorylineId,
           displayName: storyline.name,
           storylineId: storyline.storylineId,
         }) satisfies StorylineWorkspaceSortableRow,
@@ -448,7 +451,7 @@ function buildStorylineReplacementOrder(storylines: readonly StorylineRecord[]):
     .map((storyline) => storyline.storylineId);
 }
 
-function chooseReplacementStorylineId(
+export function selectReplacementStorylineId(
   orderedStorylineIds: readonly string[],
   deletedStorylineId: string,
 ): string {
@@ -634,10 +637,13 @@ export async function deleteStoryline(input: {
       throw new Error('Cannot delete the last remaining usable storyline.');
     }
 
-    const orderedStorylineIds = buildStorylineReplacementOrder(usableStorylines);
+    const orderedStorylineIds = buildStorylineReplacementOrderFromActiveStorylineId(
+      usableStorylines,
+      repository.activeStorylineId,
+    );
     const nextActiveStorylineId =
       targetStoryline.storylineId === repository.activeStorylineId
-        ? chooseReplacementStorylineId(orderedStorylineIds, targetStoryline.storylineId)
+        ? selectReplacementStorylineId(orderedStorylineIds, targetStoryline.storylineId)
         : repository.activeStorylineId;
 
     if (targetStoryline.storylineId === repository.activeStorylineId) {

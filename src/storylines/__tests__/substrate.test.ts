@@ -4,6 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import * as storylineSubstrate from '@/storylines/substrate';
 import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
@@ -559,7 +560,7 @@ describe('storyline substrate', () => {
     expect(runtimeFile.activeSessionId).toBe('sess_alt');
   });
 
-  it('deletes the last visible active storyline and falls back to the previous remaining row', async () => {
+  it('deletes the active storyline and preserves the current visible selector order when choosing the replacement row', async () => {
     const { packageName } = await seedDeletionStorylinePackage({
       activeStorylineId: 'storyline_branch',
       mainName: 'Alpha Line',
@@ -575,10 +576,26 @@ describe('storyline substrate', () => {
     const runtimeFile = await readRuntimeSessionsJson(packageName);
 
     expect(result.deletedStorylineId).toBe('storyline_branch');
-    expect(result.nextActiveStorylineId).toBe('storyline_alt');
-    expect(repositoryFile.activeStorylineId).toBe('storyline_alt');
+    expect(result.nextActiveStorylineId).toBe('storyline_main');
+    expect(repositoryFile.activeStorylineId).toBe('storyline_main');
     expect(repositoryFile.storylinesById.storyline_branch).toBeUndefined();
-    expect(runtimeFile.activeSessionId).toBe('sess_alt');
+    expect(runtimeFile.activeSessionId).toBe('sess_main');
+  });
+
+  it('falls back to the previous visible row when no next row exists in the explicit selector order', async () => {
+    const selectReplacementStorylineId =
+      (
+        storylineSubstrate as typeof storylineSubstrate & {
+          selectReplacementStorylineId: (
+            orderedStorylineIds: readonly string[],
+            deletedStorylineId: string,
+          ) => string;
+        }
+      ).selectReplacementStorylineId;
+
+    expect(
+      selectReplacementStorylineId(['storyline_main', 'storyline_alt', 'storyline_branch'], 'storyline_branch'),
+    ).toBe('storyline_alt');
   });
 
   it('rejects deleting the last remaining usable storyline', async () => {
