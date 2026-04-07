@@ -49,6 +49,39 @@ function resolveBoundSessionOrThrow(
   return session;
 }
 
+function resolveBoundVariantOrThrow(
+  repository: StorylineRepositoryFile,
+  storyline: StorylineRecord,
+) {
+  const variant = repository.variantsById[storyline.variantId];
+  if (!variant) {
+    throw new Error(
+      `Storyline structural mismatch: storyline "${storyline.storylineId}" variantId "${storyline.variantId}" does not resolve in storyline-repository.json.`,
+    );
+  }
+
+  return variant;
+}
+
+function resolveUsableStorylineEntryOrThrow(
+  repository: StorylineRepositoryFile,
+  runtimeFile: NonNullable<Awaited<ReturnType<typeof resolveActiveStorylineContext>>['runtimeFile']>,
+  storyline: StorylineRecord,
+): {
+  readonly storyline: StorylineRecord;
+  readonly variant: StorylineRepositoryFile['variantsById'][string];
+  readonly session: RuntimeSession;
+} {
+  const variant = resolveBoundVariantOrThrow(repository, storyline);
+  const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
+
+  return {
+    storyline,
+    variant,
+    session,
+  };
+}
+
 function buildCheckpointRail(
   session: RuntimeSession,
   storyline: StorylineRecord,
@@ -115,13 +148,12 @@ function buildRepositoryWorkspaceView(
   runtimeFile: NonNullable<Awaited<ReturnType<typeof resolveActiveStorylineContext>>['runtimeFile']>,
 ): StoryPackageManagementWorkspaceView {
   const activeStorylineId = repository.activeStorylineId;
-  const storylineEntries = Object.values(repository.storylinesById).map((storyline) => {
-    const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
-    return { storyline, session };
-  });
-  const canDelete = storylineEntries.length > 1;
+  const usableStorylineEntries = Object.values(repository.storylinesById).map((storyline) =>
+    resolveUsableStorylineEntryOrThrow(repository, runtimeFile, storyline),
+  );
+  const canDelete = usableStorylineEntries.length > 1;
   const deleteDisabledReason = canDelete ? null : '至少保留一条故事线';
-  const storylines = storylineEntries
+  const storylines = usableStorylineEntries
     .map(({ storyline, session }) =>
       buildStorylineRow(
         storyline,
