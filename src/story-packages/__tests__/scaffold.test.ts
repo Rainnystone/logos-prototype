@@ -1,12 +1,32 @@
-import { access, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import YAML from 'yaml';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { loadStoryPackage } from '@/engine/story-loader';
-import { createStoryPackageScaffold } from '@/story-packages/scaffold';
 import { readStorylineRepository } from '@/storylines/repository';
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import type { StorylineRecord, StorylineRepositoryFile } from '@/types';
+
+const fileSystemFailureState = vi.hoisted(() => ({
+  failRename: false,
+}));
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>();
+
+  return {
+    ...actual,
+    rename: vi.fn(async (...args: Parameters<typeof actual.rename>) => {
+      if (fileSystemFailureState.failRename) {
+        throw new Error('rename blocked');
+      }
+
+      return actual.rename(...args);
+    }),
+  };
+});
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const createdPackageRoots = new Set<string>();
@@ -24,14 +44,37 @@ async function findStagedPackageRoots(slug: string): Promise<string[]> {
 }
 
 afterEach(async () => {
+  fileSystemFailureState.failRename = false;
+  vi.restoreAllMocks();
   for (const packageRoot of createdPackageRoots) {
     await removeIfExists(packageRoot);
   }
   createdPackageRoots.clear();
 });
 
+async function loadCreateStoryPackageScaffold() {
+  const module = await import('@/story-packages/scaffold');
+  return module.createStoryPackageScaffold;
+}
+
+function requireMainStoryline(
+  repository: StorylineRepositoryFile | null,
+): StorylineRecord {
+  if (!repository) {
+    throw new Error('Expected storyline repository to exist.');
+  }
+
+  const storyline = repository.storylinesById.storyline_main;
+  if (!storyline) {
+    throw new Error('Expected storyline_main to exist.');
+  }
+
+  return storyline;
+}
+
 describe('story package scaffold', () => {
   it('creates an explicit Phase 3 package scaffold that validates through both loader and repositories', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const result = await createStoryPackageScaffold({
       displayName: '新故事包',
     });
@@ -52,6 +95,7 @@ describe('story package scaffold', () => {
 
     const repository = await readStorylineRepository(result.packageName);
     const runtimeFile = await runtimeSessionsRepository.readFile(result.packageName);
+    const mainStoryline = requireMainStoryline(repository);
 
     expect(repository).toMatchObject({
       activeStorylineId: 'storyline_main',
@@ -70,9 +114,9 @@ describe('story package scaffold', () => {
       },
     });
     expect(runtimeFile).toMatchObject({
-      activeSessionId: repository?.storylinesById.storyline_main.activeSessionId,
+      activeSessionId: mainStoryline.activeSessionId,
       sessionsById: {
-        [repository?.storylinesById.storyline_main.activeSessionId ?? '']: expect.objectContaining({
+        [mainStoryline.activeSessionId]: expect.objectContaining({
           lifecycle: 'awaiting_start',
           headCheckpointId: null,
           activeCheckpointId: null,
@@ -82,6 +126,7 @@ describe('story package scaffold', () => {
   });
 
   it('rejects duplicate package names case-insensitively', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const existingRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'Case-Folded-Story-'));
     createdPackageRoots.add(existingRoot);
 
@@ -93,14 +138,23 @@ describe('story package scaffold', () => {
   });
 
   it('cleans up the staged directory if scaffold validation fails before promotion', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const brokenSlug = 'broken-package';
+    const originalStringify = YAML.stringify;
+    let stringifyCallCount = 0;
+
+    vi.spyOn(YAML, 'stringify').mockImplementation((value, options) => {
+      stringifyCallCount += 1;
+      if (stringifyCallCount === 2) {
+        return 'sceneName: [\n';
+      }
+
+      return originalStringify.call(YAML, value, options);
+    });
 
     await expect(
       createStoryPackageScaffold({
         displayName: 'broken package',
-        testOnlyTransformStageFile: async (stageRoot) => {
-          await writeFile(path.resolve(stageRoot, 'scene.yaml'), 'sceneName: [\n', 'utf8');
-        },
       }),
     ).rejects.toThrow();
 
@@ -108,7 +162,24 @@ describe('story package scaffold', () => {
     await expect(access(path.resolve(storyPackagesRoot, brokenSlug))).rejects.toThrow();
   });
 
+  it('cleans up the staged directory if promotion fails after validation succeeds', async () => {
+    const blockedSlug = 'rename-failure-package';
+    await removeIfExists(path.resolve(storyPackagesRoot, blockedSlug));
+    fileSystemFailureState.failRename = true;
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+
+    await expect(
+      createStoryPackageScaffold({
+        displayName: 'rename failure package',
+      }),
+    ).rejects.toThrow(/rename blocked/i);
+
+    expect(await findStagedPackageRoots(blockedSlug)).toEqual([]);
+    await expect(access(path.resolve(storyPackagesRoot, blockedSlug))).rejects.toThrow();
+  });
+
   it('preserves an explicit awaiting_start runtime session bound to storyline_main', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const result = await createStoryPackageScaffold({
       displayName: 'Awaiting Start Package',
     });
@@ -118,7 +189,8 @@ describe('story package scaffold', () => {
 
     const repository = await readStorylineRepository(result.packageName);
     const runtimeFile = await runtimeSessionsRepository.readFile(result.packageName);
-    const boundSessionId = repository?.storylinesById.storyline_main.activeSessionId;
+    const mainStoryline = requireMainStoryline(repository);
+    const boundSessionId = mainStoryline.activeSessionId;
     const runtimeJson = JSON.parse(
       await readFile(path.resolve(packageRoot, 'runtime-sessions.json'), 'utf8'),
     ) as {

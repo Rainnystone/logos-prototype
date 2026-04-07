@@ -19,4 +19,8 @@ describe('story package slug', () => {
     expect(() => buildStoryPackageSlug('')).toThrow(/display name/i);
     expect(() => buildStoryPackageSlug('   ')).toThrow(/display name/i);
   });
+
+  it('rejects Windows reserved names through the normal display-name path', () => {
+    expect(() => buildStoryPackageSlug('CON')).toThrow(/reserved/i);
+  });
 });

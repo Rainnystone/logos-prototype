@@ -1,13 +1,4 @@
-import {
-  access,
-  cp,
-  mkdir,
-  readFile,
-  readdir,
-  rename,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
+import * as fileSystem from 'node:fs/promises';
 import path from 'node:path';
 
 import YAML from 'yaml';
@@ -49,7 +40,6 @@ const DEFAULT_VARIANT_ID = 'variant_main';
 
 export interface CreateStoryPackageScaffoldInput {
   readonly displayName: string;
-  readonly testOnlyTransformStageFile?: ((stageRoot: string) => Promise<void> | void) | undefined;
 }
 
 export interface CreateStoryPackageScaffoldResult {
@@ -367,7 +357,7 @@ function createStorylineRepositoryFile(
 }
 
 async function ensurePackageNameAvailable(packageName: string): Promise<void> {
-  const directoryEntries = await readdir(storyPackagesRoot, { withFileTypes: true });
+  const directoryEntries = await fileSystem.readdir(storyPackagesRoot, { withFileTypes: true });
   const packageNameLower = packageName.toLowerCase();
 
   for (const entry of directoryEntries) {
@@ -382,15 +372,15 @@ async function ensurePackageNameAvailable(packageName: string): Promise<void> {
 }
 
 async function writeYamlDocument(filePath: string, value: unknown): Promise<void> {
-  await writeFile(filePath, YAML.stringify(value), 'utf8');
+  await fileSystem.writeFile(filePath, YAML.stringify(value), 'utf8');
 }
 
 async function copyVariantManagedFiles(stageRoot: string): Promise<void> {
   const variantRoot = path.resolve(stageRoot, 'variants', DEFAULT_VARIANT_ID);
-  await mkdir(variantRoot, { recursive: true });
+  await fileSystem.mkdir(variantRoot, { recursive: true });
 
   for (const fileName of MANAGED_VARIANT_AUTHORING_FILES) {
-    await cp(path.resolve(stageRoot, fileName), path.resolve(variantRoot, fileName));
+    await fileSystem.cp(path.resolve(stageRoot, fileName), path.resolve(variantRoot, fileName));
   }
 }
 
@@ -398,14 +388,18 @@ async function validateStageRepositories(stageRoot: string): Promise<void> {
   const storylineRepository = assertStorylineRepositoryFileConsistency(
     parseWithSchema(
       StorylineRepositoryFileSchema,
-      JSON.parse(await readFile(path.resolve(stageRoot, 'storyline-repository.json'), 'utf8')) as unknown,
+      JSON.parse(
+        await fileSystem.readFile(path.resolve(stageRoot, 'storyline-repository.json'), 'utf8'),
+      ) as unknown,
       'storylineRepositoryFile',
     ),
   );
   const runtimeSessions = assertRuntimeSessionsFileConsistency(
     parseWithSchema(
       RuntimeSessionsFileSchema,
-      JSON.parse(await readFile(path.resolve(stageRoot, 'runtime-sessions.json'), 'utf8')) as unknown,
+      JSON.parse(
+        await fileSystem.readFile(path.resolve(stageRoot, 'runtime-sessions.json'), 'utf8'),
+      ) as unknown,
       'runtimeSessionsFile',
     ),
   );
@@ -437,7 +431,7 @@ async function validateStagePackage(packageName: string, stageRoot: string): Pro
 }
 
 async function cleanupStageRoot(stageRoot: string): Promise<void> {
-  await rm(stageRoot, { recursive: true, force: true }).catch(() => undefined);
+  await fileSystem.rm(stageRoot, { recursive: true, force: true }).catch(() => undefined);
 }
 
 export async function createStoryPackageScaffold(
@@ -466,7 +460,7 @@ export async function createStoryPackageScaffold(
   const stageRoot = resolveStageRoot(packageName, createStageId());
   const targetRoot = resolvePackageRoot(packageName);
 
-  await mkdir(stageRoot, { recursive: true });
+  await fileSystem.mkdir(stageRoot, { recursive: true });
 
   try {
     await writeYamlDocument(path.resolve(stageRoot, 'world-base.yaml'), worldBase);
@@ -476,24 +470,20 @@ export async function createStoryPackageScaffold(
     await writeYamlDocument(path.resolve(stageRoot, 'audit-questions.yaml'), auditQuestionSet);
     await writeYamlDocument(path.resolve(stageRoot, 'control-modules.yaml'), controlModules);
     await writeYamlDocument(path.resolve(stageRoot, 'state-snapshots.yaml'), stateSnapshots);
-    await writeFile(
+    await fileSystem.writeFile(
       path.resolve(stageRoot, 'runtime-sessions.json'),
       `${JSON.stringify(runtimeSessions, null, 2)}\n`,
       'utf8',
     );
-    await writeFile(
+    await fileSystem.writeFile(
       path.resolve(stageRoot, 'storyline-repository.json'),
       `${JSON.stringify(storylineRepository, null, 2)}\n`,
       'utf8',
     );
     await copyVariantManagedFiles(stageRoot);
 
-    if (input.testOnlyTransformStageFile) {
-      await input.testOnlyTransformStageFile(stageRoot);
-    }
-
     await validateStagePackage(packageName, stageRoot);
-    await access(targetRoot).then(
+    await fileSystem.access(targetRoot).then(
       () => {
         throw new Error(`Story package "${packageName}" already exists.`);
       },
@@ -503,7 +493,7 @@ export async function createStoryPackageScaffold(
         }
       },
     );
-    await rename(stageRoot, targetRoot);
+    await fileSystem.rename(stageRoot, targetRoot);
 
     return {
       packageName,
