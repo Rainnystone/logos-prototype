@@ -60,6 +60,8 @@ export const StoryPackageManagementStorylineRowViewSchema = z
     headSummary: z.string().nullable(),
     canCreateFromSource: z.boolean(),
     canContinue: z.boolean(),
+    canDelete: z.boolean(),
+    deleteDisabledReason: z.string().nullable(),
     checkpointRail: z.array(StoryPackageManagementCheckpointNodeSchema),
   })
   .strict();
@@ -109,10 +111,34 @@ export const StorylineSwitchActiveStorylineActionSchema = z
   })
   .strict();
 
+export const StorylineDeleteActionSchema = z
+  .object({
+    kind: z.literal('delete_storyline'),
+    storylineId: z.string(),
+  })
+  .strict();
+
+export const StoryPackageCreationRequestSchema = z
+  .object({
+    displayName: z.string(),
+  })
+  .strict();
+export type StoryPackageCreationRequest = z.infer<typeof StoryPackageCreationRequestSchema>;
+
+export const StoryPackageCreationResponseSchema = z
+  .object({
+    packageName: z.string(),
+    activeStorylineId: z.string(),
+    createdAt: z.string(),
+  })
+  .strict();
+export type StoryPackageCreationResponse = z.infer<typeof StoryPackageCreationResponseSchema>;
+
 export const StorylineActionSchema = z.discriminatedUnion('kind', [
   StorylineRenameDisplayNameActionSchema,
   StorylineCreateFromSourceActionSchema,
   StorylineBranchFromCheckpointActionSchema,
   StorylineSwitchActiveStorylineActionSchema,
+  StorylineDeleteActionSchema,
 ]);
 export type StorylineAction = z.infer<typeof StorylineActionSchema>;

@@ -356,6 +356,45 @@ describe('story package management workspace view', () => {
     }
   });
 
+  it('marks the last remaining usable storyline as non-deletable', async () => {
+    const packageName = '__storyline-workspace-single-row__';
+    await resetPackageRoot(packageName);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_legacy',
+        sessionsById: {
+          sess_legacy: {
+            sessionId: 'sess_legacy',
+            lifecycle: 'awaiting_start',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      });
+
+      const { loadStoryPackageManagementWorkspaceView } = await import('@/storylines/workspace-view');
+      const view = await loadStoryPackageManagementWorkspaceView(packageName);
+
+      expect(view.storylines).toHaveLength(1);
+      expect(view.storylines[0]).toMatchObject({
+        canDelete: false,
+        deleteDisabledReason: '至少保留一条故事线',
+      });
+    } finally {
+      await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
+    }
+  });
+
   it('fails loudly when a storyline headCheckpointId drifts away from its bound session', async () => {
     const packageName = '__storyline-workspace-head-drift__';
     await resetPackageRoot(packageName);

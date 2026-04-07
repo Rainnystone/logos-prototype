@@ -3,6 +3,7 @@ import {
   resolveActiveStorylineContext,
   type ActiveStorylineContext,
 } from '@/storylines/substrate';
+import { compareStorylineRowsForWorkspace } from '@/storylines/order';
 import type {
   RuntimeCheckpoint,
   RuntimeSession,
@@ -75,6 +76,8 @@ function buildStorylineRow(
   storyline: StorylineRecord,
   activeStorylineId: string,
   session: RuntimeSession | null,
+  canDelete: boolean,
+  deleteDisabledReason: string | null,
 ): StoryPackageManagementStorylineRowView {
   const isActive = storyline.storylineId === activeStorylineId;
   const headCheckpointId = storyline.headCheckpointId;
@@ -99,6 +102,8 @@ function buildStorylineRow(
     headSummary: headCheckpoint ? summarizeCheckpointTranscript(headCheckpoint) : null,
     canCreateFromSource: headCheckpointId !== null,
     canContinue: session !== null,
+    canDelete,
+    deleteDisabledReason,
     checkpointRail,
   };
 }
@@ -110,23 +115,23 @@ function buildRepositoryWorkspaceView(
   runtimeFile: NonNullable<Awaited<ReturnType<typeof resolveActiveStorylineContext>>['runtimeFile']>,
 ): StoryPackageManagementWorkspaceView {
   const activeStorylineId = repository.activeStorylineId;
-  const storylines = Object.values(repository.storylinesById)
-    .map((storyline) => {
-      const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
-      return buildStorylineRow(storyline, activeStorylineId, session);
-    })
-    .sort((left, right) => {
-      if (left.isActive !== right.isActive) {
-        return left.isActive ? -1 : 1;
-      }
-
-      const nameComparison = left.displayName.localeCompare(right.displayName);
-      if (nameComparison !== 0) {
-        return nameComparison;
-      }
-
-      return left.storylineId.localeCompare(right.storylineId);
-    });
+  const storylineEntries = Object.values(repository.storylinesById).map((storyline) => {
+    const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
+    return { storyline, session };
+  });
+  const canDelete = storylineEntries.length > 1;
+  const deleteDisabledReason = canDelete ? null : '至少保留一条故事线';
+  const storylines = storylineEntries
+    .map(({ storyline, session }) =>
+      buildStorylineRow(
+        storyline,
+        activeStorylineId,
+        session,
+        canDelete,
+        deleteDisabledReason,
+      ),
+    )
+    .sort(compareStorylineRowsForWorkspace);
 
   return {
     packages: [...packages],
@@ -159,7 +164,13 @@ function buildLegacyWorkspaceView(
     packageName,
     activeStorylineId,
     storylines: [
-      buildStorylineRow(storyline, activeStorylineId, context.session),
+      buildStorylineRow(
+        storyline,
+        activeStorylineId,
+        context.session,
+        false,
+        '至少保留一条故事线',
+      ),
     ],
   };
 }
