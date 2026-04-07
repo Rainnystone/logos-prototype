@@ -13,11 +13,13 @@
   - `weaver` 不做导入预览，不切 `phase` / `beat`
   - `gossipelog` 采用 `创建后 bootstrap + 首次 Play 前 bounded fallback` 的双阶段初始化方向
 - 仓库级恢复口径已从 `Phase 3` 收尾，切换为 `Phase 4` 准备态。
-- 当前已记录的 `Phase 4` 准备结论只有这些：
-  - 正式 `Phase 4` spec / implementation plan 还未落盘
-  - 现有明确产品信号仍是 `new import agent` 与 `real agent management operations`
-  - `gossipelog agent` 是当前代码库里已经落地的第一个真实 sidecar agent
-  - `coordinator` 继续只是 authoring coordinator，不是 sidecar agent roster 的一员
+- `Phase 4` 现在已经完成正式 spec 与 implementation plan：
+  - [docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md](docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+  - [docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+- `Phase 4` 当前已冻结到可以直接执行实现的程度：
+  - `weaver agent`、`agent 管理页面`、shared sidecar reference loader、`gossipelog bootstrap/fallback` 的产品与架构边界已写入 spec
+  - implementation plan 已完成多轮 reviewer 修订并最终通过 review
+  - 当前状态应视为“等待实现”，而不是“还在准备 spec / plan”
 - `Phase 3` 现在已经是主线基线，不再是待执行计划：
   - `PR #6` 合入了 `Part 1`
   - `PR #7` 合入了 `Part 2`
@@ -47,6 +49,9 @@
   - `docs/codemaps` 已更新到 `Phase 3` 最终形态
   - `README.md` 已按当前页面与工作流重写
   - 新增 `coding-agent-guide.md`
+- 本轮 `Phase 4` 文档收口已经完成：
+  - `docs/superpowers/phase-4/` 三件套已同步 spec 与 implementation plan 状态
+  - implementation plan 已通过 review，可作为后续执行入口
 
 ## 2026-04-06
 

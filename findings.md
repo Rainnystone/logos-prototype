@@ -6,34 +6,38 @@
 
 最短恢复顺序应是：
 
-1. [AGENTS.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/AGENTS.md)
-2. [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-3. [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
-4. [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
-5. [docs/superpowers/specs/2026-04-06-phase-3-master-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-06-phase-3-master-design.md)
+1. [AGENTS.md](AGENTS.md)
+2. [task_plan.md](task_plan.md)
+3. [progress.md](progress.md)
+4. [findings.md](findings.md)
+5. [docs/superpowers/specs/2026-04-06-phase-3-master-design.md](docs/superpowers/specs/2026-04-06-phase-3-master-design.md)
 6. `docs/codemaps/*.md`
-7. [README.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/README.md)
-8. [coding-agent-guide.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/coding-agent-guide.md)
+7. [README.md](README.md)
+8. [coding-agent-guide.md](coding-agent-guide.md)
 
 如果当前任务是 `Phase 4` 准备，还应额外补读：
 
-9. [archive/docs/narrative-editor-redesign/master-record.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/archive/docs/narrative-editor-redesign/master-record.md)
-10. [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
-11. [docs/superpowers/phase-4/task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/task_plan.md)
-12. [docs/superpowers/phase-4/progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/progress.md)
-13. [docs/superpowers/phase-4/findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/findings.md)
+9. [archive/docs/narrative-editor-redesign/master-record.md](archive/docs/narrative-editor-redesign/master-record.md)
+10. [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
+11. [docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md](docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+12. [docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+13. [docs/superpowers/phase-4/task_plan.md](docs/superpowers/phase-4/task_plan.md)
+14. [docs/superpowers/phase-4/progress.md](docs/superpowers/phase-4/progress.md)
+15. [docs/superpowers/phase-4/findings.md](docs/superpowers/phase-4/findings.md)
 
 ## Phase 4 准备入口
 
-- 当前 `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 里还没有正式的 `Phase 4` 文档。
-- `Phase 4` 现在已经有独立工作记忆入口：`docs/superpowers/phase-4/`。
-- 现阶段最明确的 `Phase 4` 产品信号仍来自已有设计文档里的 deferred scope：
-  - `new import agent`
-  - `real agent management operations`
+- `Phase 4` 现在已经有正式 spec、implementation plan 与独立工作记忆入口。
+- 当前执行入口是：
+  - [docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md](docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+  - [docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+  - [docs/superpowers/phase-4/task_plan.md](docs/superpowers/phase-4/task_plan.md)
+  - [docs/superpowers/phase-4/progress.md](docs/superpowers/phase-4/progress.md)
+  - [docs/superpowers/phase-4/findings.md](docs/superpowers/phase-4/findings.md)
 - 架构入口边界已经很明确：
   - `coordinator` 不是 first-class sidecar agent
   - 当前仓库里第一个真实落地的 sidecar agent 是 `gossipelog agent`
-- 因此，`Phase 4` 准备应默认建立在现有 `Phase 3` substrate、deterministic bridge、以及已有 agent seam 之上，而不是重新打开 `Phase 3` 的基础设计。
+- 因此，`Phase 4` 实现应默认建立在现有 `Phase 3` substrate、deterministic bridge、以及已有 agent seam 之上，而不是重新打开 `Phase 3` 的基础设计。
 
 ## 当前冻结产品结论
 

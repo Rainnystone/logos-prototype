@@ -24,11 +24,10 @@
   - `docs/superpowers/phase-4/task_plan.md`
   - `docs/superpowers/phase-4/progress.md`
   - `docs/superpowers/phase-4/findings.md`
-- `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 下还没有正式的 `Phase 4` spec / implementation plan 文件。
-- 现阶段已经能确认的 `Phase 4` 入口边界只有：
-  - 产品方向仍以 `new import agent` 与 `real agent management operations` 为主
-  - `gossipelog agent` 是仓库里当前第一个真实落地的 sidecar agent
-  - `coordinator` 仍是 authoring coordinator，不应重新定义为 sidecar agent roster 的一员
+- `Phase 4` 现在已经有正式 spec 与 implementation plan：
+  - `docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md`
+  - `docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md`
+- 当前仓库级口径应把 `Phase 4` 视为“设计与计划已完成，尚未开始实现”，而不是“还在准备 spec / plan”。
 
 ## Milestones
 
@@ -40,7 +39,7 @@
 | `Phase 3 Part 2` | complete | 完成 `故事包管理` 工作区与 storyline workspace |
 | `Phase 3 Part 3` | complete | 完成 safe delete storyline 与 local new story package |
 | 文档整编 | complete | 根目录索引、总 spec、codemap、README 与 agent 指南已同步到主线真实状态 |
-| `Phase 4` 准备 | in_progress | 已进入入口澄清与恢复文档同步，但尚未形成正式 spec / plan |
+| `Phase 4` 设计与计划 | in_progress | 已完成正式 spec、implementation plan 与 review，尚未开始实现 |
 
 ## Current Product Baseline
 
@@ -55,11 +54,11 @@
 
 ## Phase 4 Prep Baseline
 
-在正式 `Phase 4` 文档落盘前，当前仓库级恢复应先假定这些边界成立：
+在当前 `Phase 4` 设计与计划基线下，仓库级恢复应先假定这些边界成立：
 
 - `Phase 4` 是建立在 `Phase 3` 已冻结 substrate 之上的下一阶段，不应把 `Phase 3` 当成未完工路线图重新打开。
 - sidecar agent 扩展应建立在现有 agent seam 与 deterministic bridge 边界之上，而不是回退到浏览器直写文件或放大 `coordinator` 职责。
-- 如果后续要补写正式 `Phase 4` spec / plan，优先锚定现有已落地的 `gossipelog agent`、`AGENTS.md` 的 agent 边界说明，以及 `Phase 1` 设计文档里留下的 phase defer 口径。
+- `Phase 4` 的正式执行入口现在应优先锚定现有已落地的 `gossipelog agent`、`AGENTS.md` 的 agent 边界说明、已通过 review 的 `Phase 4` spec，以及对应 implementation plan。
 
 ## Canonical References
 
@@ -69,6 +68,8 @@
   - [AGENTS.md](AGENTS.md)
   - [archive/docs/narrative-editor-redesign/master-record.md](archive/docs/narrative-editor-redesign/master-record.md)
   - [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
+  - [docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md](docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+  - [docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
 - `Phase 4` 主工作记忆：
   - [docs/superpowers/phase-4/task_plan.md](docs/superpowers/phase-4/task_plan.md)
   - [docs/superpowers/phase-4/progress.md](docs/superpowers/phase-4/progress.md)
