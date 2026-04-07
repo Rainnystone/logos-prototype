@@ -7,10 +7,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadStoryPackage } from '@/engine/story-loader';
 import { readStorylineRepository } from '@/storylines/repository';
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import {
+  StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldInputError,
+  StoryPackageScaffoldValidationError,
+  StoryPackageScaffoldWriteError,
+} from '@/story-packages/scaffold-errors';
 import type { StorylineRecord, StorylineRepositoryFile } from '@/types';
 
 const fileSystemFailureState = vi.hoisted(() => ({
   failRename: false,
+  failMkdirStageRoot: false,
 }));
 
 vi.mock('node:fs/promises', async (importOriginal) => {
@@ -18,6 +25,19 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
   return {
     ...actual,
+    mkdir: vi.fn(async (...args: Parameters<typeof actual.mkdir>) => {
+      const [targetPath] = args;
+
+      if (
+        fileSystemFailureState.failMkdirStageRoot &&
+        typeof targetPath === 'string' &&
+        targetPath.includes('.stage-')
+      ) {
+        throw new Error('mkdir blocked');
+      }
+
+      return actual.mkdir(...args);
+    }),
     rename: vi.fn(async (...args: Parameters<typeof actual.rename>) => {
       if (fileSystemFailureState.failRename) {
         throw new Error('rename blocked');
@@ -45,6 +65,7 @@ async function findStagedPackageRoots(slug: string): Promise<string[]> {
 
 afterEach(async () => {
   fileSystemFailureState.failRename = false;
+  fileSystemFailureState.failMkdirStageRoot = false;
   vi.restoreAllMocks();
   for (const packageRoot of createdPackageRoots) {
     await removeIfExists(packageRoot);
@@ -73,6 +94,16 @@ function requireMainStoryline(
 }
 
 describe('story package scaffold', () => {
+  it('rejects invalid display names as input errors', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+
+    await expect(
+      createStoryPackageScaffold({
+        displayName: 'CON',
+      }),
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldInputError);
+  });
+
   it('creates an explicit Phase 3 package scaffold that validates through both loader and repositories', async () => {
     const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const result = await createStoryPackageScaffold({
@@ -134,7 +165,7 @@ describe('story package scaffold', () => {
       createStoryPackageScaffold({
         displayName: path.basename(existingRoot).toLowerCase(),
       }),
-    ).rejects.toThrow(/already exists/i);
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldConflictError);
   });
 
   it('cleans up the staged directory if scaffold validation fails before promotion', async () => {
@@ -156,7 +187,7 @@ describe('story package scaffold', () => {
       createStoryPackageScaffold({
         displayName: 'broken package',
       }),
-    ).rejects.toThrow();
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldValidationError);
 
     expect(await findStagedPackageRoots(brokenSlug)).toEqual([]);
     await expect(access(path.resolve(storyPackagesRoot, brokenSlug))).rejects.toThrow();
@@ -172,10 +203,21 @@ describe('story package scaffold', () => {
       createStoryPackageScaffold({
         displayName: 'rename failure package',
       }),
-    ).rejects.toThrow(/rename blocked/i);
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldWriteError);
 
     expect(await findStagedPackageRoots(blockedSlug)).toEqual([]);
     await expect(access(path.resolve(storyPackagesRoot, blockedSlug))).rejects.toThrow();
+  });
+
+  it('wraps stage-root mkdir failures as write errors', async () => {
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    fileSystemFailureState.failMkdirStageRoot = true;
+
+    await expect(
+      createStoryPackageScaffold({
+        displayName: 'mkdir failure package',
+      }),
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldWriteError);
   });
 
   it('preserves an explicit awaiting_start runtime session bound to storyline_main', async () => {

@@ -1,51 +1,41 @@
 import { NextResponse } from 'next/server';
 
 import { createStoryPackageScaffold } from '@/story-packages/scaffold';
+import {
+  StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldInputError,
+  StoryPackageScaffoldValidationError,
+  StoryPackageScaffoldWriteError,
+} from '@/story-packages/scaffold-errors';
 import { StoryPackageCreationRequestSchema } from '@/types/storyline-management';
 
 function mapCreatePackageError(error: unknown): { status: number; message: string } {
-  if (error instanceof Error) {
-    const normalizedMessage = error.message.toLowerCase();
+  if (error instanceof StoryPackageScaffoldInputError) {
+    return {
+      status: 400,
+      message: 'Invalid story package display name.',
+    };
+  }
 
-    if (
-      normalizedMessage.includes('reserved') ||
-      normalizedMessage.includes('slug') ||
-      normalizedMessage.includes('display name is required')
-    ) {
-      return {
-        status: 400,
-        message: error.message,
-      };
-    }
+  if (error instanceof StoryPackageScaffoldConflictError) {
+    return {
+      status: 409,
+      message: 'Story package already exists.',
+    };
+  }
 
-    if (normalizedMessage.includes('already exists')) {
-      return {
-        status: 409,
-        message: error.message,
-      };
-    }
+  if (error instanceof StoryPackageScaffoldValidationError) {
+    return {
+      status: 500,
+      message: 'Failed to validate story package scaffold.',
+    };
+  }
 
-    if (
-      normalizedMessage.includes('validation failed') ||
-      normalizedMessage.includes('consistency violation')
-    ) {
-      return {
-        status: 500,
-        message: 'Failed to validate story package scaffold.',
-      };
-    }
-
-    if (
-      normalizedMessage.includes('could not create package root') ||
-      normalizedMessage.includes('write') ||
-      normalizedMessage.includes('rename') ||
-      normalizedMessage.includes('access')
-    ) {
-      return {
-        status: 500,
-        message: 'Failed to create story package root.',
-      };
-    }
+  if (error instanceof StoryPackageScaffoldWriteError) {
+    return {
+      status: 500,
+      message: 'Failed to create story package root.',
+    };
   }
 
   return {

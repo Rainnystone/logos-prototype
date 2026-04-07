@@ -1,10 +1,17 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const createStoryPackageScaffold = vi.fn();
 
 vi.mock('@/story-packages/scaffold', () => ({
   createStoryPackageScaffold,
 }));
+
+import {
+  StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldInputError,
+  StoryPackageScaffoldValidationError,
+  StoryPackageScaffoldWriteError,
+} from '@/story-packages/scaffold-errors';
 
 describe('POST /api/authoring/packages', () => {
   beforeEach(() => {
@@ -38,8 +45,44 @@ describe('POST /api/authoring/packages', () => {
     });
   });
 
+  it('returns a bounded 400 response for invalid JSON without calling scaffold', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: '{"displayName":',
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Invalid package creation payload.',
+    });
+  });
+
+  it('returns a bounded 400 response for missing displayName without calling scaffold', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Invalid package creation payload.',
+    });
+  });
+
   it('maps invalid display names to 400 responses', async () => {
-    createStoryPackageScaffold.mockRejectedValueOnce(new Error('Package name is reserved.'));
+    createStoryPackageScaffold.mockRejectedValueOnce(
+      new StoryPackageScaffoldInputError('Story package display name is invalid.'),
+    );
 
     const { POST } = await import('@/app/api/authoring/packages/route');
 
@@ -51,11 +94,14 @@ describe('POST /api/authoring/packages', () => {
     );
 
     expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Invalid story package display name.',
+    });
   });
 
   it('maps duplicate package names to 409 responses', async () => {
     createStoryPackageScaffold.mockRejectedValueOnce(
-      new Error('Package "new-story-package" already exists.'),
+      new StoryPackageScaffoldConflictError('Package "new-story-package" already exists.'),
     );
 
     const { POST } = await import('@/app/api/authoring/packages/route');
@@ -68,11 +114,16 @@ describe('POST /api/authoring/packages', () => {
     );
 
     expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Story package already exists.',
+    });
   });
 
   it('maps scaffold validation failures to a bounded 500 response', async () => {
     createStoryPackageScaffold.mockRejectedValueOnce(
-      new Error('Scaffold validation failed: storyline repository consistency violation.'),
+      new StoryPackageScaffoldValidationError(
+        'Staged repository mismatch: runtime activeSessionId does not mirror storyline_main.',
+      ),
     );
 
     const { POST } = await import('@/app/api/authoring/packages/route');
@@ -85,11 +136,14 @@ describe('POST /api/authoring/packages', () => {
     );
 
     expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Failed to validate story package scaffold.',
+    });
   });
 
   it('maps package root write failures to a bounded 500 response', async () => {
     createStoryPackageScaffold.mockRejectedValueOnce(
-      new Error('Could not create package root under src/story-packages.'),
+      new StoryPackageScaffoldWriteError('Could not create package root under src/story-packages.'),
     );
 
     const { POST } = await import('@/app/api/authoring/packages/route');
@@ -102,5 +156,8 @@ describe('POST /api/authoring/packages', () => {
     );
 
     expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Failed to create story package root.',
+    });
   });
 });

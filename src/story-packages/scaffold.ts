@@ -7,6 +7,13 @@ import { resolvePackageRoot } from '@/authoring/persistence/package-state';
 import { parseWithSchema } from '@/lib/validation';
 import { loadStoryPackage } from '@/engine/story-loader';
 import { buildStoryPackageSlug } from '@/story-packages/package-slug';
+import {
+  StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldError,
+  StoryPackageScaffoldInputError,
+  StoryPackageScaffoldValidationError,
+  StoryPackageScaffoldWriteError,
+} from '@/story-packages/scaffold-errors';
 import { MANAGED_VARIANT_AUTHORING_FILES } from '@/storylines/workspaces';
 import type {
   AuditQuestionSet,
@@ -366,7 +373,7 @@ async function ensurePackageNameAvailable(packageName: string): Promise<void> {
     }
 
     if (entry.name.toLowerCase() === packageNameLower) {
-      throw new Error(`Story package "${packageName}" already exists.`);
+      throw new StoryPackageScaffoldConflictError('Story package already exists.');
     }
   }
 }
@@ -406,28 +413,38 @@ async function validateStageRepositories(stageRoot: string): Promise<void> {
 
   const storyline = storylineRepository.storylinesById[storylineRepository.activeStorylineId];
   if (!storyline) {
-    throw new Error('Staged storyline repository is missing the active storyline.');
+    throw new StoryPackageScaffoldValidationError('Staged storyline repository is missing the active storyline.');
   }
 
   if (!runtimeSessions.sessionsById[storyline.activeSessionId]) {
-    throw new Error(
+    throw new StoryPackageScaffoldValidationError(
       `Staged repository mismatch: storyline "${storyline.storylineId}" references missing session "${storyline.activeSessionId}".`,
     );
   }
 
   if (runtimeSessions.activeSessionId !== storyline.activeSessionId) {
-    throw new Error('Staged repository mismatch: runtime activeSessionId does not mirror storyline_main.');
+    throw new StoryPackageScaffoldValidationError(
+      'Staged repository mismatch: runtime activeSessionId does not mirror storyline_main.',
+    );
   }
 }
 
 async function validateStagePackage(packageName: string, stageRoot: string): Promise<void> {
-  await loadStoryPackage(packageName, {
-    authoredRootOverride: stageRoot,
-  });
-  await loadStoryPackage(packageName, {
-    authoredRootOverride: path.resolve(stageRoot, 'variants', DEFAULT_VARIANT_ID),
-  });
-  await validateStageRepositories(stageRoot);
+  try {
+    await loadStoryPackage(packageName, {
+      authoredRootOverride: stageRoot,
+    });
+    await loadStoryPackage(packageName, {
+      authoredRootOverride: path.resolve(stageRoot, 'variants', DEFAULT_VARIANT_ID),
+    });
+    await validateStageRepositories(stageRoot);
+  } catch (error) {
+    if (error instanceof StoryPackageScaffoldError) {
+      throw error;
+    }
+
+    throw new StoryPackageScaffoldValidationError('Scaffold validation failed.');
+  }
 }
 
 async function cleanupStageRoot(stageRoot: string): Promise<void> {
@@ -438,54 +455,65 @@ export async function createStoryPackageScaffold(
   input: CreateStoryPackageScaffoldInput,
 ): Promise<CreateStoryPackageScaffoldResult> {
   const displayName = input.displayName.trim();
-  const packageName = buildStoryPackageSlug(displayName);
-  await ensurePackageNameAvailable(packageName);
-
-  const createdAt = new Date().toISOString();
-  const sceneSpec = createSceneSpec(displayName, packageName);
-  const phasePlans = createPhasePlans(sceneSpec);
-  const routerLexicon = createRouterLexicon(sceneSpec);
-  const auditQuestionSet = createAuditQuestionSet(sceneSpec);
-  const worldBase = createWorldBase(displayName);
-  const controlModules = createControlModules(sceneSpec);
-  const stateSnapshots = createStateSnapshots(sceneSpec);
-  const runtimeSessions = createRuntimeSessionsFile(createdAt);
-  const activeSessionId = runtimeSessions.activeSessionId;
-
-  if (!activeSessionId) {
-    throw new Error('Scaffold runtime session bootstrap failed to create an active session.');
-  }
-
-  const storylineRepository = createStorylineRepositoryFile(createdAt, activeSessionId);
-  const stageRoot = resolveStageRoot(packageName, createStageId());
-  const targetRoot = resolvePackageRoot(packageName);
-
-  await fileSystem.mkdir(stageRoot, { recursive: true });
+  let packageName: string;
+  let stageRoot: string | null = null;
 
   try {
-    await writeYamlDocument(path.resolve(stageRoot, 'world-base.yaml'), worldBase);
-    await writeYamlDocument(path.resolve(stageRoot, 'scene.yaml'), sceneSpec);
-    await writeYamlDocument(path.resolve(stageRoot, 'phase-plans.yaml'), phasePlans);
-    await writeYamlDocument(path.resolve(stageRoot, 'router-lexicon.yaml'), routerLexicon);
-    await writeYamlDocument(path.resolve(stageRoot, 'audit-questions.yaml'), auditQuestionSet);
-    await writeYamlDocument(path.resolve(stageRoot, 'control-modules.yaml'), controlModules);
-    await writeYamlDocument(path.resolve(stageRoot, 'state-snapshots.yaml'), stateSnapshots);
+    try {
+      packageName = buildStoryPackageSlug(displayName);
+    } catch {
+      throw new StoryPackageScaffoldInputError('Invalid story package display name.');
+    }
+
+    await ensurePackageNameAvailable(packageName);
+
+    const createdAt = new Date().toISOString();
+    const sceneSpec = createSceneSpec(displayName, packageName);
+    const phasePlans = createPhasePlans(sceneSpec);
+    const routerLexicon = createRouterLexicon(sceneSpec);
+    const auditQuestionSet = createAuditQuestionSet(sceneSpec);
+    const worldBase = createWorldBase(displayName);
+    const controlModules = createControlModules(sceneSpec);
+    const stateSnapshots = createStateSnapshots(sceneSpec);
+    const runtimeSessions = createRuntimeSessionsFile(createdAt);
+    const activeSessionId = runtimeSessions.activeSessionId;
+
+    if (!activeSessionId) {
+      throw new StoryPackageScaffoldValidationError(
+        'Scaffold runtime session bootstrap failed to create an active session.',
+      );
+    }
+
+    const storylineRepository = createStorylineRepositoryFile(createdAt, activeSessionId);
+    const stageRootPath = resolveStageRoot(packageName, createStageId());
+    stageRoot = stageRootPath;
+    const targetRoot = resolvePackageRoot(packageName);
+
+    await fileSystem.mkdir(stageRootPath, { recursive: true });
+
+    await writeYamlDocument(path.resolve(stageRootPath, 'world-base.yaml'), worldBase);
+    await writeYamlDocument(path.resolve(stageRootPath, 'scene.yaml'), sceneSpec);
+    await writeYamlDocument(path.resolve(stageRootPath, 'phase-plans.yaml'), phasePlans);
+    await writeYamlDocument(path.resolve(stageRootPath, 'router-lexicon.yaml'), routerLexicon);
+    await writeYamlDocument(path.resolve(stageRootPath, 'audit-questions.yaml'), auditQuestionSet);
+    await writeYamlDocument(path.resolve(stageRootPath, 'control-modules.yaml'), controlModules);
+    await writeYamlDocument(path.resolve(stageRootPath, 'state-snapshots.yaml'), stateSnapshots);
     await fileSystem.writeFile(
-      path.resolve(stageRoot, 'runtime-sessions.json'),
+      path.resolve(stageRootPath, 'runtime-sessions.json'),
       `${JSON.stringify(runtimeSessions, null, 2)}\n`,
       'utf8',
     );
     await fileSystem.writeFile(
-      path.resolve(stageRoot, 'storyline-repository.json'),
+      path.resolve(stageRootPath, 'storyline-repository.json'),
       `${JSON.stringify(storylineRepository, null, 2)}\n`,
       'utf8',
     );
-    await copyVariantManagedFiles(stageRoot);
+    await copyVariantManagedFiles(stageRootPath);
 
-    await validateStagePackage(packageName, stageRoot);
+    await validateStagePackage(packageName, stageRootPath);
     await fileSystem.access(targetRoot).then(
       () => {
-        throw new Error(`Story package "${packageName}" already exists.`);
+        throw new StoryPackageScaffoldConflictError('Story package already exists.');
       },
       (error) => {
         if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
@@ -493,7 +521,7 @@ export async function createStoryPackageScaffold(
         }
       },
     );
-    await fileSystem.rename(stageRoot, targetRoot);
+    await fileSystem.rename(stageRootPath, targetRoot);
 
     return {
       packageName,
@@ -501,7 +529,14 @@ export async function createStoryPackageScaffold(
       createdAt,
     };
   } catch (error) {
-    await cleanupStageRoot(stageRoot);
-    throw error;
+    if (stageRoot) {
+      await cleanupStageRoot(stageRoot);
+    }
+
+    if (error instanceof StoryPackageScaffoldError) {
+      throw error;
+    }
+
+    throw new StoryPackageScaffoldWriteError('Could not create package root under src/story-packages.');
   }
 }
