@@ -2,17 +2,17 @@
 
 ## Goal
 
-为 `Phase 4` 建立独立的工作记忆入口，并把当前已经冻结的产品方向、架构边界与待补 spec 范围稳定记录下来。
+为 `Phase 4` 建立独立的工作记忆入口，并把当前已经冻结的产品方向、架构边界与正式 spec 基线稳定记录下来。
 
 当前这套文档的职责不是直接指挥实现，而是：
 
 - 记录 `Phase 4` 当前已经谈定的结论
 - 提供恢复 `Phase 4` 讨论上下文的最短入口
-- 在正式 spec / implementation plan 落盘前，避免后续线程重复发散或误解边界
+- 在正式 implementation plan 落盘前，避免后续线程重复发散或误解边界
 
 ## Current Status
 
-- `Phase 4` 仍处于 spec 准备阶段，尚未进入实现。
+- `Phase 4` 已产出正式 spec 草案，尚未进入实现。
 - 当前已经冻结的方向是：
   - 新增内建、`always-on` 的 `sidecar agent`
   - 新 agent 名称固定为 `weaver agent`
@@ -26,6 +26,8 @@
   - `weaver agent` 先解析文本并形成结构化导入稿
   - 再尽量复用现有服务端 `new story package` 主链路落盘
   - 不额外发明第二套 package persistence 主路径
+- 当前正式 spec 文件为：
+  - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
 
 ## Frozen Decision Map
 
@@ -39,9 +41,13 @@
 | 新建入口形态 | 先选择 `空白创建 / 文本导入` |
 | 导入范围 | 仅支持 `粘贴文本 -> 新建 story package` |
 | 输入形态 | 同时接受自由文本与半结构化文本；自由文本为主路径 |
+| 输入上限 | `12,000` Unicode 字符是 `Phase 4` 默认上限 |
 | 导入策略 | 不做预览，直接运行导入 + 建包 |
 | package 名称 | agent 提议，作者可修改 |
+| 命名优先级 | 作者显式输入优先；为空时才使用 `weaver suggestedPackageName`；若 suggestion 无效或冲突则要求作者手动命名 |
 | package 落盘 | 复用现有服务端 scaffold / create path |
+| 创建 API | 保持统一 package creation route，用 `mode: blank | text_import` 区分创建方式 |
+| 原子建包策略 | `weaver` 导入值应在 staged scaffold 中应用并验证，再一次性 promote，不走“先建空包再二次写入”主路径 |
 | 结构化填充重点 | `worldbase`、`hero`、`core cast`、`antagonists`、`npc`、`locations` |
 | 剧情结构策略 | 不拆 `phase` / `beat`；原始整段默认沉淀为 `opening hook` |
 | gossipelog 接入 | 建包后立即 bootstrap；首次 Play 前仅在缺失/损坏时 fallback |
@@ -54,8 +60,10 @@
 | weaver 目录形态 | `src/agents/weaver/` + `registry` + package-owned `agents/weaver/...` |
 | 身份提示载体 | 通过代码里的 system prompt / static instruction 声明身份与边界 |
 | 私有 agent 文档 | 不为 `weaver` 新增私有 `AGENTS.md` / `CLAUDE.md` / 独立 prompt markdown |
+| reference 资产形态 | `weaver` heavy reference 是 repo 内静态 reference asset，不是 sidecar 私有 prompt 文档体系 |
 | weaver skill 形态 | 当前推荐 `1` 个 `weaver-import-skill`，不按字段拆成多个 skill |
 | weaver reference | 当前推荐为 `weaver-import-skill` 配 `1` 份按需披露的重 reference |
+| weaver reference 故障语义 | `weaver` reference 在 `Phase 4` 为 required；无法装载时导入请求在模型调用前 hard fail |
 | sidecar reference 支持 | sidecar 架构应预留统一的 reference 装载能力，而不是只给 `weaver` 特判 |
 | gossipelog reference 兼容性 | `gossipelog` 后续也可以接入同一套 sidecar reference 机制 |
 | reference 装载策略 | 主 skill 保持精简；重 reference 按需加载，不默认常驻 |
@@ -80,12 +88,11 @@
 
 ## Open Decisions Still Pending
 
-这些点还没有冻结，正式 spec 仍需继续收口：
+这些点不再阻塞 spec，但仍需在 implementation plan 里进一步细化：
 
 - `weaver agent` 的输入长度上限、失败提示与 loading 口径
 - `weaver` 导入稿在服务端的具体 contract 形状
 - `weaver` 的轻量 state / summary 文件 schema
-- `weaver` reference 的最小内容边界应该多大
 - sidecar reference manifest / descriptor 的最小字段集应该是什么
 - sidecar reference resolver 的缓存键、token budget 与注入顺序如何统一
 - `agent 管理页面` 的最终信息架构、中文文案与视觉层级
@@ -106,6 +113,7 @@
   - [../../../archive/docs/narrative-editor-redesign/master-record.md](../../../archive/docs/narrative-editor-redesign/master-record.md)
   - [../specs/2026-04-02-phase-1-model-surface-design.md](../specs/2026-04-02-phase-1-model-surface-design.md)
   - [../specs/2026-04-06-phase-3-master-design.md](../specs/2026-04-06-phase-3-master-design.md)
+  - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
 - 现有主工作记忆：
   - [../phase-3/task_plan.md](../phase-3/task_plan.md)
   - [../phase-3/progress.md](../phase-3/progress.md)

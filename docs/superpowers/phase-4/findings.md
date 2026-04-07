@@ -2,7 +2,7 @@
 
 ## 最终恢复点
 
-`Phase 4` 现在仍是 `spec 准备` 状态，不应被误读成已经进入实现的交付阶段。
+`Phase 4` 现在已经有正式 spec 草案，但仍未进入实现阶段。
 
 最短恢复顺序：
 
@@ -15,7 +15,8 @@
 7. [findings.md](findings.md)
 8. [../specs/2026-04-02-phase-1-model-surface-design.md](../specs/2026-04-02-phase-1-model-surface-design.md)
 9. [../specs/2026-04-06-phase-3-master-design.md](../specs/2026-04-06-phase-3-master-design.md)
-10. [../../../archive/docs/narrative-editor-redesign/master-record.md](../../../archive/docs/narrative-editor-redesign/master-record.md)
+10. [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+11. [../../../archive/docs/narrative-editor-redesign/master-record.md](../../../archive/docs/narrative-editor-redesign/master-record.md)
 
 ## 当前冻结结论
 
@@ -35,11 +36,22 @@
   - package-owned config / state 放在 `story-packages/*/agents/weaver/`
 - `weaver` 不应新建私有 `AGENTS.md` / `CLAUDE.md` 或独立 prompt markdown。
 - `weaver` 的身份说明应继续沿用现有 sidecar 做法，放在代码里的 system prompt / static instruction。
+- `weaver` 的 code-owned instruction 与 sidecar-loaded reference 不是同一件事：
+  - instruction 是代码里的静态身份/边界约束
+  - heavy reference 是 repo 内可装载的静态 reference asset
+  - 后者不等于 sidecar 私有 prompt markdown 体系
 - `weaver` 当前最合理的 skill 形态是：
   - 保持 `1` 个 `weaver-import-skill`
   - 不按 `worldbase / cast / locations / npc` 再拆成多个 skill
   - 通过 skill 的结构化输出分区和代码分发完成字段落位
 - `weaver-import-skill` 应配 `1` 份按需披露的重 reference，用来承载字段映射、输出 contract、禁止项与不确定性规则。
+- `weaver` 的 heavy reference 在 `Phase 4` 应视为 required 资产：
+  - 若无法装载，应在模型调用前 hard fail
+  - 不允许在缺 reference 的情况下 degraded import
+- `text_import` 的 package naming 应冻结为：
+  - 作者显式输入优先
+  - 作者留空时，才使用 `weaver suggestedPackageName`
+  - 若 suggestion 无效或与现有 package 冲突，则请求失败并要求作者手动命名
 - 这次不应只给 `weaver` 临时加 reference；整个 sidecar 架构都应支持统一的 reference 装载能力，供 `gossipelog` 等后续 built-in sidecar 复用。
 - sidecar reference 的 best practice 不是“每个 sidecar 各写一套 loader”，而是：
   - 一套统一的 sidecar reference loader 框架负责缓存、token budget、注入顺序和权限边界

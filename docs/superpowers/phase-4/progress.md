@@ -26,6 +26,9 @@
   - 主 skill 应保持精简，重 reference 不默认常驻，只在 sidecar 调用时按需装载
   - `SKILL.md` 与重 reference 分工应明确：前者写触发条件与边界，后者承载字段映射与细则
   - sidecar prompt 继续使用清晰分段 / 标签化上下文和结构化 JSON 输出
+  - reviewer 已补充冻结：`weaver` heavy reference 是 repo 内静态 reference asset；其装载在 `Phase 4` 为 required，失败时在模型调用前 hard fail
+  - reviewer 已补充冻结：`text_import` 的 package naming 优先级为“作者显式命名 > weaver suggestion > 否则失败并要求人工命名”
+  - reviewer 已补充冻结：`12,000` 字符输入上限与 `4,000` token reference budget 不再只是建议，而是 `Phase 4` 默认值
 - 冻结导入内容边界：
   - 重点解析 `worldbase`、`hero`、`core cast`、`antagonists`、`npc`、`locations`
   - 不切 `phase` / `beat`
@@ -33,4 +36,8 @@
 - 冻结 `gossipelog` 的接入方向：
   - `weaver` 创建 package 后立即触发一次 bootstrap
   - 如果状态缺失或损坏，则在第一次 Play 前再执行一次 bounded fallback
+- 基于以上冻结结论，新增正式 spec 草案：
+  - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+  - spec 已收敛 `weaver` 导入边界、共享 sidecar reference loader、统一 prompt assembly 边界、agent 管理页形态与 `gossipelog` bootstrap 语义
+  - spec 已完成一轮 reviewer 修订并通过第二轮 spec review，当前状态为“等待用户确认”
 - 根目录三件套将退回仓库级总索引，只做最小引用与恢复入口维护。
