@@ -646,16 +646,16 @@ export async function deleteStoryline(input: {
         ? selectReplacementStorylineId(orderedStorylineIds, targetStoryline.storylineId)
         : repository.activeStorylineId;
 
-    if (targetStoryline.storylineId === repository.activeStorylineId) {
-      const replacementStoryline = resolveStorylineForMutationOrThrow(repository, nextActiveStorylineId);
+    const replacementStoryline =
+      targetStoryline.storylineId === repository.activeStorylineId
+        ? resolveStorylineForMutationOrThrow(repository, nextActiveStorylineId)
+        : null;
+
+    if (replacementStoryline) {
       resolveBoundSessionOrThrow(
         runtimeFile,
         replacementStoryline.activeSessionId,
         replacementStoryline.storylineId,
-      );
-      await runtimeSessionsRepository.setMirroredActiveSession(
-        input.packageName,
-        replacementStoryline.activeSessionId,
       );
     }
 
@@ -671,10 +671,18 @@ export async function deleteStoryline(input: {
     };
 
     await writeStorylineRepository(input.packageName, nextRepository);
+
+    if (replacementStoryline) {
+      await runtimeSessionsRepository.setMirroredActiveSession(
+        input.packageName,
+        replacementStoryline.activeSessionId,
+      );
+    }
+
     await removeVariantWorkspace({
       packageName: input.packageName,
       variantId: targetStoryline.variantId,
-    });
+    }).catch(() => undefined);
 
     return {
       repository: nextRepository,

@@ -661,6 +661,42 @@ describe('POST storyline actions route', () => {
     });
   });
 
+  it('returns 409 when delete_storyline fails with a structural mismatch even if the message also mentions does not exist', async () => {
+    mocks.deleteStoryline.mockRejectedValueOnce(
+      new Error(
+        'Storyline structural mismatch: activeStorylineId "storyline_missing" does not exist in storyline-repository.json.',
+      ),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'delete_storyline',
+          storylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Storyline structural mismatch: activeStorylineId "storyline_missing" does not exist in storyline-repository.json.',
+    });
+  });
+
   it('dispatches delete_storyline through the action route', async () => {
     const { POST } = await import(
       '@/app/api/authoring/packages/[packageName]/storylines/actions/route'

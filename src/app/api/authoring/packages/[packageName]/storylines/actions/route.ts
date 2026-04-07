@@ -69,13 +69,6 @@ function mapActionError(error: unknown): { status: number; message: string } {
   if (error instanceof Error) {
     const normalizedMessage = error.message.toLowerCase();
 
-    if (normalizedMessage.includes('does not exist')) {
-      return {
-        status: 404,
-        message: error.message,
-      };
-    }
-
     if (
       normalizedMessage.includes('structural mismatch') ||
       normalizedMessage.includes('does not resolve') ||
@@ -83,6 +76,13 @@ function mapActionError(error: unknown): { status: number; message: string } {
     ) {
       return {
         status: 409,
+        message: error.message,
+      };
+    }
+
+    if (normalizedMessage.includes('does not exist')) {
+      return {
+        status: 404,
         message: error.message,
       };
     }

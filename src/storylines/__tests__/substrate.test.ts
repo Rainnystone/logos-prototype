@@ -4,7 +4,9 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import * as storylineRepository from '@/storylines/repository';
 import * as storylineSubstrate from '@/storylines/substrate';
+import * as storylineWorkspaces from '@/storylines/workspaces';
 import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
@@ -612,6 +614,36 @@ describe('storyline substrate', () => {
     await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(beforeRepository);
   });
 
+  it('does not switch the runtime mirror before repository deletion succeeds', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+    vi.spyOn(storylineRepository, 'writeStorylineRepository').mockRejectedValueOnce(
+      new Error('repository delete write failed'),
+    );
+
+    await expect(
+      deleteStoryline({
+        packageName,
+        storylineId: 'storyline_main',
+      }),
+    ).rejects.toThrow(/repository delete write failed/i);
+
+    await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        activeStorylineId: 'storyline_main',
+      }),
+    );
+    await expect(readRuntimeSessionsJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        activeSessionId: 'sess_main',
+      }),
+    );
+  });
+
   it('removes the deleted variant workspace but preserves retained runtime checkpoint truth', async () => {
     const { packageName } = await seedDeletionStorylinePackage({
       activeStorylineId: 'storyline_main',
@@ -641,6 +673,44 @@ describe('storyline substrate', () => {
     });
     expect(activeContext.storyline.storylineId).toBe('storyline_main');
     expect(activeContext.storyline.activeSessionId).toBe('sess_main');
+  });
+
+  it('keeps delete successful when variant workspace cleanup fails after repository write', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+    vi.spyOn(storylineWorkspaces, 'removeVariantWorkspace').mockRejectedValueOnce(
+      new Error('bounded cleanup failed'),
+    );
+
+    const result = await deleteStoryline({
+      packageName,
+      storylineId: 'storyline_branch',
+    });
+
+    expect(result.deletedStorylineId).toBe('storyline_branch');
+    await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        storylinesById: expect.not.objectContaining({
+          storyline_branch: expect.anything(),
+        }),
+        variantsById: expect.not.objectContaining({
+          variant_branch: expect.anything(),
+        }),
+      }),
+    );
+    await expect(readRuntimeSessionsJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        sessionsById: expect.objectContaining({
+          sess_branch: expect.objectContaining({
+            headCheckpointId: 'chk_03',
+          }),
+        }),
+      }),
+    );
   });
 
   it('branches a new storyline from an explicit historical checkpoint without switching the active storyline', async () => {
