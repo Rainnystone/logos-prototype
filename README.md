@@ -134,15 +134,15 @@ archive/                  历史规格与归档记录
 ## 进一步阅读
 
 - 根目录状态索引：
-  - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-  - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
-  - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
+  - [task_plan.md](task_plan.md)
+  - [progress.md](progress.md)
+  - [findings.md](findings.md)
 - 代码地图：
-  - [architecture.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/codemaps/architecture.md)
-  - [frontend.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/codemaps/frontend.md)
-  - [backend.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/codemaps/backend.md)
-  - [data.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/codemaps/data.md)
+  - [architecture.md](docs/codemaps/architecture.md)
+  - [frontend.md](docs/codemaps/frontend.md)
+  - [backend.md](docs/codemaps/backend.md)
+  - [data.md](docs/codemaps/data.md)
 
 ## 给 Coding Agent
 
-如果你是第一次接手这个仓库，不要直接从代码里盲搜开始。先看 [coding-agent-guide.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/coding-agent-guide.md)。那里会告诉你应该先读哪些文件、不同任务该加载哪一层上下文、当前项目处于什么进度，以及怎样最快找到 runtime、authoring、storyline substrate 和 story package scaffold 的关键入口。
+如果你是第一次接手这个仓库，不要直接从代码里盲搜开始。先看 [coding-agent-guide.md](coding-agent-guide.md)。那里会告诉你应该先读哪些文件、不同任务该加载哪一层上下文、当前项目处于什么进度，以及怎样最快找到 runtime、authoring、storyline substrate 和 story package scaffold 的关键入口。
