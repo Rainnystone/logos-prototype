@@ -2,283 +2,55 @@
 
 ## Goal
 
-把 `Phase 3: Package & Storyline Layer` 拆成可独立设计、计划、执行和验证的几个部分，先冻结总设计，再按 part 的依赖顺序推进实现，避免在 UI、仓储和 authoring 语义之间反复返工。
+把 `Phase 3: Package & Storyline Layer` 的设计、实现与验证维持成可恢复、可继续理解的冻结基线。
 
-本阶段完成标准应至少满足：
+当前这套文档的职责不是继续指挥一个待执行项目，而是：
 
-- `Phase 3` 总 design spec 已写出、review 通过并获用户确认。
-- `Phase 3` 的 part 切法、依赖顺序与每个 part 的完成标准已经冻结。
-- 每个 part 在进入代码实现前，都先有自己的 spec 与 implementation plan。
-- 根目录三件套只保留关键里程碑，本目录成为 `Phase 3` 的主工作记忆。
+- 记录 `Phase 3` 已经完成了什么
+- 提供恢复 `Phase 3` 关键设计和实现边界的入口
+- 帮后续 phase 或后续 agent 快速判断哪些能力已经落在主线
 
-## Active Phases
+## Current Status
 
-| 阶段 | 状态 | 内容 |
-|---|---|---|
-| 1 | complete | 建立 `docs/superpowers/phase-3/` 工作区，并把根目录三件套切换为 `Phase 3` 总控索引模式。 |
-| 2 | complete | `Phase 3` 总 design spec 已写出并通过独立 review。 |
-| 3 | complete | `Phase 3` 的 part 边界、依赖关系与每个 part 的完成标准已在总 spec 中冻结。 |
-| 4 | complete | `Part 1` spec 已写出、完成多轮 review 收口，并进入用户确认后的正式基线。 |
-| 5 | complete | `Part 1` implementation plan 已写出并通过独立 plan review。 |
-| 6 | complete | `Part 1` 已完成实现、验证、浏览器手验与 PR 提交。 |
-| 7 | complete | `Part 2` spec 已完成、通过独立 review，并进入用户确认后的正式基线。 |
-| 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
-| 9 | complete | `Part 2` 已完成实现、独立 review、mock 验收、最终验证与文档同步。 |
-| 10 | complete | `Part 3` spec 已写出，完成独立 review 收口并进入用户确认。 |
-| 11 | complete | `Part 3` implementation plan 已写出并通过独立 plan review。 |
-| 12 | complete | 已完成 `Part 3` 的实现、验证、浏览器手验与最终文档同步，`Phase 3` 主线实现已收口。 |
-
-## Frozen Inputs From Earlier Phases
-
-- `Phase 2` 已交付 package-scoped runtime checkpoints，且 `checkpointId` 继续保持 opaque、package-scoped，不编码 `storylineId` 或 UI 标签。
-- `checkpoint` 在 `Phase 3` 中继续被视为 package-scoped immutable node。
-- `storyline` 应作为指向 checkpoint 的 ref / pointer layer，而不是复制整段历史。
-- `session` 是当前活动工作线，后续需要与某条 storyline 的 head 发生绑定。
-- 仅有 `checkpoint + storyline ref` 还不够，因为当前 authoring 保存仍然是 package-global baseline。
-- `Phase 3` 必须补上 storyline-scoped authoring variant / revision 语义，用来支持“比较不同设置下的故事走向”。
-- package-level `Storage / Repository Substrate` 应先于 UI 落地。
-- “故事包管理”页应取代“控制台”作为 editor 默认入口，但保留“控制台”作为 diagnostics 页；UI 必须消费已冻结好的 substrate，而不是反向驱动底层对象边界。
-- `storyline v1` 的目标集合仍然包含：
-  - 新建分支线
-  - 切换
-  - 删除
-  - 重命名
-- 经过 `Part 2` 收口后的当前结论是：
-  - `重命名` 已在 `Part 2` 落地
-  - `复制` 的主要作者价值已被 `create from source` 覆盖
-  - `归档` 因缺少明确的作者价值，当前从 `Phase 3` 主线移出
-- 每个 part 收口前都要做一次独立的 UI / UX 复核。
-
-## Current Recommended Shape
-
-当前推荐 `Phase 3` 按 3 个主要 part 推进：
-
-1. `Part 1`
-   - 冻结 `checkpoint / storyline / session / authoring variant` 的对象合同
-   - 引入 package-level repository seam
-   - 明确 mutable state 与 package definition 的分层
-2. `Part 2`
-   - 新增“故事包管理”作为 editor 默认第一页
-   - 接入 storyline workspace 的读取、展示与核心继续/分叉工作流
-3. `Part 3`
-   - 补齐删除与本地新建故事包这两条最终产品闭环
-   - 完成删除动作、local package scaffolding、相关 destructive UX 与最终收尾验证
-
-这组切法当前是推荐方向，最终以总 spec review 通过后的版本为准。
+- `Part 1` 已完成并合入：storyline substrate、repository seam、variant workspace、active storyline resolution。
+- `Part 2` 已完成并合入：`故事包管理` 工作区、package selector、storyline rows、checkpoint rail、rename、create-from-source、branch-and-switch。
+- `Part 3` 已完成并合入：safe delete storyline、local `new story package`、destructive UX、最终验证。
+- 当前 `Phase 3` 已完成主线实现，后续只作为冻结基线供其他工作复用。
 
 ## Frozen Part Map
 
-| Part | 核心目标 | 主要产物 | 明确不承担的事 |
-|---|---|---|---|
-| `Part 1` | 把 storyline substrate 做成正式底座 | storyline repository seam、variant workspace 模型、storyline-bound session 语义、兼容迁移、无 UI substrate primitives（create/switch/branch） | 不负责完整故事包管理 UI；不把新建 story package 当地基；不交付 rename/archive/delete 这类管理动作 |
-| `Part 2` | 把 substrate 变成作者可用工作区 | 故事包管理页、storyline 列表、checkpoint 浏览/选择、inline storyline 命名，以及对 `Part 1` substrate primitives 的 UI 接入 | 不要求一次补齐全部管理动作；不再回头重新定义底层对象模型；不把新建 story package 当作主线阻塞项 |
-| `Part 3` | 补齐 storyline 删除能力并完成本地新建故事包闭环 | 删除、本地 package scaffolding、失败回退、空态与最终收尾验证 | 不再回头改 `Part 1` 的对象边界；`archive` 不再作为当前 phase 主线；`duplicate` 不再作为独立目标保留 |
-
-## Bootstrap Non-Goals
-
-- 当前文档启动阶段不写产品代码。
-- 当前文档启动阶段不写 `Phase 3` 总 implementation plan。
-- 当前文档启动阶段不提前冻结所有文件路径与全部任务颗粒度；这些应在总 spec 之后按 part 再细化。
-
-## Master Spec Status
-
-- 正式总 spec 已写出：
-  - `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
-- 当前状态：
-  - `Approved`
-- 下一步：
-  - 继续作为 `Part 1` / `Part 2` / `Part 3` 的总边界基线
-
-## Review Findings Absorbed Into Master Spec
-
-- `authoring variant` 已正式冻结为唯一物理模型：
-  - materialized authoring workspace
-- `storyline head / active session / active checkpoint` 的主从关系已冻结为显式不变量
-- package-level repository seam 已补出明确的责任切分与首版物理拓扑
-- 旧 package 的兼容策略已冻结为 lazy bootstrap migration
-
-## Part 1 Frozen Decisions So Far
-
-以下决定已由用户明确确认，后续 `Part 1` spec 应直接继承：
-
-| 议题 | 已冻结决定 |
+| Part | 已交付内容 |
 |---|---|
-| `Part 1` 范围 | 做 substrate，并把 `/play` 与 `/edit` 默认接到 `activeStorylineId -> variant workspace -> active session` |
-| storyline 仓储文件 | 采用 package-root `storyline-repository.json` |
-| `authoring variant` 物理模型 | 采用 `variants/<variantId>/...` 下的 materialized workspace |
-| package baseline 角色 | package-root baseline YAML 继续作为 baseline / scaffold / import-export anchor，不再作为 storyline-aware 常规写目标 |
-| `session` 绑定事实源 | `storyline-repository.json` 负责 storyline 与 session 绑定；`runtime-sessions.json` 继续承载 continuity truth |
-| 迁移方式 | 采用 lazy bootstrap migration |
-| “从 checkpoint 继续”的作者可见入口 | 不在 `Part 1` 暴露作者可见入口；只在底层能力上为 `Part 2` 做好地基 |
-| storyline 管理动作 | `Part 1` 不承担 rename / archive / copy / delete 等管理动作 |
-| 新建 story package | 当时先留在 `Part 2` companion slice；此判断现已被后续 `Part 3` 必做项结论覆盖 |
+| `Part 1` | storyline substrate、`storyline-repository.json`、`variants/<variantId>/...`、storyline-bound session、lazy bootstrap migration |
+| `Part 2` | `故事包管理` 默认入口、package selector、row-local actions、checkpoint rail、rename、`create from source`、`branch + switch` |
+| `Part 3` | safe delete storyline、local new story package scaffold、destructive UX、最终验证 |
 
-当前仍待冻结的问题：
+## Phase 3 Final Product Shape
 
-- 当前已无 `Part 1` 级对象边界 blocker；下一步直接进入 `Part 1` spec。
+`Phase 3` 完成后，仓库当前应默认满足这些事实：
 
-## Frozen Variant Creation Rules
+- 一个 story package 内可以有多条 storyline
+- `storyline` 通过 checkpoint graph 比较和继续
+- authoring truth 可以落在 variant workspace，不再只落在 package-root baseline
+- `/edit` 默认先到 `故事包管理`
+- `/play` 与 `/edit` 都通过 active storyline 解析当前工作线
+- 可以从管理页直接新建本地 story package
 
-| 场景 | 已冻结规则 |
-|---|---|
-| 新建 storyline | 立即复制来源 storyline 当前绑定的 variant workspace，生成新的 `variantId` |
-| duplicate storyline | 立即完整复制被 duplicate 的 storyline 当前 variant workspace |
-| 从 checkpoint 分叉 storyline | 仍复制来源 storyline 当前 variant workspace，只改变新的 storyline head / active session 锚点 |
-| 禁止方案 | 不采用 overlay inheritance；不采用 deferred first-write materialization |
+## Canonical References
 
-## Part 1 Spec Status
+- 总 spec：
+  - [../specs/2026-04-06-phase-3-master-design.md](../specs/2026-04-06-phase-3-master-design.md)
+- Part specs：
+  - [../specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md](../specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md)
+  - [../specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md](../specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md)
+  - [../specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md](../specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md)
+- Part plans：
+  - [../plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md](../plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md)
+  - [../plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md](../plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md)
+  - [../plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md](../plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md)
 
-- 正式 `Part 1` spec 已写出：
-  - `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
-- 当前状态：
-  - `Approved`
-- 下一步：
-  - 维持为已执行完成的历史基线
-  - 继续为 `Part 2` / `Part 3` 提供 substrate 约束
+## Merge Landmarks
 
-## Part 1 Implementation Plan Status
-
-- 正式 `Part 1` implementation plan 已写出：
-  - `docs/superpowers/plans/2026-04-06-phase-3-part-1-storyline-substrate-implementation.md`
-- 当前状态：
-  - `Execution complete`
-- 下一步：
-  - 进入 `Part 2` spec
-  - 把故事包管理工作区的交付边界与 `Part 3` 的管理动作边界重新确认一遍
-  - 基于已冻结的 `Part 1` substrate 开始设计故事包管理工作区
-
-## Part 2 Spec Status
-
-- 正式 `Part 2` spec 已写出：
-  - `docs/superpowers/specs/2026-04-06-phase-3-part-2-package-storyline-workspace-design.md`
-- 当前状态：
-  - `Approved`
-- 下一步：
-  - 进入 `Part 2` implementation plan
-
-## Part 2 Implementation Plan Status
-
-- 正式 `Part 2` implementation plan 已写出：
-  - `docs/superpowers/plans/2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md`
-- 当前状态：
-  - `Execution complete`
-- 下一步：
-  - `Part 2` 分支已完成 commit / push / PR
-  - 进入 `Part 3` spec
-
-## Part 2 Execution Checkpoints
-
-| Task | 状态 | 说明 |
-|---|---|---|
-| `Task 1` | complete | bounded workspace read model 与 legacy implicit-row 读取已完成，并通过定向测试。 |
-| `Task 2` | complete | metadata-only rename seam 与 storyline action route 已完成，并通过定向测试。 |
-| `Task 3` | complete | editor 默认入口与 shell 接线已完成，并通过定向测试。 |
-| `Task 4` | complete | 故事包管理页的 selector、workspace 布局与 brutalist shell 集成已完成。 |
-| `Task 5` | complete | row-local actions、beat-dot confirm drawer、最小信息密度收口、mock 验收与最终文档同步均已完成。 |
-
-## Part 3 Spec Status
-
-- 正式 `Part 3` spec 已写出：
-  - `docs/superpowers/specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md`
-- 当前状态：
-  - `Approved`
-- 当前已冻结的 `Part 3` 主线：
-  - safe `delete storyline`
-  - local `new story package` scaffolding
-  - destructive-action UX
-  - final verification
-- 下一步：
-  - 进入 `Part 3` implementation plan 执行选择
-
-## Part 3 Implementation Plan Status
-
-- 正式 `Part 3` implementation plan 已写出：
-  - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
-- 当前状态：
-  - `Execution complete`
-- 下一步：
-  - 进入 `Phase 3` 分支收尾：commit / push / PR
-
-## Part 3 Execution Checkpoints
-
-| Task | 状态 | 说明 |
-|---|---|---|
-| `Task 1` | complete | delete substrate primitive、active replacement 与 last-line protection 已实现并通过 review。 |
-| `Task 2` | complete | delete route / bounded error mapping / UI delete contract 已实现并通过 review。 |
-| `Task 3` | complete | cross-platform package slug 与显式 `Phase 3` scaffold service 已实现并通过 review。 |
-| `Task 4` | complete | package creation route、typed scaffold errors 与 route tests 已实现并通过 review。 |
-| `Task 5` | complete | `故事包管理` UI 已接入创建与删除能力，并完成视觉收口。 |
-| `Task 6` | complete | 已完成 targeted tests、simulation 验证、build、全量测试、真实浏览器验收与 planning sync。 |
-
-## Part 1 Delivery Status
-
-- `Part 1` 已完成实现、验证与 PR 提交。
-- 当前 GitHub review surface：
-  - `PR #6 feat: complete phase 3 part 1 storyline substrate`
-- `PR #6` 已合入 `branch/narrative-editor`。
-- 合入后又追加了一次主线热修：
-  - 限制 `branch from checkpoint` 只能从 source storyline 当前绑定 session 可达的 checkpoint 分叉，避免 variant 复制与 runtime continuity 串线。
-- 需要注意的恢复纪律：
-  - 执行 `Part 1` 时使用过的临时 worktree 已在 push / PR 后删除
-  - 后续继续 `Phase 3` 时，应以正式 spec / plan / progress 以及 PR 记录为恢复入口
-
-## Part 1 Execution Checkpoints
-
-| Task | 状态 | 说明 |
-|---|---|---|
-| `Task 1` | complete | storyline repository contract、workspace helpers、定向测试和双 review 已通过。 |
-| `Task 2` | complete | storyline substrate service、runtime-session 同步、失败路径收口与双 review 已通过。 |
-| `Task 3` | complete | authored load/save target-resolution seam、legacy/non-materializing 兼容与双 review 已通过。 |
-| `Task 4` | complete | `/edit` 与 `/play` 页面级默认解析已接到 active storyline，补齐了单次 context resolve 与页面级 storyline-aware 覆盖，并通过双 review。 |
-| `Task 5` | complete | 已完成定向回归、`build`、simulation type-check / test、全量 `npm test`、浏览器手验以及 Phase 3 记录同步。 |
-
-## Part 2 Clarifications
-
-- `Part 2` 当前正式对齐的核心作者动作包括：
-  - `continue current storyline`
-  - `branch from checkpoint as new storyline`
-  - `switch active storyline`
-  - `create storyline from source storyline`
-- `Part 2` 当前已根据用户草图冻结新的入口与布局方向：
-  - 新页面正式命名为 `故事包管理`
-  - 它是 editor 默认第一页
-  - 顶部按钮放在 `世界` 左边
-  - `控制台` 保留为 diagnostics 页，不从产品中删除
-  - 页面主体采用左侧 package selector + 右侧 storyline workspace 的双栏结构
-  - 结构基准图见 `../phase-3/结构布局示意图.png`
-- 这里的 `fallback` / “从 beat 2 重来”语义已进一步更新为：
-  - 不是完整历史重演
-  - 也不再是“在同一条 storyline 上原地回退再继续”
-  - 而是用户点击某个 accepted-beat checkpoint 后，在该点下方向下展开确认层
-  - 用户确认后，系统自动基于该 checkpoint 创建一条新的 storyline
-  - 新 storyline 复制来源 storyline 当前 variant workspace，并绑定新的 runtime session
-  - 然后切换 package `activeStorylineId` 到这条新 storyline，让用户在新线上继续编辑
-- 因此 `Part 2` 的 checkpoint UI 当前正式承接的是：
-  - click beat dot
-  - open split-down confirm / cancel drawer
-  - confirm => branch-as-new-storyline and switch
-  - cancel => close drawer without mutation
-- `Part 2` 的 storyline naming 也已调整：
-  - 代码层继续使用 opaque、用户不可见的 `storylineId`
-  - 系统创建时自动生成默认显示名
-  - UI 层允许用户编辑 storyline 的显示名称
-  - 名称编辑不改变 `storylineId`
-- 为避免 `Part 2` implementation plan 再次猜边界，当前还额外冻结了 3 条实现前契约：
-  - inline display-name editing 必须通过 metadata-only server seam 落到 `storyline-repository.json`
-  - workspace 页面必须消费 bounded read model，而不是直接拼 raw repository / runtime JSON
-  - `continue` 与 `create from source` 都按 row-local action 定义，不再引入第二套持久“selected storyline”状态
-- 这次 scope 调整后：
-  - inline storyline display-name editing 提前进入 `Part 2`
-  - `archive` 不再保留在当前主线
-  - `duplicate` 不再保留为独立目标
-  - `delete` 与 `new story package` 一起进入 `Part 3`
-- 需要额外记住的一条边界是：
-  - `create from source` 已在 `Part 2` 交付，但它只是从 source storyline 当前 head 触发的受控派生动作
-  - 它不等于独立的 `duplicate storyline` 产品动作，但其主要作者价值已被 `Part 2` 覆盖
-- 当前又额外冻结了 3 条最终 UI 收口约束：
-  - 左侧 ready package selector 只显示 package name，不显示简介或摘要
-  - 右侧 workspace 不显示 provenance / head summary / package summary 这类宽事实块
-  - beat rail 必须按 checkpoint history 动态增长，并清晰区分 phase label 与 beat label
-- `new story package` 当前已提升为 `Part 3` 必做项：
-  - 当前架构在本地仓库模式下可做
-  - 以显式 `Phase 3` package scaffold 为正式交付目标
+- `PR #6`：`Part 1`
+- `PR #7`：`Part 2`
+- `PR #8`：`Part 3`

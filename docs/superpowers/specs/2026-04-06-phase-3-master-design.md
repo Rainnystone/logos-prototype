@@ -1,8 +1,16 @@
 # Phase 3 Package & Storyline Layer Master Design
 
 Date: 2026-04-06
-Status: Approved
+Status: Approved; Parts 1-3 merged into `branch/narrative-editor` on 2026-04-07
 Scope: `Phase 3: Package & Storyline Layer`
+
+Implementation status:
+
+- `Part 1`: merged
+- `Part 2`: merged
+- `Part 3`: merged
+
+This document now serves as the frozen master design record for the merged `Phase 3` baseline.
 
 ## 1. Why Phase 3 Exists
 
@@ -525,6 +533,7 @@ Current placement:
 
 - required `Part 3` delivery
 - paired with safe storyline deletion as the final product-completeness closeout for Phase 3
+- now part of the merged Phase 3 baseline
 
 ## 9. Part Decomposition
 
@@ -607,6 +616,7 @@ Completion means:
 - the package never falls into a “no usable storyline” state
 - authors can create a new local package from the workspace and land directly in an explicit `Phase 3` package
 - the remaining `Phase 3` storyline-management surface is materially complete for author use
+- this closeout slice is no longer hypothetical; it is current main-branch behavior
 
 ## 10. Global Acceptance Criteria
 

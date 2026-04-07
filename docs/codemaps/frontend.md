@@ -1,134 +1,90 @@
 # Frontend Codemap
 
-> Updated: 2026-04-04 | Next.js 15 + React 19 + Tailwind 3
+> Updated: 2026-04-07 | merged `Phase 3` baseline
 
 ## Pages
 
-| Route | File | Type | Purpose |
-|-------|------|------|---------|
-| `/` | `src/app/page.tsx` | Server | Title page — provider setup cabinet plus Play / Edit entry points |
-| `/play` | `src/app/play/page.tsx` | Server | Play Workbench — loads story package plus bounded active-session continuity |
-| `/edit` | `src/app/edit/page.tsx` | Server | Narrative Editor — 4 save sections, surfaced as 5 visible tabs because `worldbase-cast` splits into `世界` / `角色` |
+| Route | File | Purpose |
+|---|---|---|
+| `/` | `src/app/page.tsx` | 标题页；provider setup + Play / Edit 入口 |
+| `/play` | `src/app/play/page.tsx` | Play Workbench |
+| `/edit` | `src/app/edit/page.tsx` | Narrative Editor；默认进入 `故事包管理` |
 
-## Play Workbench Component Tree
+## Editor Visible Tabs
 
-```
-PlayWorkbench (client)
-├── AuthorControlPanel — scene name, phase cards, meta bar
-├── FixtureReferencePanel — toggleable story package viewer
-├── play-grid (3-column CSS grid)
-│   ├── LEFT: play-column--sidebar (sticky, scrollable)
-│   │   ├── CollapsiblePanel "Provider Setup" (closed after config)
-│   │   │   └── ConfigPanel
-│   │   │       ├── RuntimeConfigForm — preset dropdown, API key, model, advanced params
-│   │   │       └── Runtime Usage — token counts per operation
-│   │   └── CollapsiblePanel "Prompt Status" (closed by default)
-│   │       └── PromptStatusPanel — assembly layers, context entries
-│   ├── CENTER: play-column
-│   │   ├── Generation Workspace — phase/beat status, Start Round, restore/reset awareness
-│   │   └── BeatDisplay — current beat text + error/rewrite feedback
-│   │       └── PlayerInput — 4 options + free text + submit
-│   └── RIGHT: play-column--feedback
-│       ├── StateInspector — scene state, boundaries, gradient, snapshots
-│       └── CollapsiblePanel "Beat History" (open)
-│           └── BeatHistory — accepted beat entries restored from active runtime session when available
-```
+| Tab | Query contract | Purpose |
+|---|---|---|
+| `故事包管理` | `section=story-package-management` | package selector、storyline workspace、新建包、删除 line |
+| `世界` | `section=worldbase-cast&surface=world` | 世界、规则、地点 |
+| `角色` | `section=worldbase-cast&surface=character` | 角色与关系侧 authoring |
+| `场景与阶段` | `section=scene-phase-authoring` | scene / phase / cast / location |
+| `控制模块` | `section=control-modules` | router / audit / light cone / beat volume |
+| `控制台` | `section=package-wiring-validation` | diagnostics |
 
-## Edit Workbench Component Tree
+## Edit Page Structure
 
-```
-EditWorkbench (client)
-├── edit-shell — identity shell, PageHelperPanel, CurrentPageStatus, SectionTabs
-├── PageActionBar — return to title, open scene
-├── SectionTabs — 5 visible tab links (query param routing, with `worldbase-cast` split into `world` / `character` surfaces)
-└── edit-layout (active section)
-    ├── WorldBaseCastSection — `world` / `character` 二选一切面；routes to WorldSection or CharacterSection
-    │   ├── WorldSection — world setting, rules, tone baseline editor
-    │   └── CharacterSection — character editor with continuity-backed relationship panel
-    ├── ScenePhaseAuthoringSection — scene spec editor + phase rail + phase editor
-    │   ├── SceneCastSelector — scene cast selection from world-base
-    │   └── SceneLocationSelector — scene location selection from world-base
-    ├── ControlModulesSection — module stack + module editor
-    └── PackageWiringValidationSection — diagnostics dashboard + AgentSurfacePanel
+```text
+EditPage (server)
+  -> listStoryPackageCatalog()
+  -> resolveActiveStorylineContext()
+  -> loadAuthoringState()
+  -> loadStoryPackageManagementWorkspaceView()   [management only]
+  -> EditWorkbench (client)
+
+EditWorkbench
+  -> SectionTabs
+  -> PageActionBar
+  -> active section
 ```
 
-## Shared Components
+## Story Package Management UI
 
-| Component | Props | Purpose |
-|-----------|-------|---------|
-| `CollapsiblePanel` | title, eyebrow, defaultOpen, variant | Reusable expand/collapse section |
-| `RuntimeConfigForm` | initialConfig, onSave, actionSlot | Provider preset, API key, model, advanced params |
-| `ConfigPanel` | initialConfig, onSave, diagnostics | RuntimeConfigForm + Runtime Usage |
-| `TitleLandingSurface` | packageName | Title page cabinet with provider setup and Play / Edit entry links |
-| `StoryPackageSelector` | packages | Sample dashboard card list for ready/unavailable story packages |
-| `BeatHistory` | entries, maxDisplay | Renders accepted beat history with role badges |
-| `BeatDisplay` | beatText, status, error | Current beat prose display with error/rewrite feedback |
-| `PlayerInput` | options, onSubmit, disabled | 4 options + free text + submit |
-| `StateInspector` | stateSnapshot, boundaries | Scene state, boundaries, gradient visualization |
-| `AuthorControlPanel` | sceneName, phasePlans, metaBar | Scene name, phase cards, meta bar for play workbench |
+| Component | Responsibility |
+|---|---|
+| `StoryPackageManagementSection.tsx` | 主容器 |
+| `StoryPackageSelector.tsx` | 左侧 package selector |
+| `StoryPackageCreationPanel.tsx` | inline create state |
+| `StorylineWorkspaceRow.tsx` | 单条 storyline row |
+| `StorylineDeleteControl.tsx` | 删除确认与禁用态 |
 
-## State Management
+当前 UI 约束：
 
-| State | Location | Persistence |
-|-------|----------|-------------|
-| AdapterConfig | PlayWorkbench useState | localStorage (`logos-adapter-config`) |
-| Draft edits (worldbase, scene-phase, control-modules) | EditWorkbench useState | Full route changes reset; `worldbase-cast` 内部 `世界 ↔ 角色` surface 切换继续共用同一份草稿 |
-| Saved state | EditWorkbench currentState | Server-side YAML files |
-| Beat history | `PlayWorkbench` + `PlayRuntimeSessionView` | Restored from package-scoped `runtime-sessions.json` when an active checkpoint exists |
-| Scene state snapshots | Orchestrator + runtime-session repository | Current play session in memory, accepted checkpoints persisted to `runtime-sessions.json` |
-| Character relationship continuity | `CharacterSection` via `runtimeContinuityView` | Bounded summary loaded server-side from active runtime session |
+- 左侧 selector 只显示 package 名称
+- `新建故事包` tile 是浅灰底、单层虚线
+- beat rail 横向增长、横向滚动，不换行
+- phase / beat 标签保留
+- 点击 beat 节点展开 `确认 / 取消`
 
-## CSS Architecture
+## Play Workbench UI
 
-| Class | Purpose |
-|-------|---------|
-| `.workspace-page` | Generic workspace page container |
-| `.play-page` | Play workbench page container |
-| `.title-page` | Title landing page with grid background |
-| `.title-card` | Card on title page for actions |
-| `.play-grid` | 3-column grid: `18-24rem / 2fr / 18-26rem` |
-| `.play-column` | Grid cell with `gap: 0.75rem` |
-| `.play-column--sidebar` | Sticky, max-height viewport, overflow scroll |
-| `.play-column--feedback` | Right column (order: -1 on mobile) |
-| `.edit-page` | Editor page container |
-| `.edit-shell` | Editor shell with identity + tabs |
-| `.edit-top-tabs` | Tab navigation container |
-| `.edit-top-tab` | Individual tab button with active state |
-| `.edit-action-bar` | Action buttons at section bottom |
-| `.worldbase-cast` | WorldBase section layout container |
-| `.worldbase-cast__layout` | 2-column: `13-16rem / 1fr` |
-| `.worldbase-cast__rail` | Left rail with summary cards |
-| `.worldbase-cast__summary` | Clickable summary card in rail |
-| `.worldbase-cast__editor` | Right side editor surface |
-| `.edit-surface` | Main editing area with gap |
-| `.edit-helper-panel` | Helper panel in edit sections |
-| `.panel` | Generic panel container |
-| `.shadow-brutal` | Neue brutalism drop shadow |
-| `.panel-eyebrow` | Uppercase tracking label |
-| `.panel-note` | Muted description text |
-| `.panel-heading` | Panel header with flex layout |
-| `.panel-actions` | Action buttons at panel bottom |
-| `.form-field` / `.form-label` | Form input styling |
-| `.form-grid` | Grid layout for form fields |
-| `.primary-link` / `.secondary-link` | Button styles |
-| `.selector-panel` / `.selector-grid` / `.selector-card` | Package selector layout |
-| `.beat-display` / `.beat-prose` / `.beat-placeholder` | Beat content display |
-| `.history-list` / `.history-card` / `.history-role` | Beat history styling |
-| `.option-grid` / `.option-card` | Player input options |
-| `.start-round-panel` / `.hook-preview` | Round start UI |
-| `.status-badge` | Status indicator badge |
-| `.warning-banner` / `.error-banner` / `.rewrite-feedback` | Feedback banners |
-| `.inspector-panel` / `.inspector-section` | State inspector styling |
-| `.fixture-panel` / `.fixture-grid` / `.fixture-card` | Fixture reference display |
-| `.usage-grid` / `.usage-card` | Runtime usage display |
-| `.metric-grid` / `.metric-label` | Metrics visualization |
-| `.boundary-grid` | Boundary display grid |
-| `.volume-chip` / `.gradient-bars` / `.gradient-bar` | Gradient visualization |
-| `.context-strip` | Context bar with meta and actions |
+| Component | Responsibility |
+|---|---|
+| `PlayWorkbench.tsx` | 客户端主容器 |
+| `AuthorControlPanel.tsx` | scene / phase / meta 信息 |
+| `BeatDisplay.tsx` | 当前 beat 输出 |
+| `PlayerInput.tsx` | 选项与自由输入 |
+| `PromptStatusPanel.tsx` | prompt / context 状态 |
+| `StateInspector.tsx` | runtime state 与边界可视化 |
+| `BeatHistory.tsx` | accepted beat 历史 |
 
-## Design System
+## Important Frontend State
 
-- **Style**: Neue Brutalism — `rounded-none`, `border-2 border-black`, flat colors
-- **Colors**: Black/white primary, `#f5f5f5` secondary bg, `#00ff00` accent
-- **Typography**: `font-mono` throughout, uppercase labels
-- **Responsive**: `@media (max-width: 1100px)` collapses to single column
+| State | Source of truth |
+|---|---|
+| runtime config | localStorage |
+| editor draft state | `EditWorkbench` client state + server reload result |
+| package list | `listStoryPackageCatalog()` |
+| active storyline | `resolveActiveStorylineContext()` |
+| management workspace view | `loadStoryPackageManagementWorkspaceView()` |
+| rail nodes | `row.checkpointRail` |
+
+## CSS Areas Worth Knowing
+
+先看：
+
+- `src/app/globals.css`
+- `.story-package-management*`
+- `.storyline-workspace*`
+- `.story-package-selector*`
+- `.edit-shell*`
+- `.play-*`

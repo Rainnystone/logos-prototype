@@ -1,99 +1,117 @@
-# Data Models Codemap
+# Data Codemap
 
-> Updated: 2026-04-04 | Source: `src/types/`, `src/runtime-sessions/`, `src/authoring/`, `src/engine/api-adapter/`
+> Updated: 2026-04-07 | merged `Phase 3` baseline
 
-## Core Domain Types (`src/types/`)
+## Core Package Files
 
-| Type | Purpose | Key Fields |
-|------|---------|------------|
-| `StoryPackage` | Complete story package loaded from disk | sceneSpec, phasePlans, worldBase, routerProfiles, controlModules, auditQuestionSet |
-| `SceneSpec` | Scene definition | sceneId, sceneName, cast?, locationIds?, startPoint?, mainAxis, endLine, openingSituation?, openingHook?, samplePurpose? |
-| `PhasePlan` | Single phase in the scene | phaseId, phaseIndex, phaseName, phaseGoal, phaseEndPoint, gradientType, beatCount, routerHint, notes |
-| `WorldBase` | Structured world / cast / location source used by runtime and editor | worldBaseSetting, worldRules, toneBaseline, hero, coreCast[], antagonists[], npcCharacters, locations[], locationPatch |
-| `RouterProfile` | Narrative routing profile | routerName, routerSemanticCore, verbLexicon[] |
-| `ControlModules` | Control layer config | sceneId, lightConeCustomization, directorNoteAdditions, beatVolumeDefinitions |
-| `AuditQuestionSet` | Audit questions and selection policy | sceneId, globalQuestions, controlQuestions, phaseSpecificQuestions, selectionPolicy |
-| `AuditQuestion` | Single audit question | id, question, expected, blocking, rationale? |
-| `StateSnapshot` | Runtime state at a point in time | sceneState, roundState, generationState, evaluationState |
-| `RuntimeSessionsFile` | Package-scoped runtime continuity file | version, activeSessionId, sessionsById |
-| `RuntimeSession` | Active or archived work line | sessionId, lifecycle, createdAt, updatedAt, headCheckpointId, activeCheckpointId, orderedCheckpointIds, checkpointsById, lastStableRelationshipLayer |
-| `RuntimeCheckpoint` | Immutable accepted-beat checkpoint | checkpointId, acceptedBeatOrdinal, sceneId, phaseIndex, beatIndex, roundId, acceptedTranscript, stateSnapshot, lastStableRelationshipLayer, createdAt |
-| `GradientType` | Phase intensity curve | `'Rising' \| 'Falling' \| 'Static High' \| 'U-Shape' \| 'Arch' \| 'Pulse' \| 'Steady'` |
-| `UsageInfo` | LLM token usage | promptTokens?, completionTokens?, totalTokens? |
+| File / Dir | Format | Responsibility |
+|---|---|---|
+| `world-base.yaml` | YAML | baseline world / cast / locations |
+| `scene.yaml` | YAML | scene definition |
+| `phase-plans.yaml` | YAML | phase / beat planning |
+| `router-lexicon.yaml` | YAML | router profiles |
+| `audit-questions.yaml` | YAML | audit question set |
+| `control-modules.yaml` | YAML | control modules |
+| `storyline-repository.json` | JSON | storyline metadata + activeStorylineId + variant binding |
+| `runtime-sessions.json` | JSON | runtime sessions + checkpoints |
+| `variants/<variantId>/...` | YAML mirror set | storyline-specific authored workspace |
 
-## Authoring Draft Types (`src/authoring/sections/`)
+## Main Type Families
 
-| Draft Type | Section | Key Fields |
-|------------|---------|------------|
-| `WorldBaseCastDraft` | worldbase-cast | worldBaseSetting, worldRules, toneBaseline, hero, coreCast[], antagonists[], supportingCast, locations[], locationPool |
-| `WorldBaseCharacterDraft` | worldbase-cast | draftId, characterId, name, identityRole, lightNovelTrait, gender, personality, age, occupation, characterSummary, capabilityBoundary, behaviorBoundary, oocRedLine, clothing, propsWeapon, fatalWeakness? |
-| `ScenePhaseAuthoringDraft` | scene-phase-authoring | sceneSpec (ScenePhaseSceneDraft), phasePlans (ScenePhasePlanDraft[]) |
-| `ControlModulesDraft` | control-modules | controlModules, routerProfiles[], auditQuestionSet |
+### Authoring / Package Types
 
-## Save Pipeline Types (`src/authoring/contracts.ts`)
+| Type | Purpose |
+|---|---|
+| `StoryPackage` | 完整加载后的 package |
+| `SceneSpec` | scene contract |
+| `PhasePlan` / `PhasePlansFile` | phase / beat plans |
+| `WorldBase` | 世界、角色、地点基线 |
+| `RouterProfile` / `RouterLexiconFile` | router 配置 |
+| `ControlModules` | 控制模块 |
+| `AuditQuestionSet` | 审核问题集合 |
 
-| Type | Purpose | Key Fields |
-|------|---------|------------|
-| `SectionId` | Editable section identifier | `'worldbase-cast' \| 'scene-phase-authoring' \| 'control-modules' \| 'package-wiring-validation'` |
-| `SaveRequest` | Incoming save request | requestId, packageName, sectionId, source, payload, moduleScope?, dryRun? |
-| `SaveResult` | Save outcome (union) | kind + section-specific fields |
-| `SaveAppliedResult` | Successful save | reloadedSectionState, runtimeImpactSummary |
-| `SaveBlockedResult` | Validation failure | blockingIssues[] |
-| `SaveFailedResult` | Runtime error | errorMessage |
-| `ModuleScope` | Control module target | `'light-cone' \| 'director-note-additions' \| 'auditor-question-set' \| 'beat-volume-definitions' \| 'router-profile-set'` |
+### Runtime Continuity Types
 
-## Provider Types (`src/engine/api-adapter/`)
+| Type | Purpose |
+|---|---|
+| `RuntimeSessionsFile` | continuity root file |
+| `RuntimeSession` | 单条 runtime session |
+| `RuntimeCheckpoint` | accepted-beat checkpoint |
 
-| Type | Purpose | Key Fields |
-|------|---------|------------|
-| `ProviderType` | API protocol | `'anthropic' \| 'openai-compatible'` |
-| `ProviderConfig` | Connection config | apiKey, baseUrl, model |
-| `AdapterConfig` | Full adapter config | provider, providerConfig, routeConfig?, generateConfig?, auditConfig?, settlementConfig?, collapseConfig?, gossipelogUpdateConfig?, gossipelogInjectionConfig? |
-| `ModeConfig` | Per-operation overrides | temperature?, maxOutputTokens? |
-| `ProviderPreset` | UI preset definition | id, label, providerType, baseUrl, models[], defaultModel |
-| `PresetId` | Preset identifier | `'anthropic' \| 'minimax' \| 'openai' \| 'custom'` |
+### Storyline Types
 
-## Continuity View Types (`src/runtime-sessions/views.ts`)
+| Type | Purpose |
+|---|---|
+| `StorylineRepositoryFile` | storyline repository 根结构 |
+| `StorylineRecord` | 单条 storyline metadata |
+| `StorylineVariant` | variant workspace metadata |
 
-| Type | Purpose | Key Fields |
-|------|---------|------------|
-| `PlayRuntimeSessionView` | Bounded runtime continuity DTO for `/play` | kind, activeSessionId, activeCheckpointId, beatHistory, stateSnapshot, relationshipSummary, lifecycle |
-| `EditRuntimeContinuityView` | Section-safe continuity DTO for `/edit` | kind, activeSession, reason? |
-| `RuntimeRelationshipSummary` | Safe relationship projection | highlightedDeltasText, stableBackgroundText, source |
+### Management View / Action Types
 
-## Story Package Files (example package root: `src/story-packages/sample-scene/`)
+| Type | Purpose |
+|---|---|
+| `StoryPackageManagementWorkspaceView` | `故事包管理` 页 DTO |
+| `StoryPackageManagementStorylineRowView` | 单条 row 视图 |
+| `StoryPackageManagementCheckpointNode` | beat rail 节点 DTO |
+| `StorylineAction` | storyline actions union |
+| `StoryPackageCreationRequest` | package creation request |
+| `StoryPackageCreationResponse` | package creation response |
 
-| File | Format | Contains |
-|------|--------|----------|
-| `scene.yaml` | YAML | SceneSpec (sceneId, sceneName, cast, locationIds, mainAxis, opening hook, etc.) |
-| `phase-plans.yaml` | YAML | PhasePlans array with phaseId, goals, gradients, router hints |
-| `world-base.yaml` | YAML | WorldBase (world text, hero/core/antagonist casts, npcCharacters, structured `locations[]`, `locationPatch`) |
-| `router-lexicon.yaml` | YAML | RouterProfile array (names, semantic cores, verb lexicons) |
-| `control-modules.yaml` | YAML | ControlModules (light cone, director notes, beat volumes) |
-| `audit-questions.yaml` | YAML | AuditQuestionSet (global, control, phase-specific questions + selection policy) |
-| `state-snapshots.yaml` | YAML | Reference state snapshots for testing |
-| `authoring-state.json` | JSON | Last save timestamp, edited section, request ID |
-| `runtime-sessions.json` | JSON | Runtime-generated active session state, archived sessions, ordered checkpoints, relationship continuity mirror (generated at runtime, not authored) |
+## Repository Shapes
 
-## Data Flow
+### `storyline-repository.json`
 
+```text
+version
+activeStorylineId
+storylinesById
+variantsById
 ```
-YAML files on disk
-  → story-loader.ts (parse + validate with Zod)
-  → StoryPackage (immutable runtime type)
-  → orchestrator.ts (runtime loop)
-  → StateSnapshot (beat-level state)
 
-runtime-sessions.json (generated on demand at package root)
-  → runtime-sessions/repository.ts (semantic validation + queued writes)
-  → runtime-sessions/views.ts (bounded continuity projection)
-  → /play and /edit server pages (initialRuntimeSession)
+每条 `StorylineRecord` 至少包含：
 
-Page draft (UI state)
-  → API PATCH request (SaveRequest)
-  → bridge.ts extract*Draft() (type-guard + normalize)
-  → sections/*.ts render*() (draft → domain type)
-  → repository.ts persist*() (write YAML)
-  → reload.ts (re-parse from disk)
-  → SaveResult.reloadedSectionState (back to UI)
+- `storylineId`
+- `name`
+- `status`
+- `sourceCheckpointId`
+- `headCheckpointId`
+- `variantId`
+- `activeSessionId`
+
+### `runtime-sessions.json`
+
+```text
+version
+activeSessionId
+sessionsById
 ```
+
+每条 `RuntimeSession` 至少包含：
+
+- `lifecycle`
+- `headCheckpointId`
+- `activeCheckpointId`
+- `orderedCheckpointIds`
+- `checkpointsById`
+
+## Important Data Rules
+
+| Rule | Meaning |
+|---|---|
+| `checkpoint` stays package-scoped | checkpoints are never storyline-owned |
+| `storyline.variantId` is stable | existing storyline is not rebound to another variant in Phase 3 |
+| `activeStorylineId` must resolve | explicit repository cannot exist without a concrete active storyline |
+| `runtime-sessions.json` owns checkpoint truth | storyline repo must not own runtime transcript history |
+| package-root YAML is baseline | storyline-aware reads resolve to variant workspace when present |
+
+## New Package Scaffold Guarantees
+
+创建新 package 时，默认会生成显式 `Phase 3` scaffold，包括：
+
+- baseline YAML files
+- `storyline-repository.json`
+- `runtime-sessions.json`
+- `variants/variant_main/...`
+- 默认 `storyline_main`
+- 默认 `variant_main`
+- 默认 `awaiting_start` session

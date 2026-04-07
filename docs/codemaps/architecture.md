@@ -1,106 +1,73 @@
 # Architecture Codemap
 
-> Updated: 2026-04-04 | includes Phase 2 runtime session continuity
+> Updated: 2026-04-07 | merged `Phase 3` baseline
 
 ## System Overview
 
-```
-                          ┌─────────────────┐
-                          │   Title Page    │
-                          │   (page.tsx)    │
-                          └────────┬────────┘
-                    ┌──────────────┼──────────────┐
-                    ▼                              ▼
-          ┌─────────────────┐            ┌─────────────────┐
-          │ Play Workbench  │            │ Narrative Editor │
-          │ (/play)         │            │ (/edit)          │
-          └────────┬────────┘            └────────┬────────┘
-                   │                              │
-          Runtime Chain                  Authoring Chain
-                   │                              │
-    ┌──────────────┴──────────────┐    ┌──────────┴──────────┐
-    │                             │    │                      │
-    ▼                             │    ▼                      │
-┌────────┐  ┌──────────────┐     │  ┌──────────┐  ┌────────┐│
-│Orchestr│→ │RuntimeSession│     │  │Bridge    │→ │Reposit ││
-│ator    │  │Repository    │     │  │(validate)│  │ory     ││
-└────────┘  └──────┬───────┘     │  └──────────┘  │(file IO)│
-    │              │             │       │         └────────┘│
-    │        runtime-sessions    │       ▼                   │
-    │            JSON            │  ┌──────────┐             │
-    ▼              │             │  │Coordinator│             │
-┌──────────┐  ┌────▼─────┐       │  │(AI repair)│             │
-│API       │→ │Views /   │→ UI   │  └──────────┘             │
-│Adapter   │  │bounded DTO│      │                           │
-└────┬─────┘  └──────────┘       │               ┌───────────┴───────────┐
-     │                           │               │   Story Package       │
-     ▼                           │               │   (YAML files on disk)│
-┌───────────────┐                │               └───────────────────────┘
-│ Gossipelog    │                │
-│ refresh chain │                │
-└────┬──────────┘                │
-     ▼                           │
-┌────────────────────┐           │
-│ Runtime modules +  │           │
-│ prompt/render layer│           │
-└────────────────────┘           │
+LOGOS 现在是一个双环系统：
+
+- `Runtime Loop`：在 `/play` 里运行故事
+- `Authoring Loop`：在 `/edit` 里编辑故事包、故事线和 authoring 内容
+
+`Phase 3` 合并后，编辑器默认先进入 `故事包管理`，通过 package / storyline workspace 驱动后续 authoring 与 play 解析。
+
+```text
+Title Page (/)
+  ├── Play Workbench (/play)
+  │     -> Runtime Loop
+  │        player input
+  │        -> orchestrator
+  │        -> runtime session / checkpoint store
+  │        -> adapter
+  │        -> gossipelog refresh
+  │
+  └── Narrative Editor (/edit)
+        -> Authoring Loop
+           story package management
+             -> storyline substrate
+             -> workspace read model
+             -> package creation / storyline delete
+           world / character / scene / modules
+             -> bridge
+             -> validation
+             -> writeback
 ```
 
-## Two Chains
+## Core Boundaries
 
-### Runtime Chain (Play)
-`PlayerInput → Orchestrator → [Collapse → Route → DirectorNote → Assemble → Generate → Audit → Resolve] → Output`
+| Boundary | Rule |
+|---|---|
+| `checkpoint` | package-scoped immutable node |
+| `storyline` | author-facing workline; points into checkpoints |
+| `authoring variant` | materialized workspace; storyline-bound |
+| `session` | storyline-bound runtime state |
+| package creation | server-owned scaffold |
+| authoring save | must go through deterministic bridge |
 
-Phase 2 adds a package-scoped runtime continuity substrate:
-`/play page → loadRuntimeStoryPackage() + loadPlayRuntimeSessionView() → PlayWorkbench → runtime-session route/client → runtime-sessions.json`
+## Main Layers
 
-The continuity loop is wider than the checkpoint store itself:
-`PlayWorkbench/runtime.ts → /api/play/gossipelog → src/agents/gossipelog/* → runtime-session finalize → bounded continuity views`
+| Layer | Key files | Responsibility |
+|---|---|---|
+| Title / shell | `src/app/page.tsx`, `src/app/AppShell.tsx` | entry and shared shell |
+| Play runtime | `src/app/play/`, `src/engine/`, `src/runtime-sessions/` | runtime loop, continuity, gossipelog |
+| Editor runtime | `src/app/edit/`, `src/authoring/` | authoring surfaces and save pipeline |
+| Storyline substrate | `src/storylines/` | active storyline resolution, create / branch / switch / delete |
+| Story package scaffold | `src/story-packages/scaffold.ts` | create explicit `Phase 3` package |
+| Shared contracts | `src/types/` | Zod + TS source of truth |
 
-### Authoring Chain (Edit)
-`PageDraft → API PATCH → Bridge(normalize → validate → extract → render → persist → reload) → SaveResult`
+## Persistence Topology
 
-For `section=worldbase-cast`, `/edit` can now additionally load a bounded runtime continuity projection:
-`loadAuthoringState(includeRuntimeContinuity=true) → loadEditRuntimeContinuityView() → CharacterSection`
+| File / Dir | Role |
+|---|---|
+| package-root YAMLs | baseline authored definition |
+| `storyline-repository.json` | storyline metadata + activeStorylineId + variant binding |
+| `runtime-sessions.json` | runtime sessions + checkpoints |
+| `variants/<variantId>/...` | storyline-specific authored files |
 
-## Module Dependency Map
+## Best Reading Order
 
-```
-src/types/              ← shared by everything (zero deps)
-src/engine/modules/     ← depends on src/types/
-src/engine/orchestrator.ts ← depends on modules + types + runtime session store seam
-src/engine/api-adapter/ ← depends on types + provider-interface
-src/runtime-sessions/   ← depends on types + gossipelog-skill-packets + authoring package root helpers
-src/authoring/          ← depends on types + sections + optional runtime continuity view
-src/app/                ← depends on everything above
-```
-
-## Key Patterns
-
-| Pattern | Where | How |
-|---------|-------|-----|
-| Immutable state | Everywhere | `{ ...old, field: new }`, `deepFreeze()` |
-| Provider preset | `runtime-config.ts` | Dropdown auto-fills baseUrl + model list |
-| CORS proxy | `api/llm/proxy/` | Server-side forward for non-standard LLM APIs |
-| Runtime continuity | `runtime-sessions/` | `runtime-sessions.json` stores active session + full checkpoints |
-| Relationship refresh | `app/play/runtime.ts` + `api/play/gossipelog` + `agents/gossipelog/` | Browser requests relationship update/injection; stale results finalize by `sessionId + checkpointId` |
-| Collapsible UI | `CollapsiblePanel.tsx` | Consistent expand/collapse for sidebar panels |
-| Section save | `persistence/bridge.ts` | normalize → validate → persist → reload pipeline |
-| Draft round-trip | `sections/*.ts` | File ↔ Draft ↔ Rendered ↔ File cycle |
-| Coordinator assist | `coordinator/` | AI-powered save repair when validation fails |
-
-## Provider Architecture
-
-```
-AdapterConfig
-  ├── provider: 'anthropic' | 'openai-compatible'
-  ├── providerConfig: { apiKey, baseUrl, model }
-  └── *Config?: { temperature?, maxOutputTokens? }  ← per-operation overrides
-
-Presets: Anthropic | MiniMax | OpenAI | Custom
-  └── Each defines: providerType, baseUrl, models[], defaultModel
-
-CORS handling:
-  Browser → [non-standard domain?] → /api/llm/proxy → External API
-  Browser → [Anthropic/OpenAI?] → Direct fetch → External API
-```
+1. `AGENTS.md`
+2. root `task_plan.md` / `progress.md` / `findings.md`
+3. `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
+4. this codemap + `frontend.md` + `backend.md` + `data.md`
+5. task-specific entry files
