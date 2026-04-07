@@ -2,8 +2,10 @@
 
 ## 2026-04-06
 
+- `Phase 3 Part 2` 后续集成动作已完成：当前工作已正式 commit、push，并创建 PR `#7 feat: complete phase 3 part 2 workspace`。
+- 当前主线已从 `Part 2` 实现收口切到 `Part 3` 范围对齐；后续不应再把 `Part 2` 视为“等待决定是否集成”的状态。
 - `Phase 3 Part 2` 已在独立 worktree 中完成实现、最终验证与独立 code review。
-- 当前 `Part 2` 已不再停留在 spec / plan 阶段，下一步只剩用户决定是先集成分支还是继续推进 `Part 3`。
+- 当前 `Part 2` 已不再停留在 spec / plan 阶段，并且集成动作也已完成；后续主线应直接转入 `Part 3`。
 - `Phase 3` 总 design spec 也已完成同步，现已吸收 `Part 2` 最终冻结下来的 UI / UX 与 row-level action 语义：
   - package selector 按 name-only 呈现
   - workspace 保持 restrained row surface

@@ -21,6 +21,10 @@
 - 但随着用户确认 UI 需求，`storyline` 的显示名称编辑已不再适合拖到 `Part 3`：
   - `Part 2` 现在应承担 inline display-name editing
   - 代码层 id 继续 opaque，不与显示名绑定
+- 还需要补记一条已经在实现中落地的边界：
+  - `create from source` 已属于 `Part 2`
+  - 但它只是从 source storyline 当前 head 发起的受控派生动作
+  - 它不等于更泛化的 `duplicate storyline`
 - `新建 story package` 仍维持 companion-slice 判断：
   - 如果 backend seam 够稳，可以在 `Part 2` 里一起规划
   - 但它不应阻塞 `Part 2` 主体 workspace 的 spec

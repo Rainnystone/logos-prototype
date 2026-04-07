@@ -23,12 +23,17 @@
   - 接入 branch from checkpoint
   - 接入 switch storyline
   - 接入 continue storyline
+- 后续实现又补充并冻结了两点，应视为 `Part 2` 已交付范围的一部分：
+  - inline storyline display-name editing
+  - `create from source` 这一类 head-anchored 快捷派生动作
 - 当前明确仍不属于 `Part 2` 的是：
-  - rename
   - archive
   - duplicate
   - delete
   - 这些继续留在 `Part 3`
+- 这里的 `create from source` 不等于 `duplicate storyline`：
+  - 前者是从 source storyline 当前 head 做一次受控派生，并在 `Part 2` 工作区里直接可用
+  - 后者仍指更泛化的 storyline 管理动作，当前继续留在 `Part 3`
 - `新建 story package` 仍保持原判断：
   - 如果 backend seam 已准备好，可作为 `Part 2` 的 companion slice
   - 但不应反过来阻塞 `Part 2` 主体 workspace 的 spec

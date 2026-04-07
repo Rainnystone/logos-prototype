@@ -2,6 +2,9 @@
 
 ## 2026-04-06
 
+- `Part 2` 的集成动作也已完成：
+  - 当前 worktree 改动已 commit、push，并创建 PR `#7 feat: complete phase 3 part 2 workspace`
+  - `Phase 3` 主线已正式切到 `Part 3` 范围对齐
 - `Part 2` 已在独立 worktree 中完成最终实现、UI / UX 收口、mock 验收与最终验证，当前执行状态更新为：
   - `Task 4 complete`
   - `Task 5 complete`

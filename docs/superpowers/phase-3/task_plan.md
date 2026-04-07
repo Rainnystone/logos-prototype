@@ -60,7 +60,7 @@
    - 接入 storyline workspace 的读取、展示与核心继续/分叉工作流
 3. `Part 3`
    - 补齐 storyline 管理动作与 UX 收口
-   - 完成切换、重命名、归档、复制、删除等动作的正式交付
+   - 完成归档、复制、删除等动作的正式交付
 
 这组切法当前是推荐方向，最终以总 spec review 通过后的版本为准。
 
@@ -161,8 +161,8 @@
 - 当前状态：
   - `Execution complete`
 - 下一步：
+  - `Part 2` 分支已完成 commit / push / PR
   - 进入 `Part 3` spec
-  - 或按用户要求先 commit / push / PR 当前 `Part 2` 分支
 
 ## Part 2 Execution Checkpoints
 
@@ -234,6 +234,9 @@
 - 这次 scope 调整后：
   - inline storyline display-name editing 提前进入 `Part 2`
   - archive / duplicate / delete 仍留在 `Part 3`
+- 需要额外记住的一条边界是：
+  - `create from source` 已在 `Part 2` 交付，但它只是从 source storyline 当前 head 触发的受控派生动作
+  - 它不等于完整的 `duplicate storyline` 管理动作，因此不会替代 `Part 3` 的 duplicate 范围
 - 当前又额外冻结了 3 条最终 UI 收口约束：
   - 左侧 ready package selector 只显示 package name，不显示简介或摘要
   - 右侧 workspace 不显示 provenance / head summary / package summary 这类宽事实块
