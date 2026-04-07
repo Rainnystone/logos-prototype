@@ -231,6 +231,11 @@ describe('story package management workspace view', () => {
           isBranchSource: false,
         }),
       ]);
+      expect(view.storylines.map((row) => row.storylineId)).toEqual([
+        'storyline_main',
+        'storyline_alt',
+      ]);
+      expect(view.storylines.every((row) => row.canDelete)).toBe(true);
       expect(
         view.storylines.find((row) => row.storylineId === 'storyline_alt')?.checkpointRail,
       ).toEqual([

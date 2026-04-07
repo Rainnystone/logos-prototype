@@ -113,6 +113,15 @@ export async function POST(
 
   try {
     switch (action.kind) {
+      case 'delete_storyline': {
+        return NextResponse.json(
+          {
+            error: 'Storyline deletion is not implemented yet.',
+          },
+          { status: 501 },
+        );
+      }
+
       case 'rename_display_name': {
         const result = await updateStorylineDisplayName({
           packageName: params.packageName,
