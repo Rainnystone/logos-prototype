@@ -15,6 +15,22 @@
 7. [README.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/README.md)
 8. [coding-agent-guide.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/coding-agent-guide.md)
 
+如果当前任务是 `Phase 4` 准备，还应额外补读：
+
+9. [archive/docs/narrative-editor-redesign/master-record.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/archive/docs/narrative-editor-redesign/master-record.md)
+10. [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
+
+## Phase 4 准备入口
+
+- 当前 `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 里还没有正式的 `Phase 4` 文档。
+- 现阶段最明确的 `Phase 4` 产品信号仍来自已有设计文档里的 deferred scope：
+  - `new import agent`
+  - `real agent management operations`
+- 架构入口边界已经很明确：
+  - `coordinator` 不是 first-class sidecar agent
+  - 当前仓库里第一个真实落地的 sidecar agent 是 `gossipelog agent`
+- 因此，`Phase 4` 准备应默认建立在现有 `Phase 3` substrate、deterministic bridge、以及已有 agent seam 之上，而不是重新打开 `Phase 3` 的基础设计。
+
 ## 当前冻结产品结论
 
 - `checkpoint` 继续是 package-scoped immutable node。
