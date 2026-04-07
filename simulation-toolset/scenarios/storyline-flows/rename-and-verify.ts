@@ -54,8 +54,8 @@ export function createRenameAndVerifyScenario(): ExecutableSimulationScenario {
       // Record initial state
       recorder.recordAction({
         kind: 'storyline.update_display_name',
-        operation: 'resolve_initial',
         details: {
+          operation: 'resolve_initial',
           storylineId,
           originalName,
           newName,
@@ -72,8 +72,8 @@ export function createRenameAndVerifyScenario(): ExecutableSimulationScenario {
       // Record action
       recorder.recordAction({
         kind: 'storyline.update_display_name',
-        operation: 'renamed',
         details: {
+          operation: 'renamed',
           storylineId,
           oldName: originalName,
           newName: renameResult.storyline.name,

@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
+import { StorylineDeleteControl } from '@/app/edit/sections/StorylineDeleteControl';
 import type { StoryPackageManagementStorylineRowView } from '@/types';
 
 interface StorylineWorkspaceRowProps {
   readonly row: StoryPackageManagementStorylineRowView;
+  readonly replacementDisplayName: string | null;
   readonly onSwitchStoryline: (storylineId: string) => Promise<void>;
   readonly onContinueStoryline: (storylineId: string, isActive: boolean) => Promise<void>;
   readonly onCreateFromSource: (storylineId: string) => Promise<void>;
   readonly onBranchFromCheckpoint: (storylineId: string, checkpointId: string) => Promise<void>;
   readonly onRenameDisplayName: (storylineId: string, nextDisplayName: string) => Promise<string>;
+  readonly onDeleteStoryline: (storylineId: string) => Promise<void>;
 }
 
 function normalizeDisplayName(value: string): string {
@@ -21,19 +24,38 @@ function formatCheckpointButtonLabel(checkpoint: StoryPackageManagementStoryline
   return `Phase ${checkpoint.phaseIndex} Beat ${checkpoint.beatIndex}`;
 }
 
+function checkpointStartsPhase(
+  checkpointRail: StoryPackageManagementStorylineRowView['checkpointRail'],
+  checkpointIndex: number,
+) {
+  return (
+    checkpointIndex === 0 ||
+    checkpointRail[checkpointIndex - 1]?.phaseIndex !== checkpointRail[checkpointIndex]?.phaseIndex
+  );
+}
+
+function connectorCrossesPhaseBoundary(
+  checkpointRail: StoryPackageManagementStorylineRowView['checkpointRail'],
+  checkpointIndex: number,
+) {
+  return checkpointRail[checkpointIndex + 1]?.phaseIndex !== checkpointRail[checkpointIndex]?.phaseIndex;
+}
+
 export function StorylineWorkspaceRow({
   row,
+  replacementDisplayName,
   onSwitchStoryline,
   onContinueStoryline,
   onCreateFromSource,
   onBranchFromCheckpoint,
   onRenameDisplayName,
+  onDeleteStoryline,
 }: StorylineWorkspaceRowProps) {
   const [displayName, setDisplayName] = useState(row.displayName);
   const [draftDisplayName, setDraftDisplayName] = useState(row.displayName);
   const [openCheckpointId, setOpenCheckpointId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<
-    'rename' | 'switch' | 'continue' | 'create' | 'branch' | null
+    'rename' | 'switch' | 'continue' | 'create' | 'branch' | 'delete' | null
   >(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const renameSubmittingRef = useRef(false);
@@ -169,6 +191,18 @@ export function StorylineWorkspaceRow({
             >
               {`从当前线派生 ${displayName}`}
             </button>
+            <StorylineDeleteControl
+              displayName={displayName}
+              canDelete={row.canDelete}
+              deleteDisabledReason={row.deleteDisabledReason}
+              replacementDisplayName={replacementDisplayName}
+              disabled={pendingAction !== null}
+              onDelete={() => {
+                void runRowAction('delete', async () => {
+                  await onDeleteStoryline(row.storylineId);
+                });
+              }}
+            />
           </div>
         </div>
       </div>
@@ -178,66 +212,91 @@ export function StorylineWorkspaceRow({
         aria-label={`${row.displayName} checkpoint rail`}
       >
         {row.checkpointRail.length > 0 ? (
-          row.checkpointRail.map((checkpoint, checkpointIndex) => (
-            <div key={checkpoint.checkpointId} className="storyline-row__checkpoint-node">
-              <span className="storyline-row__checkpoint-phase">
-                {checkpointIndex === 0 ||
-                row.checkpointRail[checkpointIndex - 1]?.phaseIndex !== checkpoint.phaseIndex
-                  ? `Phase ${checkpoint.phaseIndex}`
-                  : ''}
-              </span>
-              <button
-                type="button"
-                className={[
-                  'storyline-row__checkpoint',
-                  checkpoint.isHead ? 'storyline-row__checkpoint--head' : '',
-                  checkpoint.isBranchSource ? 'storyline-row__checkpoint--source' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                title={formatCheckpointButtonLabel(checkpoint)}
-                aria-label={formatCheckpointButtonLabel(checkpoint)}
-                disabled={pendingAction !== null}
-                onClick={() => {
-                  setFeedback(null);
-                  setOpenCheckpointId((currentCheckpointId) =>
-                    currentCheckpointId === checkpoint.checkpointId ? null : checkpoint.checkpointId,
-                  );
-                }}
-              />
-              <span className="storyline-row__checkpoint-beat">{`Beat ${checkpoint.beatIndex}`}</span>
-              {openCheckpointId === checkpoint.checkpointId ? (
-                <div className="storyline-row__branch-drawer storyline-row__branch-drawer--visible">
-                  <div className="storyline-row__branch-actions">
-                    <button
-                      type="button"
-                      className="storyline-row__branch-button"
-                      disabled={pendingAction !== null}
-                      onClick={() => {
-                        void runRowAction('branch', async () => {
-                          await onBranchFromCheckpoint(row.storylineId, checkpoint.checkpointId);
-                        });
-                      }}
-                    >
-                      确认
-                    </button>
-                    <button
-                      type="button"
-                      className="storyline-row__branch-button storyline-row__branch-button--ghost"
-                      disabled={pendingAction !== null}
-                      onClick={() => {
-                        setOpenCheckpointId(null);
-                      }}
-                    >
-                      取消
-                    </button>
-                  </div>
+          <div className="storyline-row__rail-track">
+            {row.checkpointRail.map((checkpoint, checkpointIndex) => (
+              <Fragment key={checkpoint.checkpointId}>
+                <div className="storyline-row__checkpoint-node">
+                  <span className="storyline-row__checkpoint-phase">
+                    {checkpointStartsPhase(row.checkpointRail, checkpointIndex)
+                      ? `Phase ${checkpoint.phaseIndex}`
+                      : ''}
+                  </span>
+                  <button
+                    type="button"
+                    className={[
+                      'storyline-row__checkpoint',
+                      checkpoint.isHead ? 'storyline-row__checkpoint--head' : '',
+                      checkpoint.isBranchSource ? 'storyline-row__checkpoint--source' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    title={formatCheckpointButtonLabel(checkpoint)}
+                    aria-label={formatCheckpointButtonLabel(checkpoint)}
+                    disabled={pendingAction !== null}
+                    onClick={() => {
+                      setFeedback(null);
+                      setOpenCheckpointId((currentCheckpointId) =>
+                        currentCheckpointId === checkpoint.checkpointId ? null : checkpoint.checkpointId,
+                      );
+                    }}
+                  />
+                  <span className="storyline-row__checkpoint-beat">{`Beat ${checkpoint.beatIndex}`}</span>
+                  {openCheckpointId === checkpoint.checkpointId ? (
+                    <div className="storyline-row__branch-drawer storyline-row__branch-drawer--visible">
+                      <div className="storyline-row__branch-actions">
+                        <button
+                          type="button"
+                          className="storyline-row__branch-button"
+                          disabled={pendingAction !== null}
+                          onClick={() => {
+                            void runRowAction('branch', async () => {
+                              await onBranchFromCheckpoint(row.storylineId, checkpoint.checkpointId);
+                            });
+                          }}
+                        >
+                          确认
+                        </button>
+                        <button
+                          type="button"
+                          className="storyline-row__branch-button storyline-row__branch-button--ghost"
+                          disabled={pendingAction !== null}
+                          onClick={() => {
+                            setOpenCheckpointId(null);
+                          }}
+                        >
+                          取消
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          ))
+                {checkpointIndex < row.checkpointRail.length - 1 ? (
+                  <span
+                    aria-hidden="true"
+                    className={[
+                      'storyline-row__checkpoint-connector',
+                      connectorCrossesPhaseBoundary(row.checkpointRail, checkpointIndex)
+                        ? 'storyline-row__checkpoint-connector--phase-break'
+                        : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  />
+                ) : null}
+              </Fragment>
+            ))}
+          </div>
         ) : (
-          <span className="storyline-row__rail-empty">暂无可视轨道</span>
+          <div className="storyline-row__rail-track">
+            <div className="storyline-row__checkpoint-node storyline-row__checkpoint-node--placeholder">
+              <span className="storyline-row__checkpoint-phase">Phase 1</span>
+              <span
+                aria-hidden="true"
+                className="storyline-row__checkpoint storyline-row__checkpoint--placeholder"
+              />
+              <span className="storyline-row__checkpoint-beat">Beat 1</span>
+            </div>
+          </div>
         )}
       </div>
 

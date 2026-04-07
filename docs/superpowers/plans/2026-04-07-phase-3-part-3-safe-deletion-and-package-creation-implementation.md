@@ -384,7 +384,7 @@ git commit -m "feat: add safe storyline deletion"
 - Test: `src/story-packages/__tests__/package-slug.test.ts`
 - Test: `src/story-packages/__tests__/scaffold.test.ts`
 
-- [ ] **Step 1: Write the failing naming and scaffold tests**
+- [x] **Step 1: Write the failing naming and scaffold tests**
 
 ```ts
 it('derives a deterministic lowercase slug and rejects Windows reserved names', () => {
@@ -452,7 +452,7 @@ it('cleans up the staged directory if scaffold validation fails before promotion
 });
 ```
 
-- [ ] **Step 2: Run the targeted tests to verify RED**
+- [x] **Step 2: Run the targeted tests to verify RED**
 
 Run:
 
@@ -463,7 +463,7 @@ npm test -- src/story-packages/__tests__/package-slug.test.ts src/story-packages
 Expected:
 - FAIL because neither the slug helper nor scaffold service exists yet
 
-- [ ] **Step 3: Implement the minimal slug helper and scaffold service**
+- [x] **Step 3: Implement the minimal slug helper and scaffold service**
 
 ```ts
 export function buildStoryPackageSlug(displayName: string): string {
@@ -503,7 +503,7 @@ Implementation notes:
 - Create the initial runtime file with one explicit `awaiting_start` session bound to `storyline_main`; do not rely on later bootstrap repair.
 - Use staged writes under the approved package root and only promote after every validation pass succeeds.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run:
 
@@ -514,7 +514,7 @@ npm test -- src/story-packages/__tests__/package-slug.test.ts src/story-packages
 Expected:
 - PASS with cross-platform name validation, staged creation, and dual validation all green
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/story-packages/package-slug.ts src/story-packages/scaffold.ts src/story-packages/__tests__/package-slug.test.ts src/story-packages/__tests__/scaffold.test.ts
@@ -527,7 +527,7 @@ git commit -m "feat: add phase 3 package scaffold service"
 - Create: `src/app/api/authoring/packages/route.ts`
 - Test: `src/app/api/authoring/packages/route.test.ts`
 
-- [ ] **Step 1: Write the failing package-creation route tests**
+- [x] **Step 1: Write the failing package-creation route tests**
 
 ```ts
 it('creates a package and returns the new package selection payload', async () => {
@@ -605,7 +605,7 @@ it('maps package root write failures to a bounded 500 response', async () => {
 });
 ```
 
-- [ ] **Step 2: Run the targeted tests to verify RED**
+- [x] **Step 2: Run the targeted tests to verify RED**
 
 Run:
 
@@ -616,7 +616,7 @@ npm test -- 'src/app/api/authoring/packages/route.test.ts'
 Expected:
 - FAIL because the route does not exist yet
 
-- [ ] **Step 3: Implement the minimal route**
+- [x] **Step 3: Implement the minimal route**
 
 ```ts
 export async function POST(request: Request) {
@@ -639,7 +639,7 @@ Implementation notes:
 - Treat scaffold validation failures and package-root write failures as bounded `500`s with different user-facing messages.
 - Do not reuse the storyline action route for package creation. Package creation is package-scoped, not storyline-scoped.
 
-- [ ] **Step 4: Run the targeted tests to verify GREEN**
+- [x] **Step 4: Run the targeted tests to verify GREEN**
 
 Run:
 
@@ -650,7 +650,7 @@ npm test -- 'src/app/api/authoring/packages/route.test.ts'
 Expected:
 - PASS with `201` success and bounded error mapping
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add 'src/app/api/authoring/packages/route.ts' 'src/app/api/authoring/packages/route.test.ts'
@@ -670,7 +670,7 @@ git commit -m "feat: add story package creation route"
 - Test: `src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx`
 - Test: `src/app/edit/__tests__/EditWorkbench.test.tsx`
 
-- [ ] **Step 1: Write the failing UI tests**
+- [x] **Step 1: Write the failing UI tests**
 
 ```tsx
 it('renders a dashed 新建故事包 tile below the ready package list', () => {
@@ -748,7 +748,7 @@ it('disables delete for the last remaining usable storyline', () => {
 });
 ```
 
-- [ ] **Step 2: Run the targeted UI tests to verify RED**
+- [x] **Step 2: Run the targeted UI tests to verify RED**
 
 Run:
 
@@ -759,7 +759,7 @@ npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.t
 Expected:
 - FAIL because the create tile, creation state, and delete controls do not exist yet
 
-- [ ] **Step 3: Implement the minimal UI changes**
+- [x] **Step 3: Implement the minimal UI changes**
 
 ```tsx
 export function StoryPackageCreationPanel({
@@ -796,7 +796,7 @@ Implementation notes:
 - Delete success should continue using `router.refresh()` because the current page stays in the same package workspace.
 - Preserve the existing LOGOS brutalist language in `src/app/globals.css`: dashed add tile, hard border, square corners, black shadow, mono-led typography, no rounded SaaS card treatment.
 
-- [ ] **Step 4: Run the targeted UI tests to verify GREEN**
+- [x] **Step 4: Run the targeted UI tests to verify GREEN**
 
 Run:
 
@@ -807,7 +807,7 @@ npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.t
 Expected:
 - PASS with dashed add tile, inline creation state, delete confirmation, and bounded router behavior all green
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/edit/sections/StoryPackageCreationPanel.tsx src/app/edit/sections/StorylineDeleteControl.tsx src/app/edit/sections/StoryPackageSelector.tsx src/app/edit/sections/StoryPackageManagementSection.tsx src/app/edit/sections/StorylineWorkspaceRow.tsx src/app/edit/sections/__tests__/story-package-management.fixtures.ts src/app/globals.css src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx
@@ -824,7 +824,7 @@ git commit -m "feat: add part 3 story package management UI"
 - Modify: `progress.md`
 - Modify: `findings.md` only if implementation changes a frozen conclusion
 
-- [ ] **Step 1: Run the full targeted verification suite**
+- [x] **Step 1: Run the full targeted verification suite**
 
 Run:
 
@@ -835,7 +835,7 @@ npm test -- src/storylines/__tests__/workspace-view.test.ts src/storylines/__tes
 Expected:
 - PASS for all `Part 3` targeted tests
 
-- [ ] **Step 2: Run required repo-wide verification**
+- [x] **Step 2: Run required repo-wide verification**
 
 Run:
 
@@ -850,7 +850,7 @@ Expected:
 - all commands PASS
 - no new warnings beyond known existing repo warnings
 
-- [ ] **Step 3: Perform browser verification against the real workspace**
+- [x] **Step 3: Perform browser verification against the real workspace**
 
 Run the local app, then verify these exact flows in the browser:
 
@@ -879,7 +879,7 @@ Run the local app, then verify these exact flows in the browser:
    - deleting the active line promotes a nearby remaining line
 6. Confirm the last remaining storyline cannot be deleted.
 
-- [ ] **Step 4: Sync planning files with what actually shipped**
+- [x] **Step 4: Sync planning files with what actually shipped**
 
 Implementation notes:
 - Update the `Phase 3` and root planning files only after all verification passes.

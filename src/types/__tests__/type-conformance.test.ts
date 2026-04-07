@@ -12,6 +12,7 @@ import type {
   PhasePlan,
   PromptObject,
   StateSnapshot,
+  StoryPackageManagementStorylineRowView,
   StoryPackageManagementWorkspaceView,
 } from '@/types';
 
@@ -503,5 +504,31 @@ describe('Phase 00 contract types', () => {
       activeStorylineId: string;
       storylines: readonly { readonly storylineId: string }[];
     }>();
+  });
+
+  it('adds delete availability to the bounded storyline row view', () => {
+    expectTypeOf<StoryPackageManagementStorylineRowView>().toMatchTypeOf<{
+      storylineId: string;
+      displayName: string;
+      canDelete: boolean;
+      deleteDisabledReason: string | null;
+    }>();
+  });
+
+  it('accepts delete_storyline and package-creation payload contracts', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.StorylineActionSchema.parse({
+        kind: 'delete_storyline',
+        storylineId: 'storyline_main',
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      types.StoryPackageCreationRequestSchema.parse({
+        displayName: '新故事包',
+      }),
+    ).not.toThrow();
   });
 });

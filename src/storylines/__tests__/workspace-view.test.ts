@@ -231,6 +231,11 @@ describe('story package management workspace view', () => {
           isBranchSource: false,
         }),
       ]);
+      expect(view.storylines.map((row) => row.storylineId)).toEqual([
+        'storyline_main',
+        'storyline_alt',
+      ]);
+      expect(view.storylines.every((row) => row.canDelete)).toBe(true);
       expect(
         view.storylines.find((row) => row.storylineId === 'storyline_alt')?.checkpointRail,
       ).toEqual([
@@ -311,6 +316,112 @@ describe('story package management workspace view', () => {
     }
   });
 
+  it('fails loudly when a storyline referenced variant cannot resolve instead of treating it as usable', async () => {
+    const packageName = '__storyline-workspace-variant-drift__';
+    await resetPackageRoot(packageName);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_main',
+        sessionsById: {
+          sess_main: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      });
+
+      vi.resetModules();
+      vi.doMock('@/storylines/substrate', () => ({
+        resolveActiveStorylineContext: vi.fn(async () => ({
+          packageName,
+          repository: {
+            version: 1,
+            activeStorylineId: 'storyline_main',
+            storylinesById: {
+              storyline_main: {
+                storylineId: 'storyline_main',
+                name: 'Main Line',
+                status: 'active',
+                sourceCheckpointId: null,
+                headCheckpointId: null,
+                variantId: 'variant_missing',
+                activeSessionId: 'sess_main',
+                createdAt: '2026-04-06T00:00:00.000Z',
+                updatedAt: '2026-04-06T00:00:00.000Z',
+              },
+            },
+            variantsById: {},
+          },
+          storyline: {
+            storylineId: 'storyline_main',
+            headCheckpointId: null,
+            variantId: 'variant_missing',
+            activeSessionId: 'sess_main',
+          },
+          variant: null,
+          session: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+          runtimeFile: {
+            version: 1,
+            activeSessionId: 'sess_main',
+            sessionsById: {
+              sess_main: {
+                sessionId: 'sess_main',
+                lifecycle: 'in_progress',
+                createdAt: '2026-04-06T00:00:00.000Z',
+                updatedAt: '2026-04-06T00:00:00.000Z',
+                headCheckpointId: null,
+                activeCheckpointId: null,
+                orderedCheckpointIds: [],
+                checkpointsById: {},
+                lastStableRelationshipLayer: {
+                  highlightedDeltasText: '',
+                  stableBackgroundText: '',
+                },
+              },
+            },
+          },
+          authoredRoot: path.resolve(storyPackagesRoot, packageName),
+          isLegacyImplicit: false,
+        })),
+      }));
+
+      const { loadStoryPackageManagementWorkspaceView } = await import('@/storylines/workspace-view');
+
+      await expect(loadStoryPackageManagementWorkspaceView(packageName)).rejects.toThrow(
+        /variantId/i,
+      );
+    } finally {
+      vi.doUnmock('@/storylines/substrate');
+      vi.resetModules();
+      await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
+    }
+  });
+
   it('returns a single implicit storyline row for legacy packages without materializing storyline files', async () => {
     const packageName = '__storyline-workspace-legacy__';
     await resetPackageRoot(packageName);
@@ -351,6 +462,45 @@ describe('story package management workspace view', () => {
       expect(
         existsSync(path.resolve(storyPackagesRoot, packageName, 'storyline-repository.json')),
       ).toBe(false);
+    } finally {
+      await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
+    }
+  });
+
+  it('marks the last remaining usable storyline as non-deletable', async () => {
+    const packageName = '__storyline-workspace-single-row__';
+    await resetPackageRoot(packageName);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_legacy',
+        sessionsById: {
+          sess_legacy: {
+            sessionId: 'sess_legacy',
+            lifecycle: 'awaiting_start',
+            createdAt: '2026-04-06T00:00:00.000Z',
+            updatedAt: '2026-04-06T00:00:00.000Z',
+            headCheckpointId: null,
+            activeCheckpointId: null,
+            orderedCheckpointIds: [],
+            checkpointsById: {},
+            lastStableRelationshipLayer: {
+              highlightedDeltasText: '',
+              stableBackgroundText: '',
+            },
+          },
+        },
+      });
+
+      const { loadStoryPackageManagementWorkspaceView } = await import('@/storylines/workspace-view');
+      const view = await loadStoryPackageManagementWorkspaceView(packageName);
+
+      expect(view.storylines).toHaveLength(1);
+      expect(view.storylines[0]).toMatchObject({
+        canDelete: false,
+        deleteDisabledReason: '至少保留一条故事线',
+      });
     } finally {
       await rm(path.resolve(storyPackagesRoot, packageName), { recursive: true, force: true });
     }

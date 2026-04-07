@@ -51,8 +51,8 @@ export function createBranchFromCheckpointFlowScenario(): ExecutableSimulationSc
       // Record initial state
       recorder.recordAction({
         kind: 'storyline.branch_from_checkpoint',
-        operation: 'resolve_source',
         details: {
+          operation: 'resolve_source',
           sourceStorylineId,
           selectedCheckpointId,
           totalCheckpoints: checkpointIds.length,
@@ -80,8 +80,8 @@ export function createBranchFromCheckpointFlowScenario(): ExecutableSimulationSc
       // Record action
       recorder.recordAction({
         kind: 'storyline.branch_from_checkpoint',
-        operation: 'branched',
         details: {
+          operation: 'branched',
           newStorylineId: branchResult.storyline.storylineId,
           newVariantId: branchResult.variant.variantId,
           newSessionId: branchResult.session.sessionId,

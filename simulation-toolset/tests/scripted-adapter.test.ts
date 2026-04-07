@@ -158,9 +158,12 @@ describe('scripted adapter', () => {
       });
 
       const requestInput = {
-        sceneId: 'scene_001',
-        currentPhaseIndex: 1,
-        currentBeatIndexInPhase: 1,
+        context: {
+          mainAxis: 'main-axis',
+          endLine: 'end-line',
+          sceneProgress: 'phase-1',
+        },
+        phaseConsequences: ['delta-1'],
       };
 
       await adapter.collapse?.(requestInput);
@@ -188,9 +191,20 @@ describe('scripted adapter', () => {
       const adapter = createScriptedAdapter({
         gossipelogUpdate: [
           {
-            involvedRoleIds: ['role_001'],
+            involvedRoleIds: ['char_001', 'char_002'],
             invocationNoOp: false,
-            edgeUpdates: [{ from: 'char_001', to: 'char_002', edge: 'friendship' }],
+            edgeUpdates: [
+              {
+                sourceRoleId: 'char_001',
+                targetRoleId: 'char_002',
+                mode: 'delta',
+                replaceBaseline: false,
+                recentDelta: {
+                  state: 'friendship strengthened',
+                  sourceRound: 'round_001',
+                },
+              },
+            ],
           },
         ],
         gossipelogInjection: [

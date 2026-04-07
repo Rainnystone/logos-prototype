@@ -3,6 +3,7 @@ import {
   resolveActiveStorylineContext,
   type ActiveStorylineContext,
 } from '@/storylines/substrate';
+import { compareStorylineRowsForWorkspace } from '@/storylines/order';
 import type {
   RuntimeCheckpoint,
   RuntimeSession,
@@ -48,6 +49,39 @@ function resolveBoundSessionOrThrow(
   return session;
 }
 
+function resolveBoundVariantOrThrow(
+  repository: StorylineRepositoryFile,
+  storyline: StorylineRecord,
+) {
+  const variant = repository.variantsById[storyline.variantId];
+  if (!variant) {
+    throw new Error(
+      `Storyline structural mismatch: storyline "${storyline.storylineId}" variantId "${storyline.variantId}" does not resolve in storyline-repository.json.`,
+    );
+  }
+
+  return variant;
+}
+
+function resolveUsableStorylineEntryOrThrow(
+  repository: StorylineRepositoryFile,
+  runtimeFile: NonNullable<Awaited<ReturnType<typeof resolveActiveStorylineContext>>['runtimeFile']>,
+  storyline: StorylineRecord,
+): {
+  readonly storyline: StorylineRecord;
+  readonly variant: StorylineRepositoryFile['variantsById'][string];
+  readonly session: RuntimeSession;
+} {
+  const variant = resolveBoundVariantOrThrow(repository, storyline);
+  const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
+
+  return {
+    storyline,
+    variant,
+    session,
+  };
+}
+
 function buildCheckpointRail(
   session: RuntimeSession,
   storyline: StorylineRecord,
@@ -75,6 +109,8 @@ function buildStorylineRow(
   storyline: StorylineRecord,
   activeStorylineId: string,
   session: RuntimeSession | null,
+  canDelete: boolean,
+  deleteDisabledReason: string | null,
 ): StoryPackageManagementStorylineRowView {
   const isActive = storyline.storylineId === activeStorylineId;
   const headCheckpointId = storyline.headCheckpointId;
@@ -99,6 +135,8 @@ function buildStorylineRow(
     headSummary: headCheckpoint ? summarizeCheckpointTranscript(headCheckpoint) : null,
     canCreateFromSource: headCheckpointId !== null,
     canContinue: session !== null,
+    canDelete,
+    deleteDisabledReason,
     checkpointRail,
   };
 }
@@ -110,23 +148,22 @@ function buildRepositoryWorkspaceView(
   runtimeFile: NonNullable<Awaited<ReturnType<typeof resolveActiveStorylineContext>>['runtimeFile']>,
 ): StoryPackageManagementWorkspaceView {
   const activeStorylineId = repository.activeStorylineId;
-  const storylines = Object.values(repository.storylinesById)
-    .map((storyline) => {
-      const session = resolveBoundSessionOrThrow(runtimeFile, storyline);
-      return buildStorylineRow(storyline, activeStorylineId, session);
-    })
-    .sort((left, right) => {
-      if (left.isActive !== right.isActive) {
-        return left.isActive ? -1 : 1;
-      }
-
-      const nameComparison = left.displayName.localeCompare(right.displayName);
-      if (nameComparison !== 0) {
-        return nameComparison;
-      }
-
-      return left.storylineId.localeCompare(right.storylineId);
-    });
+  const usableStorylineEntries = Object.values(repository.storylinesById).map((storyline) =>
+    resolveUsableStorylineEntryOrThrow(repository, runtimeFile, storyline),
+  );
+  const canDelete = usableStorylineEntries.length > 1;
+  const deleteDisabledReason = canDelete ? null : '至少保留一条故事线';
+  const storylines = usableStorylineEntries
+    .map(({ storyline, session }) =>
+      buildStorylineRow(
+        storyline,
+        activeStorylineId,
+        session,
+        canDelete,
+        deleteDisabledReason,
+      ),
+    )
+    .sort(compareStorylineRowsForWorkspace);
 
   return {
     packages: [...packages],
@@ -159,7 +196,13 @@ function buildLegacyWorkspaceView(
     packageName,
     activeStorylineId,
     storylines: [
-      buildStorylineRow(storyline, activeStorylineId, context.session),
+      buildStorylineRow(
+        storyline,
+        activeStorylineId,
+        context.session,
+        false,
+        '至少保留一条故事线',
+      ),
     ],
   };
 }

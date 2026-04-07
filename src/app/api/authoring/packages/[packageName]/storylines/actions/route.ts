@@ -4,6 +4,7 @@ import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository'
 import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
+  deleteStoryline,
   resolveActiveStorylineContext,
   switchActiveStoryline,
   updateStorylineDisplayName,
@@ -69,13 +70,30 @@ function mapActionError(error: unknown): { status: number; message: string } {
     const normalizedMessage = error.message.toLowerCase();
 
     if (
-      normalizedMessage.includes('does not exist') ||
+      normalizedMessage.includes('structural mismatch') ||
       normalizedMessage.includes('does not resolve') ||
+      normalizedMessage.includes('consistency violation')
+    ) {
+      return {
+        status: 409,
+        message: error.message,
+      };
+    }
+
+    if (normalizedMessage.includes('does not exist')) {
+      return {
+        status: 404,
+        message: error.message,
+      };
+    }
+
+    if (
       normalizedMessage.includes('cannot be empty') ||
       normalizedMessage.includes('cannot create storyline from source') ||
       normalizedMessage.includes('headcheckpointid is null') ||
       normalizedMessage.includes('cannot branch storyline from checkpoint') ||
-      normalizedMessage.includes('not reachable from source storyline')
+      normalizedMessage.includes('not reachable from source storyline') ||
+      normalizedMessage.includes('last remaining usable storyline')
     ) {
       return {
         status: 400,
@@ -113,6 +131,22 @@ export async function POST(
 
   try {
     switch (action.kind) {
+      case 'delete_storyline': {
+        const deleted = await deleteStoryline({
+          packageName: params.packageName,
+          storylineId: action.storylineId,
+        });
+
+        return NextResponse.json(
+          {
+            kind: action.kind,
+            deletedStorylineId: deleted.deletedStorylineId,
+            activeStorylineId: deleted.nextActiveStorylineId,
+          },
+          { status: 200 },
+        );
+      }
+
       case 'rename_display_name': {
         const result = await updateStorylineDisplayName({
           packageName: params.packageName,

@@ -4,6 +4,24 @@
 
 ## 2026-04-07
 
+- `Phase 3 Part 3` 已完成实现、最终验证、真实浏览器验收与 planning sync：
+  - storyline delete 的 active replacement / last-line protection 已交付
+  - local `new story package` 已按显式 `Phase 3` scaffold 交付
+  - `故事包管理` 页已接入这两条主线，并完成视觉收口
+- 本轮最终补了 2 个收尾修正：
+  - 构建被 `src/story-packages/__tests__/scaffold.test.ts` 里的 `module` 命名卡住，现已改名为 `scaffoldModule`
+  - 用户确认 `新建故事包` tile 过丑后，现已收口为浅灰底、单层虚线
+- 最终验证结果：
+  - targeted `Part 3` 测试通过：`9` 个测试文件、`119` 个测试通过
+  - `npm run type-check:simulation` 通过
+  - `npm run test:simulation` 通过：`35` 个测试文件、`349` 个测试通过
+  - `npm run build` 通过
+  - `npm test` 全量通过：`84` 个测试文件、`686` 个测试通过
+- 浏览器验收结果：
+  - `故事包管理` 左栏只显示 package name，并新增单层虚线浅灰 `新建故事包` tile
+  - inline create state、slug preview、真实 package scaffold 落盘与创建后自动切换都已验证
+  - 删除 active storyline 的二次确认、自动切换相邻 row，以及最后一条 storyline 禁删都已验证
+
 - 已写出正式 `Part 3` implementation plan：
   - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
 - 已完成独立 `Part 3` implementation plan review，并按 reviewer 意见补齐：
@@ -658,3 +676,11 @@
   - `Task 7` 当前状态：
     - `Phase 2` implementation plan 的代码任务与最终验证都已完成
     - 当前剩余工作只是在 worktree 内同步规划文档与等待人工确认后进入后续集成动作
+- `Phase 3 Part 3` 在当前 worktree 又补了一轮 UI 收尾：
+  - storyline rail 从测试态的小方块改为显式横向轨道，checkpoint 之间带 connector
+  - 没有历史 checkpoint 的 storyline 现在显示 `Phase 1 / Beat 1` 起始占位点，而不是竖排空提示
+  - 已复跑：
+    - `npm test -- src/app/edit/sections/__tests__/StoryPackageManagementSection.test.tsx src/app/edit/__tests__/EditWorkbench.test.tsx`
+    - `npm run build`
+    - `npm test`
+  - 结果：定向 50 个测试通过；构建通过；全量 84 个测试文件、686 个测试通过

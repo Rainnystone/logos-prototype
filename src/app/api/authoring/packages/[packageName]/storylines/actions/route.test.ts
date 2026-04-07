@@ -390,12 +390,24 @@ const mocks = vi.hoisted(() => {
     authoredRoot: 'variants/variant_alt',
   }));
 
+  const deleteStoryline = vi.fn(async () => ({
+    repository: {
+      version: 1,
+      activeStorylineId: 'storyline_alt',
+      storylinesById: {},
+      variantsById: {},
+    },
+    deletedStorylineId: 'storyline_main',
+    nextActiveStorylineId: 'storyline_alt',
+  }));
+
   return {
     resolveActiveStorylineContext,
     updateStorylineDisplayName,
     createStorylineFromSource,
     branchStorylineFromCheckpoint,
     switchActiveStoryline,
+    deleteStoryline,
   };
 });
 
@@ -405,6 +417,7 @@ vi.mock('@/storylines/substrate', () => ({
   createStorylineFromSource: mocks.createStorylineFromSource,
   branchStorylineFromCheckpoint: mocks.branchStorylineFromCheckpoint,
   switchActiveStoryline: mocks.switchActiveStoryline,
+  deleteStoryline: mocks.deleteStoryline,
 }));
 
 afterEach(() => {
@@ -412,7 +425,7 @@ afterEach(() => {
 });
 
 describe('POST storyline actions route', () => {
-  it('exposes a shared storyline action schema with the four supported actions', () => {
+  it('exposes a shared storyline action schema with the supported actions', () => {
     expect(storylineManagementTypes.StorylineActionSchema).toBeDefined();
 
     expect(
@@ -439,6 +452,12 @@ describe('POST storyline actions route', () => {
       storylineManagementTypes.StorylineActionSchema.safeParse({
         kind: 'switch_active_storyline',
         storylineId: 'storyline_alt',
+      }).success,
+    ).toBe(true);
+    expect(
+      storylineManagementTypes.StorylineActionSchema.safeParse({
+        kind: 'delete_storyline',
+        storylineId: 'storyline_main',
       }).success,
     ).toBe(true);
   });
@@ -573,6 +592,143 @@ describe('POST storyline actions route', () => {
     await expect(response.json()).resolves.toEqual({
       error:
         'Cannot create storyline from source "storyline_main" because source headCheckpointId is null.',
+    });
+  });
+
+  it('returns 400 when delete_storyline rejects deleting the last remaining usable storyline', async () => {
+    mocks.deleteStoryline.mockRejectedValueOnce(
+      new Error('Cannot delete the last remaining usable storyline.'),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'delete_storyline',
+          storylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Cannot delete the last remaining usable storyline.',
+    });
+  });
+
+  it('returns 404 when delete_storyline targets a missing storyline', async () => {
+    mocks.deleteStoryline.mockRejectedValueOnce(
+      new Error('Storyline "storyline_missing" does not exist.'),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'delete_storyline',
+          storylineId: 'storyline_missing',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Storyline "storyline_missing" does not exist.',
+    });
+  });
+
+  it('returns 409 when delete_storyline fails with a structural mismatch even if the message also mentions does not exist', async () => {
+    mocks.deleteStoryline.mockRejectedValueOnce(
+      new Error(
+        'Storyline structural mismatch: activeStorylineId "storyline_missing" does not exist in storyline-repository.json.',
+      ),
+    );
+
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'delete_storyline',
+          storylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Storyline structural mismatch: activeStorylineId "storyline_missing" does not exist in storyline-repository.json.',
+    });
+  });
+
+  it('dispatches delete_storyline through the action route', async () => {
+    const { POST } = await import(
+      '@/app/api/authoring/packages/[packageName]/storylines/actions/route'
+    );
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages/sample-scene/storylines/actions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'delete_storyline',
+          storylineId: 'storyline_main',
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          packageName: 'sample-scene',
+        }),
+      },
+    );
+
+    expect(mocks.deleteStoryline).toHaveBeenCalledWith({
+      packageName: 'sample-scene',
+      storylineId: 'storyline_main',
+    });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      kind: 'delete_storyline',
+      deletedStorylineId: 'storyline_main',
+      activeStorylineId: 'storyline_alt',
     });
   });
 

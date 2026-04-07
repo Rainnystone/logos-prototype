@@ -242,8 +242,20 @@ export function createKernelSessionSimulator(options: KernelSessionSimulatorOpti
         sessionId: session.sessionId,
         lifecycle: session.lifecycle,
         checkpointCount: session.orderedCheckpointIds.length,
-        headCheckpointId: session.headCheckpointId,
         activeCheckpointId: session.activeCheckpointId,
+        relationshipSource:
+          session.lastStableRelationshipLayer.highlightedDeltasText !== '' ||
+          session.lastStableRelationshipLayer.stableBackgroundText !== ''
+            ? 'session'
+            : session.activeCheckpointId !== null &&
+                session.checkpointsById[session.activeCheckpointId]?.lastStableRelationshipLayer
+                  ?.highlightedDeltasText !== ''
+              ? 'checkpoint'
+              : session.activeCheckpointId !== null &&
+                  session.checkpointsById[session.activeCheckpointId]?.lastStableRelationshipLayer
+                    ?.stableBackgroundText !== ''
+                ? 'checkpoint'
+                : 'empty',
       };
 
       // If there's an active checkpoint, build its observation

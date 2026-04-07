@@ -4,16 +4,24 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
+import * as storylineRepository from '@/storylines/repository';
+import * as storylineSubstrate from '@/storylines/substrate';
+import * as storylineWorkspaces from '@/storylines/workspaces';
 import {
   branchStorylineFromCheckpoint,
   createStorylineFromSource,
+  deleteStoryline,
   ensureStorylineAwareActiveSession,
   executeStorylineRuntimeSessionCommand,
   resolveActiveStorylineContext,
   updateStorylineDisplayName,
   switchActiveStoryline,
 } from '@/storylines/substrate';
-import { MANAGED_VARIANT_AUTHORING_FILES, resolveVariantWorkspacePath } from '@/storylines/workspaces';
+import {
+  MANAGED_VARIANT_AUTHORING_FILES,
+  resolveVariantWorkspacePath,
+  resolveVariantWorkspaceRoot,
+} from '@/storylines/workspaces';
 import type {
   RuntimeCheckpoint,
   RuntimeSessionsFile,
@@ -271,6 +279,153 @@ async function seedExplicitStorylinePackage(
   return tempPackage;
 }
 
+async function seedDeletionStorylinePackage(input: {
+  readonly activeStorylineId: 'storyline_main' | 'storyline_alt' | 'storyline_branch';
+  readonly mainName: string;
+  readonly altName: string;
+  readonly branchName: string;
+}): Promise<{ packageName: string; packageRoot: string }> {
+  const tempPackage = await createTempPackage('tmp-storyline-delete-');
+  await writeBaselineFiles(tempPackage.packageRoot);
+  await materializeVariantWorkspace(tempPackage.packageRoot, 'variant_main');
+  await materializeVariantWorkspace(tempPackage.packageRoot, 'variant_alt');
+  await materializeVariantWorkspace(tempPackage.packageRoot, 'variant_branch');
+
+  const checkpoint01 = makeCheckpoint('chk_01', 1);
+  const checkpoint02 = makeCheckpoint('chk_02', 2);
+  const checkpoint03 = makeCheckpoint('chk_03', 3);
+
+  const runtimeFile: RuntimeSessionsFile = {
+    version: 1,
+    activeSessionId:
+      input.activeStorylineId === 'storyline_main'
+        ? 'sess_main'
+        : input.activeStorylineId === 'storyline_alt'
+          ? 'sess_alt'
+          : 'sess_branch',
+    sessionsById: {
+      sess_main: {
+        sessionId: 'sess_main',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+        headCheckpointId: 'chk_02',
+        activeCheckpointId: 'chk_02',
+        orderedCheckpointIds: ['chk_01', 'chk_02'],
+        checkpointsById: {
+          chk_01: checkpoint01,
+          chk_02: checkpoint02,
+        },
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: 'delta-main',
+          stableBackgroundText: 'background-main',
+        },
+      },
+      sess_alt: {
+        sessionId: 'sess_alt',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-06T00:10:00.000Z',
+        updatedAt: '2026-04-06T00:10:00.000Z',
+        headCheckpointId: 'chk_01',
+        activeCheckpointId: 'chk_01',
+        orderedCheckpointIds: ['chk_01'],
+        checkpointsById: {
+          chk_01: checkpoint01,
+        },
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: 'delta-alt',
+          stableBackgroundText: 'background-alt',
+        },
+      },
+      sess_branch: {
+        sessionId: 'sess_branch',
+        lifecycle: 'in_progress',
+        createdAt: '2026-04-06T00:20:00.000Z',
+        updatedAt: '2026-04-06T00:20:00.000Z',
+        headCheckpointId: 'chk_03',
+        activeCheckpointId: 'chk_03',
+        orderedCheckpointIds: ['chk_01', 'chk_03'],
+        checkpointsById: {
+          chk_01: checkpoint01,
+          chk_03: checkpoint03,
+        },
+        lastStableRelationshipLayer: {
+          highlightedDeltasText: 'delta-branch',
+          stableBackgroundText: 'background-branch',
+        },
+      },
+    },
+  };
+
+  const repositoryFile: StorylineRepositoryFile = {
+    version: 1,
+    activeStorylineId: input.activeStorylineId,
+    storylinesById: {
+      storyline_main: {
+        storylineId: 'storyline_main',
+        name: input.mainName,
+        status: 'active',
+        sourceCheckpointId: null,
+        headCheckpointId: 'chk_02',
+        variantId: 'variant_main',
+        activeSessionId: 'sess_main',
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      storyline_alt: {
+        storylineId: 'storyline_alt',
+        name: input.altName,
+        status: 'active',
+        sourceCheckpointId: 'chk_01',
+        headCheckpointId: 'chk_01',
+        variantId: 'variant_alt',
+        activeSessionId: 'sess_alt',
+        createdAt: '2026-04-06T00:10:00.000Z',
+        updatedAt: '2026-04-06T00:10:00.000Z',
+      },
+      storyline_branch: {
+        storylineId: 'storyline_branch',
+        name: input.branchName,
+        status: 'active',
+        sourceCheckpointId: 'chk_01',
+        headCheckpointId: 'chk_03',
+        variantId: 'variant_branch',
+        activeSessionId: 'sess_branch',
+        createdAt: '2026-04-06T00:20:00.000Z',
+        updatedAt: '2026-04-06T00:20:00.000Z',
+      },
+    },
+    variantsById: {
+      variant_main: {
+        variantId: 'variant_main',
+        workspaceRoot: 'variants/variant_main',
+        createdFromStorylineId: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        updatedAt: '2026-04-06T00:00:00.000Z',
+      },
+      variant_alt: {
+        variantId: 'variant_alt',
+        workspaceRoot: 'variants/variant_alt',
+        createdFromStorylineId: 'storyline_main',
+        createdAt: '2026-04-06T00:10:00.000Z',
+        updatedAt: '2026-04-06T00:10:00.000Z',
+      },
+      variant_branch: {
+        variantId: 'variant_branch',
+        workspaceRoot: 'variants/variant_branch',
+        createdFromStorylineId: 'storyline_main',
+        createdAt: '2026-04-06T00:20:00.000Z',
+        updatedAt: '2026-04-06T00:20:00.000Z',
+      },
+    },
+  };
+
+  await writeRuntimeSessionsFile(tempPackage.packageName, runtimeFile);
+  await writeStorylineRepositoryFile(tempPackage.packageName, repositoryFile);
+
+  return tempPackage;
+}
+
 afterEach(async () => {
   vi.restoreAllMocks();
   await Promise.all(
@@ -383,6 +538,179 @@ describe('storyline substrate', () => {
     const runtimeFile = await readRuntimeSessionsJson(packageName);
 
     expect(runtimeFile.activeSessionId).toBe('sess_alt');
+  });
+
+  it('deletes the active storyline and promotes the next visible remaining row', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+
+    const result = await deleteStoryline({
+      packageName,
+      storylineId: 'storyline_main',
+    });
+    const repositoryFile = await readStorylineRepositoryJson(packageName);
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
+
+    expect(result.deletedStorylineId).toBe('storyline_main');
+    expect(result.nextActiveStorylineId).toBe('storyline_alt');
+    expect(repositoryFile.activeStorylineId).toBe('storyline_alt');
+    expect(repositoryFile.storylinesById.storyline_main).toBeUndefined();
+    expect(runtimeFile.activeSessionId).toBe('sess_alt');
+  });
+
+  it('deletes the active storyline and preserves the current visible selector order when choosing the replacement row', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_branch',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+
+    const result = await deleteStoryline({
+      packageName,
+      storylineId: 'storyline_branch',
+    });
+    const repositoryFile = await readStorylineRepositoryJson(packageName);
+    const runtimeFile = await readRuntimeSessionsJson(packageName);
+
+    expect(result.deletedStorylineId).toBe('storyline_branch');
+    expect(result.nextActiveStorylineId).toBe('storyline_main');
+    expect(repositoryFile.activeStorylineId).toBe('storyline_main');
+    expect(repositoryFile.storylinesById.storyline_branch).toBeUndefined();
+    expect(runtimeFile.activeSessionId).toBe('sess_main');
+  });
+
+  it('falls back to the previous visible row when no next row exists in the explicit selector order', async () => {
+    const selectReplacementStorylineId =
+      (
+        storylineSubstrate as typeof storylineSubstrate & {
+          selectReplacementStorylineId: (
+            orderedStorylineIds: readonly string[],
+            deletedStorylineId: string,
+          ) => string;
+        }
+      ).selectReplacementStorylineId;
+
+    expect(
+      selectReplacementStorylineId(['storyline_main', 'storyline_alt', 'storyline_branch'], 'storyline_branch'),
+    ).toBe('storyline_alt');
+  });
+
+  it('rejects deleting the last remaining usable storyline', async () => {
+    const { packageName } = await seedExplicitStorylinePackage();
+    const beforeRepository = await readStorylineRepositoryJson(packageName);
+
+    await expect(
+      deleteStoryline({
+        packageName,
+        storylineId: 'storyline_main',
+      }),
+    ).rejects.toThrow(/last remaining|至少保留一条故事线/i);
+
+    await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(beforeRepository);
+  });
+
+  it('does not switch the runtime mirror before repository deletion succeeds', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+    vi.spyOn(storylineRepository, 'writeStorylineRepository').mockRejectedValueOnce(
+      new Error('repository delete write failed'),
+    );
+
+    await expect(
+      deleteStoryline({
+        packageName,
+        storylineId: 'storyline_main',
+      }),
+    ).rejects.toThrow(/repository delete write failed/i);
+
+    await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        activeStorylineId: 'storyline_main',
+      }),
+    );
+    await expect(readRuntimeSessionsJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        activeSessionId: 'sess_main',
+      }),
+    );
+  });
+
+  it('removes the deleted variant workspace but preserves retained runtime checkpoint truth', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+
+    await deleteStoryline({
+      packageName,
+      storylineId: 'storyline_branch',
+    });
+
+    await expect(readdir(resolveVariantWorkspaceRoot(packageName, 'variant_branch'))).rejects.toThrow();
+    await expect(readRuntimeSessionsJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        sessionsById: expect.objectContaining({
+          sess_branch: expect.objectContaining({
+            headCheckpointId: 'chk_03',
+          }),
+        }),
+      }),
+    );
+
+    const activeContext = await resolveActiveStorylineContext(packageName, {
+      forWrite: false,
+    });
+    expect(activeContext.storyline.storylineId).toBe('storyline_main');
+    expect(activeContext.storyline.activeSessionId).toBe('sess_main');
+  });
+
+  it('keeps delete successful when variant workspace cleanup fails after repository write', async () => {
+    const { packageName } = await seedDeletionStorylinePackage({
+      activeStorylineId: 'storyline_main',
+      mainName: 'Alpha Line',
+      altName: 'Beta Line',
+      branchName: 'Zulu Line',
+    });
+    vi.spyOn(storylineWorkspaces, 'removeVariantWorkspace').mockRejectedValueOnce(
+      new Error('bounded cleanup failed'),
+    );
+
+    const result = await deleteStoryline({
+      packageName,
+      storylineId: 'storyline_branch',
+    });
+
+    expect(result.deletedStorylineId).toBe('storyline_branch');
+    await expect(readStorylineRepositoryJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        storylinesById: expect.not.objectContaining({
+          storyline_branch: expect.anything(),
+        }),
+        variantsById: expect.not.objectContaining({
+          variant_branch: expect.anything(),
+        }),
+      }),
+    );
+    await expect(readRuntimeSessionsJson(packageName)).resolves.toEqual(
+      expect.objectContaining({
+        sessionsById: expect.objectContaining({
+          sess_branch: expect.objectContaining({
+            headCheckpointId: 'chk_03',
+          }),
+        }),
+      }),
+    );
   });
 
   it('branches a new storyline from an explicit historical checkpoint without switching the active storyline', async () => {
