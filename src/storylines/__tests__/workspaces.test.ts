@@ -7,6 +7,7 @@ import {
   MANAGED_VARIANT_AUTHORING_FILES,
   cloneVariantWorkspace,
   promoteStagedVariantWorkspace,
+  removeVariantWorkspace,
   resolveVariantWorkspacePath,
   resolveVariantWorkspaceRoot,
   resolveVariantWorkspaceStageRoot,
@@ -129,6 +130,32 @@ describe('storyline workspaces', () => {
           'utf8',
         ),
       ).resolves.toContain('opaque staged file');
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('removes a variant workspace recursively without touching sibling variants', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-storyline-remove-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      const removedRoot = resolveVariantWorkspaceRoot(packageName, 'variant_removed');
+      const keptRoot = resolveVariantWorkspaceRoot(packageName, 'variant_kept');
+      await mkdir(path.resolve(removedRoot, 'notes'), { recursive: true });
+      await mkdir(keptRoot, { recursive: true });
+      await writeFile(path.resolve(removedRoot, 'notes', 'opaque.txt'), 'remove me\n', 'utf8');
+      await writeFile(path.resolve(keptRoot, 'world-base.yaml'), 'keep me\n', 'utf8');
+
+      await removeVariantWorkspace({
+        packageName,
+        variantId: 'variant_removed',
+      });
+
+      await expect(readdir(removedRoot)).rejects.toThrow();
+      await expect(readFile(path.resolve(keptRoot, 'world-base.yaml'), 'utf8')).resolves.toContain(
+        'keep me',
+      );
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }

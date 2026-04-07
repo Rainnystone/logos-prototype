@@ -164,3 +164,11 @@ export async function cloneVariantWorkspace(input: {
 
   return targetRoot;
 }
+
+export async function removeVariantWorkspace(input: {
+  readonly packageName: string;
+  readonly variantId: string;
+}): Promise<void> {
+  const targetRoot = resolveVariantWorkspaceRoot(input.packageName, input.variantId);
+  await rm(targetRoot, { recursive: true, force: true });
+}

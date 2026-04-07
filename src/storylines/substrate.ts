@@ -19,7 +19,12 @@ import {
   writeStorylineRepository,
 } from '@/storylines/repository';
 import {
+  compareStorylineRowsForWorkspace,
+  type StorylineWorkspaceSortableRow,
+} from '@/storylines/order';
+import {
   promoteStagedVariantWorkspace,
+  removeVariantWorkspace,
   resolveVariantWorkspaceRoot,
   resolveVariantWorkspaceStageRoot,
   stageVariantWorkspaceFromBaseline,
@@ -75,6 +80,12 @@ export interface BranchStorylineFromCheckpointInput {
   readonly sourceStorylineId: string;
   readonly checkpointId: string;
   readonly name: string;
+}
+
+export interface DeleteStorylineResult {
+  readonly repository: StorylineRepositoryFile;
+  readonly deletedStorylineId: string;
+  readonly nextActiveStorylineId: string;
 }
 
 function runWithSubstrateWriteQueue<T>(
@@ -412,6 +423,53 @@ function resolveVariantForMutationOrThrow(
   return variant;
 }
 
+function listUsableStorylineRecordsOrThrow(
+  repository: StorylineRepositoryFile,
+  runtimeFile: RuntimeSessionsFile,
+): StorylineRecord[] {
+  return Object.values(repository.storylinesById).map((storyline) => {
+    resolveVariantForMutationOrThrow(repository, storyline.variantId);
+    resolveBoundSessionOrThrow(runtimeFile, storyline.activeSessionId, storyline.storylineId);
+    return storyline;
+  });
+}
+
+function buildStorylineReplacementOrder(storylines: readonly StorylineRecord[]): string[] {
+  return [...storylines]
+    .map(
+      (storyline) =>
+        ({
+          isActive: false,
+          displayName: storyline.name,
+          storylineId: storyline.storylineId,
+        }) satisfies StorylineWorkspaceSortableRow,
+    )
+    .sort(compareStorylineRowsForWorkspace)
+    .map((storyline) => storyline.storylineId);
+}
+
+function chooseReplacementStorylineId(
+  orderedStorylineIds: readonly string[],
+  deletedStorylineId: string,
+): string {
+  const deletedIndex = orderedStorylineIds.indexOf(deletedStorylineId);
+  if (deletedIndex === -1) {
+    throw new Error(`Storyline "${deletedStorylineId}" does not exist.`);
+  }
+
+  const nextStorylineId = orderedStorylineIds[deletedIndex + 1];
+  if (nextStorylineId) {
+    return nextStorylineId;
+  }
+
+  const previousStorylineId = orderedStorylineIds[deletedIndex - 1];
+  if (previousStorylineId) {
+    return previousStorylineId;
+  }
+
+  throw new Error('Cannot delete the last remaining usable storyline.');
+}
+
 export async function ensureStorylineAwareActiveSession(
   packageName: string,
 ): Promise<StorylineMutationResult> {
@@ -548,6 +606,74 @@ export async function updateStorylineDisplayName(input: {
       variant,
       session: boundSession,
       authoredRoot: resolveVariantAuthoredRoot(input.packageName, variant.variantId),
+    };
+  });
+}
+
+export async function deleteStoryline(input: {
+  readonly packageName: string;
+  readonly storylineId: string;
+}): Promise<DeleteStorylineResult> {
+  return runWithSubstrateWriteQueue(input.packageName, async () => {
+    const context = await resolveActiveStorylineContextInternal(input.packageName, {
+      forWrite: true,
+    });
+    assertExplicitContext(context);
+
+    if (!context.runtimeFile) {
+      throw new Error('Runtime sessions are required when deleting a storyline.');
+    }
+
+    const repository = context.repository;
+    const runtimeFile = context.runtimeFile;
+    const targetStoryline = resolveStorylineForMutationOrThrow(repository, input.storylineId);
+    resolveVariantForMutationOrThrow(repository, targetStoryline.variantId);
+
+    const usableStorylines = listUsableStorylineRecordsOrThrow(repository, runtimeFile);
+    if (usableStorylines.length <= 1) {
+      throw new Error('Cannot delete the last remaining usable storyline.');
+    }
+
+    const orderedStorylineIds = buildStorylineReplacementOrder(usableStorylines);
+    const nextActiveStorylineId =
+      targetStoryline.storylineId === repository.activeStorylineId
+        ? chooseReplacementStorylineId(orderedStorylineIds, targetStoryline.storylineId)
+        : repository.activeStorylineId;
+
+    if (targetStoryline.storylineId === repository.activeStorylineId) {
+      const replacementStoryline = resolveStorylineForMutationOrThrow(repository, nextActiveStorylineId);
+      resolveBoundSessionOrThrow(
+        runtimeFile,
+        replacementStoryline.activeSessionId,
+        replacementStoryline.storylineId,
+      );
+      await runtimeSessionsRepository.setMirroredActiveSession(
+        input.packageName,
+        replacementStoryline.activeSessionId,
+      );
+    }
+
+    const { [targetStoryline.storylineId]: _removedStoryline, ...retainedStorylinesById } =
+      repository.storylinesById;
+    const { [targetStoryline.variantId]: _removedVariant, ...retainedVariantsById } =
+      repository.variantsById;
+    const nextRepository: StorylineRepositoryFile = {
+      ...repository,
+      activeStorylineId: nextActiveStorylineId,
+      storylinesById: retainedStorylinesById,
+      variantsById: retainedVariantsById,
+    };
+
+    await writeStorylineRepository(input.packageName, nextRepository);
+    await removeVariantWorkspace({
+      packageName: input.packageName,
+      variantId: targetStoryline.variantId,
+    });
+
+    return {
+      repository: nextRepository,
+      deletedStorylineId: targetStoryline.storylineId,
+      nextActiveStorylineId,
     };
   });
 }
