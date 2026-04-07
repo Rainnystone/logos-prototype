@@ -4,6 +4,15 @@
 
 ## 2026-04-07
 
+- 已写出正式 `Part 3` implementation plan：
+  - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
+- 已完成独立 `Part 3` implementation plan review，并按 reviewer 意见补齐：
+  - 显式 `Phase 3` scaffold 结构红测
+  - package creation 的 duplicate / validation / write-failure 路径红测
+  - delete 的 bounded route / UI failure feedback 红测
+  - 空 display name 拒绝与 active-row previous fallback 红测
+- 当前 `Part 3` 已不再停留在 spec 阶段，而是进入：
+  - `implementation plan approved, pending execution choice`
 - `Phase 3 Part 3` 的正式范围现已冻结为：
   - safe `delete storyline`
   - local `new story package` scaffolding

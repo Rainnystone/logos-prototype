@@ -2,6 +2,16 @@
 
 ## 2026-04-07
 
+- 已写出正式 `Part 3` implementation plan：
+  - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
+- 已完成 `Part 3` implementation plan review loop：
+  - 第一轮 reviewer 指出 3 条真实 plan 缺口：显式 `Phase 3` scaffold 状态钉死不足、package creation 失败路径红测不足、delete 失败反馈红测不足
+  - 第二轮 reviewer 继续指出 2 条边界缺口：duplicate package-name 没有独立映射测试，以及 slug 方案错误依赖了仓库中不存在的 transliteration helper
+  - 第三轮 reviewer 又补出 2 条边界漏测：空 display name 必须先于 hash fallback 被拒绝，以及删除最后一行 active storyline 时必须回退到上一行
+  - 回写这些缺口后，最终 reviewer 结论为 `Approved`
+- 当前 `Part 3` 状态已更新为：
+  - `spec approved`
+  - `implementation plan approved, pending execution choice`
 - 已把 `Part 3` 的最终范围正式重写为：
   - safe `delete storyline`
   - local `new story package` scaffolding

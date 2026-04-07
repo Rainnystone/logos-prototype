@@ -25,7 +25,7 @@
 | 8 | complete | `Part 2` implementation plan 已写出并通过独立 plan review。 |
 | 9 | complete | `Part 2` 已完成实现、独立 review、mock 验收、最终验证与文档同步。 |
 | 10 | complete | `Part 3` spec 已写出，完成独立 review 收口并进入用户确认。 |
-| 11 | pending | 编写 `Part 3` implementation plan。 |
+| 11 | complete | `Part 3` implementation plan 已写出并通过独立 plan review。 |
 | 12 | pending | 执行并验证 `Part 3`，收口 `Phase 3`。 |
 
 ## Frozen Inputs From Earlier Phases
@@ -181,15 +181,24 @@
 - 正式 `Part 3` spec 已写出：
   - `docs/superpowers/specs/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-design.md`
 - 当前状态：
-  - `Approved, pending user confirmation`
+  - `Approved`
 - 当前已冻结的 `Part 3` 主线：
   - safe `delete storyline`
   - local `new story package` scaffolding
   - destructive-action UX
   - final verification
 - 下一步：
-  - 请用户 review 该 spec
-  - 用户确认后进入 `Part 3` implementation plan
+  - 进入 `Part 3` implementation plan 执行选择
+
+## Part 3 Implementation Plan Status
+
+- 正式 `Part 3` implementation plan 已写出：
+  - `docs/superpowers/plans/2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md`
+- 当前状态：
+  - `Approved, pending execution choice`
+- 下一步：
+  - 由用户选择执行方式
+  - 然后开始 `Part 3` 代码实现、验证与最终收尾
 
 ## Part 1 Delivery Status
 
