@@ -11,6 +11,7 @@
 - 当前冻结结论的最短摘要
 
 更细的 `Phase 3` 工作记忆仍以 `docs/superpowers/phase-3/` 为准。
+更细的 `Phase 4` 工作记忆现在以 `docs/superpowers/phase-4/` 为准。
 
 ## Current Active Track
 
@@ -19,6 +20,10 @@
 - `Phase 3 Part 1 / Part 2 / Part 3` 已完成实现、验证，并通过 `PR #6`、`PR #7`、`PR #8` 合入 `branch/narrative-editor`。
 - `Phase 3` 的仓库级文档整编已经完成，当前应把它视为冻结基线，而不是待继续执行的主线计划。
 - 当前活跃任务已切换为 `Phase 4` 准备，不再继续扩写 `Phase 3` 主线。
+- `Phase 4` 已建立独立工作记忆入口：
+  - `docs/superpowers/phase-4/task_plan.md`
+  - `docs/superpowers/phase-4/progress.md`
+  - `docs/superpowers/phase-4/findings.md`
 - `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 下还没有正式的 `Phase 4` spec / implementation plan 文件。
 - 现阶段已经能确认的 `Phase 4` 入口边界只有：
   - 产品方向仍以 `new import agent` 与 `real agent management operations` 为主
@@ -64,6 +69,10 @@
   - [AGENTS.md](AGENTS.md)
   - [archive/docs/narrative-editor-redesign/master-record.md](archive/docs/narrative-editor-redesign/master-record.md)
   - [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
+- `Phase 4` 主工作记忆：
+  - [docs/superpowers/phase-4/task_plan.md](docs/superpowers/phase-4/task_plan.md)
+  - [docs/superpowers/phase-4/progress.md](docs/superpowers/phase-4/progress.md)
+  - [docs/superpowers/phase-4/findings.md](docs/superpowers/phase-4/findings.md)
 - `Phase 3` 主工作记忆：
   - [docs/superpowers/phase-3/task_plan.md](docs/superpowers/phase-3/task_plan.md)
   - [docs/superpowers/phase-3/progress.md](docs/superpowers/phase-3/progress.md)

@@ -19,10 +19,14 @@
 
 9. [archive/docs/narrative-editor-redesign/master-record.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/archive/docs/narrative-editor-redesign/master-record.md)
 10. [docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-02-phase-1-model-surface-design.md)
+11. [docs/superpowers/phase-4/task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/task_plan.md)
+12. [docs/superpowers/phase-4/progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/progress.md)
+13. [docs/superpowers/phase-4/findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-4/findings.md)
 
 ## Phase 4 准备入口
 
 - 当前 `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 里还没有正式的 `Phase 4` 文档。
+- `Phase 4` 现在已经有独立工作记忆入口：`docs/superpowers/phase-4/`。
 - 现阶段最明确的 `Phase 4` 产品信号仍来自已有设计文档里的 deferred scope：
   - `new import agent`
   - `real agent management operations`
@@ -60,6 +64,8 @@
   - 恢复入口
 - `docs/superpowers/phase-3/`：
   - `Phase 3` 的主工作记忆
+- `docs/superpowers/phase-4/`：
+  - `Phase 4` 的主工作记忆
 - `docs/superpowers/specs/` 与 `docs/superpowers/plans/`：
   - 正式 spec / implementation plan
 - `docs/codemaps/`：

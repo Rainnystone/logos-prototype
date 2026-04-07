@@ -1,0 +1,36 @@
+# Phase 4 Progress
+
+## 2026-04-07
+
+- 建立 `docs/superpowers/phase-4/` 作为 `Phase 4` 的独立工作记忆入口。
+- 记录当前已经冻结的方向：
+  - 新增 built-in、`always-on` 的 `weaver agent`
+  - `控制台` 页面将改造成 `agent 管理页面`
+  - `Phase 4` 暂不引入 `extension agent`
+  - `weaver` 作为 `文本导入创建新故事包` 的主入口能力
+- 冻结 `weaver` 的主链路方向：
+  - 入口位于 `故事包管理 -> 新建故事包`
+  - 先选 `空白创建 / 文本导入`
+  - 文本导入不做预览
+  - `weaver` 解析后尽量复用现有服务端建包链路落盘
+- 冻结 `weaver` 的 sidecar 架构方向：
+  - `weaver` 应复用 `gossipelog` 的统一 sidecar 骨架
+  - 不新增私有 `AGENTS.md` / `CLAUDE.md` / 独立 prompt markdown
+  - 身份提示应放在代码里的 system prompt / static instruction
+  - 当前推荐 `1` 个 `weaver-import-skill`，不按 world/cast/location 拆成多个 skill
+  - 当前推荐为 `weaver-import-skill` 配置 `1` 份按需披露的重 reference
+  - sidecar 架构本身应支持统一 reference 装载，供 `weaver` 与后续 `gossipelog` 共用
+  - 当前推荐不是“每个 sidecar 各写一套 loader 基础设施”，而是“统一 loader 框架 + sidecar 自己声明 manifest / resolver”
+  - 如果需要强调 sidecar 的独立性，独立点应放在 resolver / loader spec，而不是缓存、注入、权限或 token budget 的底层实现
+  - `prompt assembly` 继续作为统一对外 prompt 边界；reference 先由 sidecar manifest / resolver 完成解析，再交给 assembly 统一拼装
+  - 主 skill 应保持精简，重 reference 不默认常驻，只在 sidecar 调用时按需装载
+  - `SKILL.md` 与重 reference 分工应明确：前者写触发条件与边界，后者承载字段映射与细则
+  - sidecar prompt 继续使用清晰分段 / 标签化上下文和结构化 JSON 输出
+- 冻结导入内容边界：
+  - 重点解析 `worldbase`、`hero`、`core cast`、`antagonists`、`npc`、`locations`
+  - 不切 `phase` / `beat`
+  - 作者原始整段文本默认沉淀为 `opening hook`
+- 冻结 `gossipelog` 的接入方向：
+  - `weaver` 创建 package 后立即触发一次 bootstrap
+  - 如果状态缺失或损坏，则在第一次 Play 前再执行一次 bounded fallback
+- 根目录三件套将退回仓库级总索引，只做最小引用与恢复入口维护。

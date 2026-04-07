@@ -2,6 +2,16 @@
 
 ## 2026-04-07
 
+- 已建立 `docs/superpowers/phase-4/` 独立工作记忆入口：
+  - `task_plan.md`
+  - `progress.md`
+  - `findings.md`
+- 当前 `Phase 4` 已冻结并写入独立入口的结论包括：
+  - 新 agent 固定为 built-in `sidecar` 的 `weaver agent`
+  - `控制台` 将改造成 `agent 管理页面`
+  - `weaver` 作为 `新建故事包 -> 文本导入` 路径的一部分
+  - `weaver` 不做导入预览，不切 `phase` / `beat`
+  - `gossipelog` 采用 `创建后 bootstrap + 首次 Play 前 bounded fallback` 的双阶段初始化方向
 - 仓库级恢复口径已从 `Phase 3` 收尾，切换为 `Phase 4` 准备态。
 - 当前已记录的 `Phase 4` 准备结论只有这些：
   - 正式 `Phase 4` spec / implementation plan 还未落盘
