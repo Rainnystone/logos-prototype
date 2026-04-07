@@ -110,13 +110,16 @@ export function createCreateFromSourceAndContinueScenario(): ExecutableSimulatio
 
         // 4. Get initial state for verification
         const initialState = kernel.getState();
+        const initialRepository = initialState.storylineRepository;
+        if (!initialRepository) {
+          throw new Error('Storyline repository should exist after bootstrap.');
+        }
         const initialStoryline =
-          initialState.storylineRepository!.storylinesById[
-            initialState.storylineRepository!.activeStorylineId
-          ];
-        const initialStorylineCount = Object.keys(
-          initialState.storylineRepository!.storylinesById,
-        ).length;
+          initialRepository.storylinesById[initialRepository.activeStorylineId];
+        if (!initialStoryline) {
+          throw new Error('Initial storyline should exist after bootstrap.');
+        }
+        const initialStorylineCount = Object.keys(initialRepository.storylinesById).length;
         const initialVariantCount = Object.keys(initialState.variantsById).length;
 
         recorder.recordAssertion({
@@ -180,17 +183,22 @@ export function createCreateFromSourceAndContinueScenario(): ExecutableSimulatio
 
         // 8. Verify active storyline switched
         const finalState = kernel.getState();
+        const finalRepository = finalState.storylineRepository;
+        if (!finalRepository) {
+          throw new Error('Storyline repository should exist after create-from-source flow.');
+        }
 
         recorder.recordAssertion({
           name: 'active-storyline-switched',
-          pass:
-            finalState.storylineRepository!.activeStorylineId === created.storyline.storylineId,
+          pass: finalRepository.activeStorylineId === created.storyline.storylineId,
           details: 'Active storyline should be the newly created one',
         });
 
         // 9. Verify session is bound to new storyline
-        const newStoryline =
-          finalState.storylineRepository!.storylinesById[created.storyline.storylineId];
+        const newStoryline = finalRepository.storylinesById[created.storyline.storylineId];
+        if (!newStoryline) {
+          throw new Error('New storyline should exist after switching active storyline.');
+        }
         const session = finalState.runtimeSessions.sessionsById[newStoryline.activeSessionId];
 
         recorder.recordAssertion({
@@ -223,9 +231,9 @@ export function createCreateFromSourceAndContinueScenario(): ExecutableSimulatio
         return {
           finalState: {
             packageName: 'test-package',
-            storylineCount: Object.keys(finalState.storylineRepository!.storylinesById).length,
+            storylineCount: Object.keys(finalRepository.storylinesById).length,
             variantCount: Object.keys(finalState.variantsById).length,
-            activeStorylineId: finalState.storylineRepository!.activeStorylineId,
+            activeStorylineId: finalRepository.activeStorylineId,
             newStorylineId: created.storyline.storylineId,
             sourceStorylineId: initialStoryline.storylineId,
           },

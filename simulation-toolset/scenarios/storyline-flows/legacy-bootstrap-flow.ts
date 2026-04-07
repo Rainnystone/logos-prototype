@@ -55,8 +55,8 @@ export function createLegacyBootstrapFlowScenario(): ExecutableSimulationScenari
       // Record action for read resolution
       recorder.recordAction({
         kind: 'storyline.bootstrap_legacy',
-        operation: 'resolve_read_mode',
         details: {
+          operation: 'resolve_read_mode',
           isLegacyImplicit: readContext.isLegacyImplicit,
         },
       });
@@ -70,8 +70,8 @@ export function createLegacyBootstrapFlowScenario(): ExecutableSimulationScenari
       // Record bootstrap triggered
       recorder.recordAction({
         kind: 'storyline.bootstrap_legacy',
-        operation: 'bootstrap_triggered',
         details: {
+          operation: 'bootstrap_triggered',
           forWrite: true,
         },
       });

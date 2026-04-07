@@ -94,11 +94,14 @@ export function createSwitchAndContinueScenario(): ExecutableSimulationScenario 
 
         // 6. Verify active storyline updated
         const finalState = kernel.getState();
+        const finalRepository = finalState.storylineRepository;
+        if (!finalRepository) {
+          throw new Error('Storyline repository should exist after switching storylines.');
+        }
 
         recorder.recordAssertion({
           name: 'active-storyline-updated',
-          pass:
-            finalState.storylineRepository!.activeStorylineId === targetStoryline.storylineId,
+          pass: finalRepository.activeStorylineId === targetStoryline.storylineId,
           details: 'Active storyline should be the target storyline',
         });
 
@@ -107,15 +110,18 @@ export function createSwitchAndContinueScenario(): ExecutableSimulationScenario 
         recorder.recordAssertion({
           name: 'single-active-storyline-no-selection-state',
           pass:
-            finalState.storylineRepository!.activeStorylineId === targetStoryline.storylineId &&
+            finalRepository.activeStorylineId === targetStoryline.storylineId &&
             !('selectedStorylineId' in finalState),
           details: 'Only activeStorylineId should exist, no separate selection state',
         });
 
         // 8. Verify session binding follows storyline
-        const targetStorylineAfter =
-          finalState.storylineRepository!.storylinesById[targetStoryline.storylineId];
-        const runtimeSession = finalState.runtimeSessions.sessionsById[targetStorylineAfter.activeSessionId];
+        const targetStorylineAfter = finalRepository.storylinesById[targetStoryline.storylineId];
+        if (!targetStorylineAfter) {
+          throw new Error('Target storyline should exist after switching active storyline.');
+        }
+        const runtimeSession =
+          finalState.runtimeSessions.sessionsById[targetStorylineAfter.activeSessionId];
 
         recorder.recordAssertion({
           name: 'session-binding-follows-storyline',
@@ -157,8 +163,8 @@ export function createSwitchAndContinueScenario(): ExecutableSimulationScenario 
           finalState: {
             packageName: 'test-package',
             initialActiveStorylineId,
-            activeStorylineId: finalState.storylineRepository!.activeStorylineId,
-            storylineCount: Object.keys(finalState.storylineRepository!.storylinesById).length,
+            activeStorylineId: finalRepository.activeStorylineId,
+            storylineCount: Object.keys(finalRepository.storylinesById).length,
             variantCount: Object.keys(finalState.variantsById).length,
             sessionCount: Object.keys(finalState.runtimeSessions.sessionsById).length,
             activeSessionId: finalState.runtimeSessions.activeSessionId,

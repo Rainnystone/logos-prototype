@@ -37,7 +37,8 @@ export type RouteOperationKind =
   | 'switch_active_storyline'
   | 'create_from_source'
   | 'branch_from_checkpoint'
-  | 'rename_display_name';
+  | 'rename_display_name'
+  | 'delete_storyline';
 
 // ============================================================================
 // RouteMock Interface
@@ -302,6 +303,73 @@ export function createRouteMock(initialKernel: MockKernel): RouteMock {
               storylineId: result.storyline.storylineId,
               displayName: result.storyline.name,
               updatedAt: result.storyline.updatedAt,
+            };
+
+            recordRouteTrace(action.kind, action, response);
+            return jsonResponse(response, 200);
+          }
+
+          case 'delete_storyline': {
+            const state = kernel.getState();
+            const repository = state.storylineRepository;
+
+            if (!repository) {
+              throw new Error('Storyline actions require explicit repository and runtime context.');
+            }
+
+            const targetStoryline = repository.storylinesById[action.storylineId];
+            if (!targetStoryline) {
+              throw new Error(`Storyline "${action.storylineId}" does not exist.`);
+            }
+
+            const replacementStorylines = Object.values(repository.storylinesById).filter(
+              (storyline) => storyline.storylineId !== action.storylineId,
+            );
+
+            if (replacementStorylines.length === 0) {
+              throw new Error('Cannot delete the last remaining usable storyline.');
+            }
+
+            const nextActiveStorylineId =
+              repository.activeStorylineId === action.storylineId
+                ? replacementStorylines[0]!.storylineId
+                : repository.activeStorylineId;
+            const replacementStoryline = repository.storylinesById[nextActiveStorylineId];
+
+            if (!replacementStoryline) {
+              throw new Error(
+                `Storyline structural mismatch: activeStorylineId "${nextActiveStorylineId}" does not resolve.`,
+              );
+            }
+
+            const { [action.storylineId]: _removedStoryline, ...retainedStorylinesById } =
+              repository.storylinesById;
+            const { [targetStoryline.variantId]: _removedVariant, ...retainedVariantsById } =
+              repository.variantsById;
+
+            kernel._testSetState({
+              ...state,
+              storylineRepository: {
+                ...repository,
+                activeStorylineId: nextActiveStorylineId,
+                storylinesById: retainedStorylinesById,
+                variantsById: retainedVariantsById,
+              },
+              variantsById: Object.fromEntries(
+                Object.entries(state.variantsById).filter(
+                  ([variantId]) => variantId !== targetStoryline.variantId,
+                ),
+              ),
+              runtimeSessions: {
+                ...state.runtimeSessions,
+                activeSessionId: replacementStoryline.activeSessionId,
+              },
+            });
+
+            const response = {
+              kind: action.kind,
+              deletedStorylineId: action.storylineId,
+              activeStorylineId: nextActiveStorylineId,
             };
 
             recordRouteTrace(action.kind, action, response);
