@@ -2,17 +2,17 @@
 
 ## Goal
 
-为 `Phase 4` 建立独立的工作记忆入口，并把当前已经冻结的产品方向、架构边界与正式 spec 基线稳定记录下来。
+为 `Phase 4` 维护独立的工作记忆入口，并把当前已经冻结的产品方向、架构边界、正式 spec 与 implementation plan 基线稳定记录下来。
 
 当前这套文档的职责不是直接指挥实现，而是：
 
 - 记录 `Phase 4` 当前已经谈定的结论
 - 提供恢复 `Phase 4` 讨论上下文的最短入口
-- 在正式 implementation plan 落盘前，避免后续线程重复发散或误解边界
+- 在实现开始前，避免后续线程重复发散或误解边界
 
 ## Current Status
 
-- `Phase 4` 已产出正式 spec 草案，尚未进入实现。
+- `Phase 4` 已产出正式 spec 与 implementation plan，尚未进入实现。
 - 当前已经冻结的方向是：
   - 新增内建、`always-on` 的 `sidecar agent`
   - 新 agent 名称固定为 `weaver agent`
@@ -28,6 +28,9 @@
   - 不额外发明第二套 package persistence 主路径
 - 当前正式 spec 文件为：
   - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+- 当前 implementation plan 文件为：
+  - [../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+  - plan 已完成 reviewer 修订并通过 review，可作为执行入口
 
 ## Frozen Decision Map
 
@@ -86,21 +89,15 @@
 - 新包创建完成后，应直接回到该 package 的 `故事包管理`
 - `agent 管理页面` 主要展示 built-in sidecar agents 的职责、技能与最近状态
 
-## Open Decisions Still Pending
+## Remaining Work Shape
 
-这些点不再阻塞 spec，但仍需在 implementation plan 里进一步细化：
+当前已没有阻塞 implementation plan 的产品级待定项。
 
-- `weaver agent` 的输入长度上限、失败提示与 loading 口径
-- `weaver` 导入稿在服务端的具体 contract 形状
-- `weaver` 的轻量 state / summary 文件 schema
-- sidecar reference manifest / descriptor 的最小字段集应该是什么
-- sidecar reference resolver 的缓存键、token budget 与注入顺序如何统一
-- `agent 管理页面` 的最终信息架构、中文文案与视觉层级
-- 页面右上角轻量状态提示的展示范围与触发规则
-- `opening hook` 具体落在哪个 authoring 字段组合里
-- `locations` / `npc` / `antagonists` 的最低可靠抽取标准
-- `gossipelog bootstrap` 的 route / hook 形态与失败回退规则
-- 是否需要在创建后的新 package 中显示导入来源摘要
+接下来的未完成部分属于执行期工作，而不是 spec 级方向不清：
+
+- 按 implementation plan 分任务落代码
+- 在真实代码里把 `weaver`、shared sidecar reference loader、`agent 管理页面`、`gossipelog bootstrap/fallback` 接起来
+- 跑完计划里要求的测试、构建与浏览器验证
 
 ## Canonical References
 
@@ -114,6 +111,7 @@
   - [../specs/2026-04-02-phase-1-model-surface-design.md](../specs/2026-04-02-phase-1-model-surface-design.md)
   - [../specs/2026-04-06-phase-3-master-design.md](../specs/2026-04-06-phase-3-master-design.md)
   - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+  - [../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
 - 现有主工作记忆：
   - [../phase-3/task_plan.md](../phase-3/task_plan.md)
   - [../phase-3/progress.md](../phase-3/progress.md)

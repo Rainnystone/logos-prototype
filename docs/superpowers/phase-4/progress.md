@@ -37,7 +37,12 @@
   - `weaver` 创建 package 后立即触发一次 bootstrap
   - 如果状态缺失或损坏，则在第一次 Play 前再执行一次 bounded fallback
 - 基于以上冻结结论，新增正式 spec 草案：
+- 基于以上冻结结论，新增正式 spec 草案：
   - [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
   - spec 已收敛 `weaver` 导入边界、共享 sidecar reference loader、统一 prompt assembly 边界、agent 管理页形态与 `gossipelog` bootstrap 语义
   - spec 已完成一轮 reviewer 修订并通过第二轮 spec review，当前状态为“等待用户确认”
+- 基于已确认 spec，新增 implementation plan：
+  - [../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+  - plan 已按 `writing-plans` 工作流完成 reviewer 修订，并通过最终 plan review
+  - plan 已冻结 `text_import` contract、shared sidecar loader、`operationalHint` / `latestStateLine` 生产边界、`openingHook` ownership、以及 `gossipelog bootstrap/fallback` 的 authoring/play ownership
 - 根目录三件套将退回仓库级总索引，只做最小引用与恢复入口维护。

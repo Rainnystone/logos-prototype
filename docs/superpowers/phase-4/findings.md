@@ -2,7 +2,7 @@
 
 ## 最终恢复点
 
-`Phase 4` 现在已经有正式 spec 草案，但仍未进入实现阶段。
+`Phase 4` 现在已经有正式 spec 和已 review 通过的 implementation plan，但仍未进入实现阶段。
 
 最短恢复顺序：
 
@@ -16,7 +16,8 @@
 8. [../specs/2026-04-02-phase-1-model-surface-design.md](../specs/2026-04-02-phase-1-model-surface-design.md)
 9. [../specs/2026-04-06-phase-3-master-design.md](../specs/2026-04-06-phase-3-master-design.md)
 10. [../specs/2026-04-07-phase-4-weaver-agent-management-design.md](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
-11. [../../../archive/docs/narrative-editor-redesign/master-record.md](../../../archive/docs/narrative-editor-redesign/master-record.md)
+11. [../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md](../plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
+12. [../../../archive/docs/narrative-editor-redesign/master-record.md](../../../archive/docs/narrative-editor-redesign/master-record.md)
 
 ## 当前冻结结论
 
@@ -62,6 +63,12 @@
   - `definition / registry` 层声明 sidecar 的 reference manifest / resolver
   - shared loader 先完成 reference resolution
   - `prompt assembly` 再把 instructions、context、references、output contract 统一组装成最终 prompt
+- `Phase 4` 的 implementation plan 现在也已经冻结了执行边界：
+  - `text_import` 继续复用单一 package creation route，而不是另起一套导入 API
+  - `openingHook` 的权威来源始终是作者原始 `sourceText`
+  - `operationalHint` 与 `latestStateLine` 由 shared agent-surface loader 统一生产
+  - `gossipelog` fallback 以 relationship state 的 missing / unreadable 为主判定，而不是只看 summary status
+  - `/api/play/gossipelog/bootstrap` 也必须复用 shared `parseAdapterConfig()`，不再分叉 play-side adapter parsing
 - 如果把“独立 loader”理解为“每个 sidecar 都有自己的 reference resolver / loader spec”，这是合理的；
   但如果把它理解为“每个 sidecar 都各自实现缓存、注入、权限与预算控制”，那会破坏 sidecar 的统一管理边界。
 - 按当前 best practice 收敛，skill / reference 的边界应是：
