@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 const STORY_PACKAGE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const WINDOWS_RESERVED_NAMES = new Set([
   'con',
@@ -27,7 +25,15 @@ const WINDOWS_RESERVED_NAMES = new Set([
 ]);
 
 function hashDisplayName(displayName: string): string {
-  return createHash('sha1').update(displayName.trim().normalize('NFKC')).digest('hex').slice(0, 8);
+  const normalized = displayName.trim().normalize('NFKC');
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < normalized.length; index += 1) {
+    hash ^= normalized.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 export function assertValidStoryPackageSlug(slug: string): string {

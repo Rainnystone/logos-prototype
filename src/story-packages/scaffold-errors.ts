@@ -1,5 +1,5 @@
 export abstract class StoryPackageScaffoldError extends Error {
-  protected constructor(message: string) {
+  constructor(message: string) {
     super(message);
     this.name = new.target.name;
   }

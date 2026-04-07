@@ -134,7 +134,8 @@ export const workspaceViewSingleLineFixture: StoryPackageManagementWorkspaceView
   activeStorylineId: 'storyline_main',
   storylines: [
     {
-      ...workspaceViewFixture.storylines[0],
+      ...workspaceViewFixture.storylines[0]!,
+      status: workspaceViewFixture.storylines[0]!.status,
       canDelete: false,
       deleteDisabledReason: '至少保留一条故事线',
     },

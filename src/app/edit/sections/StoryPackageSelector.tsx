@@ -8,6 +8,12 @@ function isReadyPackageItem(
   return Object.prototype.hasOwnProperty.call(item, 'sceneName');
 }
 
+function isErrorPackageItem(
+  item: StoryPackageManagementPackageItem,
+): item is Extract<StoryPackageManagementPackageItem, { error: string }> {
+  return Object.prototype.hasOwnProperty.call(item, 'error');
+}
+
 interface StoryPackageSelectorProps {
   readonly packageName: string;
   readonly packages: readonly StoryPackageManagementPackageItem[];
@@ -22,7 +28,7 @@ export function StoryPackageSelector({
   onCreatePackage,
 }: StoryPackageSelectorProps) {
   const readyPackages = packages.filter(isReadyPackageItem);
-  const errorPackages = packages.filter((item) => !isReadyPackageItem(item));
+  const errorPackages = packages.filter(isErrorPackageItem);
 
   return (
     <aside className="story-package-selector panel" aria-label="Story package selector">
