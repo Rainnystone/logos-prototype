@@ -7,6 +7,7 @@ import type { StoryPackageManagementStorylineRowView } from '@/types';
 
 interface StorylineWorkspaceRowProps {
   readonly row: StoryPackageManagementStorylineRowView;
+  readonly replacementDisplayName: string | null;
   readonly onSwitchStoryline: (storylineId: string) => Promise<void>;
   readonly onContinueStoryline: (storylineId: string, isActive: boolean) => Promise<void>;
   readonly onCreateFromSource: (storylineId: string) => Promise<void>;
@@ -25,6 +26,7 @@ function formatCheckpointButtonLabel(checkpoint: StoryPackageManagementStoryline
 
 export function StorylineWorkspaceRow({
   row,
+  replacementDisplayName,
   onSwitchStoryline,
   onContinueStoryline,
   onCreateFromSource,
@@ -176,6 +178,7 @@ export function StorylineWorkspaceRow({
               displayName={displayName}
               canDelete={row.canDelete}
               deleteDisabledReason={row.deleteDisabledReason}
+              replacementDisplayName={replacementDisplayName}
               disabled={pendingAction !== null}
               onDelete={() => {
                 void runRowAction('delete', async () => {

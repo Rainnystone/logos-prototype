@@ -150,6 +150,66 @@ describe('StoryPackageManagementSection', () => {
     );
   });
 
+  it('exits create mode immediately after successful package creation instead of staying on the panel', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          packageName: 'new-story-package',
+          activeStorylineId: 'storyline_main',
+          createdAt: '2026-04-07T00:00:00.000Z',
+        }),
+        {
+          status: 201,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.type(screen.getByLabelText('故事包名称'), '新故事包');
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        '/edit?storyPackage=new-story-package&section=story-package-management',
+      );
+    });
+    expect(screen.queryByRole('heading', { name: '新建故事包' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'sample-scene' })).toBeInTheDocument();
+  });
+
+  it('blocks whitespace-only package creation client-side and shows inline feedback without sending a request', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.type(screen.getByLabelText('故事包名称'), '   ');
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Story package display name is required.')).toBeInTheDocument();
+    expect(screen.getByText('slug: --')).toBeInTheDocument();
+  });
+
+  it('keeps the current create draft and feedback when the left-rail 新建故事包 tile is clicked again in create mode', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    const createTile = screen.getByRole('button', { name: '新建故事包' });
+    const nameInput = screen.getByLabelText('故事包名称');
+
+    await user.type(nameInput, '   ');
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(createTile).toBeDisabled();
+    expect(screen.getByText('Story package display name is required.')).toBeInTheDocument();
+    expect(nameInput).toHaveValue('   ');
+  });
+
   it('keeps the workspace structure visible when a storyline has no head checkpoint', () => {
     render(
       <StoryPackageManagementSection
@@ -347,6 +407,16 @@ describe('StoryPackageManagementSection', () => {
     await user.click(screen.getByRole('button', { name: '确认删除' }));
 
     expect(await screen.findByText('目标故事线已不存在。')).toBeInTheDocument();
+  });
+
+  it('tells the user which visible storyline will replace the active one before confirming deletion', async () => {
+    const user = userEvent.setup();
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '删除 Main Line' }));
+
+    expect(screen.getByText('删除后将切换到 Branch Line。')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '确认删除' })).toBeVisible();
   });
 
   it('disables delete for the last remaining usable storyline', () => {

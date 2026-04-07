@@ -11,12 +11,14 @@ function isReadyPackageItem(
 interface StoryPackageSelectorProps {
   readonly packageName: string;
   readonly packages: readonly StoryPackageManagementPackageItem[];
+  readonly createPackageDisabled: boolean;
   readonly onCreatePackage: () => void;
 }
 
 export function StoryPackageSelector({
   packageName,
   packages,
+  createPackageDisabled,
   onCreatePackage,
 }: StoryPackageSelectorProps) {
   const readyPackages = packages.filter(isReadyPackageItem);
@@ -48,6 +50,7 @@ export function StoryPackageSelector({
             type="button"
             className="story-package-selector__create-button"
             aria-label="新建故事包"
+            disabled={createPackageDisabled}
             onClick={onCreatePackage}
           >
             <span className="story-package-selector__create-mark" aria-hidden="true">

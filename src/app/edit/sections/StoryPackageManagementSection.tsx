@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { StoryPackageCreationPanel } from '@/app/edit/sections/StoryPackageCreationPanel';
@@ -30,6 +30,31 @@ function buildWorldEditorHref(packageName: string): string {
 
 function buildManagementHref(packageName: string): string {
   return `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management`;
+}
+
+function resolvePackageCreationValidationMessage(draftDisplayName: string): string | null {
+  try {
+    buildStoryPackageSlug(draftDisplayName);
+    return null;
+  } catch (error) {
+    return error instanceof Error ? error.message : 'Invalid story package display name.';
+  }
+}
+
+function findReplacementStorylineDisplayName(
+  storylines: StoryPackageManagementWorkspaceView['storylines'],
+  storylineId: string,
+): string | null {
+  const currentIndex = storylines.findIndex((row) => row.storylineId === storylineId);
+  if (currentIndex < 0) {
+    return null;
+  }
+
+  return (
+    storylines[currentIndex + 1]?.displayName ??
+    storylines[currentIndex - 1]?.displayName ??
+    null
+  );
 }
 
 async function submitStorylineAction<TResult>(
@@ -86,15 +111,25 @@ export function StoryPackageManagementSection({
   const [creationPending, setCreationPending] = useState(false);
 
   let slugPreview = '--';
-  let slugValidationMessage: string | null = null;
+  const slugValidationMessage =
+    draftPackageDisplayName.trim().length > 0
+      ? resolvePackageCreationValidationMessage(draftPackageDisplayName)
+      : null;
 
-  if (draftPackageDisplayName.trim().length > 0) {
-    try {
-      slugPreview = buildStoryPackageSlug(draftPackageDisplayName);
-    } catch (error) {
-      slugValidationMessage = error instanceof Error ? error.message : 'Invalid story package display name.';
-    }
+  if (slugValidationMessage === null && draftPackageDisplayName.trim().length > 0) {
+    slugPreview = buildStoryPackageSlug(draftPackageDisplayName);
   }
+
+  function resetPackageCreationState() {
+    setCreationPending(false);
+    setCreationFeedback(null);
+    setDraftPackageDisplayName('');
+    setIsCreatingPackage(false);
+  }
+
+  useEffect(() => {
+    resetPackageCreationState();
+  }, [packageName]);
 
   async function handleSwitchStoryline(storylineId: string) {
     await submitStorylineAction<{ activeStorylineId: string }>(packageName, {
@@ -151,8 +186,9 @@ export function StoryPackageManagementSection({
   }
 
   async function handleConfirmCreatePackage() {
-    if (slugValidationMessage) {
-      setCreationFeedback(slugValidationMessage);
+    const submitValidationMessage = resolvePackageCreationValidationMessage(draftPackageDisplayName);
+    if (submitValidationMessage) {
+      setCreationFeedback(submitValidationMessage);
       return;
     }
 
@@ -161,6 +197,7 @@ export function StoryPackageManagementSection({
 
     try {
       const created = await submitPackageCreation(draftPackageDisplayName);
+      resetPackageCreationState();
       router.replace(buildManagementHref(created.packageName));
     } catch (error) {
       setCreationFeedback(error instanceof Error ? error.message : '创建故事包失败。');
@@ -175,9 +212,8 @@ export function StoryPackageManagementSection({
         <StoryPackageSelector
           packageName={packageName}
           packages={view.packages}
+          createPackageDisabled={isCreatingPackage}
           onCreatePackage={() => {
-            setCreationFeedback(null);
-            setDraftPackageDisplayName('');
             setIsCreatingPackage(true);
           }}
         />
@@ -197,10 +233,7 @@ export function StoryPackageManagementSection({
                 void handleConfirmCreatePackage();
               }}
               onCancel={() => {
-                setCreationPending(false);
-                setCreationFeedback(null);
-                setDraftPackageDisplayName('');
-                setIsCreatingPackage(false);
+                resetPackageCreationState();
               }}
             />
           ) : (
@@ -214,6 +247,11 @@ export function StoryPackageManagementSection({
                   <StorylineWorkspaceRow
                     key={row.storylineId}
                     row={row}
+                    replacementDisplayName={
+                      row.isActive
+                        ? findReplacementStorylineDisplayName(view.storylines, row.storylineId)
+                        : null
+                    }
                     onSwitchStoryline={handleSwitchStoryline}
                     onContinueStoryline={handleContinueStoryline}
                     onCreateFromSource={handleCreateFromSource}

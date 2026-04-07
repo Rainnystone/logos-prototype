@@ -6,6 +6,7 @@ interface StorylineDeleteControlProps {
   readonly displayName: string;
   readonly canDelete: boolean;
   readonly deleteDisabledReason: string | null;
+  readonly replacementDisplayName: string | null;
   readonly disabled: boolean;
   readonly onDelete: () => void;
 }
@@ -14,6 +15,7 @@ export function StorylineDeleteControl({
   displayName,
   canDelete,
   deleteDisabledReason,
+  replacementDisplayName,
   disabled,
   onDelete,
 }: StorylineDeleteControlProps) {
@@ -29,6 +31,9 @@ export function StorylineDeleteControl({
     <div className="storyline-delete-control">
       {confirming && canDelete ? (
         <div className="storyline-delete-control__confirm">
+          {replacementDisplayName ? (
+            <p className="storyline-delete-control__reason">{`删除后将切换到 ${replacementDisplayName}。`}</p>
+          ) : null}
           <button
             type="button"
             className="storyline-row__action storyline-delete-control__action storyline-delete-control__action--danger"
