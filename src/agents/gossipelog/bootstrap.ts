@@ -1,7 +1,10 @@
+import { readFile, writeFile } from 'node:fs/promises';
+
 import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import {
   createEmptyCharacterRelationshipsFile,
   inspectCharacterRelationshipsState,
+  resolveCharacterRelationshipsPath,
   saveCharacterRelationships,
 } from '@/agents/gossipelog/repository';
 import { saveWeaverImportSummary } from '@/agents/weaver/repository';
@@ -62,15 +65,6 @@ function toBoundedRelationshipConfidenceNote(warnings: readonly string[]): strin
   return `${note.slice(0, 217).trimEnd()}...`;
 }
 
-function buildBootstrapAcceptedBeatText(summary: WeaverImportSummary): string {
-  return [
-    'Bootstrap relationship seed from text import.',
-    `Import summary: ${summary.importSummary}`,
-    `Source summary: ${summary.sourceSummary}`,
-    `Relationship-confidence note: ${toBoundedRelationshipConfidenceNote(summary.warnings)}`,
-  ].join('\n');
-}
-
 function createBootstrapRoundId(): string {
   return `bootstrap-${Date.now().toString(36)}`;
 }
@@ -81,22 +75,32 @@ export async function bootstrapGossipelogFromWeaverSummary(
   const relationshipState =
     input.relationshipState ??
     (await inspectCharacterRelationshipsState(input.storyPackageName));
+  const relationshipPath = resolveCharacterRelationshipsPath(input.storyPackageName);
+  let unreadableSnapshot: string | null = null;
 
   try {
+    const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName);
+    const openingHook = storyPackage.sceneSpec.openingHook?.trim();
+    const acceptedBeatText = [
+      openingHook && openingHook.length > 0
+        ? openingHook
+        : 'Bootstrap relationship seed from text import.',
+      `Relationship-confidence note: ${toBoundedRelationshipConfidenceNote(input.weaverSummary.warnings)}`,
+    ].join('\n\n');
+
     if (relationshipState === 'unreadable') {
+      unreadableSnapshot = await readFile(relationshipPath, 'utf8');
       await saveCharacterRelationships(
         input.storyPackageName,
         createEmptyCharacterRelationshipsFile(input.storyPackageName),
       );
     }
 
-    const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName);
-
     const cycleResult = await runGossipelogCycle({
       adapter: input.adapter,
       storyPackageName: input.storyPackageName,
       storyPackage,
-      acceptedBeatText: buildBootstrapAcceptedBeatText(input.weaverSummary),
+      acceptedBeatText,
       roundId: createBootstrapRoundId(),
     });
 
@@ -119,6 +123,10 @@ export async function bootstrapGossipelogFromWeaverSummary(
       bootstrapStatus: 'succeeded',
     };
   } catch (error) {
+    if (unreadableSnapshot !== null) {
+      await writeFile(relationshipPath, unreadableSnapshot, 'utf8').catch(() => undefined);
+    }
+
     await saveWeaverImportSummary(
       input.storyPackageName,
       buildUpdatedSummary(input.weaverSummary, 'fallback_pending'),

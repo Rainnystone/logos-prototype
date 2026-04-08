@@ -4,7 +4,10 @@ import {
   bootstrapGossipelogFromWeaverSummary,
   GOSSIPELOG_BOOTSTRAP_PENDING_WARNING,
 } from '@/agents/gossipelog/bootstrap';
-import { loadWeaverImportSummary } from '@/agents/weaver/repository';
+import {
+  loadWeaverImportSummary,
+  saveWeaverImportSummary,
+} from '@/agents/weaver/repository';
 import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createStoryPackageScaffold } from '@/story-packages/scaffold';
@@ -96,6 +99,16 @@ function appendBootstrapPendingWarning(warnings: readonly string[]): readonly st
     : [...warnings, GOSSIPELOG_BOOTSTRAP_PENDING_WARNING];
 }
 
+async function reconcileFallbackPendingSummary(
+  packageName: string,
+  summary: Awaited<ReturnType<typeof loadWeaverImportSummary>>,
+): Promise<void> {
+  await saveWeaverImportSummary(packageName, {
+    ...summary,
+    bootstrapStatus: 'fallback_pending',
+  });
+}
+
 export async function POST(request: Request) {
   const rawBody = await request.json().catch(() => ({}));
   const parsed = StoryPackageCreationRequestSchema.safeParse(
@@ -131,14 +144,22 @@ export async function POST(request: Request) {
         adapter: createAPIAdapter(adapterConfig),
         ...(parsed.data.displayName !== undefined ? { displayName: parsed.data.displayName } : {}),
       });
+      let loadedWeaverSummary: Awaited<ReturnType<typeof loadWeaverImportSummary>> | null = null;
 
       try {
         const weaverSummary = await loadWeaverImportSummary(created.packageName);
+        loadedWeaverSummary = weaverSummary;
         const bootstrapResult = await bootstrapGossipelogFromWeaverSummary({
           storyPackageName: created.packageName,
           weaverSummary,
           adapter: createAPIAdapter(adapterConfig),
         });
+
+        if (!bootstrapResult.ok) {
+          await reconcileFallbackPendingSummary(created.packageName, weaverSummary).catch(
+            () => undefined,
+          );
+        }
 
         return NextResponse.json(
           {
@@ -151,6 +172,14 @@ export async function POST(request: Request) {
           { status: 201 },
         );
       } catch {
+        try {
+          const weaverSummary =
+            loadedWeaverSummary ?? (await loadWeaverImportSummary(created.packageName));
+          await reconcileFallbackPendingSummary(created.packageName, weaverSummary).catch(() => undefined);
+        } catch {
+          // Creation still returns 201 with a bounded warning even if summary reconcile fails.
+        }
+
         return NextResponse.json(
           {
             ...created,

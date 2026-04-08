@@ -202,4 +202,56 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       bootstrapStatus: 'fallback_pending',
     });
   });
+
+  it('attempts one fallback bootstrap when persisted gossipelog state is unreadable', async () => {
+    loadWeaverImportSummaryIfPresent.mockResolvedValueOnce({
+      ...summaryFixture,
+      bootstrapStatus: 'succeeded',
+    });
+    inspectCharacterRelationshipsState.mockResolvedValueOnce('unreadable');
+    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: false,
+      attempted: true,
+      bootstrapStatus: 'fallback_pending',
+      errorMessage: 'bootstrap fell back to persisted-relationship-state',
+    });
+
+    const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog/bootstrap', {
+        method: 'POST',
+        body: JSON.stringify({
+          storyPackageName: 'sample-scene',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+      storyPackageName: 'sample-scene',
+      weaverSummary: {
+        ...summaryFixture,
+        bootstrapStatus: 'succeeded',
+      },
+      relationshipState: 'unreadable',
+      adapter: expect.objectContaining({
+        gossipelogUpdate: expect.any(Function),
+        gossipelogInjection: expect.any(Function),
+      }),
+    });
+    expect(saveWeaverImportSummary).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'fallback_pending',
+      bootstrapStatus: 'fallback_pending',
+    });
+  });
 });

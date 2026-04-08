@@ -520,8 +520,8 @@ describe('gossipelog agent shell', () => {
     });
   });
 
-  it('bootstrap persists a readable empty relationship file on success even when the cycle is a no-op', async () => {
-    const { packageName } = await createStoryPackageFixture();
+  it('bootstrap anchors acceptedBeatText on the persisted scene openingHook and appends bounded relationship-confidence notes', async () => {
+    const { packageName, storyPackage } = await createStoryPackageFixture();
     const relationshipPath = path.resolve(
       storyPackagesRoot,
       packageName,
@@ -557,8 +557,11 @@ describe('gossipelog agent shell', () => {
     if (!acceptedBeatText) {
       throw new Error('Expected bootstrap update request to be captured.');
     }
+    expect(acceptedBeatText).toContain(storyPackage.sceneSpec.openingHook ?? '');
     expect(acceptedBeatText).toContain('Relationship-confidence note:');
     expect(acceptedBeatText).toContain('角色关系只得到部分文本支持');
+    expect(acceptedBeatText).not.toContain(createWeaverSummary().importSummary);
+    expect(acceptedBeatText).not.toContain(createWeaverSummary().sourceSummary);
     await expect(gossipelogRepository.inspectCharacterRelationshipsState(packageName)).resolves.toBe(
       'readable',
     );
@@ -567,7 +570,7 @@ describe('gossipelog agent shell', () => {
     });
   });
 
-  it('bootstrap overwrites unreadable relationship state with a bounded fallback_pending summary on failure', async () => {
+  it('bootstrap keeps unreadable gossipelog state unreadable when a bootstrap attempt fails', async () => {
     const { packageName } = await createStoryPackageFixture();
     const relationshipPath = path.resolve(
       storyPackagesRoot,
@@ -596,7 +599,7 @@ describe('gossipelog agent shell', () => {
     expect(result.bootstrapStatus).toBe('fallback_pending');
     expect(result.errorMessage).toContain('persisted-relationship-state');
     await expect(gossipelogRepository.inspectCharacterRelationshipsState(packageName)).resolves.toBe(
-      'readable',
+      'unreadable',
     );
     await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
       bootstrapStatus: 'fallback_pending',
