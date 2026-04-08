@@ -40,21 +40,21 @@ function summarizeTrackedRelationshipState(statePathRawContents: string): string
 
 export const gossipelogAgentDefinition = {
   agentId: 'gossipelog',
-  displayName: 'gossipelog agent',
+  displayName: 'Gossipe Log',
   surfaceType: 'sidecar',
   surfaceSemantics: 'built-in',
-  responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
+  responsibilitySummary: '整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。',
   skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
   skillDisplayMetadata: [
     {
       skillId: 'relationship-update-skill',
-      displayName: 'Relationship Update',
-      description: '在接受新剧情后更新持久关系状态。',
+      displayName: '关系更新',
+      description: '在关系已经成立后，整理并更新当前的人际关系状态。',
     },
     {
       skillId: 'relationship-injection-skill',
-      displayName: 'Relationship Injection',
-      description: '为下一轮生成准备关系上下文摘要。',
+      displayName: '关系注入',
+      description: '把整理好的关系背景注入下一轮生成，保持后续内容沿用同一套关系依据。',
     },
   ],
   packageConfigPath: 'agents/gossipelog/config.yaml',

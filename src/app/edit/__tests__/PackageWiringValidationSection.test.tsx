@@ -4,9 +4,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 import { AgentSurfacePanel } from '@/app/edit/sections/AgentSurfacePanel';
 import { PackageWiringValidationSection } from '@/app/edit/sections/PackageWiringValidationSection';
+import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
 import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 describe('PackageWiringValidationSection', () => {
+  const gossipelogAgentSurfaceItem = {
+    agentId: gossipelogAgentDefinition.agentId,
+    displayName: gossipelogAgentDefinition.displayName,
+    responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+    skillIds: gossipelogAgentDefinition.skillIds,
+    skillDisplayMetadata: gossipelogAgentDefinition.skillDisplayMetadata,
+    packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+    packageStatePath: gossipelogAgentDefinition.packageStatePath,
+  } as const;
+
   it('renders agent 管理 as the primary surface and keeps diagnostics in a bounded status area', () => {
     const diagnostics = buildPackageDiagnostics({
       packageName: 'sample-scene',
@@ -59,24 +70,7 @@ describe('PackageWiringValidationSection', () => {
             },
           },
           {
-            agentId: 'gossipelog',
-            displayName: 'gossipelog agent',
-            responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
-            skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-            skillDisplayMetadata: [
-              {
-                skillId: 'relationship-update-skill',
-                displayName: 'Relationship Update',
-                description: '在接受新剧情后更新持久关系状态。',
-              },
-              {
-                skillId: 'relationship-injection-skill',
-                displayName: 'Relationship Injection',
-                description: '为下一轮生成准备关系上下文摘要。',
-              },
-            ],
-            packageConfigPath: 'agents/gossipelog/config.yaml',
-            packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+            ...gossipelogAgentSurfaceItem,
             operationalHint: 'ready',
             operationalHintLabel: '当前状态：可用',
             latestStateLine: '最近一次关系状态已同步完成。',
@@ -96,18 +90,16 @@ describe('PackageWiringValidationSection', () => {
     expect(screen.getByLabelText('agent-management-status')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: '当前详情' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Weaver' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gossipe Log' })).toBeInTheDocument();
     expect(screen.getByText('导入摘要存在 2 条待处理提示。')).toBeInTheDocument();
     expect(screen.getByText('最近一次关系状态已同步完成。')).toBeInTheDocument();
     expect(screen.getByText('当前状态：需要关注')).toBeInTheDocument();
     expect(screen.getByText('当前状态：可用')).toBeInTheDocument();
     expect(screen.getByText('负责把外部作者文本抽取为可导入的结构化启动摘要，并维护导入状态。')).toBeInTheDocument();
-    expect(
-      screen.getByText('负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。')).toBeInTheDocument();
     expect(screen.getByText('把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。')).toBeInTheDocument();
-    expect(screen.getByText('在接受新剧情后更新持久关系状态。')).toBeInTheDocument();
-    expect(screen.getByText('为下一轮生成准备关系上下文摘要。')).toBeInTheDocument();
+    expect(screen.getByText('在关系已经成立后，整理并更新当前的人际关系状态。')).toBeInTheDocument();
+    expect(screen.getByText('把整理好的关系背景注入下一轮生成，保持后续内容沿用同一套关系依据。')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '回到故事包管理并使用文本导入' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=story-package-management&creationMode=text_import',

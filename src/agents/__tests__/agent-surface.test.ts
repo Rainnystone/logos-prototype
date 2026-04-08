@@ -4,6 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
 import type { WeaverImportSummary } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -73,6 +74,21 @@ afterEach(() => {
 });
 
 describe('loadAgentSurfaceItems', () => {
+  it('exposes the refreshed gossipelog management copy in the definition', () => {
+    expect(gossipelogAgentDefinition.displayName).toBe('Gossipe Log');
+    expect(gossipelogAgentDefinition.responsibilitySummary).toBe(
+      '整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。',
+    );
+    expect(gossipelogAgentDefinition.skillDisplayMetadata.map((skill) => skill.displayName)).toEqual([
+      '关系更新',
+      '关系注入',
+    ]);
+    expect(gossipelogAgentDefinition.skillDisplayMetadata.map((skill) => skill.description)).toEqual([
+      '在关系已经成立后，整理并更新当前的人际关系状态。',
+      '把整理好的关系背景注入下一轮生成，保持后续内容沿用同一套关系依据。',
+    ]);
+  });
+
   it('keeps registered built-in sidecars visible when config and state files are missing', async () => {
     prepareEmptyPackage('__phase4-missing-sidecar__');
     const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
@@ -141,13 +157,10 @@ describe('loadAgentSurfaceItems', () => {
 
     expect(gossipelogItem?.operationalHint).toBe('ready');
     expect(gossipelogItem?.operationalHintLabel).toBe('当前状态：可用');
-    expect(gossipelogItem?.responsibilitySummary).toBe(
-      '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
+    expect(gossipelogItem?.responsibilitySummary).toBe(gossipelogAgentDefinition.responsibilitySummary);
+    expect(gossipelogItem?.skillDisplayMetadata.map((skill) => skill.description)).toEqual(
+      gossipelogAgentDefinition.skillDisplayMetadata.map((skill) => skill.description),
     );
-    expect(gossipelogItem?.skillDisplayMetadata.map((skill) => skill.description)).toEqual([
-      '在接受新剧情后更新持久关系状态。',
-      '为下一轮生成准备关系上下文摘要。',
-    ]);
     expect(weaverItem?.skillDisplayMetadata.map((skill) => skill.description)).toEqual([
       '把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。',
     ]);
