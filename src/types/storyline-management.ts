@@ -123,7 +123,7 @@ export const StorylineDeleteActionSchema = z
 const StoryPackageCreationBlankRequestSchema = z
   .object({
     mode: z.literal('blank'),
-    displayName: z.string(),
+    displayName: z.string().trim().min(1),
   })
   .strict();
 
@@ -146,10 +146,10 @@ export type StoryPackageCreationRequest = z.infer<typeof StoryPackageCreationReq
 
 export const StoryPackageCreationResponseSchema = z
   .object({
-    packageName: z.string(),
-    activeStorylineId: z.string(),
-    createdAt: z.string(),
-    warnings: z.array(z.string()),
+    packageName: z.string().trim().min(1),
+    activeStorylineId: z.string().trim().min(1),
+    createdAt: z.string().datetime(),
+    warnings: z.array(z.string().trim().min(1)).default([]),
   })
   .strict();
 export type StoryPackageCreationResponse = z.infer<typeof StoryPackageCreationResponseSchema>;

@@ -557,6 +557,37 @@ describe('Phase 00 contract types', () => {
       }),
     ).toThrow();
 
+    expect(() =>
+      types.WeaverImportPayloadSchema.parse({
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: '   ',
+        worldBase: { worldBaseSetting: 'base' },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      types.WeaverImportSummarySchema.parse({
+        schemaVersion: 1,
+        sourceKind: 'text_import',
+        lastRunAt: '2026-04-08T00:00:00.000Z',
+        suggestedPackageName: '   ',
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        warnings: [],
+        unresolvedGaps: [],
+        warningCount: 0,
+        unresolvedGapCount: 0,
+        bootstrapStatus: 'pending',
+      }),
+    ).toThrow();
+
     expect(types.AgentOperationalHintSchema.options).toEqual([
       'ready',
       'warning',
@@ -622,5 +653,14 @@ describe('Phase 00 contract types', () => {
       packageName: 'sample-package',
       warnings: ['warn-1'],
     });
+
+    expect(() =>
+      types.StoryPackageCreationResponseSchema.parse({
+        packageName: '   ',
+        activeStorylineId: 'storyline_main',
+        createdAt: 'not-a-date',
+        warnings: ['warn-1'],
+      }),
+    ).toThrow();
   });
 });

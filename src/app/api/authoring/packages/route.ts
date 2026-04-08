@@ -9,6 +9,23 @@ import {
 } from '@/story-packages/scaffold-errors';
 import { StoryPackageCreationRequestSchema } from '@/types/storyline-management';
 
+function normalizePackageCreationBody(body: unknown): unknown {
+  if (
+    body !== null &&
+    typeof body === 'object' &&
+    !Array.isArray(body) &&
+    !('mode' in body) &&
+    'displayName' in body
+  ) {
+    return {
+      mode: 'blank',
+      displayName: (body as { displayName?: unknown }).displayName,
+    };
+  }
+
+  return body;
+}
+
 function mapCreatePackageError(error: unknown): { status: number; message: string } {
   if (error instanceof StoryPackageScaffoldInputError) {
     return {
@@ -45,8 +62,8 @@ function mapCreatePackageError(error: unknown): { status: number; message: strin
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}));
-  const parsed = StoryPackageCreationRequestSchema.safeParse(body);
+  const rawBody = await request.json().catch(() => ({}));
+  const parsed = StoryPackageCreationRequestSchema.safeParse(normalizePackageCreationBody(rawBody));
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -58,7 +75,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    const created = await createStoryPackageScaffold(parsed.data);
+    if (parsed.data.mode === 'text_import') {
+      return NextResponse.json(
+        {
+          error: 'Text import is not implemented yet.',
+        },
+        { status: 400 },
+      );
+    }
+
+    const created = await createStoryPackageScaffold({
+      displayName: parsed.data.displayName,
+    });
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

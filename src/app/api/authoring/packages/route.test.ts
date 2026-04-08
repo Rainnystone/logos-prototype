@@ -79,6 +79,26 @@ describe('POST /api/authoring/packages', () => {
     });
   });
 
+  it('returns a bounded 400 response for text_import without calling scaffold', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          sourceText: '一段导入文本。',
+        }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Text import is not implemented yet.',
+    });
+  });
+
   it('maps invalid display names to 400 responses', async () => {
     createStoryPackageScaffold.mockRejectedValueOnce(
       new StoryPackageScaffoldInputError('Story package display name is invalid.'),

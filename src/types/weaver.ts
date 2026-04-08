@@ -20,18 +20,18 @@ const WeaverPassthroughObjectSchema = z.object({}).passthrough();
 // Task 4 must preserve the original sourceText as the persisted source of truth.
 export const WeaverImportPayloadSchema = z
   .object({
-    suggestedPackageName: z.string().optional(),
-    sourceSummary: z.string(),
-    importSummary: z.string(),
-    openingHook: z.string(),
+    suggestedPackageName: z.string().trim().min(1).optional(),
+    sourceSummary: z.string().trim().min(1),
+    importSummary: z.string().trim().min(1),
+    openingHook: z.string().trim().min(1),
     worldBase: WeaverPassthroughObjectSchema,
     hero: WeaverPassthroughObjectSchema.optional(),
     coreCast: z.array(WeaverPassthroughObjectSchema),
     antagonists: z.array(WeaverPassthroughObjectSchema),
     npcCharacters: z.array(WeaverPassthroughObjectSchema),
     locations: z.array(WeaverPassthroughObjectSchema),
-    warnings: z.array(z.string()),
-    unresolvedGaps: z.array(z.string()),
+    warnings: z.array(z.string().trim().min(1)),
+    unresolvedGaps: z.array(z.string().trim().min(1)),
   })
   .strict();
 export type WeaverImportPayload = z.infer<typeof WeaverImportPayloadSchema>;
@@ -41,11 +41,11 @@ export const WeaverImportSummarySchema = z
     schemaVersion: z.literal(1),
     sourceKind: z.literal('text_import'),
     lastRunAt: z.string().datetime(),
-    suggestedPackageName: z.string().optional(),
-    sourceSummary: z.string(),
-    importSummary: z.string(),
-    warnings: z.array(z.string()),
-    unresolvedGaps: z.array(z.string()),
+    suggestedPackageName: z.string().trim().min(1).optional(),
+    sourceSummary: z.string().trim().min(1),
+    importSummary: z.string().trim().min(1),
+    warnings: z.array(z.string().trim().min(1)),
+    unresolvedGaps: z.array(z.string().trim().min(1)),
     warningCount: z.number().int().nonnegative(),
     unresolvedGapCount: z.number().int().nonnegative(),
     bootstrapStatus: WeaverBootstrapStatusSchema,
