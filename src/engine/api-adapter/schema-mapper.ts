@@ -13,6 +13,8 @@ import {
   buildRouteUserPrompt,
   buildSettlementSystemPrompt,
   buildSettlementUserPrompt,
+  buildWeaverImportSystemPrompt,
+  buildWeaverImportUserPrompt,
 } from '@/engine/api-adapter/prompt-templates';
 import type {
   ModeConfig,
@@ -25,6 +27,7 @@ import type {
   GossipelogInjectionRequest,
   GossipelogUpdateRequest,
   RouteRequest,
+  WeaverImportRequest,
 } from '@/engine/types/adapter-interface';
 import type { AuditPacket, PhaseConsequenceRequest, PromptObject } from '@/types';
 
@@ -56,6 +59,10 @@ const MODE_DEFAULTS = {
   gossipelogInjection: {
     temperature: 0.2,
     maxOutputTokens: 4096,
+  },
+  weaverImport: {
+    temperature: 0.2,
+    maxOutputTokens: 16384,
   },
 } as const;
 
@@ -342,6 +349,90 @@ const GOSSIPELOG_INJECTION_RESPONSE_FORMAT: ProviderResponseFormat = {
   },
 };
 
+const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
+  type: 'json_schema',
+  name: 'logos_weaver_import_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: [
+      'sourceSummary',
+      'importSummary',
+      'openingHook',
+      'worldBase',
+      'coreCast',
+      'antagonists',
+      'npcCharacters',
+      'locations',
+      'warnings',
+      'unresolvedGaps',
+    ],
+    properties: {
+      suggestedPackageName: {
+        type: 'string',
+      },
+      sourceSummary: {
+        type: 'string',
+      },
+      importSummary: {
+        type: 'string',
+      },
+      openingHook: {
+        type: 'string',
+      },
+      worldBase: {
+        type: 'object',
+        additionalProperties: true,
+      },
+      hero: {
+        type: 'object',
+        additionalProperties: true,
+      },
+      coreCast: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
+      },
+      antagonists: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
+      },
+      npcCharacters: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
+      },
+      locations: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
+      },
+      warnings: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      },
+      unresolvedGaps: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      },
+    },
+  },
+};
+
 function resolveModeConfig(
   mode: keyof typeof MODE_DEFAULTS,
   override?: ModeConfig,
@@ -479,5 +570,23 @@ export function mapForGossipelogInjection(
     ],
     responseFormat: GOSSIPELOG_INJECTION_RESPONSE_FORMAT,
     ...resolveModeConfig('gossipelogInjection', override),
+  };
+}
+
+export function mapForWeaverImport(
+  request: WeaverImportRequest,
+  _provider: ProviderType,
+  override?: ModeConfig,
+): ProviderRequest {
+  return {
+    system: buildWeaverImportSystemPrompt(),
+    messages: [
+      {
+        role: 'user',
+        content: buildWeaverImportUserPrompt(request),
+      },
+    ],
+    responseFormat: WEAVER_IMPORT_RESPONSE_FORMAT,
+    ...resolveModeConfig('weaverImport', override),
   };
 }

@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-
 import type { AgentSurfaceItem } from '@/agents/agent-surface';
 import type { PackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 import { AgentSurfacePanel } from '@/app/edit/sections/AgentSurfacePanel';
@@ -33,43 +31,30 @@ export function PackageWiringValidationSection({
   onRefresh,
   isRefreshing = false,
 }: PackageWiringValidationSectionProps) {
-  const [selectedDetailKey, setSelectedDetailKey] = useState(diagnostics.defaultDetailKey);
-
-  const selectedDetail = useMemo(() => {
-    return (
-      diagnostics.detailViews.find((detail) => detail.key === selectedDetailKey) ??
-      diagnostics.detailViews.find((detail) => detail.key === diagnostics.defaultDetailKey) ??
-      diagnostics.detailViews[0]
-    );
-  }, [diagnostics.defaultDetailKey, diagnostics.detailViews, selectedDetailKey]);
-
   return (
-    <section className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,0.95fr)]">
-      <div className="panel space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <p className="panel-eyebrow">高级诊断</p>
-            <h2>控制台</h2>
-            <p className="panel-note">查看整包保存后的状态，并按需回到对应页面修复问题。</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="panel-note">{packageName}</span>
-            <button type="button" className="secondary-link" onClick={onRefresh} disabled={isRefreshing}>
-              {isRefreshing ? '刷新中...' : '重新检查'}
-            </button>
-          </div>
+    <section className="package-wiring-validation">
+      <div className="package-wiring-validation__header">
+        <div>
+          <p className="panel-eyebrow">built-in sidecars</p>
+          <h2>agent 管理</h2>
+          <p className="panel-note">这里以 agent 状态为主，诊断结果只保留为一个小范围状态提示。</p>
         </div>
+        <div className="package-wiring-validation__header-actions">
+          <span className="panel-note">{packageName}</span>
+          <button type="button" className="secondary-link" onClick={onRefresh} disabled={isRefreshing}>
+            {isRefreshing ? '刷新中...' : '重新检查'}
+          </button>
+        </div>
+      </div>
 
-        <section
-          className="rounded-none border-2 border-black bg-slate-50/80 p-4"
-          aria-label="整体状态"
-        >
-          <div className="flex items-start justify-between gap-3">
+      <div className="package-wiring-validation__layout">
+        <AgentSurfacePanel packageName={packageName} items={agentSurfaceItems} />
+
+        <aside className="package-wiring-validation__status panel" aria-label="agent-management-status">
+          <div className="package-wiring-validation__status-header">
             <div>
-              <p className="panel-eyebrow">整体状态</p>
-              <h3 className="text-xl font-semibold text-slate-900">
-                {diagnostics.overallStatusView.title}
-              </h3>
+              <p className="panel-eyebrow">状态提示</p>
+              <h3>{diagnostics.overallStatusView.title}</h3>
             </div>
             <span
               className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${statusBadgeClass(
@@ -79,110 +64,25 @@ export function PackageWiringValidationSection({
               {diagnostics.overallStatusView.status}
             </span>
           </div>
-          <p className="mt-3 text-sm text-slate-700">{diagnostics.overallStatusView.summary}</p>
-        </section>
 
-        <AgentSurfacePanel items={agentSurfaceItems} />
-
-        <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">页面状态</p>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {diagnostics.sectionHealthViews.map((view) => (
-              <button
-                key={view.sectionId}
-                type="button"
-                className="rounded-none border-2 border-black p-4 text-left"
-                onClick={() => setSelectedDetailKey(`section:${view.sectionId}`)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <strong className="text-sm text-slate-900">{view.label}</strong>
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(
-                      view.status,
-                    )}`}
-                  >
-                    {view.status}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm text-slate-600">{view.summary}</p>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">组装流程</p>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {diagnostics.assemblyFlowViews.map((view) => (
-              <button
-                key={view.key}
-                type="button"
-                className="rounded-none border-2 border-black p-4 text-left"
-                onClick={() => setSelectedDetailKey(`flow:${view.key}`)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <strong className="text-sm text-slate-900">{view.label}</strong>
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(
-                      view.status,
-                    )}`}
-                  >
-                    {view.status}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm text-slate-600">{view.summary}</p>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-none border-2 border-black bg-white p-4">
-          <p className="panel-eyebrow">未解决问题</p>
-          <div className="mt-4 space-y-3">
-            {diagnostics.unresolvedIssueViews.length > 0 ? (
-              diagnostics.unresolvedIssueViews.map((issue) => (
-                <button
-                  key={issue.key}
-                  type="button"
-                  className="w-full rounded-none border-2 border-black p-4 text-left"
-                  onClick={() => setSelectedDetailKey(issue.key)}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <strong className="text-sm text-slate-900">{issue.title}</strong>
-                    <span
-                      className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(
-                        issue.severity,
-                      )}`}
-                    >
-                      {issue.severity}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-slate-600">{issue.summary}</p>
-                </button>
-              ))
-            ) : (
-              <p className="text-sm text-slate-600">当前没有未解决的整包问题。</p>
-            )}
-          </div>
-        </section>
-      </div>
-
-      <section className="space-y-6 xl:sticky xl:top-6" aria-label="当前详情">
-        <div className="panel h-full">
-          <p className="panel-eyebrow">当前详情</p>
-          <h3 className="text-2xl font-semibold text-slate-900">
-            {selectedDetail?.title ?? diagnostics.overallStatusView.title}
-          </h3>
-          <p className="mt-3 text-sm text-slate-700">
-            {selectedDetail?.summary ?? diagnostics.overallStatusView.summary}
+          <p className="package-wiring-validation__status-summary">
+            {diagnostics.overallStatusView.summary}
           </p>
-          <ul className="mt-4 space-y-2 text-sm text-slate-600">
-            {(selectedDetail?.detailLines ?? []).map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
+
+          {diagnostics.unresolvedIssueViews.length > 0 ? (
+            <div className="package-wiring-validation__issues">
+              {diagnostics.unresolvedIssueViews.map((issue) => (
+                <div key={issue.key} className="package-wiring-validation__issue">
+                  <strong>{issue.title}</strong>
+                  <p>{issue.summary}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="package-wiring-validation__status-summary">当前没有额外的整包问题。</p>
+          )}
+        </aside>
+      </div>
     </section>
   );
 }

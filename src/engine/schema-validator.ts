@@ -11,6 +11,8 @@ import {
   PhasePlanSchema,
   PromptObjectSchema,
   RuntimeSessionsFileSchema,
+  WeaverImportPayloadSchema,
+  WeaverImportSummarySchema,
   assertRuntimeSessionsFileConsistency,
   StateSnapshotSchema,
   type AuditPacket,
@@ -26,6 +28,8 @@ import {
   type PromptObject,
   type RuntimeSessionsFile,
   type StateSnapshot,
+  type WeaverImportPayload,
+  type WeaverImportSummary,
 } from '@/types';
 import { parseWithSchema } from '@/lib/validation';
 
@@ -85,4 +89,12 @@ export function validateRuntimeSessionsFile(data: unknown): RuntimeSessionsFile 
   return assertRuntimeSessionsFileConsistency(
     parseWithSchema(RuntimeSessionsFileSchema, data, 'runtimeSessionsFile'),
   );
+}
+
+export function validateWeaverImportPayload(data: unknown): WeaverImportPayload {
+  return parseWithSchema(WeaverImportPayloadSchema, data, 'weaverImportPayload');
+}
+
+export function validateWeaverImportSummary(data: unknown): WeaverImportSummary {
+  return parseWithSchema(WeaverImportSummarySchema, data, 'weaverImportSummary');
 }

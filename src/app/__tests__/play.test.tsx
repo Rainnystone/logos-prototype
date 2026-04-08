@@ -263,6 +263,8 @@ async function startRound(
 describe('PlayWorkbench', () => {
   afterEach(() => {
     localStorage.clear();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('shows scene initialization before the workbench is ready', async () => {
@@ -284,6 +286,64 @@ describe('PlayWorkbench', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Ready')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start Round' })).toBeInTheDocument();
+  });
+
+  it('calls the bounded gossipelog bootstrap route once before initialization when adapter config exists', async () => {
+    const harness = createPlayAdapterHarness();
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ status: 'noop', bootstrapStatus: 'succeeded' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+      />,
+    );
+
+    expect(
+      await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.'),
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('/api/play/gossipelog/bootstrap', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        storyPackageName: 'sample-scene',
+        adapterConfig: adapterConfigFixture,
+      }),
+    });
+  });
+
+  it('skips the gossipelog bootstrap route when no adapter config exists', async () => {
+    const harness = createPlayAdapterHarness();
+    const fetchMock = vi.fn();
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        adapterFactory={() => harness.adapter}
+      />,
+    );
+
+    expect(
+      await screen.findByText('Click Start Round to run the opening hook and generate Beat 1.'),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('surfaces an explicit continuity error and blocks automatic restore when continuity is unavailable', async () => {

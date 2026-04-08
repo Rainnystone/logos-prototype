@@ -1,19 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { StoryPackageCreationPanel } from '@/app/edit/sections/StoryPackageCreationPanel';
+import {
+  StoryPackageCreationPanel,
+  type StoryPackageCreationMode,
+} from '@/app/edit/sections/StoryPackageCreationPanel';
+import { loadAdapterConfig } from '@/app/runtime-config';
 import type { StoryPackageManagementWorkspaceView } from '@/types';
 import type { StoryPackageCreationResponse } from '@/types/storyline-management';
 import type { StorylineAction } from '@/types/storyline-management';
 import { StoryPackageSelector } from '@/app/edit/sections/StoryPackageSelector';
 import { StorylineWorkspaceRow } from '@/app/edit/sections/StorylineWorkspaceRow';
 import { buildStoryPackageSlug } from '@/story-packages/package-slug';
+import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 
 interface StoryPackageManagementSectionProps {
   readonly packageName: string;
   readonly view: StoryPackageManagementWorkspaceView;
+  readonly initialCreationMode?: StoryPackageCreationMode;
 }
 
 function buildStorylineActionUrl(packageName: string): string {
@@ -80,13 +86,25 @@ async function submitStorylineAction<TResult>(
   return payload as TResult;
 }
 
-async function submitPackageCreation(displayName: string): Promise<StoryPackageCreationResponse> {
+async function submitPackageCreation(
+  requestBody:
+    | {
+        readonly mode: 'blank';
+        readonly displayName: string;
+      }
+    | {
+        readonly mode: 'text_import';
+        readonly displayName?: string;
+        readonly sourceText: string;
+        readonly adapterConfig: AdapterConfig;
+      },
+): Promise<StoryPackageCreationResponse> {
   const response = await fetch(buildPackageCreationUrl(), {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ displayName }),
+    body: JSON.stringify(requestBody),
   });
   const payload = (await response.json().catch(() => null)) as
     | (StoryPackageCreationResponse & { error?: string })
@@ -103,12 +121,17 @@ async function submitPackageCreation(displayName: string): Promise<StoryPackageC
 export function StoryPackageManagementSection({
   packageName,
   view,
+  initialCreationMode = 'blank',
 }: StoryPackageManagementSectionProps) {
   const router = useRouter();
-  const [isCreatingPackage, setIsCreatingPackage] = useState(false);
+  const hasMountedRef = useRef(false);
+  const [isCreatingPackage, setIsCreatingPackage] = useState(initialCreationMode === 'text_import');
+  const [creationMode, setCreationMode] = useState<StoryPackageCreationMode>(initialCreationMode);
   const [draftPackageDisplayName, setDraftPackageDisplayName] = useState('');
+  const [draftImportSourceText, setDraftImportSourceText] = useState('');
   const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
   const [creationPending, setCreationPending] = useState(false);
+  const [storedAdapterConfig, setStoredAdapterConfig] = useState<AdapterConfig | null | undefined>(undefined);
 
   let slugPreview = '--';
   const slugValidationMessage =
@@ -124,12 +147,39 @@ export function StoryPackageManagementSection({
     setCreationPending(false);
     setCreationFeedback(null);
     setDraftPackageDisplayName('');
+    setDraftImportSourceText('');
     setIsCreatingPackage(false);
+    setCreationMode('blank');
+    setStoredAdapterConfig(undefined);
   }
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    if (initialCreationMode === 'text_import') {
+      setCreationPending(false);
+      setCreationFeedback(null);
+      setDraftPackageDisplayName('');
+      setDraftImportSourceText('');
+      setIsCreatingPackage(true);
+      setCreationMode('text_import');
+      setStoredAdapterConfig(undefined);
+      return;
+    }
+
     resetPackageCreationState();
-  }, [packageName]);
+  }, [initialCreationMode, packageName]);
+
+  useEffect(() => {
+    if (!isCreatingPackage || creationMode !== 'text_import' || storedAdapterConfig !== undefined) {
+      return;
+    }
+
+    setStoredAdapterConfig(loadAdapterConfig());
+  }, [creationMode, isCreatingPackage, storedAdapterConfig]);
 
   async function handleSwitchStoryline(storylineId: string) {
     await submitStorylineAction<{ activeStorylineId: string }>(packageName, {
@@ -186,17 +236,49 @@ export function StoryPackageManagementSection({
   }
 
   async function handleConfirmCreatePackage() {
-    const submitValidationMessage = resolvePackageCreationValidationMessage(draftPackageDisplayName);
-    if (submitValidationMessage) {
-      setCreationFeedback(submitValidationMessage);
-      return;
+    if (creationMode === 'blank') {
+      const submitValidationMessage = resolvePackageCreationValidationMessage(draftPackageDisplayName);
+      if (submitValidationMessage) {
+        setCreationFeedback(submitValidationMessage);
+        return;
+      }
+    } else {
+      if (
+        draftPackageDisplayName.trim().length > 0 &&
+        resolvePackageCreationValidationMessage(draftPackageDisplayName)
+      ) {
+        setCreationFeedback(resolvePackageCreationValidationMessage(draftPackageDisplayName));
+        return;
+      }
+
+      if (draftImportSourceText.trim().length === 0) {
+        setCreationFeedback('导入文本不能为空。');
+        return;
+      }
+
+      if (!storedAdapterConfig) {
+        return;
+      }
     }
 
     setCreationPending(true);
     setCreationFeedback(null);
 
     try {
-      const created = await submitPackageCreation(draftPackageDisplayName);
+      const created =
+        creationMode === 'text_import'
+          ? await submitPackageCreation({
+              mode: 'text_import',
+              ...(draftPackageDisplayName.trim().length > 0
+                ? { displayName: draftPackageDisplayName.trim() }
+                : {}),
+              sourceText: draftImportSourceText,
+              adapterConfig: storedAdapterConfig as AdapterConfig,
+            })
+          : await submitPackageCreation({
+              mode: 'blank',
+              displayName: draftPackageDisplayName,
+            });
       resetPackageCreationState();
       router.replace(buildManagementHref(created.packageName));
     } catch (error) {
@@ -221,13 +303,35 @@ export function StoryPackageManagementSection({
         <section className="story-package-management__workspace" aria-label="Storyline workspace">
           {isCreatingPackage ? (
             <StoryPackageCreationPanel
+              mode={creationMode}
               draftDisplayName={draftPackageDisplayName}
+              sourceText={draftImportSourceText}
               slugPreview={slugPreview}
               feedback={creationFeedback}
+              pendingCopy={
+                creationPending
+                  ? creationMode === 'text_import'
+                    ? 'Weaver 正在整理文本并创建故事包…'
+                    : '正在创建故事包…'
+                  : null
+              }
+              runtimeConfigNotice={
+                creationMode === 'text_import' && storedAdapterConfig === null
+                  ? '需要先在运行配置中保存一个可用模型，才能执行文本导入。'
+                  : null
+              }
               submitting={creationPending}
+              onChangeMode={(value) => {
+                setCreationFeedback(null);
+                setCreationMode(value);
+              }}
               onChangeDraftDisplayName={(value) => {
                 setCreationFeedback(null);
                 setDraftPackageDisplayName(value);
+              }}
+              onChangeSourceText={(value) => {
+                setCreationFeedback(null);
+                setDraftImportSourceText(value);
               }}
               onConfirm={() => {
                 void handleConfirmCreatePackage();

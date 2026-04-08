@@ -1,21 +1,55 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { WeaverImportSummary } from '@/types';
 
 const createStoryPackageScaffold = vi.fn();
+const loadWeaverImportSummary = vi.fn();
+const saveWeaverImportSummary = vi.fn();
+const bootstrapGossipelogFromWeaverSummary = vi.fn();
 
 vi.mock('@/story-packages/scaffold', () => ({
   createStoryPackageScaffold,
 }));
 
+vi.mock('@/agents/weaver/repository', () => ({
+  loadWeaverImportSummary,
+  saveWeaverImportSummary,
+}));
+
+vi.mock('@/agents/gossipelog/bootstrap', () => ({
+  bootstrapGossipelogFromWeaverSummary,
+  GOSSIPELOG_BOOTSTRAP_PENDING_WARNING:
+    'Gossipelog bootstrap pending. First Play startup will retry once.',
+}));
+
 import {
   StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldImportError,
   StoryPackageScaffoldInputError,
   StoryPackageScaffoldValidationError,
   StoryPackageScaffoldWriteError,
 } from '@/story-packages/scaffold-errors';
+import { MAX_TEXT_IMPORT_SOURCE_LENGTH } from '@/types/storyline-management';
 
 describe('POST /api/authoring/packages', () => {
+  const weaverSummaryFixture: WeaverImportSummary = {
+    schemaVersion: 1,
+    sourceKind: 'text_import',
+    lastRunAt: '2026-04-08T12:00:00.000Z',
+    suggestedPackageName: 'woven-import-package',
+    sourceSummary: '作者原文摘要',
+    importSummary: '已整理出基础导入摘要',
+    warnings: ['角色关系只得到部分文本支持'],
+    unresolvedGaps: [],
+    warningCount: 1,
+    unresolvedGapCount: 0,
+    bootstrapStatus: 'pending',
+  };
+
   beforeEach(() => {
     createStoryPackageScaffold.mockReset();
+    loadWeaverImportSummary.mockReset();
+    saveWeaverImportSummary.mockReset();
+    bootstrapGossipelogFromWeaverSummary.mockReset();
   });
 
   it('creates a package and returns the new package selection payload', async () => {
@@ -23,6 +57,7 @@ describe('POST /api/authoring/packages', () => {
       packageName: 'xin-gushi-bao',
       activeStorylineId: 'storyline_main',
       createdAt: '2026-04-07T10:00:00.000Z',
+      warnings: [],
     });
 
     const { POST } = await import('@/app/api/authoring/packages/route');
@@ -35,6 +70,7 @@ describe('POST /api/authoring/packages', () => {
     );
 
     expect(createStoryPackageScaffold).toHaveBeenCalledWith({
+      mode: 'blank',
       displayName: '新故事包',
     });
     expect(response.status).toBe(201);
@@ -42,6 +78,37 @@ describe('POST /api/authoring/packages', () => {
       packageName: expect.any(String),
       activeStorylineId: 'storyline_main',
       createdAt: expect.any(String),
+      warnings: [],
+    });
+  });
+
+  it('creates a package when mode blank is provided explicitly', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'mode-blank-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T10:00:00.000Z',
+      warnings: [],
+    });
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'blank', displayName: '显式空白包' }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).toHaveBeenCalledWith({
+      mode: 'blank',
+      displayName: '显式空白包',
+    });
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'mode-blank-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: expect.any(String),
+      warnings: [],
     });
   });
 
@@ -79,6 +146,207 @@ describe('POST /api/authoring/packages', () => {
     });
   });
 
+  it('returns a bounded 400 response for text_import without a valid adapter config', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          sourceText: '一段导入文本。',
+        }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Text import requires a valid adapter config.',
+    });
+  });
+
+  it('creates a text_import package, passes adapter-backed scaffold input, and returns warnings', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'woven-import-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T12:00:00.000Z',
+      warnings: ['角色关系只得到部分文本支持'],
+    });
+    loadWeaverImportSummary.mockResolvedValueOnce(weaverSummaryFixture);
+    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: true,
+      attempted: true,
+      bootstrapStatus: 'succeeded',
+    });
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          displayName: '作者命名',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'text_import',
+        displayName: '作者命名',
+        sourceText: '一段导入文本。',
+        adapter: expect.any(Object),
+      }),
+    );
+    expect(loadWeaverImportSummary).toHaveBeenCalledWith('woven-import-package');
+    expect(bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+      storyPackageName: 'woven-import-package',
+      weaverSummary: weaverSummaryFixture,
+      adapter: expect.objectContaining({
+        gossipelogUpdate: expect.any(Function),
+        gossipelogInjection: expect.any(Function),
+      }),
+    });
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'woven-import-package',
+      warnings: ['角色关系只得到部分文本支持'],
+    });
+  });
+
+  it('returns 201 and appends a bounded warning when immediate gossipelog bootstrap falls back', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'woven-import-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T12:00:00.000Z',
+      warnings: ['角色关系只得到部分文本支持'],
+    });
+    loadWeaverImportSummary.mockResolvedValueOnce(weaverSummaryFixture);
+    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: false,
+      attempted: true,
+      bootstrapStatus: 'fallback_pending',
+      errorMessage: 'model timeout',
+    });
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          displayName: '作者命名',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'woven-import-package',
+      warnings: [
+        '角色关系只得到部分文本支持',
+        'Gossipelog bootstrap pending. First Play startup will retry once.',
+      ],
+    });
+    expect(saveWeaverImportSummary).toHaveBeenCalledWith('woven-import-package', {
+      ...weaverSummaryFixture,
+      bootstrapStatus: 'fallback_pending',
+    });
+  });
+
+  it('reconciles the persisted weaver summary to fallback_pending when post-promotion bootstrap throws but creation still returns 201', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'woven-import-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T12:00:00.000Z',
+      warnings: ['角色关系只得到部分文本支持'],
+    });
+    loadWeaverImportSummary.mockResolvedValueOnce(weaverSummaryFixture);
+    bootstrapGossipelogFromWeaverSummary.mockRejectedValueOnce(new Error('bootstrap crashed'));
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          displayName: '作者命名',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'woven-import-package',
+      warnings: [
+        '角色关系只得到部分文本支持',
+        'Gossipelog bootstrap pending. First Play startup will retry once.',
+      ],
+    });
+    expect(saveWeaverImportSummary).toHaveBeenCalledWith('woven-import-package', {
+      ...weaverSummaryFixture,
+      bootstrapStatus: 'fallback_pending',
+    });
+  });
+
+  it('returns 400 before scaffold work when text_import sourceText exceeds the frozen limit', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          sourceText: 'a'.repeat(MAX_TEXT_IMPORT_SOURCE_LENGTH + 1),
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Invalid package creation payload.',
+    });
+  });
+
   it('maps invalid display names to 400 responses', async () => {
     createStoryPackageScaffold.mockRejectedValueOnce(
       new StoryPackageScaffoldInputError('Story package display name is invalid.'),
@@ -96,6 +364,39 @@ describe('POST /api/authoring/packages', () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'Invalid story package display name.',
+    });
+  });
+
+  it('maps bounded text import naming failures to 400 responses', async () => {
+    createStoryPackageScaffold.mockRejectedValueOnce(
+      new StoryPackageScaffoldImportError(
+        'Text import requires an explicit display name or a valid weaver suggestion.',
+      ),
+    );
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Text import requires an explicit display name or a valid weaver suggestion.',
     });
   });
 

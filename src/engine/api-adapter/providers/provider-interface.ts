@@ -59,6 +59,7 @@ export interface AdapterConfig {
   readonly collapseConfig?: ModeConfig;
   readonly gossipelogUpdateConfig?: ModeConfig;
   readonly gossipelogInjectionConfig?: ModeConfig;
+  readonly weaverImportConfig?: ModeConfig;
 }
 
 export type FetchLike = typeof fetch;

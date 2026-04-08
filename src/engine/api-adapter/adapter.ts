@@ -8,6 +8,7 @@ import {
   parseGenerateResult,
   parseGossipelogInjectionResult,
   parseGossipelogUpdateResult,
+  parseWeaverImportResult,
   parseRouteResult,
   parseSettlementResult,
 } from '@/engine/api-adapter/response-parsers';
@@ -19,6 +20,7 @@ import {
   mapForGossipelogUpdate,
   mapForRoute,
   mapForSettlement,
+  mapForWeaverImport,
 } from '@/engine/api-adapter/schema-mapper';
 import { createAnthropicProvider } from '@/engine/api-adapter/providers/anthropic';
 import { createOpenAICompatibleProvider } from '@/engine/api-adapter/providers/openai-compatible';
@@ -37,6 +39,7 @@ import type {
   CollapseInput,
   InitialCollapseRequest,
   LLMAdapter,
+  WeaverImportRequest,
 } from '@/engine/types/adapter-interface';
 import {
   CharacterProfileSchema,
@@ -85,6 +88,24 @@ const GossipelogInjectionRequestSchema = z
   })
   .strict();
 
+const WeaverResolvedReferenceSchema = z
+  .object({
+    referenceId: z.string(),
+    injectionLabel: z.string(),
+    relativePath: z.string(),
+    contents: z.string(),
+    estimatedTokens: z.number().int().positive(),
+  })
+  .strict();
+
+const WeaverImportRequestSchema = z
+  .object({
+    sourceText: z.string().trim().min(1),
+    packageNameHint: z.string().trim().min(1).optional(),
+    resolvedReferences: z.array(WeaverResolvedReferenceSchema),
+  })
+  .strict();
+
 function createProvider(config: AdapterConfig): Provider {
   if (config.provider === 'anthropic') {
     return createAnthropicProvider(config.providerConfig);
@@ -130,6 +151,10 @@ function validateGossipelogInjectionInput(request: unknown) {
     request,
     'gossipelogInjectionRequest',
   );
+}
+
+function validateWeaverImportInput(request: unknown): WeaverImportRequest {
+  return parseWithSchema(WeaverImportRequestSchema, request, 'weaverImportRequest');
 }
 
 export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
@@ -220,6 +245,20 @@ export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
       const response = await provider.call(request);
 
       return deepFreeze(parseGossipelogInjectionResult(response.content, response.usage));
+    },
+
+    async weaverImport(requestInput) {
+      const request = attachModel(
+        mapForWeaverImport(
+          validateWeaverImportInput(requestInput),
+          config.provider,
+          config.weaverImportConfig,
+        ),
+        config.providerConfig.model,
+      );
+      const response = await provider.call(request);
+
+      return deepFreeze(parseWeaverImportResult(response.content, response.usage));
     },
   };
 }

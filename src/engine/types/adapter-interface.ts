@@ -13,6 +13,7 @@ import type {
   RouterProfile,
   UsageInfo,
   Volume,
+  WeaverImportPayload,
 } from '@/types';
 
 /**
@@ -61,6 +62,24 @@ export type GossipelogInjectionResponse = GossipelogInjectionResult & {
   readonly usage?: UsageInfo | undefined;
 };
 
+export interface WeaverResolvedReference {
+  readonly referenceId: string;
+  readonly injectionLabel: string;
+  readonly relativePath: string;
+  readonly contents: string;
+  readonly estimatedTokens: number;
+}
+
+export interface WeaverImportRequest {
+  readonly sourceText: string;
+  readonly packageNameHint?: string | undefined;
+  readonly resolvedReferences: readonly WeaverResolvedReference[];
+}
+
+export type WeaverImportResponse = WeaverImportPayload & {
+  readonly usage?: UsageInfo | undefined;
+};
+
 export interface GenerateResult {
   readonly beatText: string;
   readonly options: readonly string[];
@@ -102,4 +121,5 @@ export interface LLMAdapter {
   settlement?(request: PhaseConsequenceRequest): Promise<PhaseConsequenceResponse>;
   gossipelogUpdate?(request: GossipelogUpdateRequest): Promise<GossipelogUpdateResponse>;
   gossipelogInjection?(request: GossipelogInjectionRequest): Promise<GossipelogInjectionResponse>;
+  weaverImport?(request: WeaverImportRequest): Promise<WeaverImportResponse>;
 }

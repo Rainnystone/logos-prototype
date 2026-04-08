@@ -3,13 +3,17 @@ import path from 'node:path';
 
 import YAML from 'yaml';
 
+import { runWeaverImport } from '@/agents/weaver/agent';
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
+import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import { parseWithSchema } from '@/lib/validation';
+import { applyTextImportSeed } from '@/story-packages/import-seed';
 import { loadStoryPackage } from '@/engine/story-loader';
 import { buildStoryPackageSlug } from '@/story-packages/package-slug';
 import {
   StoryPackageScaffoldConflictError,
   StoryPackageScaffoldError,
+  StoryPackageScaffoldImportError,
   StoryPackageScaffoldInputError,
   StoryPackageScaffoldValidationError,
   StoryPackageScaffoldWriteError,
@@ -45,14 +49,27 @@ const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const DEFAULT_STORYLINE_ID = 'storyline_main';
 const DEFAULT_VARIANT_ID = 'variant_main';
 
-export interface CreateStoryPackageScaffoldInput {
+export interface CreateBlankStoryPackageScaffoldInput {
+  readonly mode: 'blank';
   readonly displayName: string;
 }
+
+export interface CreateTextImportStoryPackageScaffoldInput {
+  readonly mode: 'text_import';
+  readonly displayName?: string;
+  readonly sourceText: string;
+  readonly adapter: Pick<LLMAdapter, 'weaverImport'>;
+}
+
+export type CreateStoryPackageScaffoldInput =
+  | CreateBlankStoryPackageScaffoldInput
+  | CreateTextImportStoryPackageScaffoldInput;
 
 export interface CreateStoryPackageScaffoldResult {
   readonly packageName: string;
   readonly activeStorylineId: typeof DEFAULT_STORYLINE_ID;
   readonly createdAt: string;
+  readonly warnings: readonly string[];
 }
 
 function assertPathInsideBase(resolvedPath: string, baseDirectory: string, label: string): string {
@@ -391,6 +408,58 @@ async function copyVariantManagedFiles(stageRoot: string): Promise<void> {
   }
 }
 
+function resolveConfiguredDisplayName(input: CreateStoryPackageScaffoldInput): string | null {
+  const trimmed = input.displayName?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : null;
+}
+
+function resolveBlankPackageIdentity(input: CreateBlankStoryPackageScaffoldInput): {
+  readonly displayName: string;
+  readonly packageName: string;
+} {
+  const displayName = resolveConfiguredDisplayName(input);
+
+  if (!displayName) {
+    throw new StoryPackageScaffoldInputError('Invalid story package display name.');
+  }
+
+  try {
+    return {
+      displayName,
+      packageName: buildStoryPackageSlug(displayName),
+    };
+  } catch {
+    throw new StoryPackageScaffoldInputError('Invalid story package display name.');
+  }
+}
+
+function createBuiltInAgentConfig(agentId: string): { readonly agentId: string; readonly enabled: true } {
+  return {
+    agentId,
+    enabled: true,
+  };
+}
+
+async function writeBuiltInSidecarFiles(
+  stageRoot: string,
+  options: { readonly importSummary?: unknown },
+): Promise<void> {
+  const gossipelogConfigPath = path.resolve(stageRoot, 'agents', 'gossipelog', 'config.yaml');
+  const weaverConfigPath = path.resolve(stageRoot, 'agents', 'weaver', 'config.yaml');
+
+  await fileSystem.mkdir(path.dirname(gossipelogConfigPath), { recursive: true });
+  await fileSystem.mkdir(path.dirname(weaverConfigPath), { recursive: true });
+  await writeYamlDocument(gossipelogConfigPath, createBuiltInAgentConfig('gossipelog'));
+  await writeYamlDocument(weaverConfigPath, createBuiltInAgentConfig('weaver'));
+
+  if (options.importSummary !== undefined) {
+    await writeYamlDocument(
+      path.resolve(stageRoot, 'agents', 'weaver', 'import-summary.yaml'),
+      options.importSummary,
+    );
+  }
+}
+
 async function validateStageRepositories(stageRoot: string): Promise<void> {
   const storylineRepository = assertStorylineRepositoryFileConsistency(
     parseWithSchema(
@@ -451,30 +520,73 @@ async function cleanupStageRoot(stageRoot: string): Promise<void> {
   await fileSystem.rm(stageRoot, { recursive: true, force: true }).catch(() => undefined);
 }
 
+async function resolveTextImportPackageIdentity(
+  input: CreateTextImportStoryPackageScaffoldInput,
+): Promise<{
+  readonly displayName: string;
+  readonly packageName: string;
+  readonly importSummary: Awaited<ReturnType<typeof runWeaverImport>>['summary'];
+  readonly importPayload: Awaited<ReturnType<typeof runWeaverImport>>['payload'];
+}> {
+  const packageNameHint = resolveConfiguredDisplayName(input);
+  const importResult = await runWeaverImport({
+    adapter: input.adapter,
+    sourceText: input.sourceText,
+    ...(packageNameHint ? { packageNameHint } : {}),
+  });
+  const displayName =
+    resolveConfiguredDisplayName(input) ?? importResult.payload.suggestedPackageName?.trim() ?? '';
+
+  if (!displayName) {
+    throw new StoryPackageScaffoldImportError(
+      'Text import requires an explicit display name or a valid weaver suggestion.',
+    );
+  }
+
+  try {
+    return {
+      displayName,
+      packageName: buildStoryPackageSlug(displayName),
+      importSummary: importResult.summary,
+      importPayload: importResult.payload,
+    };
+  } catch {
+    throw new StoryPackageScaffoldImportError(
+      'Text import requires an explicit display name or a valid weaver suggestion.',
+    );
+  }
+}
+
 export async function createStoryPackageScaffold(
   input: CreateStoryPackageScaffoldInput,
 ): Promise<CreateStoryPackageScaffoldResult> {
-  const displayName = input.displayName.trim();
   let packageName: string;
+  let displayName: string;
   let stageRoot: string | null = null;
+  let warnings: readonly string[] = [];
 
   try {
-    try {
-      packageName = buildStoryPackageSlug(displayName);
-    } catch {
-      throw new StoryPackageScaffoldInputError('Invalid story package display name.');
+    let importPayload: Awaited<ReturnType<typeof runWeaverImport>>['payload'] | null = null;
+    let importSummary: Awaited<ReturnType<typeof runWeaverImport>>['summary'] | null = null;
+
+    if (input.mode === 'text_import') {
+      const resolvedImport = await resolveTextImportPackageIdentity(input);
+      displayName = resolvedImport.displayName;
+      packageName = resolvedImport.packageName;
+      importPayload = resolvedImport.importPayload;
+      importSummary = resolvedImport.importSummary;
+      warnings = resolvedImport.importSummary.warnings;
+    } else {
+      const resolvedBlank = resolveBlankPackageIdentity(input);
+      displayName = resolvedBlank.displayName;
+      packageName = resolvedBlank.packageName;
     }
 
     await ensurePackageNameAvailable(packageName);
 
     const createdAt = new Date().toISOString();
-    const sceneSpec = createSceneSpec(displayName, packageName);
-    const phasePlans = createPhasePlans(sceneSpec);
-    const routerLexicon = createRouterLexicon(sceneSpec);
-    const auditQuestionSet = createAuditQuestionSet(sceneSpec);
-    const worldBase = createWorldBase(displayName);
-    const controlModules = createControlModules(sceneSpec);
-    const stateSnapshots = createStateSnapshots(sceneSpec);
+    let sceneSpec = createSceneSpec(displayName, packageName);
+    let worldBase = createWorldBase(displayName);
     const runtimeSessions = createRuntimeSessionsFile(createdAt);
     const activeSessionId = runtimeSessions.activeSessionId;
 
@@ -490,6 +602,24 @@ export async function createStoryPackageScaffold(
     const targetRoot = resolvePackageRoot(packageName);
 
     await fileSystem.mkdir(stageRootPath, { recursive: true });
+
+    if (input.mode === 'text_import' && importPayload) {
+      const seeded = applyTextImportSeed({
+        displayName,
+        sourceText: input.sourceText,
+        payload: importPayload,
+        worldBase,
+        sceneSpec,
+      });
+      worldBase = seeded.worldBase;
+      sceneSpec = seeded.sceneSpec;
+    }
+
+    const phasePlans = createPhasePlans(sceneSpec);
+    const routerLexicon = createRouterLexicon(sceneSpec);
+    const auditQuestionSet = createAuditQuestionSet(sceneSpec);
+    const controlModules = createControlModules(sceneSpec);
+    const stateSnapshots = createStateSnapshots(sceneSpec);
 
     await writeYamlDocument(path.resolve(stageRootPath, 'world-base.yaml'), worldBase);
     await writeYamlDocument(path.resolve(stageRootPath, 'scene.yaml'), sceneSpec);
@@ -508,6 +638,9 @@ export async function createStoryPackageScaffold(
       `${JSON.stringify(storylineRepository, null, 2)}\n`,
       'utf8',
     );
+    await writeBuiltInSidecarFiles(stageRootPath, {
+      importSummary: importSummary ?? undefined,
+    });
     await copyVariantManagedFiles(stageRootPath);
 
     await validateStagePackage(packageName, stageRootPath);
@@ -527,6 +660,7 @@ export async function createStoryPackageScaffold(
       packageName,
       activeStorylineId: DEFAULT_STORYLINE_ID,
       createdAt,
+      warnings,
     };
   } catch (error) {
     if (stageRoot) {

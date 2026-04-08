@@ -5,10 +5,12 @@ import YAML from 'yaml';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { loadStoryPackage } from '@/engine/story-loader';
+import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import { readStorylineRepository } from '@/storylines/repository';
 import * as runtimeSessionsRepository from '@/runtime-sessions/repository';
 import {
   StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldImportError,
   StoryPackageScaffoldInputError,
   StoryPackageScaffoldValidationError,
   StoryPackageScaffoldWriteError,
@@ -18,6 +20,12 @@ import type { StorylineRecord, StorylineRepositoryFile } from '@/types';
 const fileSystemFailureState = vi.hoisted(() => ({
   failRename: false,
   failMkdirStageRoot: false,
+}));
+
+const mockWeaverImport = vi.hoisted(() => vi.fn());
+
+vi.mock('@/agents/weaver/agent', () => ({
+  runWeaverImport: mockWeaverImport,
 }));
 
 vi.mock('node:fs/promises', async (importOriginal) => {
@@ -66,6 +74,7 @@ async function findStagedPackageRoots(slug: string): Promise<string[]> {
 afterEach(async () => {
   fileSystemFailureState.failRename = false;
   fileSystemFailureState.failMkdirStageRoot = false;
+  mockWeaverImport.mockReset();
   vi.restoreAllMocks();
   for (const packageRoot of createdPackageRoots) {
     await removeIfExists(packageRoot);
@@ -76,6 +85,67 @@ afterEach(async () => {
 async function loadCreateStoryPackageScaffold() {
   const scaffoldModule = await import('@/story-packages/scaffold');
   return scaffoldModule.createStoryPackageScaffold;
+}
+
+function createTextImportAdapter(): Pick<LLMAdapter, 'weaverImport'> {
+  return {
+    weaverImport: vi.fn(),
+  };
+}
+
+function createWeaverImportResult() {
+  return {
+    request: {
+      sourceText: '作者原始文本',
+      resolvedReferences: [],
+    },
+    payload: {
+      suggestedPackageName: 'woven-import-package',
+      sourceSummary: '外部文本来源摘要',
+      importSummary: '已提取世界观与角色框架',
+      openingHook: '模型改写后的 opening hook',
+      worldBase: {
+        settingSummary: '近未来沿海都市',
+        worldRules: '通讯塔网络支撑城市秩序。',
+        toneBaseline: '压抑而悬疑的都市气氛。',
+        npcCharactersSummary: '路人与技术人员都受到网络事故影响。',
+        locationPatch: '灯塔塔区与老城区需要长期拉扯。',
+      },
+      hero: {
+        displayName: '林深',
+        roleSummary: '被迫接管灯塔网络的主角',
+      },
+      coreCast: [
+        {
+          displayName: '周珂',
+          roleSummary: '负责追查事故源头的记者',
+        },
+      ],
+      antagonists: [],
+      npcCharacters: [],
+      locations: [
+        {
+          displayName: '灯塔塔区',
+          summary: '维持城市网络秩序的核心区域',
+        },
+      ],
+      warnings: ['角色关系只得到部分文本支持'],
+      unresolvedGaps: ['缺少明确的地点时间线'],
+    },
+    summary: {
+      schemaVersion: 1 as const,
+      sourceKind: 'text_import' as const,
+      lastRunAt: '2026-04-08T10:00:00.000Z',
+      suggestedPackageName: 'woven-import-package',
+      sourceSummary: '外部文本来源摘要',
+      importSummary: '已提取世界观与角色框架',
+      warnings: ['角色关系只得到部分文本支持'],
+      unresolvedGaps: ['缺少明确的地点时间线'],
+      warningCount: 1,
+      unresolvedGapCount: 1,
+      bootstrapStatus: 'pending' as const,
+    },
+  };
 }
 
 function requireMainStoryline(
@@ -99,6 +169,7 @@ describe('story package scaffold', () => {
 
     await expect(
       createStoryPackageScaffold({
+        mode: 'blank',
         displayName: 'CON',
       }),
     ).rejects.toBeInstanceOf(StoryPackageScaffoldInputError);
@@ -107,6 +178,7 @@ describe('story package scaffold', () => {
   it('creates an explicit Phase 3 package scaffold that validates through both loader and repositories', async () => {
     const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const result = await createStoryPackageScaffold({
+      mode: 'blank',
       displayName: '新故事包',
     });
 
@@ -116,7 +188,11 @@ describe('story package scaffold', () => {
     expect(result.packageName).toMatch(/[a-z0-9-]+/);
     expect(result.activeStorylineId).toBe('storyline_main');
     expect(result.createdAt).toEqual(expect.any(String));
+    expect(result.warnings).toEqual([]);
     await expect(access(path.resolve(packageRoot, 'variants/variant_main'))).resolves.toBeUndefined();
+    await expect(access(path.resolve(packageRoot, 'agents/gossipelog/config.yaml'))).resolves.toBeUndefined();
+    await expect(access(path.resolve(packageRoot, 'agents/weaver/config.yaml'))).resolves.toBeUndefined();
+    await expect(access(path.resolve(packageRoot, 'agents/weaver/import-summary.yaml'))).rejects.toThrow();
 
     await expect(loadStoryPackage(result.packageName)).resolves.toMatchObject({
       sceneSpec: expect.objectContaining({
@@ -163,6 +239,7 @@ describe('story package scaffold', () => {
 
     await expect(
       createStoryPackageScaffold({
+        mode: 'blank',
         displayName: path.basename(existingRoot).toLowerCase(),
       }),
     ).rejects.toBeInstanceOf(StoryPackageScaffoldConflictError);
@@ -185,6 +262,7 @@ describe('story package scaffold', () => {
 
     await expect(
       createStoryPackageScaffold({
+        mode: 'blank',
         displayName: 'broken package',
       }),
     ).rejects.toBeInstanceOf(StoryPackageScaffoldValidationError);
@@ -201,6 +279,7 @@ describe('story package scaffold', () => {
 
     await expect(
       createStoryPackageScaffold({
+        mode: 'blank',
         displayName: 'rename failure package',
       }),
     ).rejects.toBeInstanceOf(StoryPackageScaffoldWriteError);
@@ -215,6 +294,7 @@ describe('story package scaffold', () => {
 
     await expect(
       createStoryPackageScaffold({
+        mode: 'blank',
         displayName: 'mkdir failure package',
       }),
     ).rejects.toBeInstanceOf(StoryPackageScaffoldWriteError);
@@ -223,6 +303,7 @@ describe('story package scaffold', () => {
   it('preserves an explicit awaiting_start runtime session bound to storyline_main', async () => {
     const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
     const result = await createStoryPackageScaffold({
+      mode: 'blank',
       displayName: 'Awaiting Start Package',
     });
 
@@ -246,5 +327,146 @@ describe('story package scaffold', () => {
     expect(boundSessionId ? runtimeJson.sessionsById[boundSessionId]?.lifecycle : null).toBe(
       'awaiting_start',
     );
+  });
+
+  it('applies validated weaver seeds into the staged authored files before promotion', async () => {
+    mockWeaverImport.mockResolvedValueOnce(createWeaverImportResult());
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    const result = await createStoryPackageScaffold({
+      mode: 'text_import',
+      displayName: '',
+      sourceText: 'opening hook text',
+      adapter: createTextImportAdapter(),
+    });
+
+    const packageRoot = path.resolve(storyPackagesRoot, result.packageName);
+    createdPackageRoots.add(packageRoot);
+
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.toContain(
+      'openingHook: opening hook text',
+    );
+    await expect(readFile(path.resolve(packageRoot, 'world-base.yaml'), 'utf8')).resolves.toContain(
+      'worldBaseSetting: 近未来沿海都市',
+    );
+    await expect(access(path.resolve(packageRoot, 'agents/gossipelog/config.yaml'))).resolves.toBeUndefined();
+    await expect(access(path.resolve(packageRoot, 'agents/weaver/config.yaml'))).resolves.toBeUndefined();
+    await expect(
+      readFile(path.resolve(packageRoot, 'agents/weaver/import-summary.yaml'), 'utf8'),
+    ).resolves.toContain('sourceKind: text_import');
+    expect(result.warnings).toEqual(['角色关系只得到部分文本支持']);
+  });
+
+  it('projects imported cast and location ids into the resulting scene spec instead of keeping scaffold defaults', async () => {
+    const importResult = createWeaverImportResult();
+    mockWeaverImport.mockResolvedValueOnce({
+      ...importResult,
+      payload: {
+        ...importResult.payload,
+        antagonists: [
+          {
+            displayName: '祁夜',
+            roleSummary: '操控网络事故的地下策划者',
+          },
+        ],
+        locations: [
+          ...importResult.payload.locations,
+          {
+            displayName: '老城区中继站',
+            summary: '被废弃线路包围的旧中继设施',
+          },
+        ],
+      },
+    });
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    const result = await createStoryPackageScaffold({
+      mode: 'text_import',
+      displayName: '',
+      sourceText: 'opening hook text',
+      adapter: createTextImportAdapter(),
+    });
+
+    const packageRoot = path.resolve(storyPackagesRoot, result.packageName);
+    createdPackageRoots.add(packageRoot);
+
+    await expect(loadStoryPackage(result.packageName)).resolves.toMatchObject({
+      sceneSpec: {
+        cast: ['chr_core01', 'chr_ant01'],
+        locationIds: ['loc_a1b2c3', 'loc_000002'],
+      },
+    });
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.not.toContain(
+      "cast:\n  - chr_hero01\n  - chr_core01\nlocationIds:\n  - loc_a1b2c3",
+    );
+  });
+
+  it('preserves the original sourceText as scene openingHook even when weaver returns a rewritten openingHook', async () => {
+    const importResult = createWeaverImportResult();
+    mockWeaverImport.mockResolvedValueOnce({
+      ...importResult,
+      payload: {
+        ...importResult.payload,
+        openingHook: '模型改写后的 opening hook',
+      },
+    });
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    const result = await createStoryPackageScaffold({
+      mode: 'text_import',
+      displayName: '',
+      sourceText: '作者原始文本',
+      adapter: createTextImportAdapter(),
+    });
+
+    const packageRoot = path.resolve(storyPackagesRoot, result.packageName);
+    createdPackageRoots.add(packageRoot);
+
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.toContain(
+      'openingHook: 作者原始文本',
+    );
+  });
+
+  it('uses explicit author displayName before a weaver suggestion during text import', async () => {
+    mockWeaverImport.mockResolvedValueOnce(createWeaverImportResult());
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    const result = await createStoryPackageScaffold({
+      mode: 'text_import',
+      displayName: '作者命名',
+      sourceText: '作者原始文本',
+      adapter: createTextImportAdapter(),
+    });
+
+    const packageRoot = path.resolve(storyPackagesRoot, result.packageName);
+    createdPackageRoots.add(packageRoot);
+
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.toContain(
+      'sceneName: 作者命名',
+    );
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.not.toContain(
+      'sceneName: woven-import-package',
+    );
+  });
+
+  it('fails with a bounded import error when text import has neither author displayName nor a valid weaver suggestion', async () => {
+    const importResult = createWeaverImportResult();
+    mockWeaverImport.mockResolvedValueOnce({
+      ...importResult,
+      payload: {
+        ...importResult.payload,
+        suggestedPackageName: undefined,
+      },
+      summary: {
+        ...importResult.summary,
+        suggestedPackageName: undefined,
+      },
+    });
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+
+    await expect(
+      createStoryPackageScaffold({
+        mode: 'text_import',
+        displayName: '',
+        sourceText: '作者原始文本',
+        adapter: createTextImportAdapter(),
+      }),
+    ).rejects.toBeInstanceOf(StoryPackageScaffoldImportError);
   });
 });

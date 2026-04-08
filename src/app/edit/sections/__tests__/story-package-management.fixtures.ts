@@ -1,5 +1,8 @@
 import type { StoryPackageManagementWorkspaceView } from '@/types';
 
+export const textImportSourceFixture =
+  '夜色压住山城天台。主角拎着一台旧录音机，准备在暴雨前和失踪多年的姐姐留下的线索对话。';
+
 export const workspaceViewFixture: StoryPackageManagementWorkspaceView = {
   packages: [
     {

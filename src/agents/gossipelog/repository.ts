@@ -67,6 +67,24 @@ export async function loadCharacterRelationships(
   }
 }
 
+export async function inspectCharacterRelationshipsState(
+  packageName: string,
+): Promise<'readable' | 'missing' | 'unreadable'> {
+  await ensureStoryPackageExists(packageName);
+  const filePath = resolveCharacterRelationshipsPath(packageName);
+
+  try {
+    await readCharacterRelationshipsFile(filePath);
+    return 'readable';
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return 'missing';
+    }
+
+    return 'unreadable';
+  }
+}
+
 export async function loadOrCreateCharacterRelationships(
   packageName: string,
 ): Promise<CharacterRelationshipsFile> {

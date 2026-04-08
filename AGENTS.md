@@ -14,11 +14,23 @@ follow the checked-out repo and its current remote. The canonical working branch
 is `branch/narrative-editor`.
 
 The project has evolved from a pure runtime engine into a **dual-track system**:
-a Runtime Engine and a Narrative Editor (Authoring System). 
+a Runtime Engine and a Narrative Editor (Authoring System).
 Archived design/spec materials live under `archive/vendor/LOGOS-SPEC/` and `archive/docs/`.
 They are **reference records**, not a higher-priority bible than direct human
-instructions, current code, or current tests. 
+instructions, current code, or current tests.
 Active planning and design documents now live under `docs/superpowers/plans/` and `docs/superpowers/specs/`.
+
+## Workspace Navigation
+
+Keep this file focused on stable workspace rules and execution discipline.
+
+For detailed current structure, task routing, and concrete entry files, read:
+
+- [coding-agent-guide.md](coding-agent-guide.md)
+- `docs/codemaps/*.md`
+
+If a task needs historical context, read archive materials only after the current
+workspace docs above.
 
 ## Architecture
 
@@ -34,7 +46,7 @@ Core concepts: Scene > Phase (4 beats) > Beat (min generation unit)
 The editor runs a coordinator-first structured authoring loop:
 `Page Draft / Author Intent` → `Structured Save Request` → `Coordinator / Bridge` → `Deterministic Validation` → `Writeback` → `Reload` → `Diagnostics`
 
-**Key Redesign Principle:** The `Coordinator` is a narrow authoring coordinator role, not a first-class sidecar agent. It routes semantic intent, but file writing and validation are handled by a **deterministic code bridge** (`src/authoring/persistence/bridge.ts`). AI skills must **never** directly write to filesystem or bypass schema validation. The first true sidecar agent currently in the repo is `gossipelog agent`.
+**Key Redesign Principle:** The `Coordinator` is a narrow authoring coordinator role, not a first-class sidecar agent. It routes semantic intent, but file writing and validation are handled by a **deterministic code bridge** (`src/authoring/persistence/bridge.ts`). AI skills must **never** directly write to filesystem or bypass schema validation. `gossipelog agent` was the first true sidecar agent introduced in the repo, and the current built-in sidecar layer now includes both `gossipelog` and `weaver`.
 
 See `archive/docs/narrative-editor-redesign/master-record.md` for the current canonical authoring architecture.
 
@@ -68,7 +80,7 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 
 ### 6. Context Loading Discipline
 - **For Runtime tasks:** Load `archive/vendor/LOGOS-SPEC/04_MODULES/` and `src/engine/`.
-- **For Editor/Authoring tasks:** **Must** load `archive/docs/narrative-editor-redesign/master-record.md`, active `docs/superpowers/specs/`, and `src/authoring/`.
+- **For Editor/Authoring tasks:** **Must** load `archive/docs/narrative-editor-redesign/master-record.md`, active `docs/superpowers/specs/`, `coding-agent-guide.md`, and `src/authoring/`.
 - **For roadmap / multi-phase tasks:** Also load root `task_plan.md`, `findings.md`, and `progress.md` before proposing order changes or new implementation slices.
 - **For simulation or cloud-verification tasks:** Load `simulation-toolset/README.md`, `simulation-toolset/agent-guide.md`, and `simulation-toolset/docs/`.
 - Spec text budget: max 40,000 tokens per session.
@@ -85,6 +97,10 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - Dispatch instructions must explicitly tell the worker that it is a subagent, not the main thread.
 - Prefer giving the subagent a clean task brief, file boundary, and success criteria instead of forwarding raw main-thread conversation history.
 - Do not close a subagent just because a wait timed out. Before closing, first confirm its actual work status, current progress, latest conclusion, and whether keeping it alive still reduces risk or rework.
+- Decompose implementation work into bounded packets before dispatch.
+- Prefer one primary objective, one main module or surface area, and one verification path per packet.
+- Each dispatched packet should be small enough to stay well-scoped and verifiable in one pass.
+- If a packet grows across unrelated concerns, long execution chains, or multiple verification paths, split it again.
 - Each dispatch should clearly state:
   - whether the subagent is read-only review or write-authorized implementation
   - which files or modules it owns
@@ -94,19 +110,13 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 
 | What                                  | Where                                                             |
 | ------------------------------------- | ----------------------------------------------------------------- |
-| Active Implementation Plans           | `docs/superpowers/plans/`                                         |
-| Active Design Specs                   | `docs/superpowers/specs/`                                         |
-| Rolling roadmap / recovery log        | root `task_plan.md`, `findings.md`, `progress.md`                 |
-| Authoring Redesign Master Record      | `archive/docs/narrative-editor-redesign/master-record.md`         |
-| Branch transition guide               | `archive/docs/narrative-editor-branch.md`                         |
-| Archived spec root                    | `archive/vendor/LOGOS-SPEC/`                                      |
-| Contract schemas / Types              | `src/types/`                                                      |
-| Engine source (Runtime Loop)          | `src/engine/`                                                     |
-| Authoring source (Editor Loop)        | `src/authoring/` (persistence, sections, coordinator)             |
-| Next.js App (Pages & Components)      | `src/app/` (edit/, play/, components/)                            |
-| Story packages (Fixtures/Content)     | `src/story-packages/` and `/story-packages/`                      |
-| Simulation / cloud verification       | `simulation-toolset/` and `simulation-toolset/docs/`              |
-| Tests                                 | `src/**/__tests__/`, `src/**/*.test.*`                            |
+| Workspace recovery docs              | root `task_plan.md`, `findings.md`, `progress.md`                 |
+| Detailed task-routing guide          | `coding-agent-guide.md`                                           |
+| Active Implementation Plans          | `docs/superpowers/plans/`                                         |
+| Active Design Specs                  | `docs/superpowers/specs/`                                         |
+| Current code map                     | `docs/codemaps/`                                                  |
+| March Dev Update archive             | `archive/docs/dev-updates/march-dev-update/README.md`             |
+| Authoring Redesign Master Record     | `archive/docs/narrative-editor-redesign/master-record.md`         |
 
 ## System Mapping
 
@@ -117,7 +127,7 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 | `src/engine/api-adapter/`                          | LLM Provider adaptation                                    |
 | `src/authoring/persistence/bridge.ts`              | Deterministic save, validation, and writeback              |
 | `src/authoring/sections/*`                         | Section-specific data normalization and draft state        |
-| `src/app/edit/`                                    | Narrative Editor surfaces (`世界`, `角色`, `场景与阶段`, `控制模块`, `控制台`) |
+| `src/app/edit/`                                    | Narrative Editor surfaces (`故事包管理`, `世界`, `角色`, `场景与阶段`, `控制模块`, `agent 管理`) |
 | `src/app/play/`                                    | Play Workbench UI                                          |
 | `simulation-toolset/src/*`                         | Structured route, UI, and loop simulation for regression checks |
 | `src/types/*.ts`                                   | Shared Contracts (Zod schemas & TS types)                  |

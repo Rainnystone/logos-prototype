@@ -7,6 +7,8 @@ export abstract class StoryPackageScaffoldError extends Error {
 
 export class StoryPackageScaffoldInputError extends StoryPackageScaffoldError {}
 
+export class StoryPackageScaffoldImportError extends StoryPackageScaffoldError {}
+
 export class StoryPackageScaffoldConflictError extends StoryPackageScaffoldError {}
 
 export class StoryPackageScaffoldValidationError extends StoryPackageScaffoldError {}

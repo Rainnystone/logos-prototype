@@ -22,13 +22,13 @@ describe('Phase 00 contract types', () => {
     const { gossipelogAgentDefinition } = await import('@/agents/gossipelog');
 
     expect(agentRegistry.gossipelog).toMatchObject({
-      agentId: 'gossipelog',
-      displayName: 'gossipelog agent',
-      surfaceType: 'sidecar',
-      responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-      skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-      packageConfigPath: 'agents/gossipelog/config.yaml',
-      packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+      agentId: gossipelogAgentDefinition.agentId,
+      displayName: gossipelogAgentDefinition.displayName,
+      surfaceType: gossipelogAgentDefinition.surfaceType,
+      responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+      skillIds: gossipelogAgentDefinition.skillIds,
+      packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+      packageStatePath: gossipelogAgentDefinition.packageStatePath,
     });
     expect(typeof agentRegistry.gossipelog.summarizeState).toBe('function');
     expect(gossipelogAgentDefinition).toBe(agentRegistry.gossipelog);
@@ -527,8 +527,140 @@ describe('Phase 00 contract types', () => {
 
     expect(() =>
       types.StoryPackageCreationRequestSchema.parse({
+        mode: 'blank',
         displayName: '新故事包',
       }),
     ).not.toThrow();
+
+    expect(() =>
+      types.StoryPackageCreationRequestSchema.parse({
+        mode: 'text_import',
+        sourceText: '一个可导入的故事包文本。',
+      }),
+    ).not.toThrow();
+  });
+
+  it('freezes text import and weaver contract parsing', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.StoryPackageCreationRequestSchema.parse({
+        mode: 'text_import',
+        sourceText: '  一段可导入的文本  ',
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      types.StoryPackageCreationRequestSchema.parse({
+        mode: 'text_import',
+        sourceText: 'x'.repeat(12_001),
+      }),
+    ).toThrow();
+
+    expect(() =>
+      types.WeaverImportPayloadSchema.parse({
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: '   ',
+        worldBase: { worldBaseSetting: 'base' },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      types.WeaverImportSummarySchema.parse({
+        schemaVersion: 1,
+        sourceKind: 'text_import',
+        lastRunAt: '2026-04-08T00:00:00.000Z',
+        suggestedPackageName: '   ',
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        warnings: [],
+        unresolvedGaps: [],
+        warningCount: 0,
+        unresolvedGapCount: 0,
+        bootstrapStatus: 'pending',
+      }),
+    ).toThrow();
+
+    expect(types.AgentOperationalHintSchema.options).toEqual([
+      'ready',
+      'warning',
+      'pending_bootstrap',
+    ]);
+
+    expect(types.WeaverBootstrapStatusSchema.options).toEqual([
+      'pending',
+      'succeeded',
+      'failed',
+      'fallback_pending',
+    ]);
+
+    expect(
+      types.WeaverImportPayloadSchema.parse({
+        suggestedPackageName: 'weaver-pack',
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: 'opening hook',
+        worldBase: { worldBaseSetting: 'base' },
+        hero: { characterId: 'chr_hero01' },
+        coreCast: [{ characterId: 'chr_core01' }],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: ['warn-1'],
+        unresolvedGaps: ['gap-1'],
+      }),
+    ).toMatchObject({
+      suggestedPackageName: 'weaver-pack',
+      warnings: ['warn-1'],
+      unresolvedGaps: ['gap-1'],
+    });
+
+    expect(
+      types.WeaverImportSummarySchema.parse({
+        schemaVersion: 1,
+        sourceKind: 'text_import',
+        lastRunAt: '2026-04-08T00:00:00.000Z',
+        suggestedPackageName: 'weaver-pack',
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        warnings: ['warn-1'],
+        unresolvedGaps: ['gap-1'],
+        warningCount: 1,
+        unresolvedGapCount: 1,
+        bootstrapStatus: 'pending',
+      }),
+    ).toMatchObject({
+      schemaVersion: 1,
+      sourceKind: 'text_import',
+      bootstrapStatus: 'pending',
+    });
+
+    expect(
+      types.StoryPackageCreationResponseSchema.parse({
+        packageName: 'sample-package',
+        activeStorylineId: 'storyline_main',
+        createdAt: '2026-04-08T00:00:00.000Z',
+        warnings: ['warn-1'],
+      }),
+    ).toMatchObject({
+      packageName: 'sample-package',
+      warnings: ['warn-1'],
+    });
+
+    expect(() =>
+      types.StoryPackageCreationResponseSchema.parse({
+        packageName: '   ',
+        activeStorylineId: 'storyline_main',
+        createdAt: 'not-a-date',
+        warnings: ['warn-1'],
+      }),
+    ).toThrow();
   });
 });

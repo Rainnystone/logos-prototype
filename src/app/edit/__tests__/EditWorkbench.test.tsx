@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import { workspaceViewFixture } from '@/app/edit/sections/__tests__/story-package-management.fixtures';
+import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
 import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 const renderScenePhaseAuthoringSection = vi.hoisted(() => vi.fn());
@@ -29,6 +30,16 @@ vi.mock('@/app/edit/sections/ScenePhaseAuthoringSection', () => ({
   },
 }));
 
+const gossipelogAgentSurfaceFixture = {
+  agentId: gossipelogAgentDefinition.agentId,
+  displayName: gossipelogAgentDefinition.displayName,
+  responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+  skillIds: gossipelogAgentDefinition.skillIds,
+  skillDisplayMetadata: gossipelogAgentDefinition.skillDisplayMetadata,
+  packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+  packageStatePath: gossipelogAgentDefinition.packageStatePath,
+} as const;
+
 describe('EditWorkbench', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -36,12 +47,13 @@ describe('EditWorkbench', () => {
     renderStoryPackageManagementSection.mockReset();
   });
 
-  it('renders six tabs with story-package-management first while keeping 控制台 reachable', () => {
+  it('renders six tabs with story-package-management first while keeping agent 管理 reachable', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
         activeSection="story-package-management"
         activeSurface="world"
+        initialCreationMode="blank"
         storyPackageManagementView={workspaceViewFixture}
         initialState={{
           source: 'latest-saved',
@@ -73,7 +85,7 @@ describe('EditWorkbench', () => {
       'href',
       '/edit?storyPackage=sample-scene&section=control-modules',
     );
-    expect(screen.getByRole('link', { name: '控制台' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'agent 管理' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=package-wiring-validation',
     );
@@ -85,7 +97,7 @@ describe('EditWorkbench', () => {
       Array.from(screen.getByRole('navigation', { name: 'Editor sections' }).querySelectorAll('a')).map(
         (link) => link.textContent,
       ),
-    ).toEqual(['故事包管理', '世界', '角色', '场景与阶段', '控制模块', '控制台']);
+    ).toEqual(['故事包管理', '世界', '角色', '场景与阶段', '控制模块', 'agent 管理']);
     expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
@@ -104,6 +116,29 @@ describe('EditWorkbench', () => {
     expect(within(pageHelper).getByText('故事包管理')).toBeInTheDocument();
     expect(screen.getByTestId('story-package-management-section-mock')).toBeInTheDocument();
     expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
+      initialCreationMode: 'blank',
+      packageName: 'sample-scene',
+      view: workspaceViewFixture,
+    });
+  });
+
+  it('passes initial text-import creation mode through to story package management', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="story-package-management"
+        activeSurface="world"
+        initialCreationMode="text_import"
+        storyPackageManagementView={workspaceViewFixture}
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
+      initialCreationMode: 'text_import',
       packageName: 'sample-scene',
       view: workspaceViewFixture,
     });
@@ -958,7 +993,7 @@ describe('EditWorkbench', () => {
     expect(screen.queryByLabelText('Current page status')).not.toBeInTheDocument();
   });
 
-  it('renders sidecar-agent cards from the editor load payload on the diagnostics workspace', () => {
+  it('renders agent-management cards from the editor load payload on the diagnostics workspace', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
@@ -970,16 +1005,13 @@ describe('EditWorkbench', () => {
             state: storyPackageFixture,
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: '1 relationship link tracked in the latest state snapshot.',
                 latestStateSummary: {
                   statePresence: 'present',
                   lastUpdatedAt: '2026-04-02T08:00:00.000Z',
-                  statusLine: '1 relationship link tracked in the latest state snapshot.',
+                  statusLine: 'LEGACY_STATUS_LINE',
                 },
               },
             ],
@@ -988,9 +1020,12 @@ describe('EditWorkbench', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'sidecar agents' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
+    expect(screen.getByLabelText('sidecar-agent-surface')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gossipe Log' })).toBeInTheDocument();
     expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
+    expect(screen.getByText('当前状态：可用')).toBeInTheDocument();
+    expect(screen.getByText('在关系已经成立后，整理并更新当前的人际关系状态。')).toBeInTheDocument();
+    expect(screen.queryByText('LEGACY_STATUS_LINE')).not.toBeInTheDocument();
   });
 
   it('refreshes sidecar-agent cards together with diagnostics when rechecking the package', async () => {
@@ -1007,12 +1042,9 @@ describe('EditWorkbench', () => {
           ...refreshedDiagnostics,
           agentSurfaceItems: [
             {
-              agentId: 'gossipelog',
-              displayName: 'gossipelog agent',
-              responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-              skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-              packageConfigPath: 'agents/gossipelog/config.yaml',
-              packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+              ...gossipelogAgentSurfaceFixture,
+              operationalHintLabel: '当前状态：需要关注',
+              latestStateLine: 'State file is missing. No persisted sidecar state is available yet.',
               latestStateSummary: {
                 statePresence: 'missing',
                 statusLine:
@@ -1042,12 +1074,9 @@ describe('EditWorkbench', () => {
             state: storyPackageFixture,
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: '1 relationship link tracked in the latest state snapshot.',
                 latestStateSummary: {
                   statePresence: 'present',
                   lastUpdatedAt: '2026-04-02T08:00:00.000Z',
@@ -1096,12 +1125,9 @@ describe('EditWorkbench', () => {
             },
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：需要关注',
+                latestStateLine: 'REMOTE_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'missing',
                   statusLine: 'REMOTE_AGENT_SUMMARY',
@@ -1131,12 +1157,9 @@ describe('EditWorkbench', () => {
             state: storyPackageFixture,
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: 'INITIAL_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'present',
                   statusLine: 'INITIAL_AGENT_SUMMARY',
@@ -1184,12 +1207,9 @@ describe('EditWorkbench', () => {
             },
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：需要关注',
+                latestStateLine: 'REMOTE_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'missing',
                   statusLine: 'REMOTE_AGENT_SUMMARY',
@@ -1219,12 +1239,9 @@ describe('EditWorkbench', () => {
             state: storyPackageFixture,
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: 'INITIAL_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'present',
                   statusLine: 'INITIAL_AGENT_SUMMARY',
@@ -1249,7 +1266,7 @@ describe('EditWorkbench', () => {
     });
     expect(screen.queryByText('REMOTE_AGENT_SUMMARY')).not.toBeInTheDocument();
     expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '控制台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'agent 管理' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '重新检查' })).toBeInTheDocument();
   });
 

@@ -62,6 +62,12 @@ interface PendingRelationshipSync {
   settled: boolean;
 }
 
+interface GossipelogBootstrapResponse {
+  readonly status?: string;
+  readonly bootstrapStatus?: string;
+  readonly error?: string;
+}
+
 const EMPTY_RELATIONSHIP_SUMMARY: PlayRuntimeSessionView['relationshipSummary'] = {
   highlightedDeltasText: '',
   stableBackgroundText: '',
@@ -161,6 +167,34 @@ function buildFinalizedRuntimeSessionView(
       'session',
     ),
   };
+}
+
+async function bootstrapGossipelogBeforePlayInitialization(input: {
+  readonly storyPackageName: string;
+  readonly adapterConfig: AdapterConfig | null;
+}): Promise<GossipelogBootstrapResponse | null> {
+  if (!input.adapterConfig) {
+    return null;
+  }
+
+  try {
+    const response = await fetch('/api/play/gossipelog/bootstrap', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        storyPackageName: input.storyPackageName,
+        adapterConfig: input.adapterConfig,
+      }),
+    });
+
+    const responseBody = (await response.json().catch(() => null)) as GossipelogBootstrapResponse | null;
+
+    return response.ok ? responseBody : null;
+  } catch {
+    return null;
+  }
 }
 
 export function PlayWorkbench({
@@ -333,6 +367,17 @@ export function PlayWorkbench({
       }
 
       try {
+        if (adapterConfig) {
+          await bootstrapGossipelogBeforePlayInitialization({
+            storyPackageName,
+            adapterConfig,
+          });
+
+          if (cancelled) {
+            return;
+          }
+        }
+
         const baseAdapter = (adapterFactory ?? createWorkbenchAdapter)(adapterConfig, storyPackage);
         const trackedAdapter = createTrackedWorkbenchAdapter(
           baseAdapter,

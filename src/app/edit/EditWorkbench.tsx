@@ -39,6 +39,7 @@ import {
 import { StoryPackageManagementSection } from '@/app/edit/sections/StoryPackageManagementSection';
 import { isSuccessfulSaveResult } from '@/authoring/persistence/save-results';
 import type { StoryPackageManagementWorkspaceView } from '@/types';
+import type { StoryPackageCreationMode } from '@/app/edit/sections/StoryPackageCreationPanel';
 
 const SECTION_SUMMARIES: Record<
   EditorSectionId,
@@ -70,8 +71,8 @@ const SECTION_SUMMARIES: Record<
   },
   'package-wiring-validation': {
     eyebrow: '当前页',
-    title: '控制台',
-    description: '检查整包连线、健康状态和修复建议。',
+    title: 'agent 管理',
+    description: '查看内置 agent 的当前状态，并从这里回到故事包管理发起文本导入。',
   },
 };
 
@@ -84,9 +85,11 @@ interface EditWorkbenchProps {
   readonly packageName: string;
   readonly activeSection: EditorSectionId;
   readonly activeSurface: WorldbaseSurface;
+  readonly initialCreationMode?: StoryPackageCreationMode;
   readonly storyPackageManagementView?: StoryPackageManagementWorkspaceView;
   readonly renderStoryPackageManagementSection?: (input: {
     readonly packageName: string;
+    readonly initialCreationMode?: StoryPackageCreationMode;
     readonly view?: StoryPackageManagementWorkspaceView;
   }) => ReactNode;
   readonly initialState: AuthoringStateLoadResult;
@@ -161,13 +164,21 @@ function SectionSurface({
 
 function renderDefaultStoryPackageManagementSection({
   packageName,
+  initialCreationMode,
   view,
 }: {
   readonly packageName: string;
+  readonly initialCreationMode?: StoryPackageCreationMode;
   readonly view?: StoryPackageManagementWorkspaceView;
 }) {
   if (view) {
-    return <StoryPackageManagementSection packageName={packageName} view={view} />;
+    return (
+      <StoryPackageManagementSection
+        packageName={packageName}
+        view={view}
+        {...(initialCreationMode ? { initialCreationMode } : {})}
+      />
+    );
   }
 
   return (
@@ -199,6 +210,7 @@ export function EditWorkbench({
   packageName,
   activeSection,
   activeSurface,
+  initialCreationMode = 'blank',
   storyPackageManagementView,
   renderStoryPackageManagementSection,
   initialState,
@@ -278,6 +290,7 @@ export function EditWorkbench({
   const activeCoordinatorPathFailure = coordinatorPathFailures[activeSection] ?? false;
   const storyPackageManagementSection = (renderStoryPackageManagementSection ??
     renderDefaultStoryPackageManagementSection)({
+    initialCreationMode,
     packageName,
     ...(storyPackageManagementView ? { view: storyPackageManagementView } : {}),
   });

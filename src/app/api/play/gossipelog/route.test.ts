@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
 
@@ -99,6 +99,13 @@ vi.mock('@/agents/gossipelog/agent', () => ({
 }));
 
 describe('POST play gossipelog route', () => {
+  beforeEach(() => {
+    loadRuntimeStoryPackage.mockClear();
+    createAPIAdapter.mockClear();
+    createWorkbenchDemoAdapter.mockClear();
+    runGossipelogCycle.mockClear();
+  });
+
   it('loads the runtime package and runs the server-side cycle with the configured adapter', async () => {
     const { POST } = await import('@/app/api/play/gossipelog/route');
     const adapterConfig = {
@@ -155,5 +162,45 @@ describe('POST play gossipelog route', () => {
         stableBackgroundText: 'background',
       },
     });
+  });
+
+  it('falls back to the demo adapter when adapterConfig is absent or invalid', async () => {
+    const { POST } = await import('@/app/api/play/gossipelog/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          storyPackageName: 'sample-scene',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              model: 'demo-model',
+            },
+          },
+          acceptedBeatText: 'Accepted beat text',
+          roundId: 'round-2',
+        }),
+      }),
+    );
+
+    expect(createAPIAdapter).not.toHaveBeenCalled();
+    expect(createWorkbenchDemoAdapter).toHaveBeenCalledTimes(1);
+    expect(runGossipelogCycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adapter: expect.objectContaining({
+          gossipelogUpdate: expect.any(Function),
+          gossipelogInjection: expect.any(Function),
+        }),
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+      }),
+    );
+    expect(response.status).toBe(200);
   });
 });

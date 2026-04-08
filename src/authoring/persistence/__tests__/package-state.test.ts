@@ -4,6 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { gossipelogAgentDefinition } from '@/agents/gossipelog';
 import { loadAuthoringState, resolveAuthoringStatePath, writeAuthoringState } from '@/authoring/persistence/package-state';
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import { loadStoryPackage } from '@/engine/story-loader';
@@ -509,11 +510,11 @@ describe('loadAuthoringState', () => {
     );
 
     expect(gossipelogSurface).toMatchObject({
-      agentId: 'gossipelog',
-      displayName: 'gossipelog agent',
-      responsibilitySummary: expect.stringMatching(/relationship/i),
-      packageConfigPath: 'agents/gossipelog/config.yaml',
-      packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+      agentId: gossipelogAgentDefinition.agentId,
+      displayName: gossipelogAgentDefinition.displayName,
+      responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+      packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+      packageStatePath: gossipelogAgentDefinition.packageStatePath,
       latestStateSummary: expect.objectContaining({
         statePresence: 'present',
         statusLine: expect.stringMatching(/relationship/i),
@@ -523,26 +524,34 @@ describe('loadAuthoringState', () => {
     expect(gossipelogSurface?.latestStateSummary.statusLine).not.toContain('relationshipsBySource');
   });
 
-  it('hides sidecar-agent cards when the package has no matching sidecar config', async () => {
+  it('keeps built-in sidecar cards visible when gossipelog config is missing', async () => {
     prepareTestPackage();
     rmSync(gossipelogConfigPath, { force: true });
 
     const result = await loadAuthoringState(testPackageName, {
       includeAgentSurfaceItems: true,
     });
+    const gossipelogSurface = (result.agentSurfaceItems ?? []).find(
+      (item) => item.agentId === 'gossipelog',
+    );
 
-    expect(result.agentSurfaceItems ?? []).toHaveLength(0);
+    expect(gossipelogSurface?.operationalHint).toBe('warning');
+    expect(gossipelogSurface?.latestStateLine).toEqual(expect.any(String));
   });
 
-  it('hides sidecar-agent cards when the sidecar config is explicitly disabled', async () => {
+  it('treats enabled false on gossipelog config as a warning instead of hiding the card', async () => {
     prepareTestPackage();
     writeFileSync(gossipelogConfigPath, 'agentId: gossipelog\nenabled: false\n', 'utf8');
 
     const result = await loadAuthoringState(testPackageName, {
       includeAgentSurfaceItems: true,
     });
+    const gossipelogSurface = (result.agentSurfaceItems ?? []).find(
+      (item) => item.agentId === 'gossipelog',
+    );
 
-    expect(result.agentSurfaceItems ?? []).toHaveLength(0);
+    expect(gossipelogSurface?.operationalHint).toBe('warning');
+    expect(gossipelogSurface?.latestStateLine).toEqual(expect.any(String));
   });
 
   it('reports missing sidecar state when sidecar config is enabled but state file is absent', async () => {
@@ -559,7 +568,7 @@ describe('loadAuthoringState', () => {
 
     expect(gossipelogSurface?.latestStateSummary).toMatchObject({
       statePresence: 'missing',
-      statusLine: expect.stringMatching(/missing/i),
+      statusLine: expect.stringMatching(/relationship state|bootstrap|fallback/i),
     });
     expect(gossipelogSurface?.latestStateSummary.lastUpdatedAt).toBeUndefined();
   });
@@ -599,5 +608,43 @@ describe('loadAuthoringState', () => {
       statePresence: 'unreadable',
       statusLine: expect.stringMatching(/config/i),
     });
+  });
+
+  it('surfaces pending bootstrap for gossipelog when a weaver import summary exists but relationship state is missing', async () => {
+    prepareTestPackage();
+    mkdirSync(path.resolve(testPackagePath, 'agents/weaver'), { recursive: true });
+    writeFileSync(
+      path.resolve(testPackagePath, 'agents/weaver/config.yaml'),
+      'agentId: weaver\nenabled: true\n',
+      'utf8',
+    );
+    writeFileSync(
+      path.resolve(testPackagePath, 'agents/weaver/import-summary.yaml'),
+      YAML.stringify({
+        schemaVersion: 1,
+        sourceKind: 'text_import',
+        lastRunAt: '2026-04-08T00:00:00.000Z',
+        suggestedPackageName: 'imported-package',
+        sourceSummary: 'import source summary',
+        importSummary: 'import summary ready for bootstrap',
+        warnings: [],
+        unresolvedGaps: [],
+        warningCount: 0,
+        unresolvedGapCount: 0,
+        bootstrapStatus: 'succeeded',
+      }),
+      'utf8',
+    );
+    rmSync(gossipelogStatePath, { force: true });
+
+    const result = await loadAuthoringState(testPackageName, {
+      includeAgentSurfaceItems: true,
+    });
+    const gossipelogSurface = (result.agentSurfaceItems ?? []).find(
+      (item) => item.agentId === 'gossipelog',
+    );
+
+    expect(gossipelogSurface?.operationalHint).toBe('pending_bootstrap');
+    expect(gossipelogSurface?.latestStateLine).toEqual(expect.any(String));
   });
 });

@@ -10,6 +10,7 @@ import {
   samplePromptObject,
   sampleRouteRequest,
   sampleSettlementRequest,
+  sampleWeaverImportRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
 import { DEFAULT_MODE_CONFIGS } from '@/engine/api-adapter/schema-mapper';
 import {
@@ -55,6 +56,7 @@ describe('api adapter', () => {
       settlement: expect.any(Function),
       gossipelogUpdate: expect.any(Function),
       gossipelogInjection: expect.any(Function),
+      weaverImport: expect.any(Function),
     });
   });
 
@@ -763,6 +765,70 @@ describe('api adapter', () => {
     });
   });
 
+  it('honors weaverImport defaults and config overrides on the adapter path', async () => {
+    const observedBodies: Record<string, unknown>[] = [];
+    const fetchMock = vi.fn(async (_input, init?: RequestInit) => {
+      if (init?.body && typeof init.body === 'string') {
+        observedBodies.push(JSON.parse(init.body) as Record<string, unknown>);
+      }
+
+      return createOpenAIResponse({
+        suggestedPackageName: 'woven-package',
+        sourceSummary: '外部文本来源摘要',
+        importSummary: '已提取基础世界观与角色框架',
+        openingHook: '原始 opening hook 文本',
+        worldBase: {
+          settingSummary: '近未来沿海都市',
+        },
+        hero: {
+          displayName: '林深',
+          roleSummary: '被迫接管灯塔网络的主角',
+        },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const defaultAdapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+    const overrideAdapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+      weaverImportConfig: {
+        temperature: 0.61,
+        maxOutputTokens: 3456,
+      },
+    });
+
+    await defaultAdapter.weaverImport!(sampleWeaverImportRequest);
+    await overrideAdapter.weaverImport!(sampleWeaverImportRequest);
+
+    expect(observedBodies[0]).toMatchObject({
+      temperature: DEFAULT_MODE_CONFIGS.weaverImport.temperature,
+      max_tokens: DEFAULT_MODE_CONFIGS.weaverImport.maxOutputTokens,
+    });
+    expect(observedBodies[1]).toMatchObject({
+      temperature: 0.61,
+      max_tokens: 3456,
+    });
+  });
+
   it('rejects gossipelogUpdate responses that include a baseline when replaceBaseline is false', async () => {
     vi.stubGlobal(
       'fetch',
@@ -802,5 +868,86 @@ describe('api adapter', () => {
     await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).rejects.toThrow(
       /gossipelogUpdateResult/i,
     );
+  });
+
+  it('weaverImport rejects invalid input before provider execution', async () => {
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await expect(
+      adapter.weaverImport!({
+        sourceText: '一段外部作者文本',
+      } as never),
+    ).rejects.toThrow(/weaverImportRequest/i);
+  });
+
+  it('weaverImport returns a frozen validated payload', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        createOpenAIResponse({
+          suggestedPackageName: 'woven-package',
+          sourceSummary: '外部文本来源摘要',
+          importSummary: '已提取基础世界观与角色框架',
+          openingHook: '原始 opening hook 文本',
+          worldBase: {
+            settingSummary: '近未来沿海都市',
+          },
+          hero: {
+            displayName: '林深',
+            roleSummary: '被迫接管灯塔网络的主角',
+          },
+          coreCast: [],
+          antagonists: [],
+          npcCharacters: [],
+          locations: [],
+          warnings: ['角色关系只得到部分文本支持'],
+          unresolvedGaps: ['缺少明确的地点时间线'],
+        }),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const result = await adapter.weaverImport!(sampleWeaverImportRequest);
+
+    expect(result).toEqual({
+      suggestedPackageName: 'woven-package',
+      sourceSummary: '外部文本来源摘要',
+      importSummary: '已提取基础世界观与角色框架',
+      openingHook: '原始 opening hook 文本',
+      worldBase: {
+        settingSummary: '近未来沿海都市',
+      },
+      hero: {
+        displayName: '林深',
+        roleSummary: '被迫接管灯塔网络的主角',
+      },
+      coreCast: [],
+      antagonists: [],
+      npcCharacters: [],
+      locations: [],
+      warnings: ['角色关系只得到部分文本支持'],
+      unresolvedGaps: ['缺少明确的地点时间线'],
+      usage: {
+        promptTokens: 11,
+        completionTokens: 7,
+        totalTokens: 18,
+      },
+    });
+    expect(Object.isFrozen(result)).toBe(true);
   });
 });

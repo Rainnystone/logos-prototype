@@ -2,12 +2,23 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
-import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 import { AgentSurfacePanel } from '@/app/edit/sections/AgentSurfacePanel';
 import { PackageWiringValidationSection } from '@/app/edit/sections/PackageWiringValidationSection';
+import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
+import { buildPackageDiagnostics } from '@/authoring/sections/package-diagnostics';
 
 describe('PackageWiringValidationSection', () => {
-  it('renders package-wide health with unresolved issue details', () => {
+  const gossipelogAgentSurfaceItem = {
+    agentId: gossipelogAgentDefinition.agentId,
+    displayName: gossipelogAgentDefinition.displayName,
+    responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+    skillIds: gossipelogAgentDefinition.skillIds,
+    skillDisplayMetadata: gossipelogAgentDefinition.skillDisplayMetadata,
+    packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+    packageStatePath: gossipelogAgentDefinition.packageStatePath,
+  } as const;
+
+  it('renders agent 管理 as the primary surface and keeps diagnostics in a bounded status area', () => {
     const diagnostics = buildPackageDiagnostics({
       packageName: 'sample-scene',
       source: 'latest-saved',
@@ -28,100 +39,116 @@ describe('PackageWiringValidationSection', () => {
         },
       ],
     });
-
     const onRefresh = vi.fn();
-    const agentSurfaceItems = [
-      {
-        agentId: 'gossipelog',
-        displayName: 'gossipelog agent',
-        responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-        skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-        packageConfigPath: 'agents/gossipelog/config.yaml',
-        packageStatePath: 'agents/gossipelog/character-relationships.yaml',
-        latestStateSummary: {
-          statePresence: 'present' as const,
-          lastUpdatedAt: '2026-04-02T08:00:00.000Z',
-          statusLine: '1 relationship link tracked in the latest state snapshot.',
-        },
-      },
-    ];
 
     render(
       <PackageWiringValidationSection
         packageName="sample-scene"
         diagnostics={diagnostics}
-        agentSurfaceItems={agentSurfaceItems}
+        agentSurfaceItems={[
+          {
+            agentId: 'weaver',
+            displayName: 'Weaver',
+            responsibilitySummary: '负责把外部作者文本抽取为可导入的结构化启动摘要，并维护导入状态。',
+            skillIds: ['weaver-import-skill'],
+            skillDisplayMetadata: [
+              {
+                skillId: 'weaver-import-skill',
+                displayName: 'Weaver Import',
+                description: '把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。',
+              },
+            ],
+            packageConfigPath: 'agents/weaver/config.yaml',
+            packageStatePath: 'agents/weaver/import-summary.yaml',
+            operationalHint: 'warning',
+            operationalHintLabel: '当前状态：需要关注',
+            latestStateLine: '导入摘要存在 2 条待处理提示。',
+            latestStateSummary: {
+              statePresence: 'present' as const,
+              lastUpdatedAt: '2026-04-08T08:00:00.000Z',
+              statusLine: 'LEGACY_WEAVER_STATE',
+            },
+          },
+          {
+            ...gossipelogAgentSurfaceItem,
+            operationalHint: 'ready',
+            operationalHintLabel: '当前状态：可用',
+            latestStateLine: '最近一次关系状态已同步完成。',
+            latestStateSummary: {
+              statePresence: 'present' as const,
+              lastUpdatedAt: '2026-04-02T08:00:00.000Z',
+              statusLine: 'LEGACY_GOSSIPELOG_STATE',
+            },
+          },
+        ]}
         onRefresh={onRefresh}
       />,
     );
 
-    expect(screen.getByRole('region', { name: '整体状态' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: '当前详情' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '控制台' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'sidecar agents' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
-    expect(screen.getByText('Tracks persisted relationship state after accepted beats.')).toBeInTheDocument();
-    expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '控制模块 保存出现警告' })).toBeInTheDocument();
-    expect(screen.getAllByText('1 个警告需要跟进。').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /控制模块 保存出现警告/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/作者状态标记写入失败/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'agent 管理' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '控制台' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('agent-management-status')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '当前详情' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Weaver' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gossipe Log' })).toBeInTheDocument();
+    expect(screen.getByText('导入摘要存在 2 条待处理提示。')).toBeInTheDocument();
+    expect(screen.getByText('最近一次关系状态已同步完成。')).toBeInTheDocument();
+    expect(screen.getByText('当前状态：需要关注')).toBeInTheDocument();
+    expect(screen.getByText('当前状态：可用')).toBeInTheDocument();
+    expect(screen.getByText('负责把外部作者文本抽取为可导入的结构化启动摘要，并维护导入状态。')).toBeInTheDocument();
+    expect(screen.getByText('整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。')).toBeInTheDocument();
+    expect(screen.getByText('把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。')).toBeInTheDocument();
+    expect(screen.getByText('在关系已经成立后，整理并更新当前的人际关系状态。')).toBeInTheDocument();
+    expect(screen.getByText('把整理好的关系背景注入下一轮生成，保持后续内容沿用同一套关系依据。')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '回到故事包管理并使用文本导入' })).toHaveAttribute(
+      'href',
+      '/edit?storyPackage=sample-scene&section=story-package-management&creationMode=text_import',
+    );
+    expect(screen.getAllByRole('link', { name: '回到故事包管理并使用文本导入' })).toHaveLength(1);
+    expect(screen.getByText('1 个警告需要跟进。')).toBeInTheDocument();
+    expect(screen.getByText(/作者状态标记写入失败/)).toBeInTheDocument();
+    expect(screen.queryByText('skill ids')).not.toBeInTheDocument();
+    expect(screen.queryByText('config path')).not.toBeInTheDocument();
+    expect(screen.queryByText('state path')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /重新检查/i }));
     expect(onRefresh).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByRole('button', { name: /整包重新加载 healthy/i }));
-    expect(screen.getByRole('heading', { name: '整包重新加载' })).toBeInTheDocument();
   });
 
-  it('does not render raw yaml/tree details inside the read-only agent panel', () => {
-    const items = [
-      {
-        agentId: 'gossipelog',
-        displayName: 'gossipelog agent',
-        responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-        skillIds: ['relationship-update-skill'],
-        packageConfigPath: 'agents/gossipelog/config.yaml',
-        packageStatePath: 'agents/gossipelog/character-relationships.yaml',
-        latestStateSummary: {
-          statePresence: 'present' as const,
-          lastUpdatedAt: '2026-04-02T08:00:00.000Z',
-          statusLine: 'relationshipsBySource: chr_core01 -> chr_hero01',
-        },
-      },
-    ];
+  it('renders loader-produced latestStateLine directly instead of falling back to legacy statusLine text', () => {
+    render(
+      <AgentSurfacePanel
+        packageName="sample-scene"
+        items={[
+          {
+            agentId: 'weaver',
+            displayName: 'Weaver',
+            responsibilitySummary: '负责把外部作者文本抽取为可导入的结构化启动摘要，并维护导入状态。',
+            skillIds: ['weaver-import-skill'],
+            skillDisplayMetadata: [
+              {
+                skillId: 'weaver-import-skill',
+                displayName: 'Weaver Import',
+                description: '把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。',
+              },
+            ],
+            packageConfigPath: 'agents/weaver/config.yaml',
+            packageStatePath: 'agents/weaver/import-summary.yaml',
+            operationalHint: 'pending_bootstrap',
+            operationalHintLabel: '当前状态：等待初始化',
+            latestStateLine: 'LOADER_PRODUCED_STATE_LINE',
+            latestStateSummary: {
+              statePresence: 'missing' as const,
+              statusLine: 'LEGACY_STATUS_LINE',
+            },
+          },
+        ]}
+      />,
+    );
 
-    render(<AgentSurfacePanel items={items} />);
-
-    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
-    expect(screen.queryByText(/relationshipsBySource/i)).not.toBeInTheDocument();
-  });
-
-  it('falls back to bounded text for suspicious structured status lines outside the known raw-token list', () => {
-    const items = [
-      {
-        agentId: 'gossipelog',
-        displayName: 'gossipelog agent',
-        responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
-        skillIds: ['relationship-update-skill'],
-        packageConfigPath: 'agents/gossipelog/config.yaml',
-        packageStatePath: 'agents/gossipelog/character-relationships.yaml',
-        latestStateSummary: {
-          statePresence: 'present' as const,
-          lastUpdatedAt: '2026-04-02T08:00:00.000Z',
-          statusLine:
-            'graphRoot:{nodes:[{id:node_01,parent:node_00}],edges:[{from:node_00,to:node_01}]}',
-        },
-      },
-    ];
-
-    render(<AgentSurfacePanel items={items} />);
-
-    expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
-    expect(
-      screen.getByText('State summary is intentionally bounded for this read-only surface.'),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/node_01/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/graphRoot/i)).not.toBeInTheDocument();
+    expect(screen.getByText('LOADER_PRODUCED_STATE_LINE')).toBeInTheDocument();
+    expect(screen.queryByText('LEGACY_STATUS_LINE')).not.toBeInTheDocument();
+    expect(screen.getByText('当前状态：等待初始化')).toBeInTheDocument();
   });
 });

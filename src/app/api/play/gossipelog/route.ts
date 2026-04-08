@@ -1,41 +1,14 @@
 import { NextResponse } from 'next/server';
 
+import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
-import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-interface';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
 import type { GossipelogInjectionResult } from '@/types';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function parseAdapterConfig(value: unknown): AdapterConfig | null {
-  if (!isPlainObject(value)) {
-    return null;
-  }
-
-  const providerConfig = value.providerConfig;
-
-  if (
-    (value.provider !== 'anthropic' && value.provider !== 'openai-compatible') ||
-    !isPlainObject(providerConfig) ||
-    typeof providerConfig.apiKey !== 'string' ||
-    typeof providerConfig.baseUrl !== 'string' ||
-    typeof providerConfig.model !== 'string'
-  ) {
-    return null;
-  }
-
-  return {
-    provider: value.provider,
-    providerConfig: {
-      apiKey: providerConfig.apiKey,
-      baseUrl: providerConfig.baseUrl,
-      model: providerConfig.model,
-    },
-  };
 }
 
 function parseRelationshipLayer(value: unknown): GossipelogInjectionResult | undefined {
