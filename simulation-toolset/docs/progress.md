@@ -239,3 +239,33 @@ npm run type-check:simulation → passed
   - **Documentation Discipline** — 明确文档独立维护路径，严禁修改根目录规划文件
   - **Design Philosophy** — 阐述设计宗旨（云端 Codex、无互联网/浏览器依赖）和五大核心原则
 - 此规则强化是为了防止后续再次误修改根目录文档
+
+---
+
+## 2026-04-08 Phase 8: Weaver Agent & Agent Management Simulation
+
+### 设计阶段
+
+- 完成 Phase 8 设计，覆盖 Phase 4（PR #9）引入的全部新特性
+- 设计文档：`simulation-toolset/docs/2026-04-08-phase8-weaver-agent-simulation-design.md`
+- 架构决策：混合分层方案（方案 C）
+- 已更新三文件（task_plan, findings, progress）
+
+### 覆盖范围
+
+- 泛化 SimulationAgentTraceSchema（通用 base + details bag）
+- 新增 weaver-observer.ts、weaver-sidecar-trace.ts、bootstrap-observer.ts
+- 扩展 ScriptedAdapter 支持 weaver import 模式
+- 扩展 UI smoke 覆盖 agent management surface
+- 新增 import seed route smoke
+- 新增 4 个场景（S7-S10）
+
+### 当前进度
+
+- [x] 设计完成并写入 spec
+- [x] 三文件更新
+- [ ] Spec review（后台 agent 运行中）
+- [ ] Spec 用户审批
+- [ ] Implementation plan
+- [ ] Slice 1-11 实现
+- [ ] 全量回归验证

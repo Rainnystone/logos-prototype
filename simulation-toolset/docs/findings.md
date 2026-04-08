@@ -247,3 +247,47 @@ interface MockClock {
 - 测试应使用 `frozen` 或 `controlled` 模式确保确定性
 - 生产代码默认使用 `real` 模式（向后兼容）
 - 时间推进测试（超时、延迟）可使用 `controlled` 模式
+
+## 2026-04-08 Phase 8 Weaver Agent Simulation Gap Analysis
+
+### 关键差距
+
+Phase 4（PR #9）引入了 5+ 新子系统，toolset 完全没有覆盖：
+1. Weaver import cycle — 文本导入 sidecar
+2. Shared reference loading — sidecar 引用加载
+3. Agent registry — built-in sidecar 注册
+4. Agent management surface — agent 管理 UI
+5. Gossipelog bootstrap — 从 weaver summary 初始化
+6. Import seed mapping — weaver payload → package 文件映射
+
+### 架构决策
+
+- 采用混合分层方案（方案 C）：每个子系统用最适合的覆盖方式
+- 真实 boundary 走 observer + route smoke
+- Mock 场景走 ScriptedAdapter 扩展
+- Agent surface 走 UI smoke
+- Reference loading 不单独 mock（间接通过 weaver boundary 覆盖）
+- Import seed 走直接单元验证
+
+### Trace Schema 迁移决策
+
+- 当前 `SimulationAgentTraceSchema` 绑死了 gossipelog 字段
+- 需要泛化为通用 base + `details` bag
+- 删除 gossipelog-specific 顶层字段，迁移到 `details`
+- Bump `SIMULATION_SCHEMA_VERSION` 1 → 2
+- 现有 gossipelog observer 继续工作，只是字段位置变化
+
+### 新增 Observer 决策
+
+- `weaver-observer.ts` 镜像 `gossipelog-observer.ts` 的结构
+- `weaver-sidecar-trace.ts` 镜像 `sidecar-trace.ts` 的结构
+- `bootstrap-observer.ts` 消费 `bootstrapGossipelogFromWeaverSummary()` 真实 boundary
+- 所有 observer 返回统一的 `SimulationAgentTrace`
+
+### Scenario 覆盖决策
+
+- 4 个新场景覆盖 import 和 bootstrap 的主路径与异常路径
+- S7 (happy path) + S9 (partial/warnings) 覆盖 weaver import
+- S8 (bootstrap success) + S10 (bootstrap fallback) 覆盖 gossipelog bootstrap
+- 所有场景使用 ScriptedAdapter 避免真实 LLM 调用
+- 所有场景通过 temp package 隔离

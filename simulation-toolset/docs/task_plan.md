@@ -31,7 +31,8 @@
 | 10 | complete | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
 | 11 | complete | 完成 Phase 6：Storyline Mock & E2E Flow（覆盖 Phase 3 Part 1/2 storyline capabilities） |
 | 12 | complete | 完成 Phase 7：统一 Mock 时钟（解决时间戳精度问题，实现确定性测试） |
-| 13 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
+| 13 | in_progress | 完成 Phase 8：Weaver Agent & Agent Management Simulation（覆盖 Phase 4 产品特性） |
+| 14 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
 
 ## Phase 4 Scope
 
@@ -219,3 +220,54 @@
 - [x] 所有现有测试通过 (380 tests)
 - [x] 类型检查通过
 - [x] 多次运行验证稳定性
+
+## Phase 8: Weaver Agent & Agent Management Simulation (2026-04-08)
+
+### 问题
+
+Phase 4（PR #9）引入了 weaver text-import sidecar、shared reference loading、agent registry、agent management surface、gossipelog bootstrap、import seed mapping，simulation-toolset 当前完全没有覆盖。
+
+### 设计
+
+- 设计文档：`simulation-toolset/docs/2026-04-08-phase8-weaver-agent-simulation-design.md`
+- 架构方案：混合分层（方案 C）
+  - 真实 boundary 走 observer + route smoke
+  - Mock 场景走 ScriptedAdapter 扩展
+  - Agent surface 走 UI smoke
+  - Import seed 走直接验证
+
+### 覆盖范围
+
+- Weaver import cycle observer
+- Weaver sidecar trace normalization
+- Gossipelog bootstrap observer
+- ScriptedAdapter weaver 模式扩展
+- Agent surface UI smoke
+- Import seed route smoke
+- 4 个新场景（S7-S10）
+
+### Execution Slices
+
+- [ ] Slice 1: 泛化 SimulationAgentTraceSchema（add details, bump version）
+- [ ] Slice 2: 迁移 gossipelog trace 到 details bag
+- [ ] Slice 3: 实现 weaver-sidecar-trace.ts
+- [ ] Slice 4: 实现 weaver-observer.ts
+- [ ] Slice 5: 实现 bootstrap-observer.ts
+- [ ] Slice 6: 扩展 ScriptedAdapter with weaver modes
+- [ ] Slice 7: 添加 import seed route smoke
+- [ ] Slice 8: 扩展 UI smoke for agent surface
+- [ ] Slice 9: 实现 S7 + S9 (weaver scenarios)
+- [ ] Slice 10: 实现 S8 + S10 (bootstrap scenarios)
+- [ ] Slice 11: 更新 manifest, README, 三文件, 全量回归
+
+### Done Criteria
+
+- [ ] 4 个新场景测试通过
+- [ ] Import seed route smoke 通过
+- [ ] Agent surface UI smoke 通过
+- [ ] 现有测试不受影响（trace 迁移向后兼容）
+- [ ] `npm run test:simulation` 通过
+- [ ] `npm run type-check:simulation` 通过
+- [ ] 跨边界回归通过
+- [ ] 不修改 product 代码
+- [ ] 所有场景 story-agnostic
