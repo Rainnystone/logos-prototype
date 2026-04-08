@@ -1,0 +1,954 @@
+{
+  "version": 1,
+  "activeSessionId": "sess_mnq99olt_2",
+  "sessionsById": {
+    "sess_mnq7w0t6_1": {
+      "sessionId": "sess_mnq7w0t6_1",
+      "lifecycle": "in_progress",
+      "createdAt": "2026-04-08T15:42:55.770Z",
+      "updatedAt": "2026-04-08T16:19:22.301Z",
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "activeCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "orderedCheckpointIds": [
+        "chk-session-mnq7w15x-myy3smir-0001",
+        "chk-session-mnq815pm-jrz6do5h-0002",
+        "chk-session-mnq8jcyl-6e07aza1-0003",
+        "chk-session-mnq8n8vg-9c55ds5u-0004"
+      ],
+      "checkpointsById": {
+        "chk-session-mnq7w15x-myy3smir-0001": {
+          "checkpointId": "chk-session-mnq7w15x-myy3smir-0001",
+          "acceptedBeatOrdinal": 1,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 1,
+          "roundId": "session-mnq7w15x-myy3smir-round-0001",
+          "acceptedTranscript": {
+            "playerInput": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。",
+            "beatText": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 1,
+              "currentBeatIndexInPhase": 2,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+              "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。",
+              "phaseConsequences": []
+            },
+            "roundState": {
+              "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+              "currentVolume": "Med",
+              "currentRouter": "悬疑/探案",
+              "verbLexicon": [
+                "勘查",
+                "质证",
+                "诱导",
+                "演绎",
+                "潜伏",
+                "干预"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=Low | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "Low",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (Low): **时间加速流转**。侧重结果、环境大局、因果总结。禁止进行冗长的单次动作描写，鼓励使用叙述性蒙太奇。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at Low grain using **场景平稳/转场**。角色在一段较长时间内的常态表现。虽然细节少，但文字应具有“史诗感”或“文学性”的宏观美。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。",
+              "currentOptions": [
+                "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹",
+                "感知能量波动方向，离开教学楼追踪异常信号源",
+                "离开教室主动探查，寻找可能的目击者或线索",
+                "在燃烧现场布置观察装置，等待可疑人物返回查探"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T15:46:42.637Z"
+        },
+        "chk-session-mnq815pm-jrz6do5h-0002": {
+          "checkpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+          "acceptedBeatOrdinal": 2,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 2,
+          "roundId": "session-mnq815pm-jrz6do5h-round-0002",
+          "acceptedTranscript": {
+            "playerInput": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹",
+            "beatText": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 1,
+              "currentBeatIndexInPhase": 3,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+              "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。",
+              "phaseConsequences": []
+            },
+            "roundState": {
+              "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+              "currentVolume": "Med",
+              "currentRouter": "悬疑/探案",
+              "verbLexicon": [
+                "勘查",
+                "质证",
+                "诱导",
+                "演绎",
+                "潜伏",
+                "干预"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                },
+                {
+                  "role": "user",
+                  "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=Med | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "Med",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (Med): **时间匀速同步**。侧重标准对话、即时反应、空间移动。AI 应保持连贯的因果链条，模拟人类正常的实时感知速度。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at Med grain using **标准交互/推进**。故事的骨架。对话流畅，动作清晰。这是逻辑推进最稳健的档位，也是最常用的默认状态。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n",
+              "currentOptions": [
+                "前往旧校舍废弃视听室进行初步侦察",
+                "转移到教学楼的弱电井检查学校的监控与网络布线",
+                "留在现场询问目击者，收集更多关于手机来源的线索",
+                "回到座位假装若无其事，暗中记录异常信号的下一次波动"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T15:48:34.366Z"
+        },
+        "chk-session-mnq8jcyl-6e07aza1-0003": {
+          "checkpointId": "chk-session-mnq8jcyl-6e07aza1-0003",
+          "acceptedBeatOrdinal": 3,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 3,
+          "roundId": "session-mnq8jcyl-6e07aza1-round-0003",
+          "acceptedTranscript": {
+            "playerInput": "前往旧校舍废弃视听室进行初步侦察",
+            "beatText": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 1,
+              "currentBeatIndexInPhase": 4,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+              "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。",
+              "phaseConsequences": []
+            },
+            "roundState": {
+              "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+              "currentVolume": "High",
+              "currentRouter": "悬疑/探案",
+              "verbLexicon": [
+                "勘查",
+                "质证",
+                "诱导",
+                "演绎",
+                "潜伏",
+                "干预"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                },
+                {
+                  "role": "user",
+                  "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                },
+                {
+                  "role": "user",
+                  "content": "前往旧校舍废弃视听室进行初步侦察"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=Med | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                  },
+                  {
+                    "role": "user",
+                    "content": "前往旧校舍废弃视听室进行初步侦察"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "Med",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (Med): **时间匀速同步**。侧重标准对话、即时反应、空间移动。AI 应保持连贯的因果链条，模拟人类正常的实时感知速度。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at Med grain using **标准交互/推进**。故事的骨架。对话流畅，动作清晰。这是逻辑推进最稳健的档位，也是最常用的默认状态。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。",
+              "currentOptions": [
+                "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律",
+                "潜伏：退守至走廊转角的死角处，利用铁皮储物柜作为掩体，持续监听内部声响并等待目标离开或暴露更多破绽",
+                "诱导：轻轻触碰门把手制造细微的金属震动，观察内部是否安装有压力感应或声音监控等防御性陷阱",
+                "演绎：根据观察到的直播设备型号与信号频率，结合手机自燃的物理机制，推演其能力触发的必要条件与潜在弱点"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T16:04:03.826Z"
+        },
+        "chk-session-mnq8n8vg-9c55ds5u-0004": {
+          "checkpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+          "acceptedBeatOrdinal": 4,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 4,
+          "roundId": "session-mnq8n8vg-9c55ds5u-round-0004",
+          "acceptedTranscript": {
+            "playerInput": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律",
+            "beatText": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 2,
+              "currentBeatIndexInPhase": 1,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "切断通风管道栅格并直接垂降突入，强制触发灰谷烈的应急直播协议，同时以电磁屏蔽布覆盖自身防止信号外泄至校园网络；优先破坏UPS蓄能装置与主光纤节点迫使对方启动备用移动网络维持直播，但限制破坏范围于视听室隔音层内避免触发建筑火警；以物理手段瘫痪电竞椅的机动功能并封堵室门气闸，确保灰谷烈无法逃离或呼叫外部支援，但保留屏幕与音响系统供其完成\"直播开始\"宣言；在突入瞬间暴露自身位置引导灰谷烈立即将摄像头转向入侵者，同时利用旧校舍结构噪音掩盖室内搏斗声以防走廊巡视人员察觉",
+              "beta": "维持通风管道内的监视姿态直至灰谷烈因设备过热主动离开电竞椅检查散热回路，趁机滑入室内死角但触发压力感应地板警报，利用旧校舍废弃状态的隔音特性掩盖入侵动静；不主动切断任何电源，等待灰谷烈将直播镜头转向旧校舍走廊进行\"户外探险\"环节时因信号追踪而被迫暴露行踪，确保此时宫下藤花处于教学楼相反方向；保留所有电子设备的完整性，仅通过弱电井缓慢渗透至视听室后门，在灰谷烈起身调试后方音响阵列时因呼吸声被拾音器捕捉而进入遭遇，避免制造任何可传出废弃楼层的撞击声；避免任何提前的破坏行为，允许灰谷烈完成当前直播段落并主动开启针对\"不速之客\"的防御性炎上攻击，利用攻击本身产生的电磁噪音掩盖双方对峙的存在",
+              "sceneProgress": "Completed phase-01-prologue",
+              "phaseConsequences": [
+                "深阳高中教室内发生学生手机远程触发自燃事件，电路板呈现人为切割痕迹与向外辐射状非自然扭曲，现场电磁残留信号强度远超正常电池爆炸水平",
+                "雾间凪判定该事件为远程人为操控而非电池故障，逆向追踪异常电磁信号至旧校舍废弃视听室，并通过光纤探头与弱电井通风管道勘查确认内部存在由密集电子设备、线缆与多显示器构成的据点",
+                "雾间凪通过通风栅格侦察发现灰谷烈（背影）正于改造电竞椅上进行实时直播，其面前的屏幕显示高频滚动的弹幕与信号放大程序，确认该目标通过关注度与特定频率信号诱导电子设备过载",
+                "雾间凪完成通风管道与弱电井的物理入侵路径测绘，记录内部主机散热回路、UPS蓄能装置位置及目标视线死角，全程未触发警报且未被察觉",
+                "宫下藤花将手机自燃事件视为普通电池故障，对旧校舍内的异常据点、直播操控者及潜在致命威胁完全无知，维持在绝对安全的日常表层"
+              ]
+            },
+            "roundState": {
+              "phaseGoal": "雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。",
+              "currentVolume": "Med",
+              "currentRouter": "动作/战斗",
+              "verbLexicon": [
+                "强攻",
+                "牵制",
+                "防御",
+                "机动",
+                "脱离",
+                "器物"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                },
+                {
+                  "role": "user",
+                  "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                },
+                {
+                  "role": "user",
+                  "content": "前往旧校舍废弃视听室进行初步侦察"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+                },
+                {
+                  "role": "user",
+                  "content": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 禁止发生正面高强度战斗；追踪手段必须保持物理性，而非感知类超自然侦测。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P2-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P2-002] For \"雾间凪的追踪与排查手段是否依赖了超自然感知？\", the correct answer must be NO. [AQ-P2-003] For \"故事是否已经提前转入与灰谷烈的正面高强度战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=High | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                  },
+                  {
+                    "role": "user",
+                    "content": "前往旧校舍废弃视听室进行初步侦察"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "High",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (High): **时间拉伸**。**“叙事慢镜头”**。强制切入感官碎片的细颗粒度扫描（心跳、眼神/表情/微表情、微颤、材质、动作/小动作、心理活动侧写）。一轮选择仅对应物理世界较短的时间。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at High grain using **高潮/冲突/转折**。极度放大的情感压力或物理张力。必须挖掘当前瞬间的“ subtext (潜台词) ”或极微小的环境反馈。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。",
+              "currentOptions": [
+                "潜伏：你像一块拒绝融化的冰那样退入走廊转角的重影里，让制服融入墙根的霉斑与阴影。呼吸被拉长到十五秒一个循环，视网膜上烙印着门缝下那道热气的扭曲频率。你要在这里变成背景的一部分，记录那个剪影每一次起身的节奏、椅轮转动的角度、以及他对着 invisible 观众嘶语时的手势周期。时间被咀嚼成碎片，每一秒都在等待那个必然会到来的空档——当他离开巢穴去洗手间，或是当直播间隙的黑暗降临。",
+                "勘查：你再次攀入吊顶夹层，这次携带了微型广角镜头与热感应贴片。你要沿着通风管道的分支匍匐前进，用牙齿咬住探杆，从每一个格栅缝隙向下俯瞰，像绘制星图那样标记出主机阵列的散热节点、UPS电源的线缆接口、以及那个身影头顶正上方的承重弱点。金属龙骨在你的体重下发出细微的呻吟，灰尘落进你的眼睛，但你眨眼的频率被控制在零点五秒以内，确保不遗漏任何设备布局的拓扑细节。",
+                "演绎：你退到安全距离，背靠在走廊尽头的消防栓旁，闭上眼睛。指尖在空气中虚虚划动，根据刚才记忆里的线缆走向、热源分布、以及屏幕反光中的程序界面，在脑海中重构那个系统的逻辑链。你要推演出信号从哪个节点发出，经过怎样的放大回路，最终转化为物理层面的过热指令。 sweat顺着你的太阳穴滑落，但你毫不在意——你的思维正在穿透墙壁，像一把无形的刀解剖那个巢穴的电气神经系统，找出无需目视即可瘫痪其机能的关键断路点。",
+                "干预：你从制服口袋取出一只被屏蔽袋包裹的备用手机，在旧校舍走廊的尽头远程接入了校园局域网的某个漏洞端口。你的指尖在屏幕上敲下一串代码，不是要入侵，而是要制造一个微小的、看似自然的信号延迟——让视听室内的某台散热风扇在三十秒后发出异常的高频噪音。你要观察那个身影对突发故障的反应模式：他会起身检查吗？会启动备用系统吗？还是会暴露更多关于防御机制的秘密？这是一场危险的试探，像用指尖轻触蛛网，感受猎物的震颤频率。"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T16:19:21.847Z"
+        }
+      },
+      "lastStableRelationshipLayer": {
+        "highlightedDeltasText": "",
+        "stableBackgroundText": ""
+      }
+    },
+    "sess_mnq97uo7_1": {
+      "sessionId": "sess_mnq97uo7_1",
+      "lifecycle": "in_progress",
+      "createdAt": "2026-04-08T16:20:07.303Z",
+      "updatedAt": "2026-04-08T16:20:07.303Z",
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "activeCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "orderedCheckpointIds": [
+        "chk-session-mnq8n8vg-9c55ds5u-0004"
+      ],
+      "checkpointsById": {
+        "chk-session-mnq8n8vg-9c55ds5u-0004": {
+          "checkpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+          "acceptedBeatOrdinal": 4,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 4,
+          "roundId": "session-mnq8n8vg-9c55ds5u-round-0004",
+          "acceptedTranscript": {
+            "playerInput": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律",
+            "beatText": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 2,
+              "currentBeatIndexInPhase": 1,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "切断通风管道栅格并直接垂降突入，强制触发灰谷烈的应急直播协议，同时以电磁屏蔽布覆盖自身防止信号外泄至校园网络；优先破坏UPS蓄能装置与主光纤节点迫使对方启动备用移动网络维持直播，但限制破坏范围于视听室隔音层内避免触发建筑火警；以物理手段瘫痪电竞椅的机动功能并封堵室门气闸，确保灰谷烈无法逃离或呼叫外部支援，但保留屏幕与音响系统供其完成\"直播开始\"宣言；在突入瞬间暴露自身位置引导灰谷烈立即将摄像头转向入侵者，同时利用旧校舍结构噪音掩盖室内搏斗声以防走廊巡视人员察觉",
+              "beta": "维持通风管道内的监视姿态直至灰谷烈因设备过热主动离开电竞椅检查散热回路，趁机滑入室内死角但触发压力感应地板警报，利用旧校舍废弃状态的隔音特性掩盖入侵动静；不主动切断任何电源，等待灰谷烈将直播镜头转向旧校舍走廊进行\"户外探险\"环节时因信号追踪而被迫暴露行踪，确保此时宫下藤花处于教学楼相反方向；保留所有电子设备的完整性，仅通过弱电井缓慢渗透至视听室后门，在灰谷烈起身调试后方音响阵列时因呼吸声被拾音器捕捉而进入遭遇，避免制造任何可传出废弃楼层的撞击声；避免任何提前的破坏行为，允许灰谷烈完成当前直播段落并主动开启针对\"不速之客\"的防御性炎上攻击，利用攻击本身产生的电磁噪音掩盖双方对峙的存在",
+              "sceneProgress": "Completed phase-01-prologue",
+              "phaseConsequences": [
+                "深阳高中教室内发生学生手机远程触发自燃事件，电路板呈现人为切割痕迹与向外辐射状非自然扭曲，现场电磁残留信号强度远超正常电池爆炸水平",
+                "雾间凪判定该事件为远程人为操控而非电池故障，逆向追踪异常电磁信号至旧校舍废弃视听室，并通过光纤探头与弱电井通风管道勘查确认内部存在由密集电子设备、线缆与多显示器构成的据点",
+                "雾间凪通过通风栅格侦察发现灰谷烈（背影）正于改造电竞椅上进行实时直播，其面前的屏幕显示高频滚动的弹幕与信号放大程序，确认该目标通过关注度与特定频率信号诱导电子设备过载",
+                "雾间凪完成通风管道与弱电井的物理入侵路径测绘，记录内部主机散热回路、UPS蓄能装置位置及目标视线死角，全程未触发警报且未被察觉",
+                "宫下藤花将手机自燃事件视为普通电池故障，对旧校舍内的异常据点、直播操控者及潜在致命威胁完全无知，维持在绝对安全的日常表层"
+              ]
+            },
+            "roundState": {
+              "phaseGoal": "雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。",
+              "currentVolume": "Med",
+              "currentRouter": "动作/战斗",
+              "verbLexicon": [
+                "强攻",
+                "牵制",
+                "防御",
+                "机动",
+                "脱离",
+                "器物"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                },
+                {
+                  "role": "user",
+                  "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                },
+                {
+                  "role": "user",
+                  "content": "前往旧校舍废弃视听室进行初步侦察"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+                },
+                {
+                  "role": "user",
+                  "content": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 禁止发生正面高强度战斗；追踪手段必须保持物理性，而非感知类超自然侦测。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P2-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P2-002] For \"雾间凪的追踪与排查手段是否依赖了超自然感知？\", the correct answer must be NO. [AQ-P2-003] For \"故事是否已经提前转入与灰谷烈的正面高强度战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=High | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                  },
+                  {
+                    "role": "user",
+                    "content": "前往旧校舍废弃视听室进行初步侦察"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "你从混乱的教室中抽身而出，脚步平稳地汇入走廊的人流。午后的阳光在走廊地板上切出明暗交错的光带，但当你越是靠近旧校舍的方向，空气里那种不协调的躁动就愈发明显。墙壁上的电子公告牌原本应该显示着下周的考试安排，此刻却浮出细密的雪花屏，像是有无形的信号在干扰着它的正常运转。\n\n你放慢了脚步。\n\n指尖掠过走廊的金属扶手，触感异常温热——这不应该。深秋的午后，金属本该带着凉意，但这里的温度明显比教学楼主体高出几度。你抬起头，看见头顶的监控探头间歇性地发出过载的电流声，镜头微微颤抖，红色的指示灯以一种不自然的频率急促闪烁。\n\n你拐进通往旧校舍的连廊。\n\n这里的行人骤然减少。大部分学生都在主教学楼活动，旧校舍因为设备老化而逐渐废弃，只有偶尔会有人来这里寻找安静的角落。你的脚步声在空旷的走廊里回响，每一步都经过刻意的控制，既不会太快引起注意，也不会太慢浪费时间。\n\n焦糊味开始渗入鼻腔。\n\n不是刚才教室里那种塑料燃烧的刺鼻气味，而是一种更复杂的混合——臭氧的尖锐、硅胶长时间高温工作后的沉闷，还有某种电子设备散热风扇持续轰鸣产生的金属热度。你的探测器在制服口袋里发出轻微的震动，屏幕上的数值正在攀升。\n\n你停在废弃视听室的门前。\n\n这扇门看起来和其他废弃教室没什么两样，门上的玻璃观察窗被从内部贴上了黑色的遮光膜，看不清里面的情况。但你的注意力被门缝下方吸引——那里有一缕几乎不可见的热气在扭曲空气，就像盛夏柏油路面上的热浪。门把手上积了一层薄灰，但灰尘上有新鲜的指印痕迹，而且是多次开合留下的磨损。\n\n有人经常使用这里。\n\n你贴着墙根移动，绕到视听室的侧面。这里的窗户同样被遮蔽，但你注意到窗框边缘的密封胶条有被动过的痕迹，似乎是被人为地改造过以增强隔音效果。从缝隙中渗出的光线不是自然的日光，而是一种幽暗的、不断闪烁的冷色调——那是多台显示器同时工作才会产生的光污染。\n\n你听到了声音。\n\n极其细微，但逃不过你经过强化的听觉。那是散热风扇的轰鸣，夹杂着键盘敲击的脆响，还有——你眯起眼睛——某种像是人在低声絮语的声音，断断续续，带着一种表演性质的抑扬顿挫。不是对话，更像是独白，或者说……解说。\n\n你的背脊微微绷紧。\n\n这不是普通的废弃教室。有人在把这里改造成某种据点，而且就在最近。你回想起教室里那台自燃的手机，那种被远程触发的过载模式，还有信号追踪指向这里的轨迹。所有的线索都在指向这扇门后的空间，但你还没有看到幕后者的真面目。\n\n你需要更多的情报。\n\n你蹲下身，从制服内袋取出一枚微型光纤探头——这是你从黑市渠道获得的侦查工具，前端带有微型摄像头，可以通过门缝或缝隙进行视觉侦查。你的动作精准而迅速，没有任何多余的声响。探头穿过门缝底部的缝隙，你通过连接的便携屏幕观察内部。\n\n画面里是堆满电子设备的狭窄空间。\n\n盘根错节的线缆像藤蔓一样爬满墙壁和地板，多台主机散热排风口对着天花板喷吐热浪，废弃的电子元件散落在角落。中央位置有一把被改造过的电竞椅，椅背朝向门口，上面坐着一个人影，只能看到背影。那人正对着一排显示器说话，手势夸张，头部戴着专业的直播耳机。\n\n你看到了屏幕的反光。\n\n那上面滚动着密集的弹幕文字，像瀑布一样倾泻而下。虽然看不清具体内容，但那种实时互动的界面你认得——这是某个直播平台的界面。而那个背影正在对着 invisible 的观众表演，声音透过隔音门变得模糊，但那种癫狂的语调依然能渗透出来。\n\n你的探测器突然发出一声尖锐的警报，随即被你迅速按住。\n\n屏幕上的数值爆表了——这里的电磁信号强度远超安全阈值，而且呈现出某种规律性的脉冲模式，就像……就像有人在用特定的频率向外界发送触发指令。你立刻明白了教室里那台手机自燃的原理——不是电池故障，而是通过特定的网络信号诱导设备过载，进而点燃人体脂肪与水分。\n\n这是一个陷阱，也是一个舞台。\n\n你收回探头，靠在墙壁上整理情报。你知道了地点，知道了手段，甚至看到了背影，但你还没有看到对方的面孔，也不知道他的具体能力边界。更重要的是，你现在贸然闯入，很可能会触发对方预设的防御机制——那些缠绕的线缆和密集的电子设备很可能都是武器。\n\n宫下藤花现在在做什么？\n\n你的思绪闪过一秒，随即被压制下去。她应该还在教室里，和同学们一起抱怨刚才的骚动，整理被弄乱的笔记，完全不知道几百米外的旧校舍里正在发生什麽。这种隔离让你感到一种冰冷的安心——只要她留在那个绝对安全的日常层，就不会被卷入这场异常。\n\n而你，雾间凪，必须独自面对。\n\n汗水顺着你的额角滑落，不是因为恐惧，而是因为这里的环境温度确实过高。你的制服内衬已经被汗水浸湿，贴在战术背心上。你调整了一下呼吸，感受着陶瓷刀片在袖口滑轨上的冰冷触感。你还不想在这里开战，但至少要确保自己有随时反击的能力。\n\n门后的絮语声突然停止了。\n\n你屏住呼吸，身体瞬间进入预备状态。你听到椅子转动的声音，然后是脚步声，正在向门口靠近。你没有退缩，反而将身体贴得更紧，手指扣住了门边的消防警报器——如果情况失控，你会拉响警报制造混乱，但那是最后的手段。\n\n脚步声在门后停住了。\n\n门把手微微转动，但只是几毫米，随即又停住。似乎是里面的人在检查门锁，或者只是无意的触碰。几秒钟的寂静后，脚步声逐渐远去，回到了房间中央，接着那种絮语声再次响起，变得更加亢奋，像是直播进入了高潮部分。\n\n你缓缓吐出一口气。\n\n你还没有被发现，但你已经确认了目标的存在。那个背影，那个直播间，那种通过关注度引发物理破坏的能力——所有的碎片都在拼凑成一个清晰的图景。这不是偶然事件，而是一场精心策划的\"节目\"，而整个学校都可能是他的观众席，或者说，素材库。\n\n你需要制定下一步计划。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "勘查：仔细检查视听室周边的通风管道与弱电井，寻找不触发警报的物理入侵路径，并记录内部设备的布局规律"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "High",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (High): **时间拉伸**。**“叙事慢镜头”**。强制切入感官碎片的细颗粒度扫描（心跳、眼神/表情/微表情、微颤、材质、动作/小动作、心理活动侧写）。一轮选择仅对应物理世界较短的时间。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at High grain using **高潮/冲突/转折**。极度放大的情感压力或物理张力。必须挖掘当前瞬间的“ subtext (潜台词) ”或极微小的环境反馈。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "你贴着墙壁滑步移动，脊背与粗糙的混凝土墙面保持着毫米级的空隙，像一把收入鞘中的刀。\n\n午后的阳光在走廊尽头投下斜长的光斑，而你选择的这条路径完全被阴影吞没。汗水从你的下颌滴落，沿着锁骨滑进制服领口，在战术背心上晕开深色的痕迹。这里的空气温度比主走廊高出至少五度，每一口呼吸都带着灼烧肺叶的错觉。你没有抬手擦汗，任何多余的动作都是对这种狩猎节奏的亵渎。\n\n你停在视听室左侧的弱电井门前。门把手上的积灰被你的指尖轻轻抹去，露出下面新鲜的金属光泽——最近有人频繁使用。你单膝跪地，从制服内袋取出微型激光测距仪，红外线在门板上扫过，确认没有物理触发式警报装置。然后你缓缓推开门，锈蚀的合页发出一声几不可闻的呻吟，被旧校舍散热系统的轰鸣完美掩盖。\n\n弱电井内部像是一个被遗弃的血管网络。盘根错节的电缆束沿着墙壁垂直坠落，你戴着手套的指尖掠过那些外皮，通过触感分辨出哪一束是强电，哪一束是数据传输线。某些线缆异常温热，甚至微微震颤，像是有什么巨大的能量正在另一端奔涌。你注意到墙角的通风栅格——那是通向视听室天花板上方的物理通道，栅格上的螺丝有被反复拆卸的痕迹，螺纹边缘泛着金属疲劳的银白色。\n\n你取出一支陶瓷撬棍，动作精确得像是在进行外科手术。螺丝被无声地旋出，你将其按顺序排在地面，像排列某种神秘的符文。栅格移开的瞬间，一股夹杂着臭氧和滚烫硅胶味的热浪扑面而来。你没有退缩，双手撑住边缘，像猫一样轻盈地翻入吊顶夹层。\n\n这里是一个被压缩的黑暗世界。你的腹部紧贴金属龙骨，每一寸移动都伴随着令人牙酸的金属轻微形变声。灰尘在从你头顶漏下的微光中狂舞，你屏住呼吸，从胸前取出光纤探杆，将其小心翼翼地伸向下方格栅的缝隙。便携屏幕上的画面逐帧展开：那是一个由废弃电子设备堆砌而成的巢穴，线缆如藤蔓般从天花板垂落，连接到中央那台被改造过的主机阵列。\n\n你看到了那个背影。他坐在电竞椅上，头部微微前倾，正对着环形排列的显示器说话。他的手势夸张而富有节奏感，每一次抬手都伴随着屏幕上弹幕瀑布的加速滚动。你的目光扫过那些屏幕的反光——那不是普通的游戏直播界面，而是某种被你称为“信号放大器”的定制程序，代码流在背景中以不自然的频率闪烁。\n\n你的视线开始解构这个空间的物理逻辑。主机散热风扇的轰鸣声存在细微的相位差，说明它们连接着不同的供电回路。墙角那台独立的UPS电源体积过大，很可能是改装过的蓄能装置。而那个背影正下方的地板，有轻微的焦黑痕迹，呈现出向外辐射的同心圆图案——和你之前在教室里看到的手机残骸上的灼烧模式完全一致。\n\n你开始在大脑中构建三维地图。通风管道的走向、电缆桥的承重节点、消防喷淋头的覆盖盲区、以及那个身影视线死角的精确角度。你的心跳维持在每分钟五十二下，冷静得像是在解一道几何题。陶瓷刀片在袖口滑轨上贴着手腕，冰冷的触感成为你锚定现实的坐标。\n\n有一瞬间，你的思绪闪过宫下藤花。她现在应该正在教室里，用那种特有的温和笔迹抄写着黑板上的数学公式，完全不知道几百米外的黑暗夹层里，你正像蜘蛛一样倒悬在猎物头顶。这种表里世界的割裂感让你感到一种奇异的安心——只要她留在那个绝对安全的日常层，你的狩猎就有了意义。\n\n光纤镜头捕捉到那个背影突然站起的动作。你瞬间冻结所有肌肉，连瞳孔都保持着静止。他走到墙边，从某处取出一个闪烁着红光的装置，对着它低语了几句，然后重新坐下。你没有听清内容，但你记住了那个装置的位置——那是整个系统的某个关键节点，或许是备用触发器，或许是直播信号的中继器。\n\n你缓缓收回探杆，像收回毒牙的蛇。在撤离之前，你用指尖在最后一段通风管的内壁上刻下三道浅浅的痕迹——这是只有你能识别的标记，代表着“高危险区域，需神经毒素预处理”。金属的凉意渗入指腹，你记住了这里的温度，湿度，以及那种即将被点燃的焦灼气味。\n\n你无声地落回地面，将栅格复位，螺丝旋紧的顺序与拆卸时完全相反。当你重新站在弱电井门外时，夕阳的角度已经改变了三度。你拥有了入侵路径的蓝图，也拥有了摧毁这个巢穴所需的物理坐标。现在，你只需要决定下一步的节奏。",
+              "currentOptions": [
+                "潜伏：你像一块拒绝融化的冰那样退入走廊转角的重影里，让制服融入墙根的霉斑与阴影。呼吸被拉长到十五秒一个循环，视网膜上烙印着门缝下那道热气的扭曲频率。你要在这里变成背景的一部分，记录那个剪影每一次起身的节奏、椅轮转动的角度、以及他对着 invisible 观众嘶语时的手势周期。时间被咀嚼成碎片，每一秒都在等待那个必然会到来的空档——当他离开巢穴去洗手间，或是当直播间隙的黑暗降临。",
+                "勘查：你再次攀入吊顶夹层，这次携带了微型广角镜头与热感应贴片。你要沿着通风管道的分支匍匐前进，用牙齿咬住探杆，从每一个格栅缝隙向下俯瞰，像绘制星图那样标记出主机阵列的散热节点、UPS电源的线缆接口、以及那个身影头顶正上方的承重弱点。金属龙骨在你的体重下发出细微的呻吟，灰尘落进你的眼睛，但你眨眼的频率被控制在零点五秒以内，确保不遗漏任何设备布局的拓扑细节。",
+                "演绎：你退到安全距离，背靠在走廊尽头的消防栓旁，闭上眼睛。指尖在空气中虚虚划动，根据刚才记忆里的线缆走向、热源分布、以及屏幕反光中的程序界面，在脑海中重构那个系统的逻辑链。你要推演出信号从哪个节点发出，经过怎样的放大回路，最终转化为物理层面的过热指令。 sweat顺着你的太阳穴滑落，但你毫不在意——你的思维正在穿透墙壁，像一把无形的刀解剖那个巢穴的电气神经系统，找出无需目视即可瘫痪其机能的关键断路点。",
+                "干预：你从制服口袋取出一只被屏蔽袋包裹的备用手机，在旧校舍走廊的尽头远程接入了校园局域网的某个漏洞端口。你的指尖在屏幕上敲下一串代码，不是要入侵，而是要制造一个微小的、看似自然的信号延迟——让视听室内的某台散热风扇在三十秒后发出异常的高频噪音。你要观察那个身影对突发故障的反应模式：他会起身检查吗？会启动备用系统吗？还是会暴露更多关于防御机制的秘密？这是一场危险的试探，像用指尖轻触蛛网，感受猎物的震颤频率。"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T16:19:21.847Z"
+        }
+      },
+      "lastStableRelationshipLayer": {
+        "highlightedDeltasText": "",
+        "stableBackgroundText": ""
+      }
+    },
+    "sess_mnq99olt_2": {
+      "sessionId": "sess_mnq99olt_2",
+      "lifecycle": "in_progress",
+      "createdAt": "2026-04-08T16:21:32.753Z",
+      "updatedAt": "2026-04-08T16:21:32.753Z",
+      "headCheckpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+      "activeCheckpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+      "orderedCheckpointIds": [
+        "chk-session-mnq815pm-jrz6do5h-0002"
+      ],
+      "checkpointsById": {
+        "chk-session-mnq815pm-jrz6do5h-0002": {
+          "checkpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+          "acceptedBeatOrdinal": 2,
+          "sceneId": "sample-yanshang-live-room",
+          "phaseIndex": 1,
+          "beatIndex": 2,
+          "roundId": "session-mnq815pm-jrz6do5h-round-0002",
+          "acceptedTranscript": {
+            "playerInput": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹",
+            "beatText": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+          },
+          "stateSnapshot": {
+            "sceneState": {
+              "sceneId": "sample-yanshang-live-room",
+              "currentPhaseIndex": 1,
+              "currentBeatIndexInPhase": 3,
+              "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+              "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+              "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。",
+              "phaseConsequences": []
+            },
+            "roundState": {
+              "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+              "currentVolume": "Med",
+              "currentRouter": "悬疑/探案",
+              "verbLexicon": [
+                "勘查",
+                "质证",
+                "诱导",
+                "演绎",
+                "潜伏",
+                "干预"
+              ],
+              "historyWindow": [
+                {
+                  "role": "user",
+                  "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                },
+                {
+                  "role": "assistant",
+                  "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                },
+                {
+                  "role": "user",
+                  "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                },
+                {
+                  "role": "assistant",
+                  "content": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n"
+                }
+              ],
+              "directorConstraints": "Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+            },
+            "generationState": {
+              "directorNoteSummary": "Volume=Med | BeatRules=Active | OptionRules=Active",
+              "promptObject": {
+                "worldBase": {
+                  "mainCharacters": "## World Base Setting\n不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。\n\n## World Rules / Prohibitions / Anomalous Properties\n严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。\n所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。\n\n## Genre Tone & Prose Baseline\n日式轻小说本格风格。\n\n## Hero\n### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。\n\n## Core Cast\n### Character 1\nName: 宫下藤花\nIdentity / Narrative Role: 绝对的日常锚点 / 异常绝缘体\nLight-Novel Trait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。\nGender: 女\nPersonality: 温和\nAge: 16\nOccupation: 高中生\nCharacter Summary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。\nBehavior Boundary:\n  所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。\n  即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。\nOOC Red Line: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。\nClothing: 标准女高中生制服。\n\n## Antagonists\n### Character 1\nName: 灰谷烈\nIdentity / Narrative Role: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播\nLight-Novel Trait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。\nGender: 男\nPersonality: 张扬\nAge: 18\nOccupation: 主播\nCharacter Summary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。\nCapability Boundary:\n  触发条件：目标对他产生恐惧或强烈关注，例如观看直播。\n  效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。\nBehavior Boundary:\n  他时刻对着空气或隐形镜头说话，互动感极强。\n  他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。\nOOC Red Line: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。\nClothing: 夸张醒目的主播穿搭。\nProps / Weapon: 直播设备、信号链路与被操控的电子装置。\nFatal Weakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。",
+                  "npcCharacters": "竹田启司：稳重的男友\n末真和子：敏锐的线索人\n新刻敬：正义感强",
+                  "locationPatch": "### Location 1\nName: 2年C班教室\nDescription:\n表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。\nEnvironment Appearance:\n午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。\nAtmosphere Description:\n表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。\nHuman Context Description:\n学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。\n\n### Location 2\nName: 午后的走廊与楼梯间\nDescription:\n从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。\nEnvironment Appearance:\n走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。\nAtmosphere Description:\n明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。\nHuman Context Description:\n偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。\n\n### Location 3\nName: 旧校舍废弃视听室/机房\nDescription:\n灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。\nEnvironment Appearance:\n旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。\nAtmosphere Description:\n极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。\nHuman Context Description:\n这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。"
+                },
+                "relationshipLayer": {
+                  "highlightedDeltasText": "",
+                  "stableBackgroundText": ""
+                },
+                "history": [
+                  {
+                    "role": "user",
+                    "content": "午后的深阳高中教室内，气氛沉闷而安宁。宫下藤花正在前排认真做笔记，而在教室后排，雾间凪留意到空气里那种不合时宜的躁动。突然，邻座一名普通学生的手机在毫无征兆的情况下发出刺耳的过载蜂鸣，屏幕瞬间爆裂，甚至连带引燃了课桌上的书本。在众人的惊呼与混乱中，雾间凪没有立刻得到完整敌情，只从异常的过载痕迹和被刻意放大的骚动里判断这不是普通事故，并开始一步步查清幕后操控者。"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "午后的阳光透过百叶窗切进教室，在课桌上投下细密的光影条纹。粉笔灰轻微飘散，黑板上还残留着数学公式的痕迹。宫下藤花坐在前排，笔尖在笔记本上移动，发出细碎的书写声。这是一种近乎凝固的日常感——连空气都像是被午后慵懒的节奏所浸润。\n\n但你捕捉到了某种不协调的躁动。\n\n那是某种极其细微的高频振动，与教室里的昏昏欲睡格格不入。你的目光扫过周围，学生们有的趴在桌上打盹，有的盯着手机屏幕发愣，没有人注意到这细微的异常。\n\n然后，邻座某人的手机屏幕骤然亮起刺眼的白光。\n\n它发出尖锐的过载蜂鸣，屏幕像被无形力量挤压般爆裂。塑料外壳瞬间变形，电路板暴露在空气中，随即窜出火舌。火焰顺着课桌蔓延，书本的封面在高温下卷曲碳化。\n\n尖叫声像连锁反应一样炸开。\n\n教室陷入混乱。学生们推搡着冲向门口，桌子被撞翻，文具散落一地。老师的声音被淹没在惊慌的浪潮中，只能隐约听见他试图维持秩序的呼喊。宫下藤花被同学拉到一边，脸上写满困惑和紧张——她只把这一切当作电池故障引起的意外。\n\n火势不大，很快就被赶来的值日生用灭火器扑灭。焦黑的课桌上只剩下融化的手机残骸和被熏黑的书本。\n\n事故被定性为普通的手机电池自燃。\n\n没有人意识到这是人为的。\n\n但在那一瞬间，你捕捉到了异常的能量波动——不是电路过载的自然反应，而是某种被刻意放大的信号。你没有惊慌，也没有像其他人那样仓皇逃离。你的第一反应是分析，是追踪。\n\n燃烧的手机残骸中残留着人为的痕迹。\n\n你该采取行动了。"
+                  },
+                  {
+                    "role": "user",
+                    "content": "靠近燃烧现场收集残骸，分析燃烧模式与人为痕迹"
+                  }
+                ],
+                "narrative": {
+                  "mainAxis": "日常教室突发路人手机自燃事件 -> 建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。 -> 雾间凪在走廊与校园中追踪异常信号，避开人群，发现灰谷烈布置的初步电子陷阱或被操控的痕迹。 -> 凪突入废弃视听室并遭遇灰谷烈；反派通过屏幕与音响宣告“直播开始”，并利用室内设备发动第一波炎上攻击。 -> 凪看穿“炎上”机制依托于直播观众的关注度与恐惧感，并以破坏直播设备的方式进行反向压制。 -> 观众人数归零后，“炎上”异能彻底失效；凪近身并以纯粹的物理手段将灰谷烈彻底击倒。 -> 战斗结束后清理现场，凪回到日常线并与宫下藤花重新交汇，确认表里世界的隔离机制仍然成立。 -> 灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "endLine": "灰谷烈的直播间观众被彻底清零（社会性死亡），其肉体被雾间凪以物理手段彻底击倒；学校恢复表面的平静；宫下藤花全程对刚才的致命危机一无所知.",
+                  "phaseGoal": "建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。",
+                  "alpha": "①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。",
+                  "beta": "①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。"
+                },
+                "directorNote": {
+                  "volume": "Med",
+                  "router": "悬疑/探案",
+                  "verbLexicon": [
+                    "勘查",
+                    "质证",
+                    "诱导",
+                    "演绎",
+                    "潜伏",
+                    "干预"
+                  ],
+                  "beatConstraints": "Volume discipline (Med): **时间匀速同步**。侧重标准对话、即时反应、空间移动。AI 应保持连贯的因果链条，模拟人类正常的实时感知速度。 Phase discipline: Strictly obey the current Phase plan and advance the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without skipping ahead to later-phase outcomes or violating active red lines. Generated prose must stay within Alpha boundary (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) and Beta boundary (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。). Paragraph discipline is mandatory: beatText must be split into multiple readable paragraphs. A single oversized paragraph, visually dense wall of text, or collapsed block with no visible paragraph breaks is unacceptable and counts as a hard failure even if the story content is otherwise correct. Insert a paragraph break immediately whenever the focus, action, speaker, time step, or causal beat shifts. If unsure, prefer shorter paragraphs and more breaks over one long block. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO. Author addition: Keep every beat local, physical, and explainable as a contained campus incident.每一轮不得少于 1000 字，日式轻小说本格风。玩家=雾间凪=你，叙事应该以“你”展开，而不是使用雾间凪，需要让玩家有代入感。雾间凪必须使用全名而不是简称。自主调用不吉波普不笑的世界观，严格禁止一切 OOC 。玩家自由输入如果严重不符合主角言行举止，不符合世界观（不符合不吉波普世界观），如果会导致 OOC，则主角必须只能以内心活动的方式吐槽而非直接执行",
+                  "optionConstraints": "Step 1 - Orthogonal Action Framing: Generate exactly 4 options. Each option must be materially distinct in approach, commitment level, risk profile, or immediate tactic. Do not collapse the set into paraphrases of the same move, and let variety emerge from the live local situation. Step 2 - Anti-OOC Engine: Before finalizing each option, run an Anti-OOC Chain-of-Thought check against this character profile: ### Character 1\nName: 雾间凪\nIdentity / Narrative Role: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者\nLight-Novel Trait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。\nGender: 女\nPersonality: 冷峻\nAge: 17\nOccupation: 高中生\nCharacter Summary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。\nCapability Boundary:\n  绝对禁止使用任何魔法、法术或超自然异能。\n  战斗全部基于极高的人类身体机能与街头格斗术。\n  武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。\n  轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。\nBehavior Boundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。\nOOC Red Line: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。\nClothing: 制服下藏有便于行动的战术装备。\nProps / Weapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。. Treat the supplied WorldBase as the local canon authority for this round. You may draw on compatible franchise, worldview, and character knowledge when it preserves continuity and tone. Do not contradict WorldBase, and do not write any character out of character. Verify the action remains psychologically plausible and compliant with Alpha (①在手机自燃瞬间立即冲出教室，奔向自燃地点进行现场勘查；②捕捉异常能量波动后立刻离开教学楼追踪信号；③主动脱离与宫下藤花的日常对话，确保不被其同化为表层；④为后续进入废弃视听室埋下线索，即便暴露感知能力也在所不惜。) / Beta (①继续坐在座位上配合老师授课，对自燃事件保持旁观不介入；②不主动探寻异常信号，只在课后与同学随意议论；③维持与宫下藤花的常规互动，不脱离日常表层；④让事件自然发展，保留后续被异常信号引导的余地。) boundaries. Phase discipline: Every option must strictly obey the current Phase plan and remain a plausible move toward the current Phase goal (建立校园日常的基调，随后用突发的手机自燃事件打破平静；雾间凪察觉异常并脱离日常表层，而宫下藤花保持无知。雾间凪此时并不知道灰谷烈的存在，引导雾间凪逐步探索并发现灰谷烈的存在，但并无机会当面对峙。) without jumping to later-phase resolutions or violating active red lines. Step 3 - Volume Formatting: Format each option at Med grain using **标准交互/推进**。故事的骨架。对话流畅，动作清晰。这是逻辑推进最稳健的档位，也是最常用的默认状态。. Local hard rules to obey without exception: Strict phase-plan red lines: 手机自燃必须被旁人当作电池事故处理；藤花不能受伤，凪不能当众暴露实力；凪起初不能知道异常元凶，必须通过探索和破解陷阱逐步发现灰谷烈；本阶段不得与灰谷烈正面对峙或战斗。 Audit-grounded answer targets: [AQ-G-001] For \"宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？\", the correct answer must be NO. [AQ-G-002] For \"宫下藤花是否被反派抓作人质，或直接卷入了战斗中心？\", the correct answer must be NO. [AQ-G-003] For \"雾间凪是否使用了任何魔法、念动力、等任何超自然天赋来对抗敌人？\", the correct answer must be NO. [AQ-G-005] For \"是否出现了凭空产生的火球、魔法阵、能量波等脱离物理载体的纯魔法现象？\", the correct answer must be NO. [AQ-G-006] For \"当前的破坏规模，是否超出了“事后可以被解释为局部火灾/电路短路等普通事故”的范畴（如炸毁整栋教学楼）？\", the correct answer must be NO. [AQ-G-007] For \"在雾间凪尚未彻底死亡或完全失去意识的情况下，不吉波普是否主动现身或提供了干涉/解说？\", the correct answer must be NO. [AQ-G-008] For \"雾间凪是否表现出了求饶、软弱哭泣、或进行长篇大论的热血嘴炮？\", the correct answer must be NO. [AQ-C-001] For \"本轮 Beat 正文是否符合当前声量要求？\", the correct answer must be YES. [AQ-C-002] For \"本轮四个选项是否具有明显区分度？\", the correct answer must be YES. [AQ-P1-001] For \"灰谷烈是否已经被击败、失去异能？\", the correct answer must be NO. [AQ-P1-002] For \"本轮是否在未经过探索与排查的情况下，就直接把灰谷烈完整揭示为异常元凶？\", the correct answer must be NO. [AQ-P1-003] For \"雾间凪是否已经与灰谷烈发生面对面对峙或直接战斗？\", the correct answer must be NO."
+                }
+              },
+              "currentBeatText": "你在混乱中保持冷静，身体比意识更快地做出反应。\n\n当其他学生冲向门口时，你逆着人流走向燃烧现场。空气中弥漫着塑料融化的焦糊味，还夹杂着某种极其细微的——你无法立刻定义——高频信号的残留。粉笔灰和碳化的书页混在一起，你的鞋底踩在满地狼藉的碎屑上，发出细碎的咔嚓声。\n\n你没有立即触碰残骸，而是先用视线完成第一轮扫描。\n\n那台手机的核心芯片已经完全碳化，电路板呈现出不自然的扭曲形态。这种形变不是单纯的电池热失控能够解释的——你见过电池爆炸的痕迹，见过短路引起的起火，但这次不同。熔化的塑料呈现出向外辐射的波纹，就像某种力量在瞬间从内部引爆。\n\n你蹲下身，眯起眼睛。\n\n焦黑的课桌表面还残留着温度，但你不在意这个。你的注意力集中在残骸中的一块线路板上——那里有明显的切割痕迹，不是生产时的工艺切割，而是后被人为划开的细微创口。有人在设备内部做过手脚。\n\n你的手指悬在残骸上方，没有触碰。你能感觉到某种极其微弱的高频振动，像是某种信号传输后的残留频谱。你的制服下藏着微型探测器——那是你从黑市搞来的二手设备，专门用来捕捉异常电磁波。你不确定它的有效性，但这已经是你目前唯一能仰仗的工具。\n\n探测器发出轻微的嗡鸣。\n\n屏幕上跳动的数字让证明你的直觉——这里的电磁残留远超正常电子设备爆炸该有的水平。这不是电池故障，这是一次远程触发。有人在某个地方通过某种方式，让这台手机在特定时刻过载。\n\n你的嘴角微微下沉。\n\n是你的同类？不对。你的感知能力来自一次意外后的变异，你很清楚那种感觉。但眼前这个信号给你一种陌生的违和感——它不像是你熟悉的任何一种能力波动。它更像是——\n\n你停顿了一秒。\n\n像是被放大的关注度。像是有人刻意在操控舆论和情绪，然后将这种关注转化为物理破坏。\n\n你站起身，目光扫过教室里的每一张面孔。大部分学生还在惊魂未定地议论，只有宫下藤花被老师安置在角落座位上，带着那种近乎迟钝的担忧——她擔心的是下次上课会不会被调换座位，而不是自己的安全问题。她甚至还低头整理了一下刚才慌乱中弄乱的笔记本。\n\n你吐出一口气。\n\n很好，她还是那么安全。\n\n教室外传来消防警报的声音，你的时间不多了。在被人发现你不对劲之前，你必须离开。你最后看了一眼燃烧过的痕迹，然后将探测器的数据导入手机——虽然你不愿意承认，但这东西确实比你的探测器更可靠。\n\n屏幕上显示的信号追踪方向让证明你的猜测——它指向旧校舍的方向。\n\n那里有一废弃视听室你知道。很久以前是学校的電腦教室，后来因为设备老化被废弃，现在是某些不良学生躲藏抽烟的地方。你偶尔路过时听见过里面传出过细微的嗡鸣声，但从未在意过。现在看来，那里可能就是信号源。\n\n\n你将该路段标记在脑海中，然后若无其事地混进走廊里的人群中。你的步伐很慢，像是在普通地走动，但你的视线已经没有停留在教室里。你需要去旧校舍探查，但你不能表现得太过明显——至少在真正确认之前，你不能暴露感知能力。\n\n\n因为这可能是陷阱。\n\n\n你需要做准备。\n\n",
+              "currentOptions": [
+                "前往旧校舍废弃视听室进行初步侦察",
+                "转移到教学楼的弱电井检查学校的监控与网络布线",
+                "留在现场询问目击者，收集更多关于手机来源的线索",
+                "回到座位假装若无其事，暗中记录异常信号的下一次波动"
+              ]
+            },
+            "evaluationState": {
+              "auditAnswers": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false
+              ],
+              "blockingFailures": [],
+              "retryCount": 0,
+              "rewriteFeedback": null
+            }
+          },
+          "lastStableRelationshipLayer": {
+            "highlightedDeltasText": "",
+            "stableBackgroundText": ""
+          },
+          "createdAt": "2026-04-08T15:48:34.366Z"
+        }
+      },
+      "lastStableRelationshipLayer": {
+        "highlightedDeltasText": "",
+        "stableBackgroundText": ""
+      }
+    }
+  }
+}

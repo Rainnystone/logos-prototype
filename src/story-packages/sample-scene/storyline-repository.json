@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "activeStorylineId": "storyline_mnq99old_3",
+  "storylinesById": {
+    "storyline_main": {
+      "storylineId": "storyline_main",
+      "name": "Main Line",
+      "status": "active",
+      "sourceCheckpointId": null,
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "variantId": "variant_main",
+      "activeSessionId": "sess_mnq7w0t6_1",
+      "createdAt": "2026-04-08T15:42:55.773Z",
+      "updatedAt": "2026-04-08T16:19:21.850Z"
+    },
+    "storyline_mnq97uld_1": {
+      "storylineId": "storyline_mnq97uld_1",
+      "name": "故事线 2",
+      "status": "active",
+      "sourceCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "variantId": "variant_mnq97uld_2",
+      "activeSessionId": "sess_mnq97uo7_1",
+      "createdAt": "2026-04-08T16:20:07.319Z",
+      "updatedAt": "2026-04-08T16:22:09.310Z"
+    },
+    "storyline_mnq99old_3": {
+      "storylineId": "storyline_mnq99old_3",
+      "name": "故事线 3 · 从 Beat 2 分出",
+      "status": "active",
+      "sourceCheckpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+      "headCheckpointId": "chk-session-mnq815pm-jrz6do5h-0002",
+      "variantId": "variant_mnq99old_4",
+      "activeSessionId": "sess_mnq99olt_2",
+      "createdAt": "2026-04-08T16:21:32.757Z",
+      "updatedAt": "2026-04-08T16:22:20.146Z"
+    }
+  },
+  "variantsById": {
+    "variant_main": {
+      "variantId": "variant_main",
+      "workspaceRoot": "variants/variant_main",
+      "createdFromStorylineId": null,
+      "createdAt": "2026-04-08T15:42:55.773Z",
+      "updatedAt": "2026-04-08T15:42:55.773Z"
+    },
+    "variant_mnq97uld_2": {
+      "variantId": "variant_mnq97uld_2",
+      "workspaceRoot": "variants/variant_mnq97uld_2",
+      "createdFromStorylineId": "storyline_main",
+      "createdAt": "2026-04-08T16:20:07.319Z",
+      "updatedAt": "2026-04-08T16:20:07.319Z"
+    },
+    "variant_mnq99old_4": {
+      "variantId": "variant_mnq99old_4",
+      "workspaceRoot": "variants/variant_mnq99old_4",
+      "createdFromStorylineId": "storyline_main",
+      "createdAt": "2026-04-08T16:21:32.757Z",
+      "updatedAt": "2026-04-08T16:21:32.757Z"
+    }
+  }
+}
