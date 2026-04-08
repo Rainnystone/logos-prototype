@@ -1,135 +1,94 @@
 'use client';
 
-import type { AgentStatePresence, AgentSurfaceItem } from '@/agents/agent-surface';
+import Link from 'next/link';
+
+import type { AgentSurfaceItem } from '@/agents/agent-surface';
 
 interface AgentSurfacePanelProps {
+  readonly packageName: string;
   readonly items: readonly AgentSurfaceItem[];
 }
 
-const RAW_STATE_TOKENS = ['relationshipsbysource', 'targets:', 'sourceroleid', 'targetroleid', 'meta:'];
-const RAW_STATE_ID_PATTERN = /\b(?:chr|loc|node|edge|phase|beat|scene)_[a-z0-9_-]+\b/i;
-const RAW_STATE_SHAPE_PATTERN = /\b(?:nodes?|edges?|children|parent|graphroot)\s*:/i;
+const OPERATIONAL_HINT_COPY: Record<NonNullable<AgentSurfaceItem['operationalHint']>, string> = {
+  ready: '当前状态：可用',
+  warning: '当前状态：需要关注',
+  pending_bootstrap: '当前状态：等待初始化',
+};
 
-function looksLikeStructuredDump(statusLine: string): boolean {
-  const loweredStatusLine = statusLine.toLowerCase();
-  if (RAW_STATE_TOKENS.some((token) => loweredStatusLine.includes(token))) {
-    return true;
+const SKILL_SUMMARY_COPY: Record<string, string> = {
+  'weaver-import-skill': '把作者原文整理成可导入的结构化摘要。',
+  'relationship-update-skill': '在接受新剧情后更新持久关系状态。',
+  'relationship-injection-skill': '为下一轮生成准备关系上下文摘要。',
+};
+
+function resolveOperationalHintCopy(item: AgentSurfaceItem): string {
+  if (item.operationalHint) {
+    return OPERATIONAL_HINT_COPY[item.operationalHint];
   }
 
-  if (RAW_STATE_ID_PATTERN.test(statusLine)) {
-    return true;
-  }
-
-  if (RAW_STATE_SHAPE_PATTERN.test(statusLine)) {
-    return true;
-  }
-
-  if (/[\r\n]/.test(statusLine)) {
-    return true;
-  }
-
-  const hasStructurePunctuation = /[{}\[\]]/.test(statusLine);
-  const keyValueLikeSegments = statusLine.match(/[a-z0-9_-]+\s*:/gi)?.length ?? 0;
-
-  return hasStructurePunctuation && keyValueLikeSegments >= 2;
+  return '当前状态：待确认';
 }
 
-function statusBadgeClass(statePresence: AgentStatePresence): string {
-  if (statePresence === 'missing') {
-    return 'bg-amber-100 text-amber-700';
-  }
-
-  if (statePresence === 'unreadable') {
-    return 'bg-rose-100 text-rose-700';
-  }
-
-  return 'bg-emerald-100 text-emerald-700';
+function resolveLatestStateLine(item: AgentSurfaceItem): string {
+  return item.latestStateLine ?? item.latestStateSummary.statusLine;
 }
 
-function formatStatePresenceLabel(statePresence: AgentStatePresence): string {
-  if (statePresence === 'missing') {
-    return 'missing';
-  }
-
-  if (statePresence === 'unreadable') {
-    return 'unreadable';
-  }
-
-  return 'present';
+function resolveSkillSummaries(skillIds: readonly string[]): string[] {
+  return skillIds
+    .map((skillId) => SKILL_SUMMARY_COPY[skillId])
+    .filter((summary): summary is string => typeof summary === 'string');
 }
 
-function sanitizeStatusLine(statusLine: string): string {
-  if (looksLikeStructuredDump(statusLine)) {
-    return 'State summary is intentionally bounded for this read-only surface.';
-  }
-
-  return statusLine;
+function buildWeaverCreateHref(packageName: string): string {
+  return `/edit?storyPackage=${encodeURIComponent(packageName)}&section=story-package-management&creationMode=text_import`;
 }
 
-function formatLastUpdated(lastUpdatedAt?: string): string {
-  if (!lastUpdatedAt) {
-    return 'unknown';
-  }
-
-  const parsedDate = new Date(lastUpdatedAt);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'unknown';
-  }
-
-  return parsedDate.toISOString();
-}
-
-export function AgentSurfacePanel({ items }: AgentSurfacePanelProps) {
+export function AgentSurfacePanel({ packageName, items }: AgentSurfacePanelProps) {
   return (
-    <section className="rounded-none border-2 border-black bg-white p-4" aria-label="sidecar-agent-surface">
-      <p className="panel-eyebrow">read-only surface</p>
-      <h3 className="text-xl font-semibold text-slate-900">sidecar agents</h3>
-      <p className="mt-2 text-sm text-slate-700">
-        Displays bounded sidecar summaries only. This panel has no controls and no direct file dump.
-      </p>
+    <section className="agent-surface-panel" aria-label="sidecar-agent-surface">
+      <div className="agent-surface-panel__header">
+        <p className="panel-eyebrow">built-in sidecars</p>
+        <h3>内置 agent</h3>
+        <p className="panel-note">查看当前故事包内置 agent 的状态，并在需要时回到文本导入创建。</p>
+      </div>
 
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-600">No sidecar agents are registered for this package.</p>
+        <p className="agent-surface-panel__empty">当前故事包还没有可显示的 agent 状态。</p>
       ) : (
-        <div className="mt-4 space-y-3">
-          {items.map((item) => (
-            <article key={item.agentId} className="rounded-none border-2 border-black bg-slate-50/80 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900">{item.displayName}</h4>
-                  <p className="mt-1 text-sm text-slate-700">{item.responsibilitySummary}</p>
+        <div className="agent-surface-panel__list">
+          {items.map((item) => {
+            const skillSummaries = resolveSkillSummaries(item.skillIds);
+
+            return (
+              <article key={item.agentId} className="agent-surface-panel__card">
+                <div className="agent-surface-panel__title-row">
+                  <div className="agent-surface-panel__title-block">
+                    <h4>{item.displayName}</h4>
+                    <p className="agent-surface-panel__state-line">{resolveLatestStateLine(item)}</p>
+                  </div>
+                  <span className="agent-surface-panel__hint">{resolveOperationalHintCopy(item)}</span>
                 </div>
-                <span
-                  className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusBadgeClass(
-                    item.latestStateSummary.statePresence,
-                  )}`}
-                >
-                  {formatStatePresenceLabel(item.latestStateSummary.statePresence)}
-                </span>
-              </div>
-              <p className="mt-3 text-sm text-slate-700">
-                {sanitizeStatusLine(item.latestStateSummary.statusLine)}
-              </p>
-              <dl className="mt-3 space-y-1 text-sm text-slate-600">
-                <div className="grid gap-1 md:grid-cols-[11rem_minmax(0,1fr)]">
-                  <dt className="font-semibold text-slate-900">skill ids</dt>
-                  <dd>{item.skillIds.join(', ')}</dd>
-                </div>
-                <div className="grid gap-1 md:grid-cols-[11rem_minmax(0,1fr)]">
-                  <dt className="font-semibold text-slate-900">config path</dt>
-                  <dd>{item.packageConfigPath}</dd>
-                </div>
-                <div className="grid gap-1 md:grid-cols-[11rem_minmax(0,1fr)]">
-                  <dt className="font-semibold text-slate-900">state path</dt>
-                  <dd>{item.packageStatePath}</dd>
-                </div>
-                <div className="grid gap-1 md:grid-cols-[11rem_minmax(0,1fr)]">
-                  <dt className="font-semibold text-slate-900">last updated</dt>
-                  <dd>{formatLastUpdated(item.latestStateSummary.lastUpdatedAt)}</dd>
-                </div>
-              </dl>
-            </article>
-          ))}
+
+                <p className="agent-surface-panel__summary">{item.responsibilitySummary}</p>
+
+                {skillSummaries.length > 0 ? (
+                  <ul className="agent-surface-panel__skills">
+                    {skillSummaries.map((summary) => (
+                      <li key={`${item.agentId}-${summary}`}>{summary}</li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                {item.agentId === 'weaver' ? (
+                  <div className="agent-surface-panel__actions">
+                    <Link className="secondary-link" href={buildWeaverCreateHref(packageName)}>
+                      回到故事包管理并使用文本导入
+                    </Link>
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

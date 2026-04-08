@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { StoryPackageManagementSection } from '@/app/edit/sections/StoryPackageManagementSection';
+import { MAX_TEXT_IMPORT_SOURCE_LENGTH } from '@/types/storyline-management';
 import {
+  textImportSourceFixture,
   workspaceViewFixture,
   workspaceViewSingleLineFixture,
   workspaceViewWithoutHeadFixture,
@@ -12,6 +14,7 @@ import {
 const mockPush = vi.hoisted(() => vi.fn());
 const mockReplace = vi.hoisted(() => vi.fn());
 const mockRefresh = vi.hoisted(() => vi.fn());
+const mockLoadAdapterConfig = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -21,10 +24,15 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+vi.mock('@/app/runtime-config', () => ({
+  loadAdapterConfig: mockLoadAdapterConfig,
+}));
+
 describe('StoryPackageManagementSection', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    window.history.pushState({}, '', '/edit?storyPackage=sample-scene&section=story-package-management');
     fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true, displayName: 'Side Route' }), {
         status: 200,
@@ -119,8 +127,48 @@ describe('StoryPackageManagementSection', () => {
     await user.click(screen.getByRole('button', { name: '新建故事包' }));
 
     expect(screen.getByRole('heading', { name: '新建故事包' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '空白创建' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: '文本导入' })).not.toBeChecked();
     expect(screen.getByLabelText('故事包名称')).toBeInTheDocument();
     expect(screen.getByText(/slug/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText('导入文本')).not.toBeInTheDocument();
+  });
+
+  it('opens directly into 文本导入创建 from the creationMode query and loads saved runtime config once', () => {
+    window.history.pushState(
+      {},
+      '',
+      '/edit?storyPackage=sample-scene&section=story-package-management&creationMode=text_import',
+    );
+    mockLoadAdapterConfig.mockReturnValue(null);
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    expect(mockLoadAdapterConfig).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('radio', { name: '文本导入' })).toBeChecked();
+    expect(screen.getByLabelText('故事包名称（可选）')).toBeInTheDocument();
+    expect(screen.getByLabelText('导入文本')).toBeInTheDocument();
+    expect(screen.getByText(`0 / ${MAX_TEXT_IMPORT_SOURCE_LENGTH}`)).toBeInTheDocument();
+    expect(
+      screen.getByText('需要先在运行配置中保存一个可用模型，才能执行文本导入。'),
+    ).toBeInTheDocument();
+  });
+
+  it('loads browser runtime config only after switching into 文本导入创建', async () => {
+    const user = userEvent.setup();
+    mockLoadAdapterConfig.mockReturnValue(null);
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    expect(mockLoadAdapterConfig).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('radio', { name: '文本导入' }));
+
+    expect(mockLoadAdapterConfig).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByText('需要先在运行配置中保存一个可用模型，才能执行文本导入。'),
+    ).toBeInTheDocument();
   });
 
   it('submits package creation and replaces into the new management route on success', async () => {
@@ -148,6 +196,70 @@ describe('StoryPackageManagementSection', () => {
     expect(mockReplace).toHaveBeenCalledWith(
       '/edit?storyPackage=new-story-package&section=story-package-management',
     );
+  });
+
+  it('submits 文本导入创建 with saved runtime config, shows pending copy, and replaces into the created package route', async () => {
+    const user = userEvent.setup();
+    let resolveCreateRequest!: (response: Response) => void;
+    mockLoadAdapterConfig.mockReturnValue({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'test-key',
+        baseUrl: 'https://api.openai.com/v1',
+        model: 'gpt-4o',
+      },
+    });
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveCreateRequest = resolve as (response: Response) => void;
+        }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.click(screen.getByRole('radio', { name: '文本导入' }));
+    await user.type(screen.getByLabelText('故事包名称（可选）'), '导入来的故事包');
+    await user.type(screen.getByLabelText('导入文本'), textImportSourceFixture);
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(screen.getByText('Weaver 正在整理文本并创建故事包…')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      mode: 'text_import',
+      displayName: '导入来的故事包',
+      sourceText: textImportSourceFixture,
+      adapterConfig: {
+        provider: 'openai-compatible',
+        providerConfig: {
+          apiKey: 'test-key',
+          baseUrl: 'https://api.openai.com/v1',
+          model: 'gpt-4o',
+        },
+      },
+    });
+
+    resolveCreateRequest(
+      new Response(
+        JSON.stringify({
+          packageName: 'imported-package',
+          activeStorylineId: 'storyline_main',
+          createdAt: '2026-04-08T00:00:00.000Z',
+          warnings: ['发现 1 条导入提示。'],
+        }),
+        {
+          status: 201,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        '/edit?storyPackage=imported-package&section=story-package-management',
+      );
+    });
   });
 
   it('exits create mode immediately after successful package creation instead of staying on the panel', async () => {
@@ -192,6 +304,52 @@ describe('StoryPackageManagementSection', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.getByText('Story package display name is required.')).toBeInTheDocument();
     expect(screen.getByText('slug: --')).toBeInTheDocument();
+  });
+
+  it('blocks 文本导入创建 when no saved runtime config exists and keeps the request client-side', async () => {
+    const user = userEvent.setup();
+    mockLoadAdapterConfig.mockReturnValue(null);
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.click(screen.getByRole('radio', { name: '文本导入' }));
+    await user.type(screen.getByLabelText('导入文本'), textImportSourceFixture);
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('需要先在运行配置中保存一个可用模型，才能执行文本导入。'),
+    ).toBeInTheDocument();
+  });
+
+  it('surfaces text import server errors in the frozen creation feedback slot', async () => {
+    const user = userEvent.setup();
+    mockLoadAdapterConfig.mockReturnValue({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'test-key',
+        baseUrl: 'https://api.openai.com/v1',
+        model: 'gpt-4o',
+      },
+    });
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'Story package already exists.' }), {
+        status: 409,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+
+    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+
+    await user.click(screen.getByRole('button', { name: '新建故事包' }));
+    await user.click(screen.getByRole('radio', { name: '文本导入' }));
+    await user.type(screen.getByLabelText('导入文本'), textImportSourceFixture);
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    const feedbackSlot = screen.getByLabelText('创建反馈');
+    expect(within(feedbackSlot).getByText('Story package already exists.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '新建故事包' })).toBeInTheDocument();
   });
 
   it('keeps the current create draft and feedback when the left-rail 新建故事包 tile is clicked again in create mode', async () => {

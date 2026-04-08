@@ -36,7 +36,7 @@ describe('EditWorkbench', () => {
     renderStoryPackageManagementSection.mockReset();
   });
 
-  it('renders six tabs with story-package-management first while keeping 控制台 reachable', () => {
+  it('renders six tabs with story-package-management first while keeping agent 管理 reachable', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
@@ -73,7 +73,7 @@ describe('EditWorkbench', () => {
       'href',
       '/edit?storyPackage=sample-scene&section=control-modules',
     );
-    expect(screen.getByRole('link', { name: '控制台' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'agent 管理' })).toHaveAttribute(
       'href',
       '/edit?storyPackage=sample-scene&section=package-wiring-validation',
     );
@@ -85,7 +85,7 @@ describe('EditWorkbench', () => {
       Array.from(screen.getByRole('navigation', { name: 'Editor sections' }).querySelectorAll('a')).map(
         (link) => link.textContent,
       ),
-    ).toEqual(['故事包管理', '世界', '角色', '场景与阶段', '控制模块', '控制台']);
+    ).toEqual(['故事包管理', '世界', '角色', '场景与阶段', '控制模块', 'agent 管理']);
     expect(screen.getByRole('link', { name: '打开场景' })).toHaveAttribute(
       'href',
       '/play?storyPackage=sample-scene',
@@ -958,7 +958,7 @@ describe('EditWorkbench', () => {
     expect(screen.queryByLabelText('Current page status')).not.toBeInTheDocument();
   });
 
-  it('renders sidecar-agent cards from the editor load payload on the diagnostics workspace', () => {
+  it('renders agent-management cards from the editor load payload on the diagnostics workspace', () => {
     render(
       <EditWorkbench
         packageName="sample-scene"
@@ -988,7 +988,7 @@ describe('EditWorkbench', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'sidecar agents' })).toBeInTheDocument();
+    expect(screen.getByLabelText('sidecar-agent-surface')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
     expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
   });
@@ -1249,7 +1249,7 @@ describe('EditWorkbench', () => {
     });
     expect(screen.queryByText('REMOTE_AGENT_SUMMARY')).not.toBeInTheDocument();
     expect(screen.getByText('INITIAL_AGENT_SUMMARY')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '控制台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'agent 管理' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '重新检查' })).toBeInTheDocument();
   });
 

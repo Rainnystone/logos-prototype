@@ -70,8 +70,8 @@ const SECTION_SUMMARIES: Record<
   },
   'package-wiring-validation': {
     eyebrow: '当前页',
-    title: '控制台',
-    description: '检查整包连线、健康状态和修复建议。',
+    title: 'agent 管理',
+    description: '查看内置 agent 的当前状态，并从这里回到故事包管理发起文本导入。',
   },
 };
 

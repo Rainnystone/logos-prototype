@@ -480,6 +480,10 @@ ul {
   max-width: 24rem;
 }
 
+.story-package-creation-panel__field--wide {
+  max-width: none;
+}
+
 .story-package-creation-panel__label {
   font-size: 0.74rem;
   letter-spacing: 0.08em;
@@ -487,7 +491,31 @@ ul {
   color: #666666;
 }
 
-.story-package-creation-panel__field input {
+.story-package-creation-panel__modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.story-package-creation-panel__mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 2px solid #000000;
+  background: #f5f5f5;
+}
+
+.story-package-creation-panel__mode-option input {
+  margin: 0;
+}
+
+.story-package-creation-panel__field input,
+.story-package-creation-panel__field textarea {
   min-height: 2.75rem;
   padding: 0.6rem 0.75rem;
   border: 2px solid #000000;
@@ -495,17 +523,31 @@ ul {
   background: #ffffff;
 }
 
-.story-package-creation-panel__field input:focus {
+.story-package-creation-panel__field textarea {
+  min-height: 13rem;
+  resize: vertical;
+}
+
+.story-package-creation-panel__field input:focus,
+.story-package-creation-panel__field textarea:focus {
   outline: none;
   background: #f5f5f5;
 }
 
 .story-package-creation-panel__slug,
-.story-package-creation-panel__feedback {
+.story-package-creation-panel__feedback,
+.story-package-creation-panel__notice,
+.story-package-creation-panel__pending {
   padding: 0.6rem 0.75rem;
   border: 1px solid #000000;
   background: #f5f5f5;
   font-size: 0.84rem;
+}
+
+.story-package-creation-panel__counter {
+  justify-self: end;
+  font-size: 0.78rem;
+  color: #666666;
 }
 
 .story-package-creation-panel__actions {
@@ -541,6 +583,154 @@ ul {
 
 .story-package-creation-panel__action--ghost {
   background: #e5e5e5;
+}
+
+.package-wiring-validation {
+  display: grid;
+  gap: 1rem;
+}
+
+.package-wiring-validation__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.2rem;
+  border: 2px solid #000000;
+  background: #ffffff;
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.package-wiring-validation__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.package-wiring-validation__layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.85fr);
+  align-items: start;
+}
+
+.package-wiring-validation__status {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.package-wiring-validation__status-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.package-wiring-validation__status-summary {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.package-wiring-validation__issues {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.package-wiring-validation__issue {
+  display: grid;
+  gap: 0.3rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #d4d4d4;
+}
+
+.agent-surface-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem;
+  border: 2px solid #000000;
+  background: #ffffff;
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.agent-surface-panel__header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.agent-surface-panel__header h3 {
+  font-size: 1.3rem;
+}
+
+.agent-surface-panel__empty {
+  font-size: 0.92rem;
+  color: #666666;
+}
+
+.agent-surface-panel__list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.agent-surface-panel__card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 2px solid #000000;
+  background: #f9fafb;
+}
+
+.agent-surface-panel__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.agent-surface-panel__title-block {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.agent-surface-panel__title-block h4 {
+  font-size: 1.05rem;
+}
+
+.agent-surface-panel__state-line {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.agent-surface-panel__hint {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #000000;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.agent-surface-panel__summary {
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.agent-surface-panel__skills {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.agent-surface-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 .storyline-row {

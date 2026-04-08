@@ -6,7 +6,7 @@ const SECTION_LABELS: Record<Exclude<EditorSectionId, 'worldbase-cast'>, string>
   'story-package-management': '故事包管理',
   'scene-phase-authoring': '场景与阶段',
   'control-modules': '控制模块',
-  'package-wiring-validation': '控制台',
+  'package-wiring-validation': 'agent 管理',
 };
 
 export type WorldbaseSurface = 'world' | 'character';
