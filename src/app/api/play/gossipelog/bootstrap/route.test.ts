@@ -76,6 +76,34 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
     });
   });
 
+  it('returns 400 when storyPackageName is missing or invalid', async () => {
+    const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog/bootstrap', {
+        method: 'POST',
+        body: JSON.stringify({
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(loadWeaverImportSummaryIfPresent).not.toHaveBeenCalled();
+    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(createAPIAdapter).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'A valid storyPackageName is required for gossipelog bootstrap.',
+    });
+  });
+
   it('returns noop when no persisted weaver summary exists', async () => {
     loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(null);
     const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');

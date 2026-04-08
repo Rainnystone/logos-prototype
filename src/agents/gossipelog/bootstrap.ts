@@ -77,6 +77,7 @@ export async function bootstrapGossipelogFromWeaverSummary(
     (await inspectCharacterRelationshipsState(input.storyPackageName));
   const relationshipPath = resolveCharacterRelationshipsPath(input.storyPackageName);
   let unreadableSnapshot: string | null = null;
+  let shouldRollbackUnreadableSnapshot = false;
 
   try {
     const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName);
@@ -90,6 +91,7 @@ export async function bootstrapGossipelogFromWeaverSummary(
 
     if (relationshipState === 'unreadable') {
       unreadableSnapshot = await readFile(relationshipPath, 'utf8');
+      shouldRollbackUnreadableSnapshot = true;
       await saveCharacterRelationships(
         input.storyPackageName,
         createEmptyCharacterRelationshipsFile(input.storyPackageName),
@@ -112,6 +114,8 @@ export async function bootstrapGossipelogFromWeaverSummary(
       );
     }
 
+    shouldRollbackUnreadableSnapshot = false;
+
     await saveWeaverImportSummary(
       input.storyPackageName,
       buildUpdatedSummary(input.weaverSummary, 'succeeded'),
@@ -123,7 +127,7 @@ export async function bootstrapGossipelogFromWeaverSummary(
       bootstrapStatus: 'succeeded',
     };
   } catch (error) {
-    if (unreadableSnapshot !== null) {
+    if (unreadableSnapshot !== null && shouldRollbackUnreadableSnapshot) {
       await writeFile(relationshipPath, unreadableSnapshot, 'utf8').catch(() => undefined);
     }
 

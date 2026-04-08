@@ -10,6 +10,7 @@ import {
 } from '@/agents/gossipelog/agent';
 import { bootstrapGossipelogFromWeaverSummary } from '@/agents/gossipelog/bootstrap';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
+import * as weaverRepository from '@/agents/weaver/repository';
 import { loadWeaverImportSummary } from '@/agents/weaver/repository';
 import { loadStoryPackage } from '@/engine/story-loader';
 import type {
@@ -604,5 +605,46 @@ describe('gossipelog agent shell', () => {
     await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
       bootstrapStatus: 'fallback_pending',
     });
+  });
+
+  it('does not restore an unreadable snapshot when relationship state was already repaired before summary persistence fails', async () => {
+    const { packageName } = await createStoryPackageFixture();
+    const relationshipPath = path.resolve(
+      storyPackagesRoot,
+      packageName,
+      'agents/gossipelog/character-relationships.yaml',
+    );
+
+    writeFileSync(relationshipPath, 'meta: [', 'utf8');
+    const saveSummarySpy = vi
+      .spyOn(weaverRepository, 'saveWeaverImportSummary')
+      .mockRejectedValueOnce(new Error('summary write failed'));
+
+    try {
+      const result = await bootstrapGossipelogFromWeaverSummary({
+        storyPackageName: packageName,
+        weaverSummary: createWeaverSummary(),
+        adapter: {
+          gossipelogUpdate: vi.fn(async () => ({
+            involvedRoleIds: [],
+            invocationNoOp: true,
+            edgeUpdates: [],
+          })),
+          gossipelogInjection: vi.fn(async () => ({
+            highlightedDeltasText: '',
+            stableBackgroundText: 'seeded background',
+          })),
+        },
+        relationshipState: 'unreadable',
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.bootstrapStatus).toBe('fallback_pending');
+      await expect(
+        gossipelogRepository.inspectCharacterRelationshipsState(packageName),
+      ).resolves.toBe('readable');
+    } finally {
+      saveSummarySpy.mockRestore();
+    }
   });
 });
