@@ -4,9 +4,41 @@ This directory is an isolated workspace for the cloud-friendly simulation toolse
 
 ## Purpose
 
+This toolset enables **cloud Codex** (no internet, no browser) to simulate human behavior for LOGOS regression testing.
+
 - Keep simulation harness work separate from product runtime code and formal planning docs.
 - Host the scriptable system-regression layer for authoring, runtime, adapter, and sidecar validation.
 - Support future cloud batch execution with structured reports.
+
+## Documentation Discipline
+
+**CRITICAL:** simulation-toolset 严格维护自己独立的文档，完全独立于仓库根目录的规划文件。
+
+- **维护路径：** `simulation-toolset/docs/`
+  - `simulation-toolset/docs/task_plan.md` — 多阶段任务路线图
+  - `simulation-toolset/docs/findings.md` — 研究发现和架构决策
+  - `simulation-toolset/docs/progress.md` — 当前进度和验证记录
+
+- **严禁事项：**
+  - ❌ 严禁因 simulation-toolset 工作而修改根目录的 `task_plan.md`、`progress.md`、`findings.md`
+  - ❌ 严禁将 simulation-toolset 相关内容写入根目录规划文件
+  - ❌ 严禁在根目录文档中引用 simulation-toolset 的阶段或任务
+
+根目录规划文件仅用于追踪主产品线工作，simulation-toolset 是独立的子工作空间，有自己的完整规划体系。
+
+## Design Philosophy
+
+simulation-toolset 的设计宗旨是：**让云端环境的 Codex 可以在不依赖互联网、不依赖浏览器的条件下，mock 人类操作本系统。**
+
+核心设计原则：
+
+1. **End-to-End Coverage** — 覆盖完整的人类操作流程，从作者侧结构化保存到玩家侧 runtime 循环
+2. **No External Dependencies** — 不依赖互联网、不依赖浏览器自动化，所有 mock 在内存中完成
+3. **No Technical Debt** — 不接受暂时性补丁或增加技术债的临时方案
+4. **Boundary-First** — 优先验证正式边界（route、bridge、adapter），而非 UI 层
+5. **Story-Agnostic** — 所有测试场景必须是题材无关、故事无关的
+
+所有架构决策必须遵循这些原则。如果某个方案会增加技术债或依赖外部资源（如真实浏览器），则该方案不符合 simulation-toolset 设计目标，必须重新设计。
 
 ## Planned Structure
 

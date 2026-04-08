@@ -29,8 +29,9 @@
 | 8 | complete | 完成 Phase 3：fixture isolation、delay adapter、batch runner、timing trace |
 | 9 | complete | 完成 Phase 4：route smoke、轻量 UI smoke、sidecar trace normalization、governance/reuse minimums |
 | 10 | complete | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
-| 11 | in_progress | 完成 Phase 6：Storyline Mock & E2E Flow（覆盖 Phase 3 Part 1/2 storyline capabilities） |
-| 12 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
+| 11 | complete | 完成 Phase 6：Storyline Mock & E2E Flow（覆盖 Phase 3 Part 1/2 storyline capabilities） |
+| 12 | complete | 完成 Phase 7：统一 Mock 时钟（解决时间戳精度问题，实现确定性测试） |
+| 13 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
 
 ## Phase 4 Scope
 
@@ -173,15 +174,48 @@
 
 ### Execution Slices
 
-- [ ] Slice 1: freeze shared contracts and serialized trace shapes
-- [ ] Slice 2: implement `MockKernel` as the single in-memory state and trace core
-- [ ] Slice 3: add `SubstrateMock`, `StorylineObserver`, and in-memory fixture building
-- [ ] Slice 4: add `RouteMock` and `StorylineE2ESimulator`
-- [ ] Slice 5: refactor existing toolset consumers (`session-simulator`, `temp-package`, `scripted-adapter`, `scenario-runner`)
-- [ ] Slice 6: add the six storyline scenarios and their tests
-- [ ] Slice 7: refresh manifest / README and run full simulation regression
+- [x] Slice 1: freeze shared contracts and serialized trace shapes
+- [x] Slice 2: implement `MockKernel` as the single in-memory state and trace core
+- [x] Slice 3: add `SubstrateMock`, `StorylineObserver`, and in-memory fixture building
+- [x] Slice 4: add `RouteMock` and `StorylineE2ESimulator`
+- [x] Slice 5: refactor existing toolset consumers (`session-simulator`, `temp-package`, `scripted-adapter`, `scenario-runner`)
+- [x] Slice 6: add the six storyline scenarios and their tests
+- [x] Slice 7: refresh manifest / README and run full simulation regression
 - Explicit rules:
   - Mock 工具是内存中的 API mock，不依赖文件系统
   - 遵循 systematic-debugging 思路：完整 trace、根因追踪
   - 扩展现有工具优先于新建
   - 所有场景保持 story-agnostic
+
+## Phase 7: 统一 Mock 时钟 (2026-04-08)
+
+### 问题
+
+`rename-and-verify-scenario.test.ts` 间歇性失败，根因是时间戳精度问题：
+- `buildStoryline()` 和 `updateStorylineDisplayName()` 在同一毫秒内执行时生成相同时间戳
+- 断言 `updatedAt !== initialUpdatedAt` 在快速执行时失败
+
+### 解决方案
+
+1. **短期修复**: 修改断言检查 updatedAt 是有效 ISO 时间戳，而非必须不同
+2. **根本解决**: 引入统一 Mock 时钟，使测试完全确定性
+
+### 实现内容
+
+- 新增 `MockClock` 模块 (`simulation-toolset/src/mock-clock.ts`)
+  - `frozen` 模式：时间冻结
+  - `controlled` 模式：可手动推进时间
+  - `real` 模式：真实系统时间（默认，向后兼容）
+- 集成到 `MockKernel`
+  - 新增 `MockKernelOptions.clock` 参数
+  - `MockKernel.clock` 属性暴露时钟
+- 更新 `MockFixtureBuilder` 使用 `kernel.clock.now()`
+- 更新 `SubstrateMock` 使用 `kernel.clock.now()`
+
+### Done Criteria
+
+- [x] MockClock 基础功能测试通过
+- [x] MockKernel 集成 MockClock 测试通过
+- [x] 所有现有测试通过 (380 tests)
+- [x] 类型检查通过
+- [x] 多次运行验证稳定性

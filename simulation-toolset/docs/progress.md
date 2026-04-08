@@ -173,3 +173,69 @@
   - F5: legacy_bootstrap_flow
   - F6: full_storyline_runtime_flow
 - 下一步：Spec review → Implementation plan
+
+---
+
+## 2026-04-08 Phase 7: 统一 Mock 时钟
+
+### 问题诊断
+
+- 发现 `rename-and-verify-scenario.test.ts` 间歇性失败（约 30% 失败率）
+- 排除了测试隔离问题、ID 冲突等假设
+- 定位根因：时间戳精度问题
+  - `buildStoryline()` 和 `updateStorylineDisplayName()` 在同一毫秒内执行
+  - 生成相同的 `new Date().toISOString()`
+  - 断言 `updatedAt !== initialUpdatedAt` 失败
+
+### TDD 实现流程
+
+#### 任务 A: 短期修复
+
+1. **RED**: 创建 `rename-assertion-logic.test.ts` 描述期望行为
+2. **GREEN**:
+   - 添加 `isValidISOTimestamp()` 辅助函数
+   - 修改断言从 `updated-at-changed` 改为 `updated-at-valid`
+   - 检查 updatedAt 是有效 ISO 时间戳，而非必须不同
+3. **验证**: 10 次完整套件运行全部通过
+
+#### 任务 B: 统一 Mock 时钟
+
+1. **RED**: 创建 `mock-clock.test.ts` (19 tests)
+2. **GREEN**: 实现 `MockClock`
+   - `frozen` 模式：时间冻结
+   - `controlled` 模式：可手动推进时间
+   - `real` 模式：真实系统时间
+3. **集成**: 创建 `mock-kernel-clock.test.ts` (6 tests)
+   - MockKernel 接受 `MockKernelOptions.clock` 参数
+   - MockFixtureBuilder 使用 `kernel.clock.now()`
+   - SubstrateMock 使用 `kernel.clock.now()`
+4. **验证**: 380 tests 全部通过，5 次运行全部通过
+
+### 新增文件
+
+- `simulation-toolset/src/mock-clock.ts` - MockClock 实现
+- `simulation-toolset/tests/mock-clock.test.ts` - MockClock 测试
+- `simulation-toolset/tests/mock-kernel-clock.test.ts` - 集成测试
+- `simulation-toolset/tests/rename-assertion-logic.test.ts` - 断言逻辑测试
+
+### 修改文件
+
+- `simulation-toolset/src/mock-kernel.ts` - 添加 clock 支持
+- `simulation-toolset/src/mock-fixture-builder.ts` - 使用 kernel.clock
+- `simulation-toolset/src/substrate-mock.ts` - 使用 kernel.clock
+- `simulation-toolset/scenarios/storyline-flows/rename-and-verify.ts` - 修复断言
+- `simulation-toolset/tests/rename-and-verify-scenario.test.ts` - 更新断言名称
+
+### 验证记录
+
+```
+npm run test:simulation (5次连续运行) → 38 passed (38) 每次都通过
+npm run type-check:simulation → passed
+```
+
+### 文档隔离规则强化
+
+- 更新 `simulation-toolset/README.md` 新增两个关键章节：
+  - **Documentation Discipline** — 明确文档独立维护路径，严禁修改根目录规划文件
+  - **Design Philosophy** — 阐述设计宗旨（云端 Codex、无互联网/浏览器依赖）和五大核心原则
+- 此规则强化是为了防止后续再次误修改根目录文档

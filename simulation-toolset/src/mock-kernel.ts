@@ -19,6 +19,7 @@ import type {
   SerializedFlowTrace,
   SerializedVariantWorkspaceState,
 } from './serialized-trace';
+import { createMockClock, type MockClock } from './mock-clock';
 
 // ============================================================================
 // Core Types (Section 3.2)
@@ -131,6 +132,21 @@ export interface MockOperation<T> {
 }
 
 // ============================================================================
+// MockKernel Options
+// ============================================================================
+
+/**
+ * Options for creating a MockKernel.
+ */
+export interface MockKernelOptions {
+  /**
+   * Clock for deterministic timestamp generation.
+   * If not provided, uses real system time.
+   */
+  clock?: MockClock;
+}
+
+// ============================================================================
 // MockKernel Implementation
 // ============================================================================
 
@@ -194,6 +210,11 @@ export interface MockKernel {
   cleanup(): Promise<void>;
 
   /**
+   * Clock for timestamp generation.
+   */
+  clock: MockClock;
+
+  /**
    * Test helper: directly set state.
    * @internal - for testing only
    */
@@ -203,9 +224,12 @@ export interface MockKernel {
 /**
  * Create a MockKernel instance.
  */
-export function createMockKernel(packageName: string): MockKernel {
+export function createMockKernel(packageName: string, options?: MockKernelOptions): MockKernel {
   // Store original package name for reset
   const originalPackageName = packageName;
+
+  // Create or use provided clock
+  const clock = options?.clock ?? createMockClock({ mode: 'real' });
 
   // Initialize state
   let state: MockKernelState = {
@@ -291,7 +315,7 @@ export function createMockKernel(packageName: string): MockKernel {
       const stateBefore = takeSnapshot();
 
       // Timestamp
-      const timestamp = new Date().toISOString();
+      const timestamp = clock.now();
 
       // Increment sequence
       sequenceCounter++;
@@ -569,6 +593,8 @@ export function createMockKernel(packageName: string): MockKernel {
     _testSetState(newState: MockKernelState): void {
       state = newState;
     },
+
+    clock,
   };
 }
 

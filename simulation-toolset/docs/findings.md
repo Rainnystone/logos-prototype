@@ -206,3 +206,44 @@
   - TempPackage 扩展支持 Phase 3 结构
   - ScriptedAdapter 扩展接入 trace 系统
   - ScenarioRunner 扩展支持 record/replay
+
+## 2026-04-08 Phase 7 统一 Mock 时钟
+
+### 问题根因
+
+`rename-and-verify-scenario.test.ts` 间歇性失败：
+- 非测试隔离问题，非 ID 冲突
+- 时间戳精度问题：`buildStoryline()` 和 `updateStorylineDisplayName()` 在同一毫秒内执行时生成相同时间戳
+- 断言 `updatedAt !== initialUpdatedAt` 在快速执行时失败
+
+### 解决方案
+
+1. **短期修复**: 修改断言检查 updatedAt 是有效 ISO 时间戳
+2. **根本解决**: 引入 `MockClock` 使测试完全确定性
+
+### MockClock 设计
+
+```typescript
+type MockClockMode = 'frozen' | 'controlled' | 'real';
+
+interface MockClock {
+  now(): string;           // ISO 时间戳
+  nowAsDate(): Date;       // Date 对象
+  nowMs(): number;         // 毫秒数
+  advance(ms: number): void;  // 推进时间 (controlled mode)
+  set(date: Date): void;   // 设置时间 (controlled mode)
+  getMode(): MockClockMode;
+}
+```
+
+### 集成点
+
+- `MockKernel` 持有 clock 实例，通过 `MockKernelOptions.clock` 注入
+- `MockFixtureBuilder` 使用 `kernel.clock.now()`
+- `SubstrateMock` 使用 `kernel.clock.now()`
+
+### 最佳实践
+
+- 测试应使用 `frozen` 或 `controlled` 模式确保确定性
+- 生产代码默认使用 `real` 模式（向后兼容）
+- 时间推进测试（超时、延迟）可使用 `controlled` 模式

@@ -215,8 +215,7 @@ function createDefaultRelationshipLayer(): RelationshipLayer {
   };
 }
 
-function createMinimalSession(sessionId: string): RuntimeSession {
-  const timestamp = new Date().toISOString();
+function createMinimalSession(sessionId: string, timestamp: string): RuntimeSession {
   return {
     sessionId,
     lifecycle: 'awaiting_start',
@@ -301,9 +300,9 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
           // Legacy implicit context
           if (options.forWrite) {
             // Bootstrap default storyline
-            const timestamp = new Date().toISOString();
+            const timestamp = kernel.clock.now();
             const sessionId = generateId('session');
-            const session = createMinimalSession(sessionId);
+            const session = createMinimalSession(sessionId, timestamp);
 
             const storyline: StorylineRecord = {
               storylineId: DEFAULT_STORYLINE_ID,
@@ -441,7 +440,7 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
             );
           }
 
-          const timestamp = new Date().toISOString();
+          const timestamp = kernel.clock.now();
           const updatedStoryline: StorylineRecord = {
             ...targetStoryline,
             headCheckpointId: resolveSessionHeadCheckpointId(session),
@@ -552,7 +551,7 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
           const storylineId = generateId('storyline');
           const variantId = generateId('variant');
           const sessionId = generateId('session');
-          const timestamp = new Date().toISOString();
+          const timestamp = kernel.clock.now();
 
           // Copy checkpoint to new session
           const sourceCheckpoint = sourceSession.checkpointsById[input.checkpointId];
@@ -702,7 +701,7 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
           }
 
           // Update storyline
-          const timestamp = new Date().toISOString();
+          const timestamp = kernel.clock.now();
           const updatedStoryline: StorylineRecord = {
             ...storyline,
             name: normalizedDisplayName,
@@ -837,7 +836,7 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
               }
 
               const checkpointId = generateId('checkpoint');
-              const timestamp = new Date().toISOString();
+              const timestamp = kernel.clock.now();
               const ordinal = input.command.payload.acceptedBeatOrdinal;
 
               const checkpoint: RuntimeCheckpoint = {
@@ -954,8 +953,8 @@ export function createSubstrateMock(kernel: MockKernel): SubstrateMock {
             case 'reset_workbench': {
               const oldSession = state.runtimeSessions.sessionsById[activeStoryline.activeSessionId];
               const newSessionId = generateId('session');
-              const timestamp = new Date().toISOString();
-              const newSession = createMinimalSession(newSessionId);
+              const timestamp = kernel.clock.now();
+              const newSession = createMinimalSession(newSessionId, timestamp);
 
               // Update storyline
               const updatedStoryline: StorylineRecord = {

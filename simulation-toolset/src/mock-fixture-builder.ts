@@ -191,8 +191,7 @@ function createDefaultStateSnapshot(ordinal: number): StateSnapshot {
   };
 }
 
-function createMinimalSession(sessionId: string, lifecycle: RuntimeSession['lifecycle'] = 'awaiting_start'): RuntimeSession {
-  const timestamp = new Date().toISOString();
+function createMinimalSession(sessionId: string, timestamp: string, lifecycle: RuntimeSession['lifecycle'] = 'awaiting_start'): RuntimeSession {
   return {
     sessionId,
     lifecycle,
@@ -209,9 +208,9 @@ function createMinimalSession(sessionId: string, lifecycle: RuntimeSession['life
 function createMinimalCheckpoint(
   checkpointId: string,
   ordinal: number,
+  timestamp: string,
   config?: Partial<CheckpointConfig>,
 ): RuntimeCheckpoint {
-  const timestamp = new Date().toISOString();
   return {
     checkpointId,
     acceptedBeatOrdinal: ordinal,
@@ -241,7 +240,7 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
 
     withRepository(config: RepositoryConfig): MockFixtureBuilder {
       const state = kernel.getState();
-      const timestamp = new Date().toISOString();
+      const timestamp = kernel.clock.now();
 
       const storylinesById: Record<string, StorylineRecord> = {};
       const variantsById: Record<string, StorylineVariant> = {};
@@ -287,7 +286,7 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
 
     withStoryline(config: StorylineConfig): MockFixtureBuilder {
       const state = kernel.getState();
-      const timestamp = new Date().toISOString();
+      const timestamp = kernel.clock.now();
 
       if (!state.storylineRepository) {
         // Create minimal repository
@@ -374,7 +373,8 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
 
     withSession(config: SessionConfig): MockFixtureBuilder {
       const state = kernel.getState();
-      const session = createMinimalSession(config.sessionId, config.lifecycle);
+      const timestamp = kernel.clock.now();
+      const session = createMinimalSession(config.sessionId, timestamp, config.lifecycle);
 
       kernel._testSetState({
         ...state,
@@ -399,9 +399,11 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
         throw new Error(`Session "${config.sessionId}" does not exist.`);
       }
 
+      const timestamp = kernel.clock.now();
       const checkpoint = createMinimalCheckpoint(
         config.checkpointId,
         config.acceptedBeatOrdinal,
+        timestamp,
         config,
       );
 
@@ -434,7 +436,7 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
       configs: readonly (StorylineConfig & { variantId?: string })[],
     ): MockFixtureBuilder {
       const state = kernel.getState();
-      const timestamp = new Date().toISOString();
+      const timestamp = kernel.clock.now();
 
       const storylinesById: Record<string, StorylineRecord> = {};
       const variantsById: Record<string, StorylineVariant> = {};
@@ -446,7 +448,7 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
       for (const config of configs) {
         const variantId = config.variantId ?? `variant_${config.storylineId.replace('storyline_', '')}`;
         const sessionId = generateId('session');
-        const session = createMinimalSession(sessionId);
+        const session = createMinimalSession(sessionId, timestamp);
 
         // Create variant
         variantsById[variantId] = {
@@ -513,11 +515,11 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
 
     buildStoryline(input: BuildStorylineInput): BuildStorylineResult {
       const state = kernel.getState();
-      const timestamp = new Date().toISOString();
+      const timestamp = kernel.clock.now();
 
       const variantId = input.variantId ?? 'variant_main';
       const sessionId = generateId('session');
-      const session = createMinimalSession(sessionId);
+      const session = createMinimalSession(sessionId, timestamp);
 
       const checkpoints = input.withCheckpoints ?? [];
       let headCheckpointId: string | null = null;
@@ -525,7 +527,7 @@ export function createMockFixtureBuilder(kernel: MockKernel): MockFixtureBuilder
       // Add checkpoints to session
       for (const ordinal of checkpoints) {
         const checkpointId = generateId('checkpoint');
-        const checkpoint = createMinimalCheckpoint(checkpointId, ordinal);
+        const checkpoint = createMinimalCheckpoint(checkpointId, ordinal, timestamp);
         session.orderedCheckpointIds.push(checkpointId);
         session.checkpointsById[checkpointId] = checkpoint;
         headCheckpointId = checkpointId;

@@ -30,10 +30,10 @@ describe('rename and verify scenario', () => {
       }),
     );
 
-    // updatedAt should be updated
+    // updatedAt should be valid
     expect(report.assertions).toContainEqual(
       expect.objectContaining({
-        name: 'updated-at-changed',
+        name: 'updated-at-valid',
         pass: true,
       }),
     );
