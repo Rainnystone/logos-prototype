@@ -29,7 +29,10 @@ function createAdapterResult() {
 
 function createAdapterMock() {
   return {
-    weaverImport: vi.fn(async (_request: WeaverImportRequest) => createAdapterResult()),
+    weaverImport: vi.fn(async (request: WeaverImportRequest) => {
+      void request;
+      return createAdapterResult();
+    }),
   } satisfies Pick<LLMAdapter, 'weaverImport'>;
 }
 

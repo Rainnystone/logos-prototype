@@ -765,6 +765,70 @@ describe('api adapter', () => {
     });
   });
 
+  it('honors weaverImport defaults and config overrides on the adapter path', async () => {
+    const observedBodies: Record<string, unknown>[] = [];
+    const fetchMock = vi.fn(async (_input, init?: RequestInit) => {
+      if (init?.body && typeof init.body === 'string') {
+        observedBodies.push(JSON.parse(init.body) as Record<string, unknown>);
+      }
+
+      return createOpenAIResponse({
+        suggestedPackageName: 'woven-package',
+        sourceSummary: '外部文本来源摘要',
+        importSummary: '已提取基础世界观与角色框架',
+        openingHook: '原始 opening hook 文本',
+        worldBase: {
+          settingSummary: '近未来沿海都市',
+        },
+        hero: {
+          displayName: '林深',
+          roleSummary: '被迫接管灯塔网络的主角',
+        },
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const defaultAdapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+    const overrideAdapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+      weaverImportConfig: {
+        temperature: 0.61,
+        maxOutputTokens: 3456,
+      },
+    });
+
+    await defaultAdapter.weaverImport!(sampleWeaverImportRequest);
+    await overrideAdapter.weaverImport!(sampleWeaverImportRequest);
+
+    expect(observedBodies[0]).toMatchObject({
+      temperature: DEFAULT_MODE_CONFIGS.weaverImport.temperature,
+      max_tokens: DEFAULT_MODE_CONFIGS.weaverImport.maxOutputTokens,
+    });
+    expect(observedBodies[1]).toMatchObject({
+      temperature: 0.61,
+      max_tokens: 3456,
+    });
+  });
+
   it('rejects gossipelogUpdate responses that include a baseline when replaceBaseline is false', async () => {
     vi.stubGlobal(
       'fetch',

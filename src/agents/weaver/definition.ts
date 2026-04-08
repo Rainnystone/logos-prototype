@@ -1,15 +1,8 @@
 import YAML from 'yaml';
 
-import type { AgentDefinition } from '@/agents/registry';
+import type { AgentDefinition, AgentReadableStateSummary } from '@/agents/registry';
 import { parseWithSchema } from '@/lib/validation';
 import { WeaverImportSummarySchema } from '@/types';
-import type { AgentOperationalHint, WeaverBootstrapStatus } from '@/types';
-
-export interface AgentReadableStateSummary {
-  readonly latestStateLine: string;
-  readonly recommendedOperationalHint?: Exclude<AgentOperationalHint, 'pending_bootstrap'>;
-  readonly bootstrapStatus?: WeaverBootstrapStatus;
-}
 
 function summarizeWeaverImportState(statePathRawContents: string): AgentReadableStateSummary {
   const parsedSummary = parseWithSchema(

@@ -805,7 +805,8 @@ export function parseWeaverImportResult(
     'weaverImportResult',
     usage,
   );
-  const { usage: _usage, ...payload } = parsed;
+  const { usage: parsedUsage, ...payload } = parsed;
+  void parsedUsage;
   const validatedPayload = validateWeaverImportPayload(payload);
 
   return deepFreeze(
