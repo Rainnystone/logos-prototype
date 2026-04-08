@@ -2,17 +2,34 @@
 
 ## Goal
 
-为 `Phase 4` 维护独立的工作记忆入口，并把当前已经冻结的产品方向、架构边界、正式 spec 与 implementation plan 基线稳定记录下来。
+为 `Phase 4` 维护独立的工作记忆入口，并把当前已经落地的实现切片、冻结边界、正式 spec、implementation plan 与最终验证状态稳定记录下来。
 
 当前这套文档的职责不是直接指挥实现，而是：
 
-- 记录 `Phase 4` 当前已经谈定的结论
+- 记录 `Phase 4` 当前已经谈定且已经按计划实现的结论
 - 提供恢复 `Phase 4` 讨论上下文的最短入口
-- 在实现开始前，避免后续线程重复发散或误解边界
+- 在实现收尾阶段，避免后续线程误判当前完成度与剩余阻塞
 
 ## Current Status
 
-- `Phase 4` 已产出正式 spec 与 implementation plan，尚未进入实现。
+- `Phase 4` 的正式 spec 与 implementation plan 已落地并执行到 `Task 7` 收尾阶段。
+- 当前分支已经完成 implementation plan 中的 `Task 1` 到 `Task 6`：
+  - `text_import` contract、命名边界和 `weaver` summary schema 已落地。
+  - shared adapter-config parser、shared sidecar reference loader、agent surface metadata 已落地。
+  - `weaver agent` sidecar shell、reference 资产、adapter `weaverImport` operation 已落地。
+  - staged scaffold text import、atomic package promotion、`weaver` summary/materialized config 写入已落地。
+  - `故事包管理` 的 `空白创建 / 文本导入` 分流与 `agent 管理` 页面已落地。
+  - `gossipelog` 的 create-time bootstrap 与 bounded first-play fallback 已落地。
+- `Task 7` 的验证状态目前为：
+  - 指定 targeted suite 已执行，结果为 `14` 个测试文件通过、`1` 个测试文件失败。
+  - `npm run build` 已通过，仅有既存 ESLint warning。
+  - `npm test` 已执行，结果为 `88` 个测试文件通过、`2` 个测试文件失败。
+  - 文档相对链接检查已通过。
+  - 浏览器验收尚未在本次子线程内完成。
+- 当前阻塞不是文档本身，而是当前分支仍有两个既存测试断言没有同步到最新实现：
+  - `src/types/__tests__/type-conformance.test.ts`
+  - `src/authoring/persistence/__tests__/package-state.test.ts`
+  - 两处都还在期待英文 `gossipelog responsibilitySummary`，而当前实现已使用中文说明文案。
 - 当前已经冻结的方向是：
   - 新增内建、`always-on` 的 `sidecar agent`
   - 新 agent 名称固定为 `weaver agent`
@@ -93,11 +110,11 @@
 
 当前已没有阻塞 implementation plan 的产品级待定项。
 
-接下来的未完成部分属于执行期工作，而不是 spec 级方向不清：
+接下来的未完成部分属于收尾验证，而不是 spec 级方向不清：
 
-- 按 implementation plan 分任务落代码
-- 在真实代码里把 `weaver`、shared sidecar reference loader、`agent 管理页面`、`gossipelog bootstrap/fallback` 接起来
-- 跑完计划里要求的测试、构建与浏览器验证
+- 修正两个仍期待英文 `gossipelog responsibilitySummary` 的测试断言，并重新运行 targeted suite 与全量测试
+- 在可用的浏览器自动化环境中完成 `空白创建 / 文本导入 / agent 管理页` 的真实页面验收
+- 在上述验证全部通过后，再把 `Phase 4` 标记为 release-grade complete
 
 ## Canonical References
 

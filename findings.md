@@ -25,6 +25,12 @@
 14. [docs/superpowers/phase-4/progress.md](docs/superpowers/phase-4/progress.md)
 15. [docs/superpowers/phase-4/findings.md](docs/superpowers/phase-4/findings.md)
 
+如果当前任务是继续收尾 `Phase 4` 实现，还需要先记住：
+
+- 当前工作分支已经完成 `Task 1` 到 `Task 6` 的实现，不要再把它当成“尚未开工”的计划分支。
+- 当前剩余问题主要是最终验证，而不是产品方向不清。
+- 现存验证阻塞是两个测试断言没有跟上 `gossipelog responsibilitySummary` 的中文化实现，以及一次未完成的浏览器验收。
+
 ## Phase 4 准备入口
 
 - `Phase 4` 现在已经有正式 spec、implementation plan 与独立工作记忆入口。

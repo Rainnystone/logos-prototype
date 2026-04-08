@@ -1,5 +1,18 @@
 # Progress
 
+## 2026-04-08
+
+- 当前工作分支的 `Phase 4` 已从“准备态”进入“实现收尾态”：
+  - implementation plan 的 `Task 1` 到 `Task 6` 已落地
+  - `Task 7` 正在做最终文档同步与验证收口
+- 仓库级恢复口径已需要指向 `docs/superpowers/phase-4/` 的真实完成度，而不是继续把它描述成“尚未开始实现”。
+- 当前分支上的最终验证结果是：
+  - `npm run build` 通过
+  - 指定 targeted suite 有 `1` 个失败
+  - `npm test` 有 `2` 个失败
+  - 两个失败都来自 `gossipelog responsibilitySummary` 断言仍期待英文文案
+  - 浏览器验收在本次子线程内未完成
+
 ## 2026-04-07
 
 - 已建立 `docs/superpowers/phase-4/` 独立工作记忆入口：

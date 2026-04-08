@@ -19,7 +19,7 @@
 - `Phase 2` 已完成并合入主线。
 - `Phase 3 Part 1 / Part 2 / Part 3` 已完成实现、验证，并通过 `PR #6`、`PR #7`、`PR #8` 合入 `branch/narrative-editor`。
 - `Phase 3` 的仓库级文档整编已经完成，当前应把它视为冻结基线，而不是待继续执行的主线计划。
-- 当前活跃任务已切换为 `Phase 4` 准备，不再继续扩写 `Phase 3` 主线。
+- 当前活跃任务已切换为 `Phase 4` 执行与收尾，不再继续扩写 `Phase 3` 主线。
 - `Phase 4` 已建立独立工作记忆入口：
   - `docs/superpowers/phase-4/task_plan.md`
   - `docs/superpowers/phase-4/progress.md`
@@ -27,7 +27,10 @@
 - `Phase 4` 现在已经有正式 spec 与 implementation plan：
   - `docs/superpowers/specs/2026-04-07-phase-4-weaver-agent-management-design.md`
   - `docs/superpowers/plans/2026-04-07-phase-4-weaver-and-agent-management-implementation.md`
-- 当前仓库级口径应把 `Phase 4` 视为“设计与计划已完成，尚未开始实现”，而不是“还在准备 spec / plan”。
+- 当前仓库级口径不应再把 `Phase 4` 视为“尚未开始实现”：
+  - 在当前工作分支里，`Task 1` 到 `Task 6` 已完成实现
+  - `Task 7` 已进入最终同步与验证收口
+  - 真实状态是“实现已落地，但发布级验证仍有收尾项”，不是“还在准备 spec / plan”
 
 ## Milestones
 
@@ -39,7 +42,7 @@
 | `Phase 3 Part 2` | complete | 完成 `故事包管理` 工作区与 storyline workspace |
 | `Phase 3 Part 3` | complete | 完成 safe delete storyline 与 local new story package |
 | 文档整编 | complete | 根目录索引、总 spec、codemap、README 与 agent 指南已同步到主线真实状态 |
-| `Phase 4` 设计与计划 | in_progress | 已完成正式 spec、implementation plan 与 review，尚未开始实现 |
+| `Phase 4` 实现与收尾 | in_progress | 当前分支已完成 `Task 1` 到 `Task 6`，`Task 7` 仍在处理最终测试与浏览器验收收口 |
 
 ## Current Product Baseline
 
