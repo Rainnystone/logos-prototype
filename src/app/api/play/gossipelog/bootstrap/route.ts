@@ -8,6 +8,7 @@ import {
 } from '@/agents/weaver/repository';
 import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
+import { assertValidStoryPackageSlug } from '@/story-packages/package-slug';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -15,11 +16,14 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-  const storyPackageName =
+  const rawStoryPackageName =
     typeof body.storyPackageName === 'string' ? body.storyPackageName.trim() : '';
   const adapterConfig = parseAdapterConfig(body.adapterConfig);
 
-  if (storyPackageName.length === 0) {
+  let storyPackageName: string;
+  try {
+    storyPackageName = assertValidStoryPackageSlug(rawStoryPackageName);
+  } catch {
     return NextResponse.json(
       {
         error: 'A valid storyPackageName is required for gossipelog bootstrap.',
