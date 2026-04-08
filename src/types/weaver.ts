@@ -16,6 +16,8 @@ const WeaverPassthroughObjectSchema = z.object({}).passthrough();
 // Author-supplied displayName always wins. Only when it is absent may a validated weaver
 // suggestion be used, and invalid or conflicting suggestions must fail instead of being
 // rewritten silently.
+// WeaverImportPayloadSchema.openingHook is not the authoritative persisted package openingHook.
+// Task 4 must preserve the original sourceText as the persisted source of truth.
 export const WeaverImportPayloadSchema = z
   .object({
     suggestedPackageName: z.string().optional(),
