@@ -99,6 +99,7 @@ describe('loadAgentSurfaceItems', () => {
     const gossipelogCard = items.find((item) => item.agentId === 'gossipelog');
 
     expect(gossipelogCard?.operationalHint).toBe('warning');
+    expect(gossipelogCard?.operationalHintLabel).toBe('当前状态：需要关注');
     expect(gossipelogCard?.latestStateLine).toEqual(expect.any(String));
   });
 
@@ -135,11 +136,25 @@ describe('loadAgentSurfaceItems', () => {
 
     const items = await loadAgentSurfaceItems('__phase4-imported-package-readable-gossipelog__');
 
-    expect(items.find((item) => item.agentId === 'gossipelog')?.operationalHint).toBe('ready');
-    expect(items.find((item) => item.agentId === 'weaver')?.latestStateLine).toEqual(
+    const gossipelogItem = items.find((item) => item.agentId === 'gossipelog');
+    const weaverItem = items.find((item) => item.agentId === 'weaver');
+
+    expect(gossipelogItem?.operationalHint).toBe('ready');
+    expect(gossipelogItem?.operationalHintLabel).toBe('当前状态：可用');
+    expect(gossipelogItem?.responsibilitySummary).toBe(
+      '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
+    );
+    expect(gossipelogItem?.skillDisplayMetadata.map((skill) => skill.description)).toEqual([
+      '在接受新剧情后更新持久关系状态。',
+      '为下一轮生成准备关系上下文摘要。',
+    ]);
+    expect(weaverItem?.skillDisplayMetadata.map((skill) => skill.description)).toEqual([
+      '把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。',
+    ]);
+    expect(weaverItem?.latestStateLine).toEqual(
       expect.any(String),
     );
-    expect(items.find((item) => item.agentId === 'gossipelog')?.latestStateLine).toEqual(
+    expect(gossipelogItem?.latestStateLine).toEqual(
       expect.any(String),
     );
   });

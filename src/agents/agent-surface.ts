@@ -3,7 +3,11 @@ import path from 'node:path';
 
 import YAML from 'yaml';
 
-import { type AgentDefinition, listSidecarAgentDefinitions } from '@/agents/registry';
+import {
+  type AgentDefinition,
+  type AgentSkillDisplayMetadata,
+  listSidecarAgentDefinitions,
+} from '@/agents/registry';
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
 import type { AgentOperationalHint } from '@/types';
 
@@ -20,10 +24,12 @@ export interface AgentSurfaceItem {
   readonly displayName: string;
   readonly responsibilitySummary: string;
   readonly skillIds: readonly string[];
+  readonly skillDisplayMetadata: readonly AgentSkillDisplayMetadata[];
   readonly packageConfigPath: string;
   readonly packageStatePath: string;
   readonly operationalHint?: AgentOperationalHint;
-  readonly latestStateLine?: string;
+  readonly operationalHintLabel: string;
+  readonly latestStateLine: string;
   readonly latestStateSummary: AgentLatestStateSummary;
 }
 
@@ -129,6 +135,18 @@ function degradedBootstrapCopy(): string {
 
 function missingGossipelogFallbackCopy(): string {
   return 'Relationship state is not available yet. Bootstrap will wait for a later import seed or bounded fallback.';
+}
+
+function formatOperationalHintLabel(operationalHint: AgentOperationalHint): string {
+  if (operationalHint === 'ready') {
+    return '当前状态：可用';
+  }
+
+  if (operationalHint === 'pending_bootstrap') {
+    return '当前状态：等待初始化';
+  }
+
+  return '当前状态：需要关注';
 }
 
 async function loadConfigState(
@@ -314,9 +332,11 @@ export async function loadAgentSurfaceItems(packageName: string): Promise<readon
       displayName: definition.displayName,
       responsibilitySummary: definition.responsibilitySummary,
       skillIds: definition.skillIds,
+      skillDisplayMetadata: definition.skillDisplayMetadata,
       packageConfigPath: definition.packageConfigPath,
       packageStatePath: definition.packageStatePath,
       operationalHint,
+      operationalHintLabel: formatOperationalHintLabel(operationalHint),
       latestStateLine,
       latestStateSummary: {
         statePresence:

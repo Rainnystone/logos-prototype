@@ -38,7 +38,7 @@ export const weaverAgentDefinition = {
     {
       skillId: 'weaver-import-skill',
       displayName: 'Weaver Import',
-      description: 'Extracts bounded import payloads and bootstrap-ready summary state.',
+      description: '把作者原文整理成可导入的结构化摘要，并维护可启动的导入结果。',
     },
   ],
   packageConfigPath: 'agents/weaver/config.yaml',

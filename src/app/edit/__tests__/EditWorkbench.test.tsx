@@ -972,14 +972,28 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: '1 relationship link tracked in the latest state snapshot.',
                 latestStateSummary: {
                   statePresence: 'present',
                   lastUpdatedAt: '2026-04-02T08:00:00.000Z',
-                  statusLine: '1 relationship link tracked in the latest state snapshot.',
+                  statusLine: 'LEGACY_STATUS_LINE',
                 },
               },
             ],
@@ -991,6 +1005,9 @@ describe('EditWorkbench', () => {
     expect(screen.getByLabelText('sidecar-agent-surface')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'gossipelog agent' })).toBeInTheDocument();
     expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
+    expect(screen.getByText('当前状态：可用')).toBeInTheDocument();
+    expect(screen.getByText('在接受新剧情后更新持久关系状态。')).toBeInTheDocument();
+    expect(screen.queryByText('LEGACY_STATUS_LINE')).not.toBeInTheDocument();
   });
 
   it('refreshes sidecar-agent cards together with diagnostics when rechecking the package', async () => {
@@ -1009,10 +1026,24 @@ describe('EditWorkbench', () => {
             {
               agentId: 'gossipelog',
               displayName: 'gossipelog agent',
-              responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+              responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
               skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+              skillDisplayMetadata: [
+                {
+                  skillId: 'relationship-update-skill',
+                  displayName: 'Relationship Update',
+                  description: '在接受新剧情后更新持久关系状态。',
+                },
+                {
+                  skillId: 'relationship-injection-skill',
+                  displayName: 'Relationship Injection',
+                  description: '为下一轮生成准备关系上下文摘要。',
+                },
+              ],
               packageConfigPath: 'agents/gossipelog/config.yaml',
               packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+              operationalHintLabel: '当前状态：需要关注',
+              latestStateLine: 'State file is missing. No persisted sidecar state is available yet.',
               latestStateSummary: {
                 statePresence: 'missing',
                 statusLine:
@@ -1044,10 +1075,24 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: '1 relationship link tracked in the latest state snapshot.',
                 latestStateSummary: {
                   statePresence: 'present',
                   lastUpdatedAt: '2026-04-02T08:00:00.000Z',
@@ -1098,10 +1143,24 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：需要关注',
+                latestStateLine: 'REMOTE_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'missing',
                   statusLine: 'REMOTE_AGENT_SUMMARY',
@@ -1133,10 +1192,24 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: 'INITIAL_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'present',
                   statusLine: 'INITIAL_AGENT_SUMMARY',
@@ -1186,10 +1259,24 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：需要关注',
+                latestStateLine: 'REMOTE_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'missing',
                   statusLine: 'REMOTE_AGENT_SUMMARY',
@@ -1221,10 +1308,24 @@ describe('EditWorkbench', () => {
               {
                 agentId: 'gossipelog',
                 displayName: 'gossipelog agent',
-                responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
                 skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+                skillDisplayMetadata: [
+                  {
+                    skillId: 'relationship-update-skill',
+                    displayName: 'Relationship Update',
+                    description: '在接受新剧情后更新持久关系状态。',
+                  },
+                  {
+                    skillId: 'relationship-injection-skill',
+                    displayName: 'Relationship Injection',
+                    description: '为下一轮生成准备关系上下文摘要。',
+                  },
+                ],
                 packageConfigPath: 'agents/gossipelog/config.yaml',
                 packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                operationalHintLabel: '当前状态：可用',
+                latestStateLine: 'INITIAL_AGENT_SUMMARY',
                 latestStateSummary: {
                   statePresence: 'present',
                   statusLine: 'INITIAL_AGENT_SUMMARY',

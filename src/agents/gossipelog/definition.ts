@@ -43,18 +43,18 @@ export const gossipelogAgentDefinition = {
   displayName: 'gossipelog agent',
   surfaceType: 'sidecar',
   surfaceSemantics: 'built-in',
-  responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+  responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
   skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
   skillDisplayMetadata: [
     {
       skillId: 'relationship-update-skill',
       displayName: 'Relationship Update',
-      description: 'Updates persisted relationship deltas after an accepted beat.',
+      description: '在接受新剧情后更新持久关系状态。',
     },
     {
       skillId: 'relationship-injection-skill',
       displayName: 'Relationship Injection',
-      description: 'Builds bounded relationship context for the next prompt turn.',
+      description: '为下一轮生成准备关系上下文摘要。',
     },
   ],
   packageConfigPath: 'agents/gossipelog/config.yaml',
