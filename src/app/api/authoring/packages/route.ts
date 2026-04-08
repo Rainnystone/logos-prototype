@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
+import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createStoryPackageScaffold } from '@/story-packages/scaffold';
 import {
   StoryPackageScaffoldConflictError,
+  StoryPackageScaffoldImportError,
   StoryPackageScaffoldInputError,
   StoryPackageScaffoldValidationError,
   StoryPackageScaffoldWriteError,
@@ -46,6 +48,13 @@ function mapCreatePackageError(error: unknown): { status: number; message: strin
     return {
       status: 400,
       message: 'Invalid story package display name.',
+    };
+  }
+
+  if (error instanceof StoryPackageScaffoldImportError) {
+    return {
+      status: 400,
+      message: error.message,
     };
   }
 
@@ -105,26 +114,22 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
+      const created = await createStoryPackageScaffold({
+        mode: 'text_import',
+        sourceText: parsed.data.sourceText,
+        adapter: createAPIAdapter(adapterConfig),
+        ...(parsed.data.displayName !== undefined ? { displayName: parsed.data.displayName } : {}),
+      });
 
-      return NextResponse.json(
-        {
-          error: 'Text import is not implemented yet.',
-        },
-        { status: 400 },
-      );
+      return NextResponse.json(created, { status: 201 });
     }
 
     const created = await createStoryPackageScaffold({
+      mode: 'blank',
       displayName: parsed.data.displayName,
     });
 
-    return NextResponse.json(
-      {
-        ...created,
-        warnings: [],
-      },
-      { status: 201 },
-    );
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
     const mapped = mapCreatePackageError(error);
 
