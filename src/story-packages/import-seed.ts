@@ -79,18 +79,35 @@ function requireFirstLocation(worldBase: WorldBase): WorldBase['locations'][numb
   return firstLocation;
 }
 
-function mapCharacterCollectionSeed(
+function createImportedSupportingCastFallback(index: number): WorldBase['hero'] {
+  return {
+    characterId: `chr_core${String(index + 1).padStart(2, '0')}`,
+    name: 'Imported Supporting Cast',
+    identityRole: 'Supporting role',
+    lightNovelTrait: 'Imported supporting cast remains grounded and author-refinable.',
+    gender: 'Unspecified',
+    personality: 'Adaptable',
+    age: 'Unknown',
+    occupation: 'Open supporting role',
+    characterSummary: 'Imported supporting cast summary pending author refinement.',
+    capabilityBoundary: 'Define supporting cast capabilities during authoring.',
+    behaviorBoundary: 'Define scene-specific supporting cast behavior during authoring.',
+    oocRedLine: 'Do not assume hero primacy or protagonist-only obligations.',
+    clothing: 'Open',
+    propsWeapon: 'Open',
+  };
+}
+
+function mapSupportingCastCollectionSeed(
   seeds: readonly unknown[],
   fallbackCollection: readonly WorldBase['hero'][],
-  fallbackCharacter: WorldBase['hero'],
-  idPrefix: string,
 ): readonly WorldBase['hero'][] {
   return seeds.length > 0
     ? seeds.map((member, index) =>
         mapCharacterSeed(
           member,
-          fallbackCollection[index] ?? fallbackCharacter,
-          fallbackCollection[index]?.characterId ?? `${idPrefix}${String(index + 1).padStart(2, '0')}`,
+          fallbackCollection[index] ?? createImportedSupportingCastFallback(index),
+          fallbackCollection[index]?.characterId ?? `chr_core${String(index + 1).padStart(2, '0')}`,
         ),
       )
     : fallbackCollection;
@@ -156,11 +173,9 @@ export function applyTextImportSeed(
   const nextHero = input.payload.hero
     ? mapCharacterSeed(input.payload.hero, input.worldBase.hero, input.worldBase.hero.characterId)
     : input.worldBase.hero;
-  const nextCoreCast = mapCharacterCollectionSeed(
+  const nextCoreCast = mapSupportingCastCollectionSeed(
     input.payload.coreCast,
     input.worldBase.coreCast,
-    input.worldBase.hero,
-    'chr_core',
   );
   const nextAntagonists = mapAntagonistCollectionSeed(
     input.payload.antagonists,

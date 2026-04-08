@@ -24,7 +24,24 @@ function createBaseWorldBase(): WorldBase {
       clothing: 'Open',
       propsWeapon: 'Open',
     },
-    coreCast: [],
+    coreCast: [
+      {
+        characterId: 'chr_core01',
+        name: 'Supporting Cast',
+        identityRole: 'Supporting role',
+        lightNovelTrait: 'Baseline supporting cast trait.',
+        gender: 'Unspecified',
+        personality: 'Steady',
+        age: 'Unknown',
+        occupation: 'Open supporting role',
+        characterSummary: 'Baseline supporting cast summary.',
+        capabilityBoundary: 'Baseline supporting cast capability boundary.',
+        behaviorBoundary: 'Baseline supporting cast behavior boundary.',
+        oocRedLine: 'Baseline supporting cast red line.',
+        clothing: 'Open',
+        propsWeapon: 'Open',
+      },
+    ],
     antagonists: [],
     npcCharacters: 'Baseline npc notes.',
     locations: [
@@ -172,5 +189,43 @@ describe('applyTextImportSeed', () => {
     expect(result.worldBase.locations[0]).toBeDefined();
     expect(result.worldBase.locations[0]!.name).toBe(baseWorldBase.locations[0]!.name);
     expect(result.sceneSpec.openingHook).toBe('原始文本');
+  });
+
+  it('uses a supporting-cast fallback for imported core cast entries beyond the preseeded slot', () => {
+    const result = applyTextImportSeed({
+      displayName: '扩展配角',
+      sourceText: '原始文本',
+      payload: createWeaverPayload({
+        coreCast: [
+          {
+            displayName: '周珂',
+            roleSummary: '负责追查事故源头的记者',
+          },
+          {
+            displayName: '苏遥',
+            roleSummary: '负责维护外环通讯的工程师',
+          },
+        ],
+        antagonists: [],
+      }),
+      worldBase: createBaseWorldBase(),
+      sceneSpec: createBaseSceneSpec(),
+    });
+
+    expect(result.worldBase.coreCast).toHaveLength(2);
+    expect(result.worldBase.coreCast[1]).toMatchObject({
+      name: '苏遥',
+      characterSummary: '负责维护外环通讯的工程师',
+      identityRole: 'Supporting role',
+      capabilityBoundary: 'Define supporting cast capabilities during authoring.',
+      behaviorBoundary: 'Define scene-specific supporting cast behavior during authoring.',
+    });
+    expect(result.worldBase.coreCast[1]?.identityRole).not.toBe(
+      result.worldBase.hero.identityRole,
+    );
+    expect(result.worldBase.coreCast[1]?.capabilityBoundary).not.toBe(
+      result.worldBase.hero.capabilityBoundary,
+    );
+    expect(result.sceneSpec.cast).toEqual(['chr_core01', 'chr_core02']);
   });
 });
