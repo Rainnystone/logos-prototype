@@ -1,9 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { WeaverImportSummary } from '@/types';
 
 const createStoryPackageScaffold = vi.fn();
+const loadWeaverImportSummary = vi.fn();
+const bootstrapGossipelogFromWeaverSummary = vi.fn();
 
 vi.mock('@/story-packages/scaffold', () => ({
   createStoryPackageScaffold,
+}));
+
+vi.mock('@/agents/weaver/repository', () => ({
+  loadWeaverImportSummary,
+}));
+
+vi.mock('@/agents/gossipelog/bootstrap', () => ({
+  bootstrapGossipelogFromWeaverSummary,
+  GOSSIPELOG_BOOTSTRAP_PENDING_WARNING:
+    'Gossipelog bootstrap pending. First Play startup will retry once.',
 }));
 
 import {
@@ -16,8 +29,24 @@ import {
 import { MAX_TEXT_IMPORT_SOURCE_LENGTH } from '@/types/storyline-management';
 
 describe('POST /api/authoring/packages', () => {
+  const weaverSummaryFixture: WeaverImportSummary = {
+    schemaVersion: 1,
+    sourceKind: 'text_import',
+    lastRunAt: '2026-04-08T12:00:00.000Z',
+    suggestedPackageName: 'woven-import-package',
+    sourceSummary: '作者原文摘要',
+    importSummary: '已整理出基础导入摘要',
+    warnings: ['角色关系只得到部分文本支持'],
+    unresolvedGaps: [],
+    warningCount: 1,
+    unresolvedGapCount: 0,
+    bootstrapStatus: 'pending',
+  };
+
   beforeEach(() => {
     createStoryPackageScaffold.mockReset();
+    loadWeaverImportSummary.mockReset();
+    bootstrapGossipelogFromWeaverSummary.mockReset();
   });
 
   it('creates a package and returns the new package selection payload', async () => {
@@ -141,6 +170,12 @@ describe('POST /api/authoring/packages', () => {
       createdAt: '2026-04-08T12:00:00.000Z',
       warnings: ['角色关系只得到部分文本支持'],
     });
+    loadWeaverImportSummary.mockResolvedValueOnce(weaverSummaryFixture);
+    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: true,
+      attempted: true,
+      bootstrapStatus: 'succeeded',
+    });
     const { POST } = await import('@/app/api/authoring/packages/route');
 
     const response = await POST(
@@ -170,10 +205,65 @@ describe('POST /api/authoring/packages', () => {
         adapter: expect.any(Object),
       }),
     );
+    expect(loadWeaverImportSummary).toHaveBeenCalledWith('woven-import-package');
+    expect(bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+      storyPackageName: 'woven-import-package',
+      weaverSummary: weaverSummaryFixture,
+      adapter: expect.objectContaining({
+        gossipelogUpdate: expect.any(Function),
+        gossipelogInjection: expect.any(Function),
+      }),
+    });
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toMatchObject({
       packageName: 'woven-import-package',
       warnings: ['角色关系只得到部分文本支持'],
+    });
+  });
+
+  it('returns 201 and appends a bounded warning when immediate gossipelog bootstrap falls back', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'woven-import-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T12:00:00.000Z',
+      warnings: ['角色关系只得到部分文本支持'],
+    });
+    loadWeaverImportSummary.mockResolvedValueOnce(weaverSummaryFixture);
+    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: false,
+      attempted: true,
+      bootstrapStatus: 'fallback_pending',
+      errorMessage: 'model timeout',
+    });
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          displayName: '作者命名',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'woven-import-package',
+      warnings: [
+        '角色关系只得到部分文本支持',
+        'Gossipelog bootstrap pending. First Play startup will retry once.',
+      ],
     });
   });
 

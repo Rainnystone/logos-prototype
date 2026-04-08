@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+import {
+  bootstrapGossipelogFromWeaverSummary,
+  GOSSIPELOG_BOOTSTRAP_PENDING_WARNING,
+} from '@/agents/gossipelog/bootstrap';
+import { loadWeaverImportSummary } from '@/agents/weaver/repository';
 import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { createStoryPackageScaffold } from '@/story-packages/scaffold';
@@ -85,6 +90,12 @@ function mapCreatePackageError(error: unknown): { status: number; message: strin
   };
 }
 
+function appendBootstrapPendingWarning(warnings: readonly string[]): readonly string[] {
+  return warnings.includes(GOSSIPELOG_BOOTSTRAP_PENDING_WARNING)
+    ? warnings
+    : [...warnings, GOSSIPELOG_BOOTSTRAP_PENDING_WARNING];
+}
+
 export async function POST(request: Request) {
   const rawBody = await request.json().catch(() => ({}));
   const parsed = StoryPackageCreationRequestSchema.safeParse(
@@ -121,7 +132,34 @@ export async function POST(request: Request) {
         ...(parsed.data.displayName !== undefined ? { displayName: parsed.data.displayName } : {}),
       });
 
-      return NextResponse.json(created, { status: 201 });
+      try {
+        const weaverSummary = await loadWeaverImportSummary(created.packageName);
+        const bootstrapResult = await bootstrapGossipelogFromWeaverSummary({
+          storyPackageName: created.packageName,
+          weaverSummary,
+          adapter: createAPIAdapter(adapterConfig),
+        });
+
+        return NextResponse.json(
+          {
+            ...created,
+            warnings:
+              bootstrapResult.ok
+                ? created.warnings
+                : appendBootstrapPendingWarning(created.warnings),
+          },
+          { status: 201 },
+        );
+      } catch {
+        return NextResponse.json(
+          {
+            ...created,
+            warnings: appendBootstrapPendingWarning(created.warnings),
+          },
+          { status: 201 },
+        );
+      }
+
     }
 
     const created = await createStoryPackageScaffold({

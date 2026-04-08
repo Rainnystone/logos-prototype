@@ -202,6 +202,9 @@ export async function runGossipelogCycle(
     throw new Error('Gossipelog injection adapter is required.');
   }
 
+  const persistedStateReadability = await gossipelogRepository.inspectCharacterRelationshipsState(
+    input.storyPackageName,
+  );
   const persistedFile = await gossipelogRepository.loadOrCreateCharacterRelationships(
     input.storyPackageName,
   );
@@ -228,7 +231,10 @@ export async function runGossipelogCycle(
       heroRoleId: input.storyPackage.worldBase.hero.characterId,
     });
 
-    if (!areRelationshipFilesEqual(persistedFile, mergedFile)) {
+    if (
+      persistedStateReadability !== 'readable' ||
+      !areRelationshipFilesEqual(persistedFile, mergedFile)
+    ) {
       await gossipelogRepository.saveCharacterRelationships(input.storyPackageName, mergedFile);
     }
 

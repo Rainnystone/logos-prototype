@@ -46,6 +46,31 @@ export async function loadWeaverImportSummary(packageName: string): Promise<Weav
   }
 }
 
+export async function loadWeaverImportSummaryIfPresent(
+  packageName: string,
+): Promise<WeaverImportSummary | null> {
+  await ensureStoryPackageExists(packageName);
+  const filePath = resolveWeaverImportSummaryPath(packageName);
+
+  try {
+    const fileContents = await readFile(filePath, 'utf8');
+    return parseWithSchema(
+      WeaverImportSummarySchema,
+      YAML.parse(fileContents) as unknown,
+      'weaverImportSummary',
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to load weaver import summary for "${packageName}" from ${filePath}: ${message}`,
+    );
+  }
+}
+
 export async function saveWeaverImportSummary(
   packageName: string,
   summary: WeaverImportSummary,

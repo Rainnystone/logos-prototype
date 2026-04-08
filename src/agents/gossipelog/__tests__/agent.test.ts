@@ -8,14 +8,21 @@ import {
   GossipelogCandidateSetViolationError,
   runGossipelogCycle,
 } from '@/agents/gossipelog/agent';
+import { bootstrapGossipelogFromWeaverSummary } from '@/agents/gossipelog/bootstrap';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
+import { loadWeaverImportSummary } from '@/agents/weaver/repository';
 import { loadStoryPackage } from '@/engine/story-loader';
 import type {
   GossipelogInjectionRequest,
   GossipelogUpdateRequest,
   LLMAdapter,
 } from '@/engine/types/adapter-interface';
-import type { GossipelogInjectionResult, GossipelogUpdateResult, StoryPackage } from '@/types';
+import type {
+  GossipelogInjectionResult,
+  GossipelogUpdateResult,
+  StoryPackage,
+  WeaverImportSummary,
+} from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const samplePackagePath = path.resolve(storyPackagesRoot, 'sample-scene');
@@ -130,6 +137,23 @@ function requireInjectionRequest(
   }
 
   return request;
+}
+
+function createWeaverSummary(overrides: Partial<WeaverImportSummary> = {}): WeaverImportSummary {
+  return {
+    schemaVersion: 1,
+    sourceKind: 'text_import',
+    lastRunAt: '2026-04-08T12:00:00.000Z',
+    suggestedPackageName: 'woven-import-package',
+    sourceSummary: '作者原文摘要',
+    importSummary: '已整理出基础导入摘要',
+    warnings: ['角色关系只得到部分文本支持'],
+    unresolvedGaps: [],
+    warningCount: 1,
+    unresolvedGapCount: 0,
+    bootstrapStatus: 'pending',
+    ...overrides,
+  };
 }
 
 describe('gossipelog agent shell', () => {
@@ -493,6 +517,89 @@ describe('gossipelog agent shell', () => {
         sourceRound: 'round-0011',
       },
       highlightNextPrompt: true,
+    });
+  });
+
+  it('bootstrap persists a readable empty relationship file on success even when the cycle is a no-op', async () => {
+    const { packageName } = await createStoryPackageFixture();
+    const relationshipPath = path.resolve(
+      storyPackagesRoot,
+      packageName,
+      'agents/gossipelog/character-relationships.yaml',
+    );
+
+    rmSync(relationshipPath, { force: true });
+
+    const capturedAcceptedBeatTexts: string[] = [];
+
+    const result = await bootstrapGossipelogFromWeaverSummary({
+      storyPackageName: packageName,
+      weaverSummary: createWeaverSummary(),
+      adapter: {
+        gossipelogUpdate: vi.fn(async (request: GossipelogUpdateRequest) => {
+          capturedAcceptedBeatTexts.push(request.acceptedBeatText);
+          return {
+            involvedRoleIds: [],
+            invocationNoOp: true,
+            edgeUpdates: [],
+          };
+        }),
+        gossipelogInjection: vi.fn(async () => ({
+          highlightedDeltasText: '',
+          stableBackgroundText: 'seeded background',
+        })),
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.bootstrapStatus).toBe('succeeded');
+    const acceptedBeatText = capturedAcceptedBeatTexts[0];
+    if (!acceptedBeatText) {
+      throw new Error('Expected bootstrap update request to be captured.');
+    }
+    expect(acceptedBeatText).toContain('Relationship-confidence note:');
+    expect(acceptedBeatText).toContain('角色关系只得到部分文本支持');
+    await expect(gossipelogRepository.inspectCharacterRelationshipsState(packageName)).resolves.toBe(
+      'readable',
+    );
+    await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
+      bootstrapStatus: 'succeeded',
+    });
+  });
+
+  it('bootstrap overwrites unreadable relationship state with a bounded fallback_pending summary on failure', async () => {
+    const { packageName } = await createStoryPackageFixture();
+    const relationshipPath = path.resolve(
+      storyPackagesRoot,
+      packageName,
+      'agents/gossipelog/character-relationships.yaml',
+    );
+
+    writeFileSync(relationshipPath, 'meta: [', 'utf8');
+
+    const result = await bootstrapGossipelogFromWeaverSummary({
+      storyPackageName: packageName,
+      weaverSummary: createWeaverSummary(),
+      adapter: {
+        gossipelogUpdate: vi.fn(async () => {
+          throw new Error('model timeout');
+        }),
+        gossipelogInjection: vi.fn(async () => ({
+          highlightedDeltasText: '',
+          stableBackgroundText: '',
+        })),
+      },
+      relationshipState: 'unreadable',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.bootstrapStatus).toBe('fallback_pending');
+    expect(result.errorMessage).toContain('persisted-relationship-state');
+    await expect(gossipelogRepository.inspectCharacterRelationshipsState(packageName)).resolves.toBe(
+      'readable',
+    );
+    await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
+      bootstrapStatus: 'fallback_pending',
     });
   });
 });
