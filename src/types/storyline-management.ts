@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const MAX_TEXT_IMPORT_SOURCE_LENGTH = 12_000;
+
 export const StoryPackageManagementPackageReadyItemSchema = z
   .object({
     packageName: z.string(),
@@ -118,11 +120,28 @@ export const StorylineDeleteActionSchema = z
   })
   .strict();
 
-export const StoryPackageCreationRequestSchema = z
+const StoryPackageCreationBlankRequestSchema = z
   .object({
+    mode: z.literal('blank'),
     displayName: z.string(),
   })
   .strict();
+
+// For text_import, explicit author displayName still has priority. If it is absent,
+// later orchestration may use a validated weaver suggestion. The schema must not
+// silently rewrite invalid or conflicting suggestions.
+const StoryPackageCreationTextImportRequestSchema = z
+  .object({
+    mode: z.literal('text_import'),
+    displayName: z.string().optional(),
+    sourceText: z.string().trim().min(1).max(MAX_TEXT_IMPORT_SOURCE_LENGTH),
+  })
+  .strict();
+
+export const StoryPackageCreationRequestSchema = z.discriminatedUnion('mode', [
+  StoryPackageCreationBlankRequestSchema,
+  StoryPackageCreationTextImportRequestSchema,
+]);
 export type StoryPackageCreationRequest = z.infer<typeof StoryPackageCreationRequestSchema>;
 
 export const StoryPackageCreationResponseSchema = z
@@ -130,6 +149,7 @@ export const StoryPackageCreationResponseSchema = z
     packageName: z.string(),
     activeStorylineId: z.string(),
     createdAt: z.string(),
+    warnings: z.array(z.string()),
   })
   .strict();
 export type StoryPackageCreationResponse = z.infer<typeof StoryPackageCreationResponseSchema>;

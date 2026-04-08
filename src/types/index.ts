@@ -12,3 +12,4 @@ export * from '@/types/state-snapshot';
 export * from '@/types/storyline-management';
 export * from '@/types/storyline-repository';
 export * from '@/types/story-package';
+export * from '@/types/weaver';
