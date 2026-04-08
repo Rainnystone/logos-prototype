@@ -167,6 +167,40 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
     });
   });
 
+  it('returns a bounded 400 when storyPackageName is valid but the package does not exist', async () => {
+    loadWeaverImportSummaryIfPresent.mockRejectedValueOnce(
+      new Error(
+        'Story package "missing-package" was not found at /tmp/story-packages/missing-package.',
+      ),
+    );
+    const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog/bootstrap', {
+        method: 'POST',
+        body: JSON.stringify({
+          storyPackageName: 'missing-package',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(createAPIAdapter).not.toHaveBeenCalled();
+    expect(bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Story package was not found for gossipelog bootstrap.',
+    });
+  });
+
   it('returns noop and reconciles summary when persisted gossipelog state is already readable', async () => {
     loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(summaryFixture);
     inspectCharacterRelationshipsState.mockResolvedValueOnce('readable');

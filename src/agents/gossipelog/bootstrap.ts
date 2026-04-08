@@ -106,15 +106,17 @@ export async function bootstrapGossipelogFromWeaverSummary(
       roundId: createBootstrapRoundId(),
     });
 
-    if (cycleResult.usedFallbackSource || cycleResult.usedFallbackLayer) {
+    if (cycleResult.usedFallbackSource) {
       throw new Error(
-        cycleResult.usedFallbackSource
-          ? `bootstrap fell back to ${cycleResult.usedFallbackSource}`
-          : `bootstrap fell back to ${cycleResult.usedFallbackLayer}`,
+        `bootstrap fell back to ${cycleResult.usedFallbackSource}`,
       );
     }
 
     shouldRollbackUnreadableSnapshot = false;
+
+    if (cycleResult.usedFallbackLayer) {
+      throw new Error(`bootstrap fell back to ${cycleResult.usedFallbackLayer}`);
+    }
 
     await saveWeaverImportSummary(
       input.storyPackageName,

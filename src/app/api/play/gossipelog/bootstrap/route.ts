@@ -14,6 +14,13 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isMissingStoryPackageError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    /Story package ".*" was not found at /.test(error.message)
+  );
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const rawStoryPackageName =
@@ -41,7 +48,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const weaverSummary = await loadWeaverImportSummaryIfPresent(storyPackageName);
+  let weaverSummary: Awaited<ReturnType<typeof loadWeaverImportSummaryIfPresent>>;
+  try {
+    weaverSummary = await loadWeaverImportSummaryIfPresent(storyPackageName);
+  } catch (error) {
+    if (isMissingStoryPackageError(error)) {
+      return NextResponse.json(
+        {
+          error: 'Story package was not found for gossipelog bootstrap.',
+        },
+        { status: 400 },
+      );
+    }
+
+    throw error;
+  }
 
   if (!weaverSummary || weaverSummary.sourceKind !== 'text_import') {
     return NextResponse.json({
@@ -50,7 +71,21 @@ export async function POST(request: Request) {
     });
   }
 
-  const relationshipState = await inspectCharacterRelationshipsState(storyPackageName);
+  let relationshipState: Awaited<ReturnType<typeof inspectCharacterRelationshipsState>>;
+  try {
+    relationshipState = await inspectCharacterRelationshipsState(storyPackageName);
+  } catch (error) {
+    if (isMissingStoryPackageError(error)) {
+      return NextResponse.json(
+        {
+          error: 'Story package was not found for gossipelog bootstrap.',
+        },
+        { status: 400 },
+      );
+    }
+
+    throw error;
+  }
 
   if (relationshipState === 'readable') {
     if (weaverSummary.bootstrapStatus !== 'succeeded') {
