@@ -1,9 +1,7 @@
 import { gossipelogAgentDefinition } from '@/agents/gossipelog';
-import { parseWithSchema } from '@/lib/validation';
-import { WeaverImportSummarySchema } from '@/types';
+import { weaverAgentDefinition } from '@/agents/weaver/definition';
 import type { AgentOperationalHint } from '@/types';
 import type { WeaverBootstrapStatus } from '@/types';
-import YAML from 'yaml';
 
 export interface SidecarReferenceManifest {
   readonly referenceId: string;
@@ -26,29 +24,6 @@ export interface AgentReadableStateSummary {
   readonly recommendedOperationalHint?: Exclude<AgentOperationalHint, 'pending_bootstrap'>;
   readonly bootstrapStatus?: WeaverBootstrapStatus;
 }
-
-function summarizeWeaverImportState(statePathRawContents: string): AgentReadableStateSummary {
-  const parsedSummary = parseWithSchema(
-    WeaverImportSummarySchema,
-    YAML.parse(statePathRawContents) as unknown,
-    'weaverImportSummary',
-  );
-  const statusCopy =
-    parsedSummary.bootstrapStatus === 'succeeded'
-      ? 'Bootstrap seed is ready.'
-      : `Bootstrap status is ${parsedSummary.bootstrapStatus.replaceAll('_', ' ')}.`;
-  const issueCount = parsedSummary.warningCount + parsedSummary.unresolvedGapCount;
-
-  return {
-    latestStateLine:
-      issueCount > 0
-        ? `${parsedSummary.importSummary} ${statusCopy} ${issueCount} bounded issue${issueCount === 1 ? '' : 's'} remain.`
-        : `${parsedSummary.importSummary} ${statusCopy}`,
-    recommendedOperationalHint:
-      parsedSummary.bootstrapStatus === 'succeeded' && issueCount === 0 ? 'ready' : 'warning',
-    bootstrapStatus: parsedSummary.bootstrapStatus,
-  };
-}
 export interface AgentDefinition {
   readonly agentId: string;
   readonly displayName: string;
@@ -65,28 +40,6 @@ export interface AgentDefinition {
     statePathRawContents: string,
   ) => AgentReadableStateSummary;
 }
-
-export const weaverAgentDefinition = {
-  agentId: 'weaver',
-  displayName: 'weaver agent',
-  surfaceType: 'sidecar',
-  surfaceSemantics: 'built-in',
-  responsibilitySummary: 'Carries bounded text-import summary state for authoring bootstrap.',
-  skillIds: ['weaver-import-skill'],
-  skillDisplayMetadata: [
-    {
-      skillId: 'weaver-import-skill',
-      displayName: 'Weaver Import',
-      description: 'Produces bounded text-import summaries and package bootstrap seed data.',
-    },
-  ],
-  packageConfigPath: 'agents/weaver/config.yaml',
-  packageStatePath: 'agents/weaver/import-summary.yaml',
-  referenceManifestsByOperation: {},
-  summarizeState: (statePathRawContents: string) =>
-    summarizeWeaverImportState(statePathRawContents).latestStateLine,
-  deriveReadableStateSummary: summarizeWeaverImportState,
-} as const satisfies AgentDefinition;
 
 export const agentRegistry = {
   weaver: weaverAgentDefinition,

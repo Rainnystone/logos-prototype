@@ -3,6 +3,7 @@ import type {
   GossipelogInjectionRequest,
   GossipelogUpdateRequest,
   RouteRequest,
+  WeaverImportRequest,
 } from '@/engine/types/adapter-interface';
 import type { AuditPacket, HistoryEntry, PhaseConsequenceRequest, PromptObject } from '@/types';
 
@@ -55,6 +56,27 @@ function formatRouters(request: RouteRequest): string {
         `${index + 1}. ${router.routerName}\n   Semantic core: ${router.routerSemanticCore}\n   Verb lexicon: ${router.verbLexicon.join(', ')}`,
     )
     .join('\n');
+}
+
+function formatResolvedReferences(
+  resolvedReferences: WeaverImportRequest['resolvedReferences'],
+): string {
+  if (resolvedReferences.length === 0) {
+    return 'No external references were resolved.';
+  }
+
+  return resolvedReferences
+    .map(
+      (reference, index) =>
+        [
+          `${index + 1}. ${reference.injectionLabel} (${reference.referenceId})`,
+          `Path: ${reference.relativePath}`,
+          `Estimated tokens: ${reference.estimatedTokens}`,
+          'Contents:',
+          reference.contents,
+        ].join('\n'),
+    )
+    .join('\n\n');
 }
 
 export function buildGenerateSystemPrompt(prompt: PromptObject): string {
@@ -325,5 +347,34 @@ export function buildGossipelogInjectionUserPrompt(
     '',
     '[Relationship Subgraph]',
     formatRelationshipSubgraph(request.relationshipSubgraph),
+  ].join('\n');
+}
+
+export function buildWeaverImportSystemPrompt(): string {
+  return [
+    'You are Weaver, the LOGOS sidecar import skill.',
+    'You convert external author text into bounded import payloads for deterministic authoring bootstrap.',
+    'Follow all provided references and output contract exactly.',
+  ].join('\n');
+}
+
+export function buildWeaverImportUserPrompt(request: WeaverImportRequest): string {
+  return [
+    '[Instructions]',
+    'Extract only evidence-backed world and cast bootstrap information from source text.',
+    'Keep uncertainty bounded via warnings and unresolved gaps.',
+    '',
+    '[Context]',
+    `Package name hint: ${request.packageNameHint ?? 'not provided'}`,
+    'Source text:',
+    request.sourceText,
+    '',
+    '[Resolved References]',
+    formatResolvedReferences(request.resolvedReferences),
+    '',
+    '[Output Contract]',
+    'Return JSON only with keys:',
+    'suggestedPackageName (optional), sourceSummary, importSummary, openingHook, worldBase, hero (optional), coreCast, antagonists, npcCharacters, locations, warnings, unresolvedGaps.',
+    'Do not add extra keys.',
   ].join('\n');
 }

@@ -214,6 +214,20 @@ export const sampleGossipelogInjectionRequest = {
   relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
 } as const;
 
+export const sampleWeaverImportRequest = {
+  packageNameHint: 'woven-package',
+  sourceText: '一段外部作者文本',
+  resolvedReferences: [
+    {
+      referenceId: 'weaver-import-reference',
+      injectionLabel: 'Import reference',
+      relativePath: 'src/agents/weaver/references/import-reference.md',
+      contents: '# Import Reference\n\nUse bounded extraction.',
+      estimatedTokens: 10,
+    },
+  ],
+} as const;
+
 export const sampleProviderRequest: ProviderRequest = {
   system: 'system-instructions',
   messages: [

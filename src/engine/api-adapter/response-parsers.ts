@@ -4,6 +4,7 @@ import { deepFreeze } from '@/lib/deep-freeze';
 import { parseWithSchema } from '@/lib/validation';
 import {
   validateCollapseResponse,
+  validateWeaverImportPayload,
   validatePhaseConsequenceResponse,
 } from '@/engine/schema-validator';
 import type { AuditResult, GenerateResult, RouteResult } from '@/engine/types/adapter-interface';
@@ -11,6 +12,7 @@ import type {
   GossipelogInjectionResult,
   GossipelogUpdateResult,
   UsageInfo,
+  WeaverImportPayload,
 } from '@/types';
 import { GossipelogInjectionResultSchema, UsageInfoSchema } from '@/types';
 
@@ -132,6 +134,24 @@ const GossipelogUpdateResultAppliedResponseSchema = z
 const GossipelogInjectionResultResponseSchema = GossipelogInjectionResultSchema.extend({
   usage: UsageInfoSchema.optional(),
 }).strict();
+
+const WeaverImportResultResponseSchema = z
+  .object({
+    suggestedPackageName: z.string().trim().min(1).optional(),
+    sourceSummary: z.string().trim().min(1),
+    importSummary: z.string().trim().min(1),
+    openingHook: z.string().trim().min(1),
+    worldBase: z.object({}).passthrough(),
+    hero: z.object({}).passthrough().optional(),
+    coreCast: z.array(z.object({}).passthrough()),
+    antagonists: z.array(z.object({}).passthrough()),
+    npcCharacters: z.array(z.object({}).passthrough()),
+    locations: z.array(z.object({}).passthrough()),
+    warnings: z.array(z.string().trim().min(1)),
+    unresolvedGaps: z.array(z.string().trim().min(1)),
+    usage: UsageInfoSchema.optional(),
+  })
+  .strict();
 
 function stripCodeFence(value: string): string {
   return value
@@ -772,5 +792,28 @@ export function parseGossipelogInjectionResult(
 ): GossipelogInjectionResult & { readonly usage?: UsageInfo | undefined } {
   return deepFreeze(
     parseBySchema(GossipelogInjectionResultResponseSchema, content, 'gossipelogInjectionResult', usage),
+  );
+}
+
+export function parseWeaverImportResult(
+  content: string,
+  usage?: UsageInfo,
+): WeaverImportPayload & { readonly usage?: UsageInfo | undefined } {
+  const parsed = parseBySchema(
+    WeaverImportResultResponseSchema,
+    content,
+    'weaverImportResult',
+    usage,
+  );
+  const { usage: _usage, ...payload } = parsed;
+  const validatedPayload = validateWeaverImportPayload(payload);
+
+  return deepFreeze(
+    usage
+      ? {
+          ...validatedPayload,
+          usage,
+        }
+      : validatedPayload,
   );
 }
