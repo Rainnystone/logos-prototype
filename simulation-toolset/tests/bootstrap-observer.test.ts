@@ -76,7 +76,26 @@ describe('observeGossipelogBootstrap', () => {
       adapter: { gossipelogUpdate: vi.fn(), gossipelogInjection: vi.fn() },
     });
 
-    expect(observation.agentTrace.sideEffectSummary).toBeDefined();
-    expect(observation.agentTrace.sideEffectSummary!.length).toBeGreaterThan(0);
+    expect(observation.agentTrace.sideEffectSummary).toContain('bootstrap:ok:true');
+    expect(observation.agentTrace.sideEffectSummary).toContain('bootstrap:status:succeeded');
+  });
+
+  it('includes specific side effect summary for fallback', async () => {
+    const { bootstrapGossipelogFromWeaverSummary } = await import('@/agents/gossipelog/bootstrap');
+    vi.mocked(bootstrapGossipelogFromWeaverSummary).mockResolvedValueOnce({
+      ok: false,
+      attempted: true,
+      bootstrapStatus: 'fallback_pending',
+      errorMessage: 'Test failure.',
+    });
+
+    const observation = await observeGossipelogBootstrap({
+      storyPackageName: 'test-package',
+      weaverSummary: mockSummary,
+      adapter: { gossipelogUpdate: vi.fn(), gossipelogInjection: vi.fn() },
+    });
+
+    expect(observation.agentTrace.sideEffectSummary).toContain('bootstrap:ok:false');
+    expect(observation.agentTrace.sideEffectSummary).toContain('bootstrap:status:fallback_pending');
   });
 });

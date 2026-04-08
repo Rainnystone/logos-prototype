@@ -1,12 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { runAgentSurfaceUiSmoke } from '@simulation/ui-smoke';
 
 describe('agent surface UI smoke', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('loads agent surface items for a temp package and returns gossipelog and weaver', async () => {
     const result = await runAgentSurfaceUiSmoke('sample-scene');
 

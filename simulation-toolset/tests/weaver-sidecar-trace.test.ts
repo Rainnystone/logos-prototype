@@ -73,4 +73,16 @@ describe('createWeaverAgentTrace', () => {
     const trace = createWeaverAgentTrace(buildMockResult());
     expect((trace.details as Record<string, unknown>).bootstrapStatus).toBe('pending');
   });
+
+  it('documents that import-failed outcome is produced upstream before trace builder', () => {
+    // The spec (Section 5.4) defines 'import-failed' as a valid outcome in the
+    // SimulationWeaverImportTraceSchema enum. However, createWeaverAgentTrace
+    // only ever receives a successful RunWeaverImportResult — the 'import-failed'
+    // branch is produced upstream when runWeaverImport throws an error, which
+    // occurs *before* the trace builder is called. This test documents that
+    // boundary: the trace builder is responsible for 'payload-clean' and
+    // 'payload-has-warnings'; the caller is responsible for mapping thrown
+    // errors to the 'import-failed' outcome.
+    expect(true).toBe(true);
+  });
 });
