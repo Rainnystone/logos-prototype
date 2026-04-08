@@ -511,7 +511,7 @@ describe('loadAuthoringState', () => {
     expect(gossipelogSurface).toMatchObject({
       agentId: 'gossipelog',
       displayName: 'gossipelog agent',
-      responsibilitySummary: expect.stringMatching(/relationship/i),
+      responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
       packageConfigPath: 'agents/gossipelog/config.yaml',
       packageStatePath: 'agents/gossipelog/character-relationships.yaml',
       latestStateSummary: expect.objectContaining({

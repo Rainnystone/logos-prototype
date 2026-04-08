@@ -25,7 +25,7 @@ describe('Phase 00 contract types', () => {
       agentId: 'gossipelog',
       displayName: 'gossipelog agent',
       surfaceType: 'sidecar',
-      responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
+      responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
       skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
       packageConfigPath: 'agents/gossipelog/config.yaml',
       packageStatePath: 'agents/gossipelog/character-relationships.yaml',
