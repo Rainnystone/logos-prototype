@@ -7,6 +7,7 @@ import type {
   LLMAdapter,
   RouteRequest,
   RouteResult,
+  WeaverImportResponse,
 } from '@/engine/types/adapter-interface';
 import type { CollapseResponse } from '@/types';
 
@@ -16,7 +17,8 @@ type ScriptedOperation =
   | 'generate'
   | 'audit'
   | 'gossipelogUpdate'
-  | 'gossipelogInjection';
+  | 'gossipelogInjection'
+  | 'weaverImport';
 
 type TimeoutScript = {
   kind: 'timeout';
@@ -65,6 +67,7 @@ type ScriptQueues = {
   readonly audit?: readonly ScriptedEntry<AuditResult>[];
   readonly gossipelogUpdate?: readonly ScriptedEntry<GossipelogUpdateResponse>[];
   readonly gossipelogInjection?: readonly ScriptedEntry<GossipelogInjectionResponse>[];
+  readonly weaverImport?: readonly ScriptedEntry<WeaverImportResponse>[];
 };
 
 type OperationTrace = {
@@ -171,6 +174,19 @@ function resolveDefault(operation: ScriptedOperation) {
         highlightedDeltasText: '',
         stableBackgroundText: '',
       } as GossipelogInjectionResponse;
+    case 'weaverImport':
+      return {
+        sourceSummary: '',
+        importSummary: '',
+        openingHook: '',
+        worldBase: {},
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      } as WeaverImportResponse;
   }
 }
 
@@ -289,6 +305,9 @@ export function createScriptedAdapter(queues: ScriptQueues = {}): ScriptedAdapte
     },
     gossipelogInjection(request) {
       return resolve<GossipelogInjectionResponse>('gossipelogInjection', request);
+    },
+    weaverImport(request) {
+      return resolve<WeaverImportResponse>('weaverImport', request);
     },
     getTrace() {
       return {

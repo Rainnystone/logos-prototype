@@ -227,6 +227,46 @@ describe('scripted adapter', () => {
       expect(trace.operations[1]?.outcome).toBe('result');
     });
 
+    it('resolves weaverImport from queue', async () => {
+      const adapter = createScriptedAdapter({
+        weaverImport: [
+          {
+            sourceSummary: 'Mock source summary.',
+            importSummary: 'Mock import summary.',
+            openingHook: 'Mock hook.',
+            worldBase: {},
+            coreCast: [],
+            antagonists: [],
+            npcCharacters: [],
+            locations: [],
+            warnings: [],
+            unresolvedGaps: [],
+          },
+        ],
+      });
+
+      const result = await adapter.weaverImport!({
+        sourceText: 'Test input.',
+        resolvedReferences: [],
+      });
+
+      expect(result.sourceSummary).toBe('Mock source summary.');
+      expect(adapter.getTrace().operations).toHaveLength(1);
+      expect(adapter.getTrace().operations[0]!.operation).toBe('weaverImport');
+    });
+
+    it('uses default weaverImport response when queue is empty', async () => {
+      const adapter = createScriptedAdapter({});
+
+      const result = await adapter.weaverImport!({
+        sourceText: 'Test input.',
+        resolvedReferences: [],
+      });
+
+      expect(result.sourceSummary).toBe('');
+      expect(result.warnings).toEqual([]);
+    });
+
     it('trace can be exported for report integration', async () => {
       const adapter = createScriptedAdapter({
         generate: [{ beatText: 'test-beat', options: ['a', 'b', 'c', 'd'] }],
