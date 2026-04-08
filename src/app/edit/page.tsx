@@ -7,6 +7,7 @@ import {
   listStoryPackageCatalog,
 } from '@/app/story-package-catalog';
 import { EditWorkbench } from '@/app/edit/EditWorkbench';
+import type { StoryPackageCreationMode } from '@/app/edit/sections/StoryPackageCreationPanel';
 import type { WorldbaseSurface } from '@/app/edit/shared/SectionTabs';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
 import { loadStoryPackageManagementWorkspaceView } from '@/storylines/workspace-view';
@@ -59,6 +60,16 @@ function getRequestedSurface(
   return 'world';
 }
 
+function getRequestedCreationMode(
+  value: string | readonly string[] | undefined,
+): StoryPackageCreationMode {
+  if (value === 'text_import') {
+    return 'text_import';
+  }
+
+  return 'blank';
+}
+
 export default async function EditPage({ searchParams }: EditPageProps) {
   const resolvedSearchParams = await resolveSearchParams(searchParams);
   const catalog = await listStoryPackageCatalog();
@@ -68,6 +79,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
     resolvedSearchParams.section,
     resolvedSearchParams.surface,
   );
+  const requestedCreationMode = getRequestedCreationMode(resolvedSearchParams.creationMode);
   const fallbackPackage = catalog.find(isReadyStoryPackageEntry);
   const selectedPackageName = requestedPackageName ?? fallbackPackage?.packageName ?? null;
 
@@ -112,6 +124,7 @@ export default async function EditPage({ searchParams }: EditPageProps) {
         packageName={selectedPackageName}
         activeSection={activeSection}
         activeSurface={activeSurface}
+        initialCreationMode={requestedCreationMode}
         {...(storyPackageManagementView
           ? { storyPackageManagementView }
           : {})}

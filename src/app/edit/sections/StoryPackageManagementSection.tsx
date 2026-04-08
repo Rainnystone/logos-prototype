@@ -19,15 +19,7 @@ import type { AdapterConfig } from '@/engine/api-adapter/providers/provider-inte
 interface StoryPackageManagementSectionProps {
   readonly packageName: string;
   readonly view: StoryPackageManagementWorkspaceView;
-}
-
-function readRequestedCreationMode(): StoryPackageCreationMode {
-  if (typeof window === 'undefined') {
-    return 'blank';
-  }
-
-  const searchParams = new URLSearchParams(window.location.search);
-  return searchParams.get('creationMode') === 'text_import' ? 'text_import' : 'blank';
+  readonly initialCreationMode?: StoryPackageCreationMode;
 }
 
 function buildStorylineActionUrl(packageName: string): string {
@@ -129,11 +121,12 @@ async function submitPackageCreation(
 export function StoryPackageManagementSection({
   packageName,
   view,
+  initialCreationMode = 'blank',
 }: StoryPackageManagementSectionProps) {
   const router = useRouter();
   const hasMountedRef = useRef(false);
-  const [isCreatingPackage, setIsCreatingPackage] = useState(() => readRequestedCreationMode() === 'text_import');
-  const [creationMode, setCreationMode] = useState<StoryPackageCreationMode>(() => readRequestedCreationMode());
+  const [isCreatingPackage, setIsCreatingPackage] = useState(initialCreationMode === 'text_import');
+  const [creationMode, setCreationMode] = useState<StoryPackageCreationMode>(initialCreationMode);
   const [draftPackageDisplayName, setDraftPackageDisplayName] = useState('');
   const [draftImportSourceText, setDraftImportSourceText] = useState('');
   const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
@@ -166,8 +159,19 @@ export function StoryPackageManagementSection({
       return;
     }
 
+    if (initialCreationMode === 'text_import') {
+      setCreationPending(false);
+      setCreationFeedback(null);
+      setDraftPackageDisplayName('');
+      setDraftImportSourceText('');
+      setIsCreatingPackage(true);
+      setCreationMode('text_import');
+      setStoredAdapterConfig(undefined);
+      return;
+    }
+
     resetPackageCreationState();
-  }, [packageName]);
+  }, [initialCreationMode, packageName]);
 
   useEffect(() => {
     if (!isCreatingPackage || creationMode !== 'text_import' || storedAdapterConfig !== undefined) {

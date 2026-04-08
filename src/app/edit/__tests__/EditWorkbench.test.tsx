@@ -42,6 +42,7 @@ describe('EditWorkbench', () => {
         packageName="sample-scene"
         activeSection="story-package-management"
         activeSurface="world"
+        initialCreationMode="blank"
         storyPackageManagementView={workspaceViewFixture}
         initialState={{
           source: 'latest-saved',
@@ -104,6 +105,29 @@ describe('EditWorkbench', () => {
     expect(within(pageHelper).getByText('故事包管理')).toBeInTheDocument();
     expect(screen.getByTestId('story-package-management-section-mock')).toBeInTheDocument();
     expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
+      initialCreationMode: 'blank',
+      packageName: 'sample-scene',
+      view: workspaceViewFixture,
+    });
+  });
+
+  it('passes initial text-import creation mode through to story package management', () => {
+    render(
+      <EditWorkbench
+        packageName="sample-scene"
+        activeSection="story-package-management"
+        activeSurface="world"
+        initialCreationMode="text_import"
+        storyPackageManagementView={workspaceViewFixture}
+        initialState={{
+          source: 'latest-saved',
+          state: storyPackageFixture,
+        }}
+      />,
+    );
+
+    expect(renderStoryPackageManagementSection).toHaveBeenCalledWith({
+      initialCreationMode: 'text_import',
       packageName: 'sample-scene',
       view: workspaceViewFixture,
     });

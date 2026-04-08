@@ -135,14 +135,15 @@ describe('StoryPackageManagementSection', () => {
   });
 
   it('opens directly into 文本导入创建 from the creationMode query and loads saved runtime config once', () => {
-    window.history.pushState(
-      {},
-      '',
-      '/edit?storyPackage=sample-scene&section=story-package-management&creationMode=text_import',
-    );
     mockLoadAdapterConfig.mockReturnValue(null);
 
-    render(<StoryPackageManagementSection packageName="sample-scene" view={workspaceViewFixture} />);
+    render(
+      <StoryPackageManagementSection
+        packageName="sample-scene"
+        view={workspaceViewFixture}
+        initialCreationMode="text_import"
+      />,
+    );
 
     expect(mockLoadAdapterConfig).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('radio', { name: '文本导入' })).toBeChecked();
@@ -152,6 +153,25 @@ describe('StoryPackageManagementSection', () => {
     expect(
       screen.getByText('需要先在运行配置中保存一个可用模型，才能执行文本导入。'),
     ).toBeInTheDocument();
+  });
+
+  it('prefers the explicit initialCreationMode prop over the browser location during initial render', () => {
+    window.history.pushState(
+      {},
+      '',
+      '/edit?storyPackage=sample-scene&section=story-package-management&creationMode=text_import',
+    );
+
+    render(
+      <StoryPackageManagementSection
+        packageName="sample-scene"
+        view={workspaceViewFixture}
+        initialCreationMode="blank"
+      />,
+    );
+
+    expect(screen.queryByRole('heading', { name: '新建故事包' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'sample-scene' })).toBeInTheDocument();
   });
 
   it('loads browser runtime config only after switching into 文本导入创建', async () => {
