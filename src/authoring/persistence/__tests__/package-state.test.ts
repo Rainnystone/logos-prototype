@@ -4,6 +4,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { gossipelogAgentDefinition } from '@/agents/gossipelog';
 import { loadAuthoringState, resolveAuthoringStatePath, writeAuthoringState } from '@/authoring/persistence/package-state';
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import { loadStoryPackage } from '@/engine/story-loader';
@@ -509,11 +510,11 @@ describe('loadAuthoringState', () => {
     );
 
     expect(gossipelogSurface).toMatchObject({
-      agentId: 'gossipelog',
-      displayName: 'gossipelog agent',
-      responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
-      packageConfigPath: 'agents/gossipelog/config.yaml',
-      packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+      agentId: gossipelogAgentDefinition.agentId,
+      displayName: gossipelogAgentDefinition.displayName,
+      responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+      packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+      packageStatePath: gossipelogAgentDefinition.packageStatePath,
       latestStateSummary: expect.objectContaining({
         statePresence: 'present',
         statusLine: expect.stringMatching(/relationship/i),

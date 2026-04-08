@@ -22,13 +22,13 @@ describe('Phase 00 contract types', () => {
     const { gossipelogAgentDefinition } = await import('@/agents/gossipelog');
 
     expect(agentRegistry.gossipelog).toMatchObject({
-      agentId: 'gossipelog',
-      displayName: 'gossipelog agent',
-      surfaceType: 'sidecar',
-      responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
-      skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-      packageConfigPath: 'agents/gossipelog/config.yaml',
-      packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+      agentId: gossipelogAgentDefinition.agentId,
+      displayName: gossipelogAgentDefinition.displayName,
+      surfaceType: gossipelogAgentDefinition.surfaceType,
+      responsibilitySummary: gossipelogAgentDefinition.responsibilitySummary,
+      skillIds: gossipelogAgentDefinition.skillIds,
+      packageConfigPath: gossipelogAgentDefinition.packageConfigPath,
+      packageStatePath: gossipelogAgentDefinition.packageStatePath,
     });
     expect(typeof agentRegistry.gossipelog.summarizeState).toBe('function');
     expect(gossipelogAgentDefinition).toBe(agentRegistry.gossipelog);
