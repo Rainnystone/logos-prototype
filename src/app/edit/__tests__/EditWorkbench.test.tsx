@@ -1239,24 +1239,7 @@ describe('EditWorkbench', () => {
             state: storyPackageFixture,
             agentSurfaceItems: [
               {
-                agentId: 'gossipelog',
-                displayName: 'gossipelog agent',
-                responsibilitySummary: '负责追踪已接受剧情后的角色关系状态，并为后续生成提供连续性摘要。',
-                skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
-                skillDisplayMetadata: [
-                  {
-                    skillId: 'relationship-update-skill',
-                    displayName: 'Relationship Update',
-                    description: '在接受新剧情后更新持久关系状态。',
-                  },
-                  {
-                    skillId: 'relationship-injection-skill',
-                    displayName: 'Relationship Injection',
-                    description: '为下一轮生成准备关系上下文摘要。',
-                  },
-                ],
-                packageConfigPath: 'agents/gossipelog/config.yaml',
-                packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+                ...gossipelogAgentSurfaceFixture,
                 operationalHintLabel: '当前状态：可用',
                 latestStateLine: 'INITIAL_AGENT_SUMMARY',
                 latestStateSummary: {
