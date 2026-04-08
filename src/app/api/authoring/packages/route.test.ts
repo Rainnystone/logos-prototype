@@ -42,6 +42,7 @@ describe('POST /api/authoring/packages', () => {
       packageName: expect.any(String),
       activeStorylineId: 'storyline_main',
       createdAt: expect.any(String),
+      warnings: [],
     });
   });
 

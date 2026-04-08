@@ -88,7 +88,13 @@ export async function POST(request: Request) {
       displayName: parsed.data.displayName,
     });
 
-    return NextResponse.json(created, { status: 201 });
+    return NextResponse.json(
+      {
+        ...created,
+        warnings: [],
+      },
+      { status: 201 },
+    );
   } catch (error) {
     const mapped = mapCreatePackageError(error);
 
