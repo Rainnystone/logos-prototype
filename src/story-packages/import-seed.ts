@@ -92,6 +92,24 @@ function mapCharacterCollectionSeed(
     : fallbackCollection;
 }
 
+function mapNpcCharactersSeed(
+  seeds: readonly unknown[],
+  fallbackValue: string,
+): string {
+  const summaries = seeds
+    .map((seed) => {
+      if (typeof seed === 'string') {
+        return readString(seed);
+      }
+
+      const seedObject = readObject(seed);
+      return readString(seedObject.summary) ?? readString(seedObject.roleSummary);
+    })
+    .filter((value): value is string => Boolean(value));
+
+  return summaries.length > 0 ? summaries.join('；') : fallbackValue;
+}
+
 export function applyTextImportSeed(
   input: ApplyTextImportSeedInput,
 ): ApplyTextImportSeedResult {
@@ -112,6 +130,10 @@ export function applyTextImportSeed(
     input.worldBase.hero,
     'chr_ant',
   );
+  const nextNpcCharacters =
+    input.payload.npcCharacters.length > 0
+      ? mapNpcCharactersSeed(input.payload.npcCharacters, input.worldBase.npcCharacters)
+      : readString(payloadWorldBase.npcCharactersSummary) ?? input.worldBase.npcCharacters;
   const nextLocations =
     input.payload.locations.length > 0
       ? input.payload.locations.map((location, index) =>
@@ -130,8 +152,7 @@ export function applyTextImportSeed(
         readString(payloadWorldBase.settingSummary) ?? input.worldBase.worldBaseSetting,
       worldRules: readString(payloadWorldBase.worldRules) ?? input.worldBase.worldRules,
       toneBaseline: readString(payloadWorldBase.toneBaseline) ?? input.worldBase.toneBaseline,
-      npcCharacters:
-        readString(payloadWorldBase.npcCharactersSummary) ?? input.worldBase.npcCharacters,
+      npcCharacters: nextNpcCharacters,
       locationPatch: readString(payloadWorldBase.locationPatch) ?? input.worldBase.locationPatch,
       hero: nextHero,
       coreCast: nextCoreCast,

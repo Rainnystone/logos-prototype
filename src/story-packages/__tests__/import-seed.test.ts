@@ -88,7 +88,11 @@ function createWeaverPayload(
         roleSummary: '操控网络事故的地下策划者',
       },
     ],
-    npcCharacters: [],
+    npcCharacters: [
+      {
+        summary: '受事故波及的值班员与维修技师',
+      },
+    ],
     locations: [
       {
         displayName: '灯塔塔区',
@@ -126,6 +130,7 @@ describe('applyTextImportSeed', () => {
       name: '祁夜',
       characterSummary: '操控网络事故的地下策划者',
     });
+    expect(result.worldBase.npcCharacters).toBe('受事故波及的值班员与维修技师');
     expect(result.worldBase.locations[0]).toBeDefined();
     expect(result.worldBase.locations[0]!).toMatchObject({
       name: '灯塔塔区',
