@@ -79,12 +79,11 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - If an LLM is asked to validate a schema or verify a path, it's an architecture violation—use deterministic code.
 
 ### 6. Context Loading Discipline
-- **For Runtime tasks:** Load `archive/vendor/LOGOS-SPEC/04_MODULES/` and `src/engine/`.
-- **For Editor/Authoring tasks:** **Must** load `archive/docs/narrative-editor-redesign/master-record.md`, active `docs/superpowers/specs/`, `coding-agent-guide.md`, and `src/authoring/`.
+- **For Runtime tasks:** Start with `coding-agent-guide.md`, then load `docs/codemaps/*.md` and `src/engine/`. Load `archive/vendor/LOGOS-SPEC/04_MODULES/` only when historical runtime design context is needed.
+- **For Editor/Authoring tasks:** Start with `coding-agent-guide.md`, root `task_plan.md`, `findings.md`, and `progress.md`, then load `docs/codemaps/*.md` and `src/authoring/`. Load `archive/docs/narrative-editor-redesign/master-record.md` only when historical architecture context is needed.
 - **For roadmap / multi-phase tasks:** Also load root `task_plan.md`, `findings.md`, and `progress.md` before proposing order changes or new implementation slices.
 - **For simulation or cloud-verification tasks:** Load `simulation-toolset/README.md`, `simulation-toolset/agent-guide.md`, and `simulation-toolset/docs/`.
 - Spec text budget: max 40,000 tokens per session.
-- Never load: `Agent Client/`, `LOGOS Prototype/`, `SillyTavern调研/`.
 
 ### 7. Subagent Delegation Discipline
 - For complex work, prefer decomposing the implementation into bounded tasks and dispatching subagents rather than keeping the whole execution on the main thread.
@@ -93,14 +92,17 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - Dispatch instructions must explicitly tell the worker that it is a subagent, not the main thread.
 - Prefer giving the subagent a clean task brief, file boundary, and success criteria instead of forwarding raw main-thread conversation history.
 - Do not close a subagent just because a wait timed out. Before closing, first confirm its actual work status, current progress, latest conclusion, and whether keeping it alive still reduces risk or rework.
-- Decompose implementation work into bounded packets before dispatch.
-- Prefer one primary objective, one main module or surface area, and one verification path per packet.
-- Each dispatched packet should be small enough to stay well-scoped and verifiable in one pass.
-- If a packet grows across unrelated concerns, long execution chains, or multiple verification paths, split it again.
 - Each dispatch should clearly state:
   - whether the subagent is read-only review or write-authorized implementation
   - which files or modules it owns
   - which actions are forbidden, especially spawning more subagents, reverting unrelated work, or broadening scope without approval
+
+### 8. Implementation Packet Discipline
+
+- Decompose implementation work into bounded packets before dispatch.
+- Prefer one primary objective, one main module or surface area, and one verification path per packet.
+- Each dispatched packet should be small enough to stay well-scoped and verifiable in one pass.
+- If a packet grows across unrelated concerns, long execution chains, or multiple verification paths, split it again.
 
 ## Key Paths
 
