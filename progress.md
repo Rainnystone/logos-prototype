@@ -2,16 +2,19 @@
 
 ## 2026-04-08
 
-- 当前工作分支的 `Phase 4` 已从“准备态”进入“实现收尾态”：
-  - implementation plan 的 `Task 1` 到 `Task 6` 已落地
-  - `Task 7` 正在做最终文档同步与验证收口
-- 仓库级恢复口径已需要指向 `docs/superpowers/phase-4/` 的真实完成度，而不是继续把它描述成“尚未开始实现”。
-- 当前分支上的最终验证结果是：
-  - `npm run build` 通过
-  - 指定 targeted suite 有 `1` 个失败
-  - `npm test` 有 `2` 个失败
-  - 两个失败都来自 `gossipelog responsibilitySummary` 断言仍期待英文文案
-  - 浏览器验收在本次子线程内未完成
+- 当前工作分支的 `Phase 4` 已完成实现与验证收口：
+  - implementation plan 的 `Task 1` 到 `Task 7` 已全部完成
+  - 仓库级恢复口径应指向 `docs/superpowers/phase-4/` 的真实完成度
+- 当前分支上的最新验证结果是：
+  - `npm test` 通过：`90` files / `746` tests
+  - `npm run build` 已通过，仅保留既存 ESLint warning
+  - `npm run type-check:simulation` 通过
+  - `npm run test:simulation` 通过：`35` files / `349` tests
+- 浏览器验收结果已完成并可落档：
+  - `agent 管理` 页面确认显示 `Weaver` 和 `Gossipe Log`
+  - built-in sidecar 没有关闭 checkbox
+  - `空白创建` 已在真实页面中成功走通
+  - `文本导入` 没有真实 provider credential，因此未做真实 LLM 成功导入；浏览器层只验证了前端接线、pending copy、runtime config 读取和提交 payload
 
 ## 2026-04-07
 
@@ -32,7 +35,7 @@
 - `Phase 4` 当前已冻结到可以直接执行实现的程度：
   - `weaver agent`、`agent 管理页面`、shared sidecar reference loader、`gossipelog bootstrap/fallback` 的产品与架构边界已写入 spec
   - implementation plan 已完成多轮 reviewer 修订并最终通过 review
-  - 当前状态应视为“等待实现”，而不是“还在准备 spec / plan”
+  - 当前状态应视为“实现与验证都已完成”，而不是“还在准备 spec / plan”
 - `Phase 3` 现在已经是主线基线，不再是待执行计划：
   - `PR #6` 合入了 `Part 1`
   - `PR #7` 合入了 `Part 2`

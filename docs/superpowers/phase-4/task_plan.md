@@ -12,24 +12,20 @@
 
 ## Current Status
 
-- `Phase 4` 的正式 spec 与 implementation plan 已落地并执行到 `Task 7` 收尾阶段。
-- 当前分支已经完成 implementation plan 中的 `Task 1` 到 `Task 6`：
+- `Phase 4` 的正式 spec 与 implementation plan 已落地，并且 `Task 7` 已完成。
+- 当前分支已经完成 implementation plan 中的 `Task 1` 到 `Task 7`：
   - `text_import` contract、命名边界和 `weaver` summary schema 已落地。
   - shared adapter-config parser、shared sidecar reference loader、agent surface metadata 已落地。
   - `weaver agent` sidecar shell、reference 资产、adapter `weaverImport` operation 已落地。
   - staged scaffold text import、atomic package promotion、`weaver` summary/materialized config 写入已落地。
   - `故事包管理` 的 `空白创建 / 文本导入` 分流与 `agent 管理` 页面已落地。
   - `gossipelog` 的 create-time bootstrap 与 bounded first-play fallback 已落地。
-- `Task 7` 的验证状态目前为：
-  - 指定 targeted suite 已执行，结果为 `14` 个测试文件通过、`1` 个测试文件失败。
+- 最新验证状态为：
+  - `npm test` 通过：`90` files / `746` tests。
   - `npm run build` 已通过，仅有既存 ESLint warning。
-  - `npm test` 已执行，结果为 `88` 个测试文件通过、`2` 个测试文件失败。
-  - 文档相对链接检查已通过。
-  - 浏览器验收尚未在本次子线程内完成。
-- 当前阻塞不是文档本身，而是当前分支仍有两个既存测试断言没有同步到最新实现：
-  - `src/types/__tests__/type-conformance.test.ts`
-  - `src/authoring/persistence/__tests__/package-state.test.ts`
-  - 两处都还在期待英文 `gossipelog responsibilitySummary`，而当前实现已使用中文说明文案。
+  - `npm run type-check:simulation` 通过。
+  - `npm run test:simulation` 通过：`35` files / `349` tests。
+  - 浏览器验收已完成，确认 `agent 管理` 页面显示 `Weaver` 和 `Gossipe Log`，且 built-in sidecar 没有关闭 checkbox。
 - 当前已经冻结的方向是：
   - 新增内建、`always-on` 的 `sidecar agent`
   - 新 agent 名称固定为 `weaver agent`
@@ -110,11 +106,11 @@
 
 当前已没有阻塞 implementation plan 的产品级待定项。
 
-接下来的未完成部分属于收尾验证，而不是 spec 级方向不清：
+接下来的结论维护只需要同步事实，不需要再推进收尾验证：
 
-- 修正两个仍期待英文 `gossipelog responsibilitySummary` 的测试断言，并重新运行 targeted suite 与全量测试
-- 在可用的浏览器自动化环境中完成 `空白创建 / 文本导入 / agent 管理页` 的真实页面验收
-- 在上述验证全部通过后，再把 `Phase 4` 标记为 release-grade complete
+- 保持 `Task 7` 已完成的状态记录
+- 保持最新测试与浏览器验收结果一致
+- 后续若有回归，再回到对应测试或页面验证，不要把当前状态写回“收尾中”
 
 ## Canonical References
 

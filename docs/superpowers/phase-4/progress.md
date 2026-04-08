@@ -2,16 +2,17 @@
 
 ## 2026-04-08
 
-- `Phase 4` implementation plan 已在当前分支执行到最终同步阶段，`Task 1` 到 `Task 6` 的代码切片已经落地。
-- `Task 7` 验证已经执行过：
-  - 指定 targeted suite 结果为 `14` 个测试文件通过、`1` 个测试文件失败、`180` 个测试通过、`1` 个测试失败。
-  - `npm run build` 通过，只有既存的 ESLint warning。
-  - `npm test` 结果为 `88` 个测试文件通过、`2` 个测试文件失败、`743` 个测试通过、`2` 个测试失败。
-  - 两个失败都来自 `gossipelog responsibilitySummary` 仍按英文文案断言。
-- Phase 4 相关文档、spec、implementation plan 的相对链接检查已用 `python3` 通过；当前环境不存在 `python` 命令。
-- 浏览器验收本次没有完成：
-  - Playwright MCP 因 `/.playwright-mcp` 无法创建而失败。
-  - `playwright-cli open http://127.0.0.1:3001/edit` 没有返回可继续交互的可用输出。
+- `Phase 4` 已完成实现与验证收口，`Task 1` 到 `Task 7` 都已完成。
+- 最新验证结果为：
+  - `npm test` 通过：`90` files / `746` tests。
+  - `npm run build` 已通过，仅保留既存 ESLint warning。
+  - `npm run type-check:simulation` 通过。
+  - `npm run test:simulation` 通过：`35` files / `349` tests。
+- 浏览器验收已完成并可落档：
+  - `agent 管理` 页面确认显示 `Weaver` 和 `Gossipe Log`
+  - built-in sidecar 没有关闭 checkbox
+  - `空白创建` 已在真实页面中成功走通
+  - `文本导入` 没有真实 provider credential，因此未做真实 LLM 成功导入；浏览器层只验证了前端接线、pending copy、runtime config 读取和提交 payload
 
 ## 2026-04-07
 

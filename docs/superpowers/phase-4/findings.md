@@ -2,7 +2,7 @@
 
 ## 最终恢复点
 
-`Phase 4` 现在已经有正式 spec、已 review 通过的 implementation plan，以及当前分支上的已落地实现；但发布级验证还没有完全收口。
+`Phase 4` 现在已经有正式 spec、已 review 通过的 implementation plan、当前分支上的已落地实现，以及完成收口的发布级验证。
 
 最短恢复顺序：
 
@@ -21,34 +21,20 @@
 
 恢复后先看下面两个现实状态：
 
-- 当前分支已经完成 `Task 1` 到 `Task 6` 的实现切片，`weaver`、shared sidecar loader、`agent 管理` 页面、`gossipelog bootstrap/fallback` 都已经接上。
-- 当前还不能把 `Phase 4` 叫做 release-grade complete，因为最终验证仍卡在两个既存测试断言和一个未完成的浏览器验收。
+- 当前分支已经完成 `Task 1` 到 `Task 7` 的实现切片与验证收口，`weaver`、shared sidecar loader、`agent 管理` 页面、`gossipelog bootstrap/fallback` 都已经接上。
+- 当前可以把 `Phase 4` 叫做 release-grade complete。
 
 ## 当前验证结论
 
-- 指定 targeted suite 失败 `1` 处：
-  - `src/types/__tests__/type-conformance.test.ts`
-  - 失败原因：断言仍期待英文 `gossipelog responsibilitySummary`，但当前实现已经使用中文说明。
-- `npm run build` 已通过：
-  - 构建成功
-  - 仅有既存 ESLint warning，没有 build blocker
-- `npm test` 失败 `2` 处：
-  - `src/types/__tests__/type-conformance.test.ts`
-  - `src/authoring/persistence/__tests__/package-state.test.ts`
-  - 两处失败原因相同，都是 `gossipelog responsibilitySummary` 的断言文案未同步
-- 文档相对链接检查已通过。
-- 浏览器验收这次没有形成可信结果：
-  - Playwright MCP 因 `/.playwright-mcp` 无法创建而失败
-  - `playwright-cli` 没有返回可继续交互的有效输出
-
-## 当前收尾重点
-
-- 如果要完成 `Task 7` 的发布级收口，第一件事不是改文档，而是把两个 stale 测试断言改到与当前 `gossipelog` 文案一致，再重跑 targeted suite 和 `npm test`。
-- 浏览器验收仍需要在一个能正常运行 Playwright 的环境里完成，至少验证：
-  - `空白创建`
-  - `文本导入创建`
-  - `agent 管理` 同时显示 `Gossipelog` 与 `Weaver`
-  - built-in sidecar 没有 disable control
+- `npm test` 通过：`90` files / `746` tests。
+- `npm run build` 已通过，仅有既存 ESLint warning，没有 build blocker。
+- `npm run type-check:simulation` 通过。
+- `npm run test:simulation` 通过：`35` files / `349` tests。
+- 浏览器验收已完成并可落档：
+  - `agent 管理` 页面确认显示 `Weaver` 和 `Gossipe Log`
+  - built-in sidecar 没有关闭 checkbox
+  - `空白创建` 已在真实页面中成功走通
+  - `文本导入` 没有真实 provider credential，因此未做真实 LLM 成功导入；浏览器层只验证了前端接线、pending copy、runtime config 读取和提交 payload
 
 ## 当前冻结结论
 
