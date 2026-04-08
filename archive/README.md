@@ -27,8 +27,9 @@
 1. `archive/docs/superpowers/plans/`
 2. `archive/docs/superpowers/specs/`
 3. `archive/docs/superpowers/plans/drafts/`
+4. `archive/docs/dev-updates/`
 
-> 这三处文档用于回看“某次任务是如何被拆解与执行的”，不是当前任务的默认规范入口。
+> `archive/docs/superpowers/` 更适合回看单篇 plan / spec 的历史演进；`archive/docs/dev-updates/` 则用于回看一整轮已封板的大更新。
 
 ### C. 历史规格库（只在需要追溯时看）
 
@@ -73,4 +74,6 @@
 - 编辑器重构主记录：`archive/docs/narrative-editor-redesign/master-record.md`
 - 重构目录入口：`archive/docs/narrative-editor-redesign/README.md`
 - 历史 superpowers 归档入口：`archive/docs/superpowers/README.md`
+- 开发更新档案入口：`archive/docs/dev-updates/README.md`
+- 最近一轮完整开发更新：`archive/docs/dev-updates/march-dev-update/README.md`
 - 历史规格入口：`archive/vendor/LOGOS-SPEC/README.md`

@@ -1,4 +1,4 @@
-# Phase 3 Part 1 Storyline Substrate Implementation Plan
+# March Dev Update Phase 3 Part 1 Storyline Substrate Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,8 @@
 **Architecture:** Introduce a dedicated storyline repository layer plus variant-workspace filesystem helpers, then wrap the existing runtime-session substrate with storyline-aware bootstrap / create / switch / branch primitives. Keep the deterministic authoring bridge and story loader intact, but add one target-resolution seam so authored reads and writes move from package-root YAMLs to the active storyline workspace after bootstrap.
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Node `fs/promises`, Zod, Vitest, package-local JSON/YAML persistence under `src/story-packages`
+
+**Archive note:** This plan preserves the original execution-time instructions. Some inline path examples still mention the then-active `docs/superpowers/...` locations that are now archived under `archive/docs/dev-updates/march-dev-update/`.
 
 ---
 

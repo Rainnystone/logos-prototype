@@ -1,4 +1,4 @@
-# Phase 1 Model & Surface Implementation Plan
+# March Dev Update Phase 1 Model & Surface Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,8 @@
 **Architecture:** Phase 1 keeps `worldbase-cast` as one save boundary while introducing two visible subpages over the same draft. Structured locations become authored source-of-truth data on `worldBase`, while `locationPatch` remains a derived compatibility output for the current runtime path. The console remains the host for diagnostics plus a read-only sidecar-agent card surface, and all changes stay inside the existing neue brutalism shell rather than replacing it.
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Zod, Vitest, existing authoring bridge/repository flow
+
+**Archive note:** This plan preserves the original execution-time instructions. Some inline path examples still mention the then-active `docs/superpowers/...` locations that are now archived under `archive/docs/dev-updates/march-dev-update/`.
 
 ---
 

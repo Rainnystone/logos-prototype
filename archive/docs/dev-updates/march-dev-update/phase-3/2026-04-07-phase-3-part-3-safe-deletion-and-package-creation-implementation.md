@@ -1,4 +1,4 @@
-# Phase 3 Part 3 Safe Deletion And Package Creation Implementation Plan
+# March Dev Update Phase 3 Part 3 Safe Deletion And Package Creation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,8 @@
 **Architecture:** Keep all writes server-owned and deterministic. First extend the bounded management contracts so delete availability and package-creation payloads are explicit, then add one safe deletion substrate path and one staged package-scaffold service, then wire two thin API routes and integrate only the minimal new UI states into the existing management workspace. Package creation must validate both the authored YAML package and the explicit `Phase 3` repository state before promotion; deletion must remove visible storyline state while preserving package-scoped checkpoint truth.
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Vitest, Testing Library, Node `fs/promises`, Zod, YAML, existing storyline substrate under `src/storylines/`, package loader under `src/engine/story-loader.ts`
+
+**Archive note:** This plan preserves the original execution-time instructions. Some inline path examples still mention the then-active `docs/superpowers/...` locations that are now archived under `archive/docs/dev-updates/march-dev-update/`.
 
 **UI References:**
 - [`../phase-3/phase 3 part 3.png`](../phase-3/phase%203%20part%203.png)

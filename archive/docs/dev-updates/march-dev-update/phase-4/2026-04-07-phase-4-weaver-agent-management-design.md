@@ -1,13 +1,13 @@
-# Phase 4 Weaver Import & Agent Management Design
+# March Dev Update Phase 4 Weaver Import & Agent Management Design
 
 Date: 2026-04-07
-Status: Reviewed; awaiting user approval
-Scope: `Phase 4: Weaver import sidecar + agent management surface`
+Status: Archived after implementation complete
+Scope: `March Dev Update Phase 4: Weaver import sidecar + agent management surface`
 
 Implementation status:
 
-- `Phase 4` has not started implementation yet.
-- This document freezes the intended design baseline before implementation planning.
+- This document preserved the intended design baseline before implementation started.
+- `March Dev Update Phase 4` has since been implemented, verified, and archived as complete.
 
 ## 1. Why Phase 4 Exists
 

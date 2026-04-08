@@ -1,8 +1,8 @@
-# Phase 3 Package & Storyline Layer Master Design
+# March Dev Update Phase 3 Package & Storyline Layer Master Design
 
 Date: 2026-04-06
-Status: Approved; Parts 1-3 merged into `branch/narrative-editor` on 2026-04-07
-Scope: `Phase 3: Package & Storyline Layer`
+Status: Archived after merged implementation
+Scope: `March Dev Update Phase 3: Package & Storyline Layer`
 
 Implementation status:
 

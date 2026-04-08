@@ -1,4 +1,4 @@
-# Phase 4 Weaver And Agent Management Implementation Plan
+# March Dev Update Phase 4 Weaver And Agent Management Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,9 @@
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Vitest, Testing Library, Zod, YAML, Node `fs/promises`, existing API adapter under `src/engine/api-adapter/`, existing package scaffold service under `src/story-packages/scaffold.ts`
 
-**Spec Reference:** [`../specs/2026-04-07-phase-4-weaver-agent-management-design.md`](../specs/2026-04-07-phase-4-weaver-agent-management-design.md)
+**Spec Reference:** [`./2026-04-07-phase-4-weaver-agent-management-design.md`](2026-04-07-phase-4-weaver-agent-management-design.md)
+
+**Archive note:** This plan preserves the original execution-time instructions. Some inline path examples still mention the then-active `docs/superpowers/...` locations that are now archived under `archive/docs/dev-updates/march-dev-update/`.
 
 ---
 

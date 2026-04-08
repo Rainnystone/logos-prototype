@@ -1,11 +1,11 @@
-# Phase 3 Part 2 Package & Storyline Workspace Design
+# March Dev Update Phase 3 Part 2 Package & Storyline Workspace Design
 
 Date: 2026-04-06
-Status: Approved
-Scope: `Phase 3 Part 2`
+Status: Archived after implementation complete
+Scope: `March Dev Update Phase 3 Part 2`
 Depends on:
-- `docs/superpowers/specs/2026-04-06-phase-3-master-design.md`
-- `docs/superpowers/specs/2026-04-06-phase-3-part-1-storyline-substrate-design.md`
+- `2026-04-06-phase-3-master-design.md`
+- `2026-04-06-phase-3-part-1-storyline-substrate-design.md`
 
 Reference inputs:
 - [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)

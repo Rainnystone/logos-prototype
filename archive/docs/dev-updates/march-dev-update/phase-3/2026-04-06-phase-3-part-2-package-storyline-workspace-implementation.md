@@ -1,4 +1,4 @@
-# Phase 3 Part 2 Package & Storyline Workspace Implementation Plan
+# March Dev Update Phase 3 Part 2 Package & Storyline Workspace Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,8 @@
 **Architecture:** Keep Part 1 as the only persistence substrate, then add one bounded server read model plus one server-owned workspace action seam for the UI. Extend the current editor shell in place: add a new section id, keep the existing brutalist navigation frame, pass the management view from the server page into `EditWorkbench`, and isolate the new management UI in focused section components that talk to the action route and then refresh or navigate.
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Vitest, Testing Library, Node `fs/promises`, existing storyline substrate under `src/storylines/`, global CSS in `src/app/globals.css`
+
+**Archive note:** This plan preserves the original execution-time instructions. Some inline path examples still mention the then-active `docs/superpowers/...` locations that are now archived under `archive/docs/dev-updates/march-dev-update/`.
 
 **UI Reference Sketch:** [`../phase-3/结构布局示意图.png`](../phase-3/结构布局示意图.png)
 

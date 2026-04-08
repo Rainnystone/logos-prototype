@@ -1,39 +1,33 @@
 # Coding Agent Guide
 
-这份文件是给第一次接手本仓库的 coding agent 的快速导航。目标是先看对文件，再动手。
+这份文件是给第一次接手本仓库的 coding agent 的任务导引目录。目标是承接 [AGENTS.md](AGENTS.md) 之外的目录地图、任务分流和入口文件说明，让 agent 先按任务找到最相关的位置；只有在需要更完整结构图时，再继续引导去 `docs/codemaps/*.md`。
 
 ## 第一轮必读
 
 按这个顺序读：
 
-1. [AGENTS.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/AGENTS.md)
-2. [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-3. [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
-4. [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
-5. [docs/superpowers/specs/2026-04-06-phase-3-master-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-06-phase-3-master-design.md)
+1. [AGENTS.md](AGENTS.md)
+2. [coding-agent-guide.md](coding-agent-guide.md)
+3. [task_plan.md](task_plan.md)
+4. [progress.md](progress.md)
+5. [findings.md](findings.md)
 6. `docs/codemaps/*.md`
 
-如果任务明确落在 `Phase 3`，再补读：
+如果任务需要历史背景，再补读：
 
-- [docs/superpowers/phase-3/task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-3/task_plan.md)
-- [docs/superpowers/phase-3/progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-3/progress.md)
-- [docs/superpowers/phase-3/findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/phase-3/findings.md)
+- [archive/docs/dev-updates/march-dev-update/README.md](archive/docs/dev-updates/march-dev-update/README.md)
+
+如果这里只能回答“先去哪找”，但还不足以解释模块关系，再补读：
+
+- `docs/codemaps/*.md`
 
 ## 当前状态
 
-现在不要再把 `Phase 3` 当成“待实现 spec”。`branch/narrative-editor` 已经包含：
+现在不要再把 `March Dev Update Phase 1-4` 当成活跃执行入口。它们都已经完成并整体归档到了：
 
-- `Part 1`：storyline substrate
-- `Part 2`：`故事包管理` 工作区
-- `Part 3`：safe delete storyline + local new story package
+- `archive/docs/dev-updates/march-dev-update/`
 
-也就是说，当前主线已经有：
-
-- `storyline-repository.json`
-- `runtime-sessions.json`
-- `variants/<variantId>/...`
-- `故事包管理` 默认入口
-- package creation scaffold
+当前根目录三件套已经重置，用于下一轮大更新的仓库级外部追踪。
 
 ## 任务分流：不同问题先看哪里
 
@@ -42,8 +36,9 @@
 | `/play` 行为、checkpoint、session | `src/app/play/`, `src/engine/`, `src/runtime-sessions/` |
 | `/edit` 默认入口、页签、页面装配 | `src/app/edit/page.tsx`, `src/app/edit/EditWorkbench.tsx`, `src/app/edit/shared/SectionTabs.tsx` |
 | 故事包管理页与 storyline rows | `src/app/edit/sections/StoryPackageManagementSection.tsx`, `StorylineWorkspaceRow.tsx` |
-| create / branch / switch / delete storyline | `src/storylines/substrate.ts`, `src/app/api/authoring/packages/[packageName]/storylines/actions/route.ts` |
-| 新建 story package | `src/story-packages/scaffold.ts`, `src/story-packages/package-slug.ts`, `src/app/api/authoring/packages/route.ts` |
+| `blank | text_import` 新建故事包 | `src/story-packages/scaffold.ts`, `src/story-packages/import-seed.ts`, `src/app/api/authoring/packages/route.ts` |
+| agent 管理页与 built-in sidecars | `src/app/edit/sections/PackageWiringValidationSection.tsx`, `src/agents/agent-surface.ts`, `src/agents/registry.ts` |
+| `weaver` / `gossipelog` sidecar 行为 | `src/agents/weaver/`, `src/agents/gossipelog/` |
 | authoring 保存与验证 | `src/authoring/persistence/bridge.ts`, `src/authoring/sections/` |
 | 当前类型合同 | `src/types/` |
 
@@ -55,19 +50,16 @@ README.md                            给人看的仓库概览
 coding-agent-guide.md                给 agent 的快速导航
 
 task_plan.md / progress.md / findings.md
-  仓库级恢复入口
+  当前仓库级外部追踪入口
+
+archive/docs/dev-updates/march-dev-update/
+  March Dev Update 的完整封板档案
 
 docs/codemaps/
   architecture.md                    全局架构
   frontend.md                        页面、组件、UI 入口
   backend.md                         API routes、服务端边界
   data.md                            关键类型与文件落点
-
-docs/superpowers/specs/
-  2026-04-06-phase-3-master-design.md
-  ...part-1...
-  ...part-2...
-  ...part-3...
 
 src/app/
   page.tsx                           Title Page
@@ -78,6 +70,12 @@ src/app/
 src/authoring/
   persistence/                       bridge、repository、reload、package-state
   sections/                          世界/角色/场景/控制模块的 draft/render
+
+src/agents/
+  registry.ts                        built-in sidecar registry
+  reference-loader.ts                shared reference loading
+  gossipelog/                        关系 sidecar
+  weaver/                            文本导入 sidecar
 
 src/engine/
   orchestrator.ts                    runtime 主循环
@@ -91,11 +89,12 @@ src/runtime-sessions/
 src/storylines/
   substrate.ts                       storyline server primitives
   repository.ts                      storyline-repository.json
-  workspace-view.ts                  `故事包管理` 页 DTO
+  workspace-view.ts                  故事包管理页 DTO
 
 src/story-packages/
   sample-scene/                      样例故事包
   scaffold.ts                        新建 package scaffold
+  import-seed.ts                     text-import seed 映射
   package-slug.ts                    跨平台安全包名
 ```
 
@@ -104,10 +103,11 @@ src/story-packages/
 优先用 `rg`，不要从文件树盲翻。
 
 ```bash
-rg "story-package-management" src
-rg "create_from_source|branch_from_checkpoint|delete_storyline" src
+rg "story-package-management|package-wiring-validation" src
+rg "text_import|weaverImport|import-summary" src
+rg "gossipelog|bootstrap" src
 rg "resolveActiveStorylineContext" src
-rg "createStoryPackageScaffold|buildStoryPackageSlug" src
+rg "createStoryPackageScaffold|applyImportSeed" src
 rg "runtime-sessions.json|storyline-repository.json" src
 ```
 
@@ -121,6 +121,7 @@ rg "runtime-sessions.json|storyline-repository.json" src
 | `storyline` | 作者工作线，不拥有 checkpoint |
 | `variant` | materialized workspace，不是 overlay |
 | package creation | server-owned scaffold，不是浏览器写文件 |
+| sidecar prompt context | reference 先 resolve，再进入统一 prompt assembly |
 
 ## 默认验证
 
@@ -140,10 +141,7 @@ npm run test:simulation
 
 ## 少走弯路的建议
 
-- 先判断任务属于 runtime、authoring、storyline、还是 package scaffold。
-- 只加载和任务直接相关的 spec、codemap 和入口文件。
-- 先看测试，再改实现，尤其是：
-  - `src/storylines/__tests__/`
-  - `src/story-packages/__tests__/`
-  - `src/app/edit/**/__tests__/`
-- 如果文档说“待实现”但代码和测试已经存在，先以主线代码和根目录 `progress.md` 为准，再修正文档。
+- 先判断任务属于 runtime、authoring、storyline、package scaffold，还是 built-in sidecar。
+- 先读 codemap，再读对应入口文件，不要先钻 archive。
+- 如果需要历史决策，再回看 `archive/docs/dev-updates/march-dev-update/`。
+- 如果文档说“历史上曾这样设计”，但当前代码和测试已经不一样，以当前分支代码与测试为准。

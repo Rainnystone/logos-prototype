@@ -1,6 +1,6 @@
 # Data Codemap
 
-> Updated: 2026-04-07 | merged `Phase 3` baseline
+> Updated: 2026-04-08 | post `March Dev Update` archive reset
 
 ## Core Package Files
 
@@ -15,6 +15,10 @@
 | `storyline-repository.json` | JSON | storyline metadata + activeStorylineId + variant binding |
 | `runtime-sessions.json` | JSON | runtime sessions + checkpoints |
 | `variants/<variantId>/...` | YAML mirror set | storyline-specific authored workspace |
+| `agents/weaver/config.yaml` | YAML | built-in weaver config presence |
+| `agents/weaver/import-summary.yaml` | YAML | import summary, warnings, bootstrap state |
+| `agents/gossipelog/config.yaml` | YAML | built-in gossipelog config presence |
+| `agents/gossipelog/character-relationships.yaml` | YAML | persisted relationship state |
 
 ## Main Type Families
 
@@ -46,16 +50,22 @@
 | `StorylineRecord` | 单条 storyline metadata |
 | `StorylineVariant` | variant workspace metadata |
 
-### Management View / Action Types
+### Package Creation / Weaver Types
 
 | Type | Purpose |
 |---|---|
-| `StoryPackageManagementWorkspaceView` | `故事包管理` 页 DTO |
-| `StoryPackageManagementStorylineRowView` | 单条 row 视图 |
-| `StoryPackageManagementCheckpointNode` | beat rail 节点 DTO |
-| `StorylineAction` | storyline actions union |
-| `StoryPackageCreationRequest` | package creation request |
-| `StoryPackageCreationResponse` | package creation response |
+| `StoryPackageCreationRequest` | discriminated `blank | text_import` create request |
+| `StoryPackageCreationResponse` | package create response with bounded warnings |
+| `WeaverImportRequest` | `weaverImport` adapter request |
+| `WeaverImportPayload` | validated structured import payload |
+| `WeaverImportSummary` | persisted import summary and bootstrap status |
+
+### Agent Surface Types
+
+| Type | Purpose |
+|---|---|
+| `AgentSurfaceItem` | built-in sidecar card view |
+| `AgentOperationalHint` | `ready | warning | pending_bootstrap` |
 
 ## Repository Shapes
 
@@ -68,16 +78,6 @@ storylinesById
 variantsById
 ```
 
-每条 `StorylineRecord` 至少包含：
-
-- `storylineId`
-- `name`
-- `status`
-- `sourceCheckpointId`
-- `headCheckpointId`
-- `variantId`
-- `activeSessionId`
-
 ### `runtime-sessions.json`
 
 ```text
@@ -86,32 +86,24 @@ activeSessionId
 sessionsById
 ```
 
-每条 `RuntimeSession` 至少包含：
+### `agents/weaver/import-summary.yaml`
 
-- `lifecycle`
-- `headCheckpointId`
-- `activeCheckpointId`
-- `orderedCheckpointIds`
-- `checkpointsById`
+```text
+sourceKind
+sourceSummary
+importSummary
+warningCount
+unresolvedGapCount
+bootstrapStatus
+```
 
 ## Important Data Rules
 
 | Rule | Meaning |
 |---|---|
 | `checkpoint` stays package-scoped | checkpoints are never storyline-owned |
-| `storyline.variantId` is stable | existing storyline is not rebound to another variant in Phase 3 |
-| `activeStorylineId` must resolve | explicit repository cannot exist without a concrete active storyline |
+| `storyline.variantId` is stable | existing storyline is not rebound to another variant in the current baseline |
 | `runtime-sessions.json` owns checkpoint truth | storyline repo must not own runtime transcript history |
 | package-root YAML is baseline | storyline-aware reads resolve to variant workspace when present |
-
-## New Package Scaffold Guarantees
-
-创建新 package 时，默认会生成显式 `Phase 3` scaffold，包括：
-
-- baseline YAML files
-- `storyline-repository.json`
-- `runtime-sessions.json`
-- `variants/variant_main/...`
-- 默认 `storyline_main`
-- 默认 `variant_main`
-- 默认 `awaiting_start` session
+| `weaver` summary is bounded | raw pasted source text is not duplicated into sidecar summary state |
+| agent hints are derived | `operationalHint` / `latestStateLine` come from shared surface loading, not handwritten UI state |

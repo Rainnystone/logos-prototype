@@ -4,6 +4,12 @@
 
 放在这里的文档仍然可以作为回看记录、设计演变参考和历史决策痕迹使用，但它们不再默认代表当前分支上的活动实施依据。
 
+如果一整轮 multi-phase 开发更新已经完成并需要整体封板，优先归档到：
+
+- `archive/docs/dev-updates/`
+
+而不是继续把 phase 级 spec / plan / 工作记忆拆散混放在这里。
+
 当前仍然活跃、需要优先查看的 superpowers 文档，继续保留在：
 
 - `docs/superpowers/plans/`
@@ -27,3 +33,7 @@
 - `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-log.md`
 - `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-review-notes.md`
 - `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-session-summary.md`
+
+最近完成并已整体封板的一轮开发更新是：
+
+- `archive/docs/dev-updates/march-dev-update/README.md`
