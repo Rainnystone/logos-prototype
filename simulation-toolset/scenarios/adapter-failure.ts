@@ -48,18 +48,18 @@ export function createAdapterFailureScenario(): ExecutableSimulationScenario {
         recorder.recordAgentTrace(result.agentTrace);
         recorder.recordAssertion({
           name: 'fallback-layer-used',
-          pass: result.agentTrace.usedFallbackLayer === 'last-stable-layer',
+          pass: (result.agentTrace.details as Record<string, unknown>)?.usedFallbackLayer === 'last-stable-layer',
         });
         recorder.recordAssertion({
           name: 'stable-layer-preserved',
-          pass: result.agentTrace.stableBackgroundText === lastStableRelationshipLayer.stableBackgroundText,
+          pass: (result.agentTrace.details as Record<string, unknown>)?.stableBackgroundText === lastStableRelationshipLayer.stableBackgroundText,
         });
 
         return {
           finalState: {
             packageName: fixture.packageName,
-            usedFallbackLayer: result.agentTrace.usedFallbackLayer,
-            stableBackgroundText: result.agentTrace.stableBackgroundText,
+            usedFallbackLayer: (result.agentTrace.details as Record<string, unknown>)?.usedFallbackLayer,
+            stableBackgroundText: (result.agentTrace.details as Record<string, unknown>)?.stableBackgroundText,
           },
         };
       } finally {

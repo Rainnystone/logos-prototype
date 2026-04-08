@@ -41,10 +41,12 @@ export function createGossipelogAgentTrace(
     agentId: 'gossipelog',
     stage: 'cycle',
     outcome: resolveGossipelogOutcome(result),
-    highlightedDeltasText: result.relationshipLayer.highlightedDeltasText,
-    stableBackgroundText: result.relationshipLayer.stableBackgroundText,
-    ...(result.usedFallbackSource ? { usedFallbackSource: result.usedFallbackSource } : {}),
-    ...(result.usedFallbackLayer ? { usedFallbackLayer: result.usedFallbackLayer } : {}),
     sideEffectSummary: summarizeGossipelogSideEffects(result),
+    details: {
+      highlightedDeltasText: result.relationshipLayer.highlightedDeltasText,
+      stableBackgroundText: result.relationshipLayer.stableBackgroundText,
+      ...(result.usedFallbackSource ? { usedFallbackSource: result.usedFallbackSource } : {}),
+      ...(result.usedFallbackLayer ? { usedFallbackLayer: result.usedFallbackLayer } : {}),
+    },
   };
 }

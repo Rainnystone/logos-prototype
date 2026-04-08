@@ -57,8 +57,10 @@ describe('simulation contracts', () => {
           agentId: 'gossipelog',
           stage: 'cycle',
           outcome: 'fallback',
-          stableBackgroundText: 'stable background',
           sideEffectSummary: ['update:no-op'],
+          details: {
+            stableBackgroundText: 'stable background',
+          },
         },
       ],
     });
@@ -297,7 +299,7 @@ describe('simulation contracts', () => {
       const indexContent = await readFile(batchResult.writtenIndexPath as string, 'utf8');
       const indexParsed = JSON.parse(indexContent);
 
-      expect(indexParsed.schemaVersion).toBe(1);
+      expect(indexParsed.schemaVersion).toBe(2);
       expect(indexParsed.reports).toHaveLength(2);
       expect(indexParsed.reports[0].scenarioId).toBe('kernel-scenario-1');
 

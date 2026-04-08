@@ -224,7 +224,7 @@ export function createRelationshipFinalizationScenario(): ExecutableSimulationSc
             sessionLayerText,
             checkpointLayerText,
             beatText: beat.beatResult.beatText,
-            stableBackgroundText: directCycleResult.agentTrace.stableBackgroundText,
+            stableBackgroundText: (directCycleResult.agentTrace.details as Record<string, unknown>)?.stableBackgroundText,
           },
         };
       } finally {

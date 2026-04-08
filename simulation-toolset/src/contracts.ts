@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SIMULATION_SCHEMA_VERSION = 1;
+export const SIMULATION_SCHEMA_VERSION = 2;
 
 export const SimulationActionSchema = z.object({
   kind: z.string(),
@@ -42,11 +42,8 @@ export const SimulationAgentTraceSchema = z.object({
   agentId: z.string(),
   stage: z.string(),
   outcome: z.string(),
-  stableBackgroundText: z.string().optional(),
-  highlightedDeltasText: z.string().optional(),
-  usedFallbackSource: z.string().optional(),
-  usedFallbackLayer: z.string().optional(),
   sideEffectSummary: z.array(z.string()).optional(),
+  details: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const SimulationScenarioSchema = z.object({

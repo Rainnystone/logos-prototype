@@ -129,7 +129,7 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
         recorder.recordAgentTrace(agentResult.agentTrace);
         recorder.recordAssertion({
           name: 'agent-layer-produced',
-          pass: agentResult.agentTrace.stableBackgroundText === 'stable background',
+          pass: (agentResult.agentTrace.details as Record<string, unknown>)?.stableBackgroundText === 'stable background',
         });
 
         return {
@@ -138,7 +138,7 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
             heroName: authorResult.reloadedStoryPackage.worldBase.hero.name,
             beatText: beat.beatResult.beatText,
             auditorInvoked,
-            stableBackgroundText: agentResult.agentTrace.stableBackgroundText,
+            stableBackgroundText: (agentResult.agentTrace.details as Record<string, unknown>)?.stableBackgroundText,
           },
         };
       } finally {

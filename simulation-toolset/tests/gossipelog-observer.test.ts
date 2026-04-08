@@ -40,7 +40,9 @@ describe('gossipelog observer', () => {
       agentId: 'gossipelog',
       stage: 'cycle',
       outcome: 'no-op',
-      stableBackgroundText: 'stable background',
+      details: {
+        stableBackgroundText: 'stable background',
+      },
       sideEffectSummary: expect.arrayContaining([
         'update:no-op',
         'relationship-layer:stable-background',

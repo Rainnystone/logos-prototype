@@ -12,7 +12,9 @@ describe('adapter failure scenario', () => {
       agentId: 'gossipelog',
       stage: 'cycle',
       outcome: 'fallback',
-      usedFallbackLayer: 'last-stable-layer',
+      details: {
+        usedFallbackLayer: 'last-stable-layer',
+      },
     });
     expect(report.assertions.every((item) => item.pass)).toBe(true);
   });

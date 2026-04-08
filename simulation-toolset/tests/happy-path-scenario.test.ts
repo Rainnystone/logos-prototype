@@ -26,7 +26,9 @@ describe('happy path scenario', () => {
       agentId: 'gossipelog',
       stage: 'cycle',
       outcome: 'no-op',
-      stableBackgroundText: 'stable background',
+      details: {
+        stableBackgroundText: 'stable background',
+      },
     });
   });
 });
