@@ -31,7 +31,7 @@
 | 10 | complete | 完成 Phase 5：Session Continuity + Edit Continuity Simulation（覆盖 Phase 2 runtime session capabilities） |
 | 11 | complete | 完成 Phase 6：Storyline Mock & E2E Flow（覆盖 Phase 3 Part 1/2 storyline capabilities） |
 | 12 | complete | 完成 Phase 7：统一 Mock 时钟（解决时间戳精度问题，实现确定性测试） |
-| 13 | in_progress | 完成 Phase 8：Weaver Agent & Agent Management Simulation（覆盖 Phase 4 产品特性） |
+| 13 | complete | 完成 Phase 8：Weaver Agent & Agent Management Simulation（覆盖 Phase 4 产品特性） |
 | 14 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
 
 ## Phase 4 Scope
@@ -248,26 +248,26 @@ Phase 4（PR #9）引入了 weaver text-import sidecar、shared reference loadin
 
 ### Execution Slices
 
-- [ ] Slice 1: 泛化 SimulationAgentTraceSchema（add details, bump version）
-- [ ] Slice 2: 迁移 gossipelog trace 到 details bag
-- [ ] Slice 3: 实现 weaver-sidecar-trace.ts
-- [ ] Slice 4: 实现 weaver-observer.ts
-- [ ] Slice 5: 实现 bootstrap-observer.ts
-- [ ] Slice 6: 扩展 ScriptedAdapter with weaver modes
-- [ ] Slice 7: 添加 import seed route smoke
-- [ ] Slice 8: 扩展 UI smoke for agent surface
-- [ ] Slice 9: 实现 S7 + S9 (weaver scenarios)
-- [ ] Slice 10: 实现 S8 + S10 (bootstrap scenarios)
-- [ ] Slice 11: 更新 manifest, README, 三文件, 全量回归
+- [x] Slice 1: 泛化 SimulationAgentTraceSchema（add details, bump version）
+- [x] Slice 2: 迁移 gossipelog trace 到 details bag
+- [x] Slice 3: 实现 weaver-sidecar-trace.ts
+- [x] Slice 4: 实现 weaver-observer.ts
+- [x] Slice 5: 实现 bootstrap-observer.ts
+- [x] Slice 6: 扩展 ScriptedAdapter with weaver modes
+- [x] Slice 7: 添加 import seed route smoke
+- [x] Slice 8: 扩展 UI smoke for agent surface
+- [x] Slice 9: 实现 S7 + S9 (weaver scenarios)
+- [x] Slice 10: 实现 S8 + S10 (bootstrap scenarios)
+- [x] Slice 11: 更新 manifest, README, 三文件, 全量回归
 
 ### Done Criteria
 
-- [ ] 4 个新场景测试通过
-- [ ] Import seed route smoke 通过
-- [ ] Agent surface UI smoke 通过
-- [ ] 现有测试不受影响（trace 迁移向后兼容）
-- [ ] `npm run test:simulation` 通过
-- [ ] `npm run type-check:simulation` 通过
-- [ ] 跨边界回归通过
-- [ ] 不修改 product 代码
-- [ ] 所有场景 story-agnostic
+- [x] 4 个新场景测试通过
+- [x] Import seed route smoke 通过
+- [x] Agent surface UI smoke 通过
+- [x] 现有测试不受影响（trace 迁移向后兼容）
+- [x] `npm run test:simulation` 通过
+- [x] `npm run type-check:simulation` 通过
+- [x] 跨边界回归通过
+- [x] 不修改 product 代码
+- [x] 所有场景 story-agnostic

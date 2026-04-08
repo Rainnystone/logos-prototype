@@ -97,6 +97,19 @@ simulation-toolset 的设计宗旨是：**让云端环境的 Codex 可以在不�
     - `full_storyline_runtime_flow`: Complete runtime flow with checkpoint branching
   - Serialized trace support for record/replay
   - Story-agnostic test fixtures
+- **Weaver Agent & Bootstrap Simulation** (Phase 8):
+  - WeaverObserver: observe weaver import cycle boundary
+  - BootstrapObserver: observe gossipelog bootstrap from weaver summary
+  - Normalized weaver trace via `agentId`, `stage`, `outcome`, `details`
+  - ScriptedAdapter `weaverImport` mode for mock-based scenarios
+  - Import seed mapping smoke verification
+  - Agent surface UI smoke (built-in sidecar visibility, no disable toggle)
+  - Four new executable scenarios:
+    - `weaver-import-happy-path`: Clean text import → package creation
+    - `weaver-import-partial`: Import with warnings → scaffold defaults
+    - `weaver-import-bootstrap`: Import → gossipelog bootstrap success
+    - `bootstrap-fallback`: Bootstrap failure → fallback_pending state
+  - Generalized `SimulationAgentTraceSchema` with `details` bag (schema version 2)
 
 ## Cloud Usage Direction
 

@@ -264,8 +264,25 @@ npm run type-check:simulation → passed
 
 - [x] 设计完成并写入 spec
 - [x] 三文件更新
-- [ ] Spec review（后台 agent 运行中）
-- [ ] Spec 用户审批
-- [ ] Implementation plan
-- [ ] Slice 1-11 实现
-- [ ] 全量回归验证
+- [x] Spec review
+- [x] Spec 用户审批
+- [x] Implementation plan
+- [x] Slice 1-11 实现
+- [x] 全量回归验证
+
+### 验证记录
+
+```
+npm run type-check:simulation → passed
+npm run test:simulation → passed
+npm test -- src/agents/weaver/__tests__/ src/agents/gossipelog/__tests__/ src/story-packages/__tests__/import-seed.test.ts → passed
+```
+
+### Phase 8 完成总结
+
+- 新增模块：weaver-observer.ts、weaver-sidecar-trace.ts、bootstrap-observer.ts
+- 扩展模块：ScriptedAdapter (weaverImport mode)、UI smoke (agent surface)、route smoke (import seed)
+- 泛化 SimulationAgentTraceSchema：通用 base + details bag，schema version 1 → 2
+- 新增 4 个场景：weaver-import-happy-path、weaver-import-partial、weaver-import-bootstrap、bootstrap-fallback
+- 所有现有测试保持通过（trace 迁移向后兼容）
+- 未修改任何 product 代码
