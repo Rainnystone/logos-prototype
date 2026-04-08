@@ -28,6 +28,13 @@
   - `runtime start/runBeat -> adapter outbound/inbound -> accept -> state update`
 - 运行时投影核对：
   - `scene-phase authoring -> scene location selection -> runtime package projection -> prompt location patch`
+- session continuity 回归：
+  - checkpoint 写入 / session 恢复 / session reset / stale refresh 保护
+  - gossipelog finalize 到正确 session/checkpoint
+  - edit continuity bounded view
+- storyline E2E 流程：
+  - create from source / branch from checkpoint / switch / rename / legacy bootstrap
+  - 完整 storyline → runtime 链路
 - adapter / provider 异常路径：
   - timeout
   - malformed response
@@ -39,6 +46,12 @@
   - injection
   - fallback
   - side effects
+  - weaver text-import cycle
+  - gossipelog bootstrap（post-weaver-import）
+  - agent registry / agent management surface
+- import seed 映射验证：
+  - import seed route smoke
+  - weaver import → gossipelog bootstrap 完整链路
 - 轻量入口验证：
   - route smoke
   - UI smoke
@@ -53,20 +66,81 @@
 
 ## 3. 这套 toolset 里现在有什么
 
+### 3.1 核心 Mock 层
+
+| 组件 | 位置 | 职责 |
+|---|---|---|
+| `MockKernel` | `simulation-toolset/src/mock-kernel.ts` | 统一内存状态管理核心，管理 storyline / variant / session 状态机，提供 trace 记录和统一时钟 |
+| `MockClock` | `simulation-toolset/src/mock-clock.ts` | 统一 mock 时钟，支持 frozen / controlled / real 三种模式，保证测试时间确定性 |
+| `SubstrateMock` | `simulation-toolset/src/substrate-mock.ts` | 封装 storyline / variant / session 的 Substrate 操作 mock |
+| `RouteMock` | `simulation-toolset/src/route-mock.ts` | 模拟 HTTP API 层的 storyline / variant / session route |
+| `MockFixtureBuilder` | `simulation-toolset/src/mock-fixture-builder.ts` | 基于 MockKernel 的内存 fixture 构造器，替代文件系统依赖 |
+
+### 3.2 Simulator 层
+
 | 组件 | 位置 | 职责 |
 |---|---|---|
 | `AuthorSimulator` | `simulation-toolset/src/author-simulator.ts` | 模拟作者输入，走正式 save/bridge/reload 链路 |
 | `PlayerSimulator` | `simulation-toolset/src/player-simulator.ts` | 模拟玩家推进 runtime loop |
-| `ScriptedAdapter` | `simulation-toolset/src/scripted-adapter.ts` | fake / loopback adapter，控制 outbound/inbound 与异常模式 |
+| `ScriptedAdapter` | `simulation-toolset/src/scripted-adapter.ts` | fake / loopback adapter，控制 outbound/inbound 与异常模式，支持 gossipelog / weaverImport 模式 |
+| `SessionSimulator` | `simulation-toolset/src/session-simulator.ts` | 协调 runtime session restore / reset 流程，绑定 MockKernel |
+| `StorylineE2ESimulator` | `simulation-toolset/src/storyline-e2e-simulator.ts` | 支持完整人类操作流程的 E2E 模拟器（create / branch / switch / rename / continue） |
+
+### 3.3 Observer 层
+
+| 组件 | 位置 | 职责 |
+|---|---|---|
 | `GossipelogObserver` | `simulation-toolset/src/gossipelog-observer.ts` | 观察 gossipelog 生命周期与副作用 |
-| `sidecar-trace` | `simulation-toolset/src/sidecar-trace.ts` | 把 sidecar 结果归一化成统一 trace |
-| `Scenario runner` | `simulation-toolset/src/scenario-runner.ts` | 顺序执行 scenario，汇总结果并落盘 |
+| `WeaverObserver` | `simulation-toolset/src/weaver-observer.ts` | 观察 weaver text-import 生命周期与副作用 |
+| `BootstrapObserver` | `simulation-toolset/src/bootstrap-observer.ts` | 观察 gossipelog bootstrap（post-weaver-import）生命周期 |
+| `StorylineObserver` | `simulation-toolset/src/storyline-observer.ts` | 观察 storyline 状态变化（create / branch / switch / rename） |
+| `SessionObserver` | `simulation-toolset/src/session-observer.ts` | 观察 runtime-sessions.json 读写 |
+| `EditContinuityObserver` | `simulation-toolset/src/edit-continuity-observer.ts` | 观察 edit continuity view |
+
+### 3.4 Trace & Report 层
+
+| 组件 | 位置 | 职责 |
+|---|---|---|
+| `sidecar-trace` | `simulation-toolset/src/sidecar-trace.ts` | 把 gossipelog sidecar 结果归一化成统一 trace |
+| `weaver-sidecar-trace` | `simulation-toolset/src/weaver-sidecar-trace.ts` | 把 weaver import 结果归一化成统一 trace |
+| `SerializedTrace` | `simulation-toolset/src/serialized-trace.ts` | Trace 序列化，支持 record / replay |
+| `Scenario runner` | `simulation-toolset/src/scenario-runner.ts` | 顺序执行 scenario，汇总结果并落盘，支持 batch record/replay |
 | `Recorder / Report writer` | `simulation-toolset/src/recorder.ts`、`simulation-toolset/src/report-writer.ts` | 记录动作、trace、assertions、final state、JSON report |
 | `Scenario manifest` | `simulation-toolset/src/scenario-manifest.ts` | 管理场景清单与 batch metadata |
+
+### 3.5 Infrastructure 层
+
+| 组件 | 位置 | 职责 |
+|---|---|---|
 | `Temp package helper` | `simulation-toolset/src/temp-package.ts` | 构造临时 story package fixture |
 | `Temp package scavenger` | `simulation-toolset/src/temp-package-scavenger.ts` | 列出、dry-run、清理 `.tmp-simulation-*` |
 | `Route smoke` | `simulation-toolset/src/route-smoke.ts` | 程序化验证正式 route 还连着正式边界，并可核对 scene-phase 地点选择是否真的进入 runtime prompt projection |
-| `UI smoke` | `simulation-toolset/src/ui-smoke.ts` | 用轻量 UI smoke 验证页面仍连着正式链路 |
+| `UI smoke` | `simulation-toolset/src/ui-smoke.ts` | 用轻量 UI smoke 验证页面仍连着正式链路，包括 agent management surface |
+| `Import seed smoke` | `simulation-toolset/tests/import-seed-smoke.test.ts` | 验证 import seed mapping 路由的完整/最小/异常路径 |
+
+### 3.6 场景清单
+
+| 场景 | Phase | 位置 | 覆盖范围 |
+|---|---|---|---|
+| happy-path | Phase 2 | `scenarios/happy-path.ts` | 完整 author → save → play → accept 链路 |
+| validation-failure | Phase 2 | `scenarios/validation-failure.ts` | bridge 验证拒绝 |
+| adapter-failure | Phase 2 | `scenarios/adapter-failure.ts` | adapter 异常路径 |
+| session-checkpoint-persistence | Phase 5 | `scenarios/session-checkpoint-persistence.ts` | checkpoint 写入 runtime-sessions.json |
+| session-restore | Phase 5 | `scenarios/session-restore.ts` | 从 active session 恢复 |
+| session-reset | Phase 5 | `scenarios/session-reset.ts` | reset 创建新 session |
+| stale-refresh-protection | Phase 5 | `scenarios/stale-refresh-protection.ts` | 旧 refresh 不污染新 session |
+| relationship-finalization | Phase 5 | `scenarios/relationship-finalization.ts` | gossipelog finalize 到正确 session/checkpoint |
+| edit-continuity-view | Phase 5 | `scenarios/edit-continuity-view.ts` | CharacterSection bounded continuity |
+| create-from-source-and-continue | Phase 6 | `scenarios/storyline-flows/create-from-source-and-continue.ts` | 从 source package 创建 storyline 并继续 |
+| branch-from-checkpoint-flow | Phase 6 | `scenarios/storyline-flows/branch-from-checkpoint.ts` | 从 checkpoint 分支 |
+| switch-and-continue | Phase 6 | `scenarios/storyline-flows/switch-and-continue.ts` | 切换 storyline 并继续 |
+| rename-and-verify | Phase 6 | `scenarios/storyline-flows/rename-and-verify.ts` | 重命名 storyline 并验证 |
+| legacy-bootstrap-flow | Phase 6 | `scenarios/storyline-flows/legacy-bootstrap.ts` | 旧版 bootstrap 流程 |
+| full-storyline-runtime-flow | Phase 6 | `scenarios/storyline-flows/full-storyline-runtime.ts` | 完整 storyline runtime 链路 |
+| weaver-import-happy-path | Phase 8 | `scenarios/weaver-import-happy-path.ts` | weaver 正常导入流程 |
+| weaver-import-partial | Phase 8 | `scenarios/weaver-import-partial.ts` | weaver 导入带 warning/gap |
+| weaver-import-bootstrap | Phase 8 | `scenarios/weaver-import-bootstrap.ts` | weaver 导入 + gossipelog bootstrap 链路 |
+| bootstrap-fallback | Phase 8 | `scenarios/bootstrap-fallback.ts` | bootstrap 失败 → fallback_pending |
 
 ## 4. 工作前提
 
@@ -167,6 +241,9 @@
 如果 simulation run 暴露出正式边界问题，再补跑跨边界验证：
 
 - `npm test -- src/authoring/persistence/__tests__/bridge.test.ts src/engine/__tests__/orchestrator.test.ts src/agents/gossipelog/__tests__/agent.test.ts src/app/play/runtime.test.ts`
+- `npm test -- src/runtime-sessions/__tests__/ src/agents/gossipelog/__tests__/ src/app/play/runtime.test.ts`
+- `npm test -- src/storylines/__tests__/ src/runtime-sessions/__tests__/`
+- `npm test -- src/agents/weaver/__tests__/ src/agents/gossipelog/__tests__/ src/story-packages/__tests__/import-seed.test.ts`
 
 ### Step 4: 只有在必要时才进入 programmatic batch
 
@@ -405,6 +482,8 @@ run 结束前至少做这几件事：
 - batch runner 还是顺序执行，不是并发 orchestration
 - `duplicate` 和 `out-of-order` 目前仍是结构化模拟，不是真正 callback scheduler
 - route/UI smoke 是轻量入口验证，不是重浏览器回归
+- weaver / bootstrap observer 走真实 boundary 验证，ScriptedAdapter 的 weaverImport 模式走 mock 验证
+- agent surface UI smoke 验证渲染连通性，不验证完整交互流程
 
 这些是已知边界，不是 agent 在 run 中临时重写架构的理由。
 
