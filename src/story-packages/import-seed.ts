@@ -65,6 +65,10 @@ function mapLocationSeed(
   };
 }
 
+function createImportedLocationId(index: number): string {
+  return `loc_${(index + 1).toString(16).padStart(6, '0')}`;
+}
+
 function requireFirstLocation(worldBase: WorldBase): WorldBase['locations'][number] {
   const firstLocation = worldBase.locations[0];
 
@@ -87,6 +91,40 @@ function mapCharacterCollectionSeed(
           member,
           fallbackCollection[index] ?? fallbackCharacter,
           fallbackCollection[index]?.characterId ?? `${idPrefix}${String(index + 1).padStart(2, '0')}`,
+        ),
+      )
+    : fallbackCollection;
+}
+
+function createImportedAntagonistFallback(index: number): WorldBase['hero'] {
+  return {
+    characterId: `chr_ant${String(index + 1).padStart(2, '0')}`,
+    name: 'Imported Antagonist',
+    identityRole: 'Antagonist pressure',
+    lightNovelTrait: 'Imported antagonist pressure remains bounded and explicit.',
+    gender: 'Unspecified',
+    personality: 'Calculating',
+    age: 'Unknown',
+    occupation: 'Opposition role',
+    characterSummary: 'Imported antagonist summary pending author refinement.',
+    capabilityBoundary: 'Define antagonist capabilities during authoring.',
+    behaviorBoundary: 'Define scene-specific antagonist behavior during authoring.',
+    oocRedLine: 'Do not assume hero alignment, redemption, or ally framing.',
+    clothing: 'Open',
+    propsWeapon: 'Open',
+  };
+}
+
+function mapAntagonistCollectionSeed(
+  seeds: readonly unknown[],
+  fallbackCollection: readonly WorldBase['hero'][],
+): readonly WorldBase['hero'][] {
+  return seeds.length > 0
+    ? seeds.map((member, index) =>
+        mapCharacterSeed(
+          member,
+          fallbackCollection[index] ?? createImportedAntagonistFallback(index),
+          fallbackCollection[index]?.characterId ?? `chr_ant${String(index + 1).padStart(2, '0')}`,
         ),
       )
     : fallbackCollection;
@@ -124,11 +162,9 @@ export function applyTextImportSeed(
     input.worldBase.hero,
     'chr_core',
   );
-  const nextAntagonists = mapCharacterCollectionSeed(
+  const nextAntagonists = mapAntagonistCollectionSeed(
     input.payload.antagonists,
     input.worldBase.antagonists,
-    input.worldBase.hero,
-    'chr_ant',
   );
   const nextNpcCharacters =
     input.payload.npcCharacters.length > 0
@@ -140,7 +176,7 @@ export function applyTextImportSeed(
           mapLocationSeed(
             location,
             input.worldBase.locations[index] ?? fallbackLocation,
-            input.worldBase.locations[index]?.locationId ?? `loc_import_${index + 1}`,
+            input.worldBase.locations[index]?.locationId ?? createImportedLocationId(index),
           ),
         )
       : input.worldBase.locations;
@@ -166,6 +202,11 @@ export function applyTextImportSeed(
     {
       ...input.sceneSpec,
       sceneName: input.displayName,
+      cast: [
+        ...nextWorldBase.coreCast.map((character) => character.characterId),
+        ...nextWorldBase.antagonists.map((character) => character.characterId),
+      ],
+      locationIds: nextWorldBase.locations.map((location) => location.locationId),
       openingHook: input.sourceText,
     },
     'sceneSpec',

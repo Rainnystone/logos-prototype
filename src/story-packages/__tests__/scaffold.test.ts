@@ -356,6 +356,49 @@ describe('story package scaffold', () => {
     expect(result.warnings).toEqual(['角色关系只得到部分文本支持']);
   });
 
+  it('projects imported cast and location ids into the resulting scene spec instead of keeping scaffold defaults', async () => {
+    const importResult = createWeaverImportResult();
+    mockWeaverImport.mockResolvedValueOnce({
+      ...importResult,
+      payload: {
+        ...importResult.payload,
+        antagonists: [
+          {
+            displayName: '祁夜',
+            roleSummary: '操控网络事故的地下策划者',
+          },
+        ],
+        locations: [
+          ...importResult.payload.locations,
+          {
+            displayName: '老城区中继站',
+            summary: '被废弃线路包围的旧中继设施',
+          },
+        ],
+      },
+    });
+    const createStoryPackageScaffold = await loadCreateStoryPackageScaffold();
+    const result = await createStoryPackageScaffold({
+      mode: 'text_import',
+      displayName: '',
+      sourceText: 'opening hook text',
+      adapter: createTextImportAdapter(),
+    });
+
+    const packageRoot = path.resolve(storyPackagesRoot, result.packageName);
+    createdPackageRoots.add(packageRoot);
+
+    await expect(loadStoryPackage(result.packageName)).resolves.toMatchObject({
+      sceneSpec: {
+        cast: ['chr_core01', 'chr_ant01'],
+        locationIds: ['loc_a1b2c3', 'loc_000002'],
+      },
+    });
+    await expect(readFile(path.resolve(packageRoot, 'scene.yaml'), 'utf8')).resolves.not.toContain(
+      "cast:\n  - chr_hero01\n  - chr_core01\nlocationIds:\n  - loc_a1b2c3",
+    );
+  });
+
   it('preserves the original sourceText as scene openingHook even when weaver returns a rewritten openingHook', async () => {
     const importResult = createWeaverImportResult();
     mockWeaverImport.mockResolvedValueOnce({

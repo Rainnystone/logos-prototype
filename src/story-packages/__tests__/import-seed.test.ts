@@ -129,7 +129,16 @@ describe('applyTextImportSeed', () => {
     expect(result.worldBase.antagonists[0]).toMatchObject({
       name: '祁夜',
       characterSummary: '操控网络事故的地下策划者',
+      identityRole: 'Antagonist pressure',
+      capabilityBoundary: 'Define antagonist capabilities during authoring.',
+      behaviorBoundary: 'Define scene-specific antagonist behavior during authoring.',
     });
+    expect(result.worldBase.antagonists[0]?.identityRole).not.toBe(
+      result.worldBase.hero.identityRole,
+    );
+    expect(result.worldBase.antagonists[0]?.capabilityBoundary).not.toBe(
+      result.worldBase.hero.capabilityBoundary,
+    );
     expect(result.worldBase.npcCharacters).toBe('受事故波及的值班员与维修技师');
     expect(result.worldBase.locations[0]).toBeDefined();
     expect(result.worldBase.locations[0]!).toMatchObject({
@@ -137,6 +146,8 @@ describe('applyTextImportSeed', () => {
       description: '维持城市网络秩序的核心区域',
     });
     expect(result.sceneSpec.sceneName).toBe('织入故事包');
+    expect(result.sceneSpec.cast).toEqual(['chr_core01', 'chr_ant01']);
+    expect(result.sceneSpec.locationIds).toEqual(['loc_a1b2c3']);
     expect(result.sceneSpec.openingHook).toBe('作者原始文本');
     expect(result.diagnostics.rewrittenOpeningHook).toBe('模型改写后的 opening hook');
   });
