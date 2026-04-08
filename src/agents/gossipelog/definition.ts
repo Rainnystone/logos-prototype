@@ -1,5 +1,6 @@
 import YAML from 'yaml';
 
+import type { AgentDefinition } from '@/agents/registry';
 import { parseWithSchema } from '@/lib/validation';
 import { CharacterRelationshipsFileSchema } from '@/types';
 
@@ -41,9 +42,23 @@ export const gossipelogAgentDefinition = {
   agentId: 'gossipelog',
   displayName: 'gossipelog agent',
   surfaceType: 'sidecar',
+  surfaceSemantics: 'built-in',
   responsibilitySummary: 'Tracks persisted relationship state after accepted beats.',
   skillIds: ['relationship-update-skill', 'relationship-injection-skill'],
+  skillDisplayMetadata: [
+    {
+      skillId: 'relationship-update-skill',
+      displayName: 'Relationship Update',
+      description: 'Updates persisted relationship deltas after an accepted beat.',
+    },
+    {
+      skillId: 'relationship-injection-skill',
+      displayName: 'Relationship Injection',
+      description: 'Builds bounded relationship context for the next prompt turn.',
+    },
+  ],
   packageConfigPath: 'agents/gossipelog/config.yaml',
   packageStatePath: 'agents/gossipelog/character-relationships.yaml',
+  referenceManifestsByOperation: {},
   summarizeState: summarizeTrackedRelationshipState,
-} as const;
+} as const satisfies AgentDefinition;

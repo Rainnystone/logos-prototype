@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { createStoryPackageScaffold } from '@/story-packages/scaffold';
 import {
   StoryPackageScaffoldConflictError,
@@ -8,6 +9,19 @@ import {
   StoryPackageScaffoldWriteError,
 } from '@/story-packages/scaffold-errors';
 import { StoryPackageCreationRequestSchema } from '@/types/storyline-management';
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stripAdapterConfig(body: unknown): unknown {
+  if (!isPlainObject(body) || body.mode !== 'text_import' || !('adapterConfig' in body)) {
+    return body;
+  }
+
+  const { adapterConfig: _adapterConfig, ...rest } = body;
+  return rest;
+}
 
 function normalizePackageCreationBody(body: unknown): unknown {
   if (
@@ -63,7 +77,9 @@ function mapCreatePackageError(error: unknown): { status: number; message: strin
 
 export async function POST(request: Request) {
   const rawBody = await request.json().catch(() => ({}));
-  const parsed = StoryPackageCreationRequestSchema.safeParse(normalizePackageCreationBody(rawBody));
+  const parsed = StoryPackageCreationRequestSchema.safeParse(
+    normalizePackageCreationBody(stripAdapterConfig(rawBody)),
+  );
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -76,6 +92,19 @@ export async function POST(request: Request) {
 
   try {
     if (parsed.data.mode === 'text_import') {
+      const adapterConfig = parseAdapterConfig(
+        isPlainObject(rawBody) ? rawBody.adapterConfig : undefined,
+      );
+
+      if (!adapterConfig) {
+        return NextResponse.json(
+          {
+            error: 'Text import requires a valid adapter config.',
+          },
+          { status: 400 },
+        );
+      }
+
       return NextResponse.json(
         {
           error: 'Text import is not implemented yet.',

@@ -80,7 +80,7 @@ describe('POST /api/authoring/packages', () => {
     });
   });
 
-  it('returns a bounded 400 response for text_import without calling scaffold', async () => {
+  it('returns a bounded 400 response for text_import without a valid adapter config', async () => {
     const { POST } = await import('@/app/api/authoring/packages/route');
 
     const response = await POST(
@@ -89,6 +89,34 @@ describe('POST /api/authoring/packages', () => {
         body: JSON.stringify({
           mode: 'text_import',
           sourceText: '一段导入文本。',
+        }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Text import requires a valid adapter config.',
+    });
+  });
+
+  it('returns the controlled not-implemented 400 when text_import includes a valid adapter config', async () => {
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'text_import',
+          sourceText: '一段导入文本。',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
         }),
       }),
     );

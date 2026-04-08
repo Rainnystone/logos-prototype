@@ -5,6 +5,7 @@ import YAML from 'yaml';
 
 import { type AgentDefinition, listSidecarAgentDefinitions } from '@/agents/registry';
 import { resolvePackageRoot } from '@/authoring/persistence/package-state';
+import type { AgentOperationalHint } from '@/types';
 
 export type AgentStatePresence = 'present' | 'missing' | 'unreadable';
 
@@ -21,6 +22,8 @@ export interface AgentSurfaceItem {
   readonly skillIds: readonly string[];
   readonly packageConfigPath: string;
   readonly packageStatePath: string;
+  readonly operationalHint?: AgentOperationalHint;
+  readonly latestStateLine?: string;
   readonly latestStateSummary: AgentLatestStateSummary;
 }
 
@@ -28,8 +31,12 @@ interface AgentConfigEnabled {
   readonly kind: 'enabled';
 }
 
-interface AgentConfigInactive {
-  readonly kind: 'inactive';
+interface AgentConfigMissing {
+  readonly kind: 'missing';
+}
+
+interface AgentConfigDisabled {
+  readonly kind: 'disabled';
 }
 
 interface AgentConfigUnreadable {
@@ -37,7 +44,18 @@ interface AgentConfigUnreadable {
   readonly statusLine: string;
 }
 
-type AgentConfigState = AgentConfigEnabled | AgentConfigInactive | AgentConfigUnreadable;
+type AgentConfigState =
+  | AgentConfigEnabled
+  | AgentConfigMissing
+  | AgentConfigDisabled
+  | AgentConfigUnreadable;
+
+interface AgentStateInspection {
+  readonly statePresence: AgentStatePresence;
+  readonly lastUpdatedAt?: string;
+  readonly latestStateLine: string;
+  readonly recommendedOperationalHint?: Exclude<AgentOperationalHint, 'pending_bootstrap'>;
+}
 
 const RAW_STATE_TOKENS = ['relationshipsbysource', 'targets:', 'sourceroleid', 'targetroleid', 'meta:'];
 const RAW_STATE_ID_PATTERN = /\b(?:chr|loc|node|edge|phase|beat|scene)_[a-z0-9_-]+\b/i;
@@ -84,6 +102,30 @@ function toBoundedStatusLine(statusLine: string): string {
   return statusLine;
 }
 
+function builtInConfigMissingCopy(agentDefinition: AgentDefinition): string {
+  return `${agentDefinition.displayName} config is missing. Built-in sidecar visibility is preserved, but this package has config drift.`;
+}
+
+function builtInConfigDisabledCopy(agentDefinition: AgentDefinition): string {
+  return `${agentDefinition.displayName} config drifted to enabled: false. Built-in sidecars stay active in the surface until the file is reconciled.`;
+}
+
+function builtInConfigUnreadableCopy(agentDefinition: AgentDefinition): string {
+  return `${agentDefinition.displayName} config exists but could not be read safely. Built-in sidecar state is being held in a bounded warning mode.`;
+}
+
+function blankWeaverFallbackCopy(): string {
+  return 'No persisted text-import summary exists yet. Blank packages stay on scaffold defaults until import is used.';
+}
+
+function pendingBootstrapCopy(): string {
+  return 'Relationship state is not readable yet. Bootstrap is still pending from the persisted import summary.';
+}
+
+function missingGossipelogFallbackCopy(): string {
+  return 'Relationship state is not available yet. Bootstrap will wait for a later import seed or bounded fallback.';
+}
+
 async function loadConfigState(
   packageName: string,
   agentDefinition: AgentDefinition,
@@ -95,12 +137,12 @@ async function loadConfigState(
     rawConfig = await readFile(configPath, 'utf8');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { kind: 'inactive' };
+      return { kind: 'missing' };
     }
 
     return {
       kind: 'unreadable',
-      statusLine: 'Config file exists but could not be inspected safely.',
+      statusLine: builtInConfigUnreadableCopy(agentDefinition),
     };
   }
 
@@ -110,7 +152,7 @@ async function loadConfigState(
   } catch {
     return {
       kind: 'unreadable',
-      statusLine: 'Config file exists but could not be parsed into a bounded summary.',
+      statusLine: builtInConfigUnreadableCopy(agentDefinition),
     };
   }
 
@@ -122,7 +164,7 @@ async function loadConfigState(
   ) {
     return {
       kind: 'unreadable',
-      statusLine: 'Config file exists but is not in a safe bounded shape.',
+      statusLine: builtInConfigUnreadableCopy(agentDefinition),
     };
   }
 
@@ -133,21 +175,21 @@ async function loadConfigState(
   ) {
     return {
       kind: 'unreadable',
-      statusLine: 'Config file exists but agent identity does not match this sidecar surface.',
+      statusLine: builtInConfigUnreadableCopy(agentDefinition),
     };
   }
 
   if (!configObject.enabled) {
-    return { kind: 'inactive' };
+    return { kind: 'disabled' };
   }
 
   return { kind: 'enabled' };
 }
 
-async function summarizeLatestState(
+async function inspectLatestState(
   packageName: string,
   agentDefinition: AgentDefinition,
-): Promise<AgentLatestStateSummary> {
+): Promise<AgentStateInspection> {
   const statePath = resolvePackageStatePath(packageName, agentDefinition.packageStatePath);
 
   let lastUpdatedAt: string | undefined;
@@ -158,34 +200,42 @@ async function summarizeLatestState(
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return {
         statePresence: 'missing',
-        statusLine: toBoundedStatusLine(
-          'State file is missing. No persisted sidecar state is available yet.',
+        latestStateLine: toBoundedStatusLine(
+          agentDefinition.agentId === 'weaver'
+            ? blankWeaverFallbackCopy()
+            : missingGossipelogFallbackCopy(),
         ),
       };
     }
 
     return {
       statePresence: 'unreadable',
-      statusLine: toBoundedStatusLine('State file exists but could not be inspected safely.'),
+      latestStateLine: toBoundedStatusLine('State file exists but could not be inspected safely.'),
     };
   }
 
   try {
     const rawState = await readFile(statePath, 'utf8');
-    const statusLine = agentDefinition.summarizeState
-      ? agentDefinition.summarizeState(rawState)
-      : 'State file is present and readable.';
+    const derivedStateSummary = agentDefinition.deriveReadableStateSummary?.(rawState);
+    const latestStateLine = derivedStateSummary
+      ? derivedStateSummary.latestStateLine
+      : agentDefinition.summarizeState
+        ? agentDefinition.summarizeState(rawState)
+        : 'State file is present and readable.';
 
     return {
       statePresence: 'present',
       lastUpdatedAt,
-      statusLine: toBoundedStatusLine(statusLine),
+      latestStateLine: toBoundedStatusLine(latestStateLine),
+      ...(derivedStateSummary?.recommendedOperationalHint
+        ? { recommendedOperationalHint: derivedStateSummary.recommendedOperationalHint }
+        : {}),
     };
   } catch {
     return {
       statePresence: 'unreadable',
       lastUpdatedAt,
-      statusLine: toBoundedStatusLine(
+      latestStateLine: toBoundedStatusLine(
         'State file exists but could not be parsed into a bounded summary.',
       ),
     };
@@ -194,47 +244,66 @@ async function summarizeLatestState(
 
 export async function loadAgentSurfaceItems(packageName: string): Promise<readonly AgentSurfaceItem[]> {
   const sidecarAgentDefinitions = listSidecarAgentDefinitions();
-  const activationResults = (
+  const inspectionResults = (
     await Promise.all(
       sidecarAgentDefinitions.map(async (definition) => ({
         definition,
         configState: await loadConfigState(packageName, definition),
+        stateInspection: await inspectLatestState(packageName, definition),
       })),
     )
   );
 
-  const surfaceItems: Array<AgentSurfaceItem | null> = await Promise.all(
-    activationResults.map(async ({ definition, configState }) => {
-      if (configState.kind === 'inactive') {
-        return null;
-      }
-
-      if (configState.kind === 'unreadable') {
-        return {
-          agentId: definition.agentId,
-          displayName: definition.displayName,
-          responsibilitySummary: definition.responsibilitySummary,
-          skillIds: definition.skillIds,
-          packageConfigPath: definition.packageConfigPath,
-          packageStatePath: definition.packageStatePath,
-          latestStateSummary: {
-            statePresence: 'unreadable' as const,
-            statusLine: toBoundedStatusLine(configState.statusLine),
-          },
-        };
-      }
-
-      return {
-        agentId: definition.agentId,
-        displayName: definition.displayName,
-        responsibilitySummary: definition.responsibilitySummary,
-        skillIds: definition.skillIds,
-        packageConfigPath: definition.packageConfigPath,
-        packageStatePath: definition.packageStatePath,
-        latestStateSummary: await summarizeLatestState(packageName, definition),
-      };
-    }),
+  const hasReadableWeaverSummary = inspectionResults.some(
+    ({ definition, stateInspection }) =>
+      definition.agentId === 'weaver' && stateInspection.statePresence === 'present',
   );
 
-  return surfaceItems.filter((item): item is AgentSurfaceItem => item !== null);
+  return inspectionResults.map(({ definition, configState, stateInspection }) => {
+    let operationalHint: AgentOperationalHint;
+    let latestStateLine: string;
+
+    if (configState.kind === 'missing') {
+      operationalHint = 'warning';
+      latestStateLine = toBoundedStatusLine(builtInConfigMissingCopy(definition));
+    } else if (configState.kind === 'disabled') {
+      operationalHint = 'warning';
+      latestStateLine = toBoundedStatusLine(builtInConfigDisabledCopy(definition));
+    } else if (configState.kind === 'unreadable') {
+      operationalHint = 'warning';
+      latestStateLine = toBoundedStatusLine(configState.statusLine);
+    } else if (definition.agentId === 'weaver') {
+      operationalHint =
+        stateInspection.statePresence === 'unreadable'
+          ? 'warning'
+          : stateInspection.recommendedOperationalHint ?? 'ready';
+      latestStateLine = stateInspection.latestStateLine;
+    } else if (stateInspection.statePresence === 'present') {
+      operationalHint = 'ready';
+      latestStateLine = stateInspection.latestStateLine;
+    } else if (hasReadableWeaverSummary) {
+      operationalHint = 'pending_bootstrap';
+      latestStateLine = toBoundedStatusLine(pendingBootstrapCopy());
+    } else {
+      operationalHint = 'warning';
+      latestStateLine = stateInspection.latestStateLine;
+    }
+
+    return {
+      agentId: definition.agentId,
+      displayName: definition.displayName,
+      responsibilitySummary: definition.responsibilitySummary,
+      skillIds: definition.skillIds,
+      packageConfigPath: definition.packageConfigPath,
+      packageStatePath: definition.packageStatePath,
+      operationalHint,
+      latestStateLine,
+      latestStateSummary: {
+        statePresence:
+          configState.kind === 'unreadable' ? 'unreadable' : stateInspection.statePresence,
+        ...(stateInspection.lastUpdatedAt ? { lastUpdatedAt: stateInspection.lastUpdatedAt } : {}),
+        statusLine: latestStateLine,
+      },
+    };
+  });
 }
