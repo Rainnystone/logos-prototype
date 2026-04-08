@@ -75,6 +75,23 @@ function requireFirstLocation(worldBase: WorldBase): WorldBase['locations'][numb
   return firstLocation;
 }
 
+function mapCharacterCollectionSeed(
+  seeds: readonly unknown[],
+  fallbackCollection: readonly WorldBase['hero'][],
+  fallbackCharacter: WorldBase['hero'],
+  idPrefix: string,
+): readonly WorldBase['hero'][] {
+  return seeds.length > 0
+    ? seeds.map((member, index) =>
+        mapCharacterSeed(
+          member,
+          fallbackCollection[index] ?? fallbackCharacter,
+          fallbackCollection[index]?.characterId ?? `${idPrefix}${String(index + 1).padStart(2, '0')}`,
+        ),
+      )
+    : fallbackCollection;
+}
+
 export function applyTextImportSeed(
   input: ApplyTextImportSeedInput,
 ): ApplyTextImportSeedResult {
@@ -83,16 +100,18 @@ export function applyTextImportSeed(
   const nextHero = input.payload.hero
     ? mapCharacterSeed(input.payload.hero, input.worldBase.hero, input.worldBase.hero.characterId)
     : input.worldBase.hero;
-  const nextCoreCast =
-    input.payload.coreCast.length > 0
-      ? input.payload.coreCast.map((member, index) =>
-          mapCharacterSeed(
-            member,
-            input.worldBase.coreCast[index] ?? input.worldBase.hero,
-            input.worldBase.coreCast[index]?.characterId ?? `chr_core${String(index + 1).padStart(2, '0')}`,
-          ),
-        )
-      : input.worldBase.coreCast;
+  const nextCoreCast = mapCharacterCollectionSeed(
+    input.payload.coreCast,
+    input.worldBase.coreCast,
+    input.worldBase.hero,
+    'chr_core',
+  );
+  const nextAntagonists = mapCharacterCollectionSeed(
+    input.payload.antagonists,
+    input.worldBase.antagonists,
+    input.worldBase.hero,
+    'chr_ant',
+  );
   const nextLocations =
     input.payload.locations.length > 0
       ? input.payload.locations.map((location, index) =>
@@ -116,6 +135,7 @@ export function applyTextImportSeed(
       locationPatch: readString(payloadWorldBase.locationPatch) ?? input.worldBase.locationPatch,
       hero: nextHero,
       coreCast: nextCoreCast,
+      antagonists: nextAntagonists,
       locations: nextLocations,
     },
     'worldBase',

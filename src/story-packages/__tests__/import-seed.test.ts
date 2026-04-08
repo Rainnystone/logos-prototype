@@ -82,7 +82,12 @@ function createWeaverPayload(
         roleSummary: '负责追查事故源头的记者',
       },
     ],
-    antagonists: [],
+    antagonists: [
+      {
+        displayName: '祁夜',
+        roleSummary: '操控网络事故的地下策划者',
+      },
+    ],
     npcCharacters: [],
     locations: [
       {
@@ -115,6 +120,11 @@ describe('applyTextImportSeed', () => {
     expect(result.worldBase.coreCast[0]).toMatchObject({
       name: '周珂',
       characterSummary: '负责追查事故源头的记者',
+    });
+    expect(result.worldBase.antagonists).toHaveLength(1);
+    expect(result.worldBase.antagonists[0]).toMatchObject({
+      name: '祁夜',
+      characterSummary: '操控网络事故的地下策划者',
     });
     expect(result.worldBase.locations[0]).toBeDefined();
     expect(result.worldBase.locations[0]!).toMatchObject({
