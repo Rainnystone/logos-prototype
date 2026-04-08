@@ -8,6 +8,8 @@ import { EditWorkbench } from '@/app/edit/EditWorkbench';
 import { PlayWorkbench } from '@/app/play/PlayWorkbench';
 import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-adapter';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
+import { loadAgentSurfaceItems } from '@/agents/agent-surface';
+import { AgentSurfacePanel } from '@/app/edit/sections/AgentSurfacePanel';
 import type { RunGossipelogCycleResult } from '@/agents/gossipelog/contracts';
 import type { SaveResult } from '@/authoring/contracts';
 
@@ -255,6 +257,49 @@ export async function runPlayWorkbenchUiSmoke(
       roundId: latestRoundId,
       acceptedBeatText: latestAcceptedBeatText,
       openingHookConsumed: Boolean(screen.queryByText('Opening Hook')),
+    };
+  } finally {
+    await fixture.cleanup();
+  }
+}
+
+type AgentSurfaceUiSmokeResult = {
+  readonly packageName: string;
+  readonly renderedAgentIds: readonly string[];
+  readonly boundedStatusCount: number;
+  readonly hasDisableToggle: boolean;
+};
+
+export async function runAgentSurfaceUiSmoke(
+  sourcePackageName: string,
+): Promise<AgentSurfaceUiSmokeResult> {
+  const fixture = await createTempStoryPackage(sourcePackageName);
+
+  try {
+    const items = await loadAgentSurfaceItems(fixture.packageName);
+
+    render(
+      createElement(AgentSurfacePanel, {
+        packageName: fixture.packageName,
+        items,
+      }),
+    );
+
+    const renderedAgentIds = items.map((item) => item.agentId);
+
+    const boundedStatusCount = items.filter(
+      (item) =>
+        item.latestStateSummary.statePresence !== 'present',
+    ).length;
+
+    const disableToggles = screen.queryAllByRole('button', { name: /disable/i });
+    const hasDisableToggle = disableToggles.length > 0;
+
+    return {
+      packageName: fixture.packageName,
+      renderedAgentIds,
+      boundedStatusCount,
+      hasDisableToggle,
     };
   } finally {
     await fixture.cleanup();
