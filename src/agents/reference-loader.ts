@@ -26,7 +26,7 @@ interface LoadedSidecarReference extends ResolvedSidecarReference {
   readonly required: boolean;
 }
 
-const referenceCache = new Map<string, Promise<readonly ResolvedSidecarReference[]>>();
+const loadedReferenceCache = new Map<string, Promise<readonly LoadedSidecarReference[]>>();
 
 function estimateTokens(contents: string): number {
   return Math.max(1, Math.ceil(contents.length / 4));
@@ -77,7 +77,7 @@ async function loadManifest(
       priority: manifest.priority,
       required: manifest.required,
     };
-  } catch (error) {
+  } catch {
     if (manifest.required) {
       throw new Error(
         `Required reference "${manifest.referenceId}" could not be loaded before provider execution.`,
@@ -88,12 +88,37 @@ async function loadManifest(
   }
 }
 
+function toResolvedReference(reference: LoadedSidecarReference): ResolvedSidecarReference {
+  return {
+    referenceId: reference.referenceId,
+    injectionLabel: reference.injectionLabel,
+    relativePath: reference.relativePath,
+    contents: reference.contents,
+    estimatedTokens: reference.estimatedTokens,
+  };
+}
+
+function compareReferencePriority(
+  left: Pick<LoadedSidecarReference, 'priority' | 'referenceId'>,
+  right: Pick<LoadedSidecarReference, 'priority' | 'referenceId'>,
+): number {
+  if (right.priority !== left.priority) {
+    return right.priority - left.priority;
+  }
+
+  return left.referenceId.localeCompare(right.referenceId);
+}
+
 function trimLoadedReferences(
   loadedReferences: readonly LoadedSidecarReference[],
   maxReferenceTokens: number,
 ): readonly ResolvedSidecarReference[] {
-  const requiredReferences = loadedReferences.filter((reference) => reference.required);
-  const optionalReferences = loadedReferences.filter((reference) => !reference.required);
+  const requiredReferences = loadedReferences
+    .filter((reference) => reference.required)
+    .sort(compareReferencePriority);
+  const optionalReferences = loadedReferences
+    .filter((reference) => !reference.required)
+    .sort(compareReferencePriority);
   const requiredTokenTotal = requiredReferences.reduce(
     (total, reference) => total + reference.estimatedTokens,
     0,
@@ -101,15 +126,8 @@ function trimLoadedReferences(
   let remainingTokens = maxReferenceTokens - requiredTokenTotal;
 
   const keptOptionalReferenceIds = new Set<string>();
-  const sortedOptionalReferences = [...optionalReferences].sort((left, right) => {
-    if (right.priority !== left.priority) {
-      return right.priority - left.priority;
-    }
 
-    return left.referenceId.localeCompare(right.referenceId);
-  });
-
-  for (const reference of sortedOptionalReferences) {
+  for (const reference of optionalReferences) {
     if (remainingTokens < reference.estimatedTokens) {
       continue;
     }
@@ -118,11 +136,10 @@ function trimLoadedReferences(
     remainingTokens -= reference.estimatedTokens;
   }
 
-  return loadedReferences
-    .filter(
-      (reference) => reference.required || keptOptionalReferenceIds.has(reference.referenceId),
-    )
-    .map(({ priority: _priority, required: _required, ...resolvedReference }) => resolvedReference);
+  return [
+    ...requiredReferences,
+    ...optionalReferences.filter((reference) => keptOptionalReferenceIds.has(reference.referenceId)),
+  ].map(toResolvedReference);
 }
 
 export async function resolveSidecarReferences(
@@ -132,28 +149,28 @@ export async function resolveSidecarReferences(
     options.referenceRevision ?? computeReferenceRevision(options.manifests);
   const cacheKey = `${options.agentId}:${options.operationKind}:${referenceRevision}`;
 
-  const cached = referenceCache.get(cacheKey);
-  if (cached) {
-    return cached;
+  let cachedLoadedReferences = loadedReferenceCache.get(cacheKey);
+
+  if (!cachedLoadedReferences) {
+    cachedLoadedReferences = (async () => {
+      const loadedReferences = (
+        await Promise.all(options.manifests.map((manifest) => loadManifest(manifest)))
+      ).filter((reference): reference is LoadedSidecarReference => reference !== null);
+
+      return loadedReferences;
+    })();
+
+    loadedReferenceCache.set(cacheKey, cachedLoadedReferences);
   }
 
-  const pending = (async () => {
-    const loadedReferences = (
-      await Promise.all(options.manifests.map((manifest) => loadManifest(manifest)))
-    ).filter((reference): reference is LoadedSidecarReference => reference !== null);
-
+  try {
+    const loadedReferences = await cachedLoadedReferences;
     return trimLoadedReferences(
       loadedReferences,
       options.maxReferenceTokens ?? DEFAULT_REFERENCE_TOKEN_BUDGET,
     );
-  })();
-
-  referenceCache.set(cacheKey, pending);
-
-  try {
-    return await pending;
   } catch (error) {
-    referenceCache.delete(cacheKey);
+    loadedReferenceCache.delete(cacheKey);
     throw error;
   }
 }

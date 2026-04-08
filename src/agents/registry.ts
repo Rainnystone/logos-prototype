@@ -2,6 +2,7 @@ import { gossipelogAgentDefinition } from '@/agents/gossipelog';
 import { parseWithSchema } from '@/lib/validation';
 import { WeaverImportSummarySchema } from '@/types';
 import type { AgentOperationalHint } from '@/types';
+import type { WeaverBootstrapStatus } from '@/types';
 import YAML from 'yaml';
 
 export interface SidecarReferenceManifest {
@@ -23,6 +24,7 @@ export interface AgentSkillDisplayMetadata {
 export interface AgentReadableStateSummary {
   readonly latestStateLine: string;
   readonly recommendedOperationalHint?: Exclude<AgentOperationalHint, 'pending_bootstrap'>;
+  readonly bootstrapStatus?: WeaverBootstrapStatus;
 }
 
 function summarizeWeaverImportState(statePathRawContents: string): AgentReadableStateSummary {
@@ -44,6 +46,7 @@ function summarizeWeaverImportState(statePathRawContents: string): AgentReadable
         : `${parsedSummary.importSummary} ${statusCopy}`,
     recommendedOperationalHint:
       parsedSummary.bootstrapStatus === 'succeeded' && issueCount === 0 ? 'ready' : 'warning',
+    bootstrapStatus: parsedSummary.bootstrapStatus,
   };
 }
 export interface AgentDefinition {

@@ -19,8 +19,9 @@ function stripAdapterConfig(body: unknown): unknown {
     return body;
   }
 
-  const { adapterConfig: _adapterConfig, ...rest } = body;
-  return rest;
+  const normalizedBody = { ...body };
+  delete normalizedBody.adapterConfig;
+  return normalizedBody;
 }
 
 function normalizePackageCreationBody(body: unknown): unknown {

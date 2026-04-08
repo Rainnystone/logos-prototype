@@ -116,4 +116,114 @@ describe('resolveSidecarReferences', () => {
     expect(resolved.map((reference) => reference.referenceId)).toContain('optional-high');
     expect(resolved.map((reference) => reference.referenceId)).not.toContain('optional-low');
   });
+
+  it('does not reuse a larger-budget kept set for a later smaller-budget call', async () => {
+    const requiredPath = writeFixture('cache-required.md', 'R'.repeat(16));
+    const highPriorityPath = writeFixture('cache-optional-high.md', 'H'.repeat(24));
+    const lowPriorityPath = writeFixture('cache-optional-low.md', 'L'.repeat(24));
+    const { resolveSidecarReferences } = await import('@/agents/reference-loader');
+    const manifests = [
+      {
+        referenceId: 'required-core',
+        resolverKey: 'repo-text' as const,
+        relativePath: requiredPath,
+        loadPolicy: 'always' as const,
+        required: true,
+        injectionLabel: 'required core',
+        priority: 100,
+      },
+      {
+        referenceId: 'optional-low',
+        resolverKey: 'repo-text' as const,
+        relativePath: lowPriorityPath,
+        loadPolicy: 'always' as const,
+        required: false,
+        injectionLabel: 'optional low',
+        priority: 10,
+      },
+      {
+        referenceId: 'optional-high',
+        resolverKey: 'repo-text' as const,
+        relativePath: highPriorityPath,
+        loadPolicy: 'always' as const,
+        required: false,
+        injectionLabel: 'optional high',
+        priority: 90,
+      },
+    ];
+
+    const largeBudgetResolved = await resolveSidecarReferences({
+      agentId: 'gossipelog',
+      operationKind: 'gossipelog_injection',
+      maxReferenceTokens: 20,
+      referenceRevision: 'cache-budget-test',
+      manifests,
+    });
+    const smallBudgetResolved = await resolveSidecarReferences({
+      agentId: 'gossipelog',
+      operationKind: 'gossipelog_injection',
+      maxReferenceTokens: 10,
+      referenceRevision: 'cache-budget-test',
+      manifests,
+    });
+
+    expect(largeBudgetResolved.map((reference) => reference.referenceId)).toEqual([
+      'required-core',
+      'optional-high',
+      'optional-low',
+    ]);
+    expect(smallBudgetResolved.map((reference) => reference.referenceId)).toEqual([
+      'required-core',
+      'optional-high',
+    ]);
+  });
+
+  it('returns resolved references in deterministic priority order instead of manifest order', async () => {
+    const requiredPath = writeFixture('ordered-required.md', 'R'.repeat(16));
+    const lowPriorityPath = writeFixture('ordered-low.md', 'L'.repeat(24));
+    const highPriorityPath = writeFixture('ordered-high.md', 'H'.repeat(24));
+    const { resolveSidecarReferences } = await import('@/agents/reference-loader');
+
+    const resolved = await resolveSidecarReferences({
+      agentId: 'gossipelog',
+      operationKind: 'gossipelog_update',
+      maxReferenceTokens: 20,
+      referenceRevision: 'priority-order-test',
+      manifests: [
+        {
+          referenceId: 'optional-low',
+          resolverKey: 'repo-text',
+          relativePath: lowPriorityPath,
+          loadPolicy: 'always',
+          required: false,
+          injectionLabel: 'optional low',
+          priority: 10,
+        },
+        {
+          referenceId: 'required-core',
+          resolverKey: 'repo-text',
+          relativePath: requiredPath,
+          loadPolicy: 'always',
+          required: true,
+          injectionLabel: 'required core',
+          priority: 100,
+        },
+        {
+          referenceId: 'optional-high',
+          resolverKey: 'repo-text',
+          relativePath: highPriorityPath,
+          loadPolicy: 'always',
+          required: false,
+          injectionLabel: 'optional high',
+          priority: 90,
+        },
+      ],
+    });
+
+    expect(resolved.map((reference) => reference.referenceId)).toEqual([
+      'required-core',
+      'optional-high',
+      'optional-low',
+    ]);
+  });
 });

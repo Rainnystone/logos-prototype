@@ -46,6 +46,34 @@ describe('POST /api/authoring/packages', () => {
     });
   });
 
+  it('creates a package when mode blank is provided explicitly', async () => {
+    createStoryPackageScaffold.mockResolvedValueOnce({
+      packageName: 'mode-blank-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: '2026-04-08T10:00:00.000Z',
+    });
+
+    const { POST } = await import('@/app/api/authoring/packages/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/authoring/packages', {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'blank', displayName: '显式空白包' }),
+      }),
+    );
+
+    expect(createStoryPackageScaffold).toHaveBeenCalledWith({
+      displayName: '显式空白包',
+    });
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({
+      packageName: 'mode-blank-package',
+      activeStorylineId: 'storyline_main',
+      createdAt: expect.any(String),
+      warnings: [],
+    });
+  });
+
   it('returns a bounded 400 response for invalid JSON without calling scaffold', async () => {
     const { POST } = await import('@/app/api/authoring/packages/route');
 

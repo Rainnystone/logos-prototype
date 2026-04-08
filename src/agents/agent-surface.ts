@@ -55,6 +55,7 @@ interface AgentStateInspection {
   readonly lastUpdatedAt?: string;
   readonly latestStateLine: string;
   readonly recommendedOperationalHint?: Exclude<AgentOperationalHint, 'pending_bootstrap'>;
+  readonly bootstrapStatus?: 'pending' | 'succeeded' | 'failed' | 'fallback_pending';
 }
 
 const RAW_STATE_TOKENS = ['relationshipsbysource', 'targets:', 'sourceroleid', 'targetroleid', 'meta:'];
@@ -120,6 +121,10 @@ function blankWeaverFallbackCopy(): string {
 
 function pendingBootstrapCopy(): string {
   return 'Relationship state is not readable yet. Bootstrap is still pending from the persisted import summary.';
+}
+
+function degradedBootstrapCopy(): string {
+  return 'Relationship state is not readable yet. The persisted import summary is already in a degraded fallback state.';
 }
 
 function missingGossipelogFallbackCopy(): string {
@@ -230,6 +235,9 @@ async function inspectLatestState(
       ...(derivedStateSummary?.recommendedOperationalHint
         ? { recommendedOperationalHint: derivedStateSummary.recommendedOperationalHint }
         : {}),
+      ...(derivedStateSummary?.bootstrapStatus
+        ? { bootstrapStatus: derivedStateSummary.bootstrapStatus }
+        : {}),
     };
   } catch {
     return {
@@ -258,6 +266,15 @@ export async function loadAgentSurfaceItems(packageName: string): Promise<readon
     ({ definition, stateInspection }) =>
       definition.agentId === 'weaver' && stateInspection.statePresence === 'present',
   );
+  const weaverBootstrapStatus = inspectionResults.find(
+    ({ definition }) => definition.agentId === 'weaver',
+  )?.stateInspection.bootstrapStatus;
+  const canPendingBootstrap =
+    hasReadableWeaverSummary &&
+    (weaverBootstrapStatus === 'pending' || weaverBootstrapStatus === 'succeeded');
+  const hasDegradedWeaverBootstrap =
+    hasReadableWeaverSummary &&
+    (weaverBootstrapStatus === 'failed' || weaverBootstrapStatus === 'fallback_pending');
 
   return inspectionResults.map(({ definition, configState, stateInspection }) => {
     let operationalHint: AgentOperationalHint;
@@ -281,9 +298,12 @@ export async function loadAgentSurfaceItems(packageName: string): Promise<readon
     } else if (stateInspection.statePresence === 'present') {
       operationalHint = 'ready';
       latestStateLine = stateInspection.latestStateLine;
-    } else if (hasReadableWeaverSummary) {
+    } else if (canPendingBootstrap) {
       operationalHint = 'pending_bootstrap';
       latestStateLine = toBoundedStatusLine(pendingBootstrapCopy());
+    } else if (hasDegradedWeaverBootstrap) {
+      operationalHint = 'warning';
+      latestStateLine = toBoundedStatusLine(degradedBootstrapCopy());
     } else {
       operationalHint = 'warning';
       latestStateLine = stateInspection.latestStateLine;

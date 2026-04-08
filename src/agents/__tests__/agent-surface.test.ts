@@ -67,6 +67,8 @@ afterEach(() => {
   resetPackage('__phase4-missing-sidecar__');
   resetPackage('__phase4-built-in-config-drift__');
   resetPackage('__phase4-imported-package-missing-gossipelog__');
+  resetPackage('__phase4-imported-package-failed-bootstrap__');
+  resetPackage('__phase4-imported-package-fallback-pending__');
   resetPackage('__phase4-imported-package-readable-gossipelog__');
 });
 
@@ -139,6 +141,56 @@ describe('loadAgentSurfaceItems', () => {
     );
     expect(items.find((item) => item.agentId === 'gossipelog')?.latestStateLine).toEqual(
       expect.any(String),
+    );
+  });
+
+  it('maps missing gossipelog state to warning when weaver bootstrap already failed', async () => {
+    prepareSamplePackage('__phase4-imported-package-failed-bootstrap__');
+    writeWeaverConfig('__phase4-imported-package-failed-bootstrap__', true);
+    writeWeaverSummary('__phase4-imported-package-failed-bootstrap__', {
+      bootstrapStatus: 'failed',
+      warnings: ['bootstrap failed'],
+      warningCount: 1,
+    });
+    rmSync(
+      path.resolve(
+        packageRoot('__phase4-imported-package-failed-bootstrap__'),
+        'agents/gossipelog/character-relationships.yaml',
+      ),
+      { force: true },
+    );
+    const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
+
+    const items = await loadAgentSurfaceItems('__phase4-imported-package-failed-bootstrap__');
+
+    expect(items.find((item) => item.agentId === 'gossipelog')?.operationalHint).toBe('warning');
+    expect(items.find((item) => item.agentId === 'gossipelog')?.latestStateLine).toEqual(
+      expect.stringMatching(/fallback|warning|failed/i),
+    );
+  });
+
+  it('maps missing gossipelog state to warning when weaver bootstrap is fallback_pending', async () => {
+    prepareSamplePackage('__phase4-imported-package-fallback-pending__');
+    writeWeaverConfig('__phase4-imported-package-fallback-pending__', true);
+    writeWeaverSummary('__phase4-imported-package-fallback-pending__', {
+      bootstrapStatus: 'fallback_pending',
+      warnings: ['fallback pending'],
+      warningCount: 1,
+    });
+    rmSync(
+      path.resolve(
+        packageRoot('__phase4-imported-package-fallback-pending__'),
+        'agents/gossipelog/character-relationships.yaml',
+      ),
+      { force: true },
+    );
+    const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
+
+    const items = await loadAgentSurfaceItems('__phase4-imported-package-fallback-pending__');
+
+    expect(items.find((item) => item.agentId === 'gossipelog')?.operationalHint).toBe('warning');
+    expect(items.find((item) => item.agentId === 'gossipelog')?.latestStateLine).toEqual(
+      expect.stringMatching(/fallback|warning|pending/i),
     );
   });
 });
