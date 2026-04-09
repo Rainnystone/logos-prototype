@@ -205,9 +205,6 @@ export function buildAuditSystemPrompt(): string {
 
 export function buildAuditUserPrompt(packet: AuditPacket): string {
   return [
-    '[Preceding Beats]',
-    formatHistory(packet.context.precedingBeats),
-    '',
     '[Generated Beat]',
     packet.generatedContent.beatText,
     '',

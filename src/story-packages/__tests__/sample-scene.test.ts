@@ -186,22 +186,8 @@ describe('sample-scene story package', () => {
     expect(projectQuestions.some((question) => question.question.includes('角色明显 OOC'))).toBe(
       false,
     );
-    expect(auditQuestionSet.selectionPolicy.default).not.toContain('AQ-C-003');
-    expect(
-      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-01-prologue']?.append,
-    ).toContain('AQ-P1-001');
-    expect(
-      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-hunt']?.append,
-    ).toContain('AQ-P2-001');
-    expect(
-      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-03-first-contact']?.append,
-    ).toContain('AQ-P3-000');
-    expect(
-      auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-04-streamer-domain']?.append,
-    ).toContain('AQ-P4-000');
-    expect(auditQuestionSet.selectionPolicy.phaseOverrides?.['phase-02-signal-chase']).toBe(
-      undefined,
-    );
+    expect(auditQuestionSet.selectionPolicy.default).toEqual([]);
+    expect(auditQuestionSet.selectionPolicy.phaseOverrides).toBeUndefined();
     expect(
       auditQuestionSet.phaseSpecificQuestions?.['phase-02-hunt']?.find(
         (question) => question.id === 'AQ-P2-002',

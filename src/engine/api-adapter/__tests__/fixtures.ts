@@ -107,9 +107,6 @@ export const sampleRewritePromptObject: PromptObject = {
 };
 
 export const sampleAuditPacket: AuditPacket = {
-  context: {
-    precedingBeats: [...samplePromptObject.history],
-  },
   generatedContent: {
     beatText: 'generated-beat-text',
     options: ['option-1', 'option-2', 'option-3', 'option-4'],

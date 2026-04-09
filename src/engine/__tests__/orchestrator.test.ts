@@ -432,6 +432,141 @@ describe('Orchestrator', () => {
     expect(state.evaluationState.rewriteFeedback).toBeNull();
   });
 
+  it('streams non-audited beat text before accepting the final result', async () => {
+    const { adapter: baseAdapter, generateCalls, auditCalls } = createRecordingAdapter();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat ' };
+        yield { type: 'beatTextDelta' as const, delta: 'chunk' };
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Draft beat chunk',
+            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+          },
+        };
+      })(),
+    }));
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      streamGenerate,
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: {
+        ...structuredStoryPackageFixture,
+        auditQuestionSet: {
+          ...structuredStoryPackageFixture.auditQuestionSet,
+          selectionPolicy: {
+            default: [],
+          },
+        },
+      },
+    });
+    const streamedDeltas: string[] = [];
+
+    await orchestrator.initScene();
+    const { beatResult, state } = await orchestrator.runBeat('player-choice-stream', {
+      onBeatTextDelta(delta) {
+        streamedDeltas.push(delta);
+      },
+    });
+
+    expect(streamGenerate).toHaveBeenCalledTimes(1);
+    expect(generateCalls).toHaveLength(0);
+    expect(auditCalls).toHaveLength(0);
+    expect(streamedDeltas).toEqual(['Draft beat ', 'chunk']);
+    expect(beatResult.beatText).toBe('Draft beat chunk');
+    expect(beatResult.options).toEqual(['Option A', 'Option B', 'Option C', 'Option D']);
+    expect(state.generationState.currentBeatText).toBe('Draft beat chunk');
+    expect(state.generationState.currentOptions).toEqual([
+      'Option A',
+      'Option B',
+      'Option C',
+      'Option D',
+    ]);
+  });
+
+  it('keeps the audited path buffered even when streamGenerate exists', async () => {
+    const { adapter: baseAdapter, generateCalls, auditCalls } = createRecordingAdapter();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'should not stream' };
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'should not stream',
+            options: ['a', 'b', 'c', 'd'],
+          },
+        };
+      })(),
+    }));
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      streamGenerate,
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: structuredStoryPackageFixture,
+    });
+
+    await orchestrator.initScene();
+    const { beatResult, state } = await orchestrator.runBeat('player-choice-audited');
+
+    expect(streamGenerate).not.toHaveBeenCalled();
+    expect(generateCalls).toHaveLength(1);
+    expect(auditCalls).toHaveLength(1);
+    expect(beatResult.beatText).toBe('beat-1');
+    expect(state.generationState.currentBeatText).toBe('beat-1');
+  });
+
+  it('does not persist or accept a streamed draft when the stream fails before the final result', async () => {
+    const { adapter: baseAdapter } = createRecordingAdapter();
+    const recorder = createRuntimeSessionStoreSpy();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat chunk' };
+        throw new Error('stream exploded');
+      })(),
+    }));
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      streamGenerate,
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: {
+        ...structuredStoryPackageFixture,
+        auditQuestionSet: {
+          ...structuredStoryPackageFixture.auditQuestionSet,
+          selectionPolicy: {
+            default: [],
+          },
+        },
+      },
+      runtimeSessionStore: recorder,
+    });
+
+    const initialState = await orchestrator.initScene();
+
+    await expect(
+      orchestrator.runBeat('player-choice-stream-failure', {
+        onBeatTextDelta() {
+          return undefined;
+        },
+      }),
+    ).rejects.toThrow('stream exploded');
+    expect(recorder.recordAcceptedBeat).not.toHaveBeenCalled();
+    expect(orchestrator.getState()).toBe(initialState);
+    expect(orchestrator.getState().generationState.currentBeatText).toBeNull();
+  });
+
   it('pushes each accepted beat through gossipelog and uses the refreshed relationship layer on the following beat', async () => {
     const { packageName, storyPackage } = await createTempStoryPackageFixture();
     const storyPackageWithoutAudit = {

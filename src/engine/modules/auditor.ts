@@ -1,7 +1,7 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import { validateAuditPacket } from '@/engine/schema-validator';
 import type { AuditResult, LLMAdapter } from '@/engine/types/adapter-interface';
-import type { AuditPacket, AuditQuestion, AuditQuestionSet, HistoryEntry } from '@/types';
+import type { AuditPacket, AuditQuestion, AuditQuestionSet } from '@/types';
 
 export interface SelectedAuditQuestions {
   readonly selectedQuestions: readonly AuditQuestion[];
@@ -25,7 +25,6 @@ export interface ExecuteAuditInput {
   readonly adapter: LLMAdapter;
   readonly questionSet: AuditQuestionSet;
   readonly currentPhaseId: string;
-  readonly precedingBeats: readonly HistoryEntry[];
   readonly beatText: string;
   readonly options: readonly string[];
 }
@@ -81,25 +80,18 @@ export function selectAuditQuestions(
 }
 
 /**
- * Builds the current round's AuditPacket from accessible history, generation output, and the
+ * Builds the current round's AuditPacket from the generated beat, generated options, and the
  * selected audit questions.
  *
  * @see archive/vendor/LOGOS-SPEC/04_MODULES/auditor.md
  */
 export function buildAuditPacket(
-  precedingBeats: readonly HistoryEntry[],
   beatText: string,
   options: readonly string[],
   selectedQuestions: readonly AuditQuestion[],
 ): AuditPacket {
   return deepFreeze(
     validateAuditPacket({
-      context: {
-        precedingBeats: precedingBeats.map((entry) => ({
-          role: entry.role,
-          content: entry.content,
-        })),
-      },
       generatedContent: {
         beatText,
         options: [...options],
@@ -148,12 +140,7 @@ export async function executeAudit(input: ExecuteAuditInput): Promise<ExecuteAud
     input.questionSet,
     input.currentPhaseId,
   );
-  const packet = buildAuditPacket(
-    input.precedingBeats,
-    input.beatText,
-    input.options,
-    selectedQuestions,
-  );
+  const packet = buildAuditPacket(input.beatText, input.options, selectedQuestions);
   const auditResult = await input.adapter.audit(packet);
   const parsedResult = parseAuditResult(auditResult, selectedQuestions);
 

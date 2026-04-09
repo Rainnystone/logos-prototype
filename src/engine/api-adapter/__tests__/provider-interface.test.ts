@@ -3,7 +3,10 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
   AdapterConfig,
   ProviderConfig,
+  ProviderGenerateStreamEvent,
+  ProviderGenerateStreamResult,
   ProviderRequest,
+  ProviderResponse,
   ProviderType,
 } from '@/engine/api-adapter/providers/provider-interface';
 
@@ -62,5 +65,37 @@ describe('provider interface', () => {
     expect(request.messages).toEqual([{ role: 'user', content: 'prompt' }]);
     expect(request.temperature).toBe(0.8);
     expect(request.maxOutputTokens).toBe(2048);
+  });
+
+  it('defines the streaming generate contract with stream and fallback variants', () => {
+    const finalResponse: ProviderResponse = {
+      content: '{"beatText":"beat","options":["a","b","c","d"]}',
+    };
+    const streamedEvent: ProviderGenerateStreamEvent = {
+      type: 'beatTextDelta',
+      delta: 'bea',
+    };
+    const streamResult: ProviderGenerateStreamResult = {
+      kind: 'stream',
+      events: (async function* () {
+        yield streamedEvent;
+        yield {
+          type: 'finalResult' as const,
+          response: finalResponse,
+        };
+      })(),
+    };
+    const fallbackResult: ProviderGenerateStreamResult = {
+      kind: 'fallback',
+      reason: 'streaming-not-supported',
+    };
+
+    expect(streamResult.kind).toBe('stream');
+    expect(fallbackResult).toEqual({
+      kind: 'fallback',
+      reason: 'streaming-not-supported',
+    });
+    expectTypeOf(streamedEvent.delta).toEqualTypeOf<string>();
+    expectTypeOf(finalResponse.content).toEqualTypeOf<string>();
   });
 });

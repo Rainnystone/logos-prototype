@@ -142,39 +142,4 @@ phaseSpecificQuestions:
       rationale: 这是终局阶段必须满足的总收束条件，缺失任一部分都说明样例未正确闭环。
 
 selectionPolicy:
-  default:
-    - AQ-G-001
-    - AQ-G-002
-    - AQ-G-003
-    - AQ-G-005
-    - AQ-G-006
-    - AQ-G-007
-    - AQ-G-008
-    - AQ-C-001
-    - AQ-C-002
-  phaseOverrides:
-    phase-01-prologue:
-      append:
-        - AQ-P1-001
-        - AQ-P1-002
-        - AQ-P1-003
-    phase-02-hunt:
-      append:
-        - AQ-P2-001
-        - AQ-P2-002
-        - AQ-P2-003
-    phase-03-first-contact:
-      append:
-        - AQ-P3-000
-        - AQ-P3-001
-    phase-04-streamer-domain:
-      append:
-        - AQ-P4-000
-        - AQ-P4-001
-    phase-05-climax:
-      append:
-        - AQ-P5-001
-        - AQ-P5-002
-    phase-06-resolution:
-      append:
-        - AQ-P6-001
+  default: []

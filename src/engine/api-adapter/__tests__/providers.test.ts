@@ -3,6 +3,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createAnthropicProvider } from '@/engine/api-adapter/providers/anthropic';
 import { createOpenAICompatibleProvider } from '@/engine/api-adapter/providers/openai-compatible';
 import { sampleProviderRequest } from '@/engine/api-adapter/__tests__/fixtures';
+import type { ProviderGenerateStreamEvent } from '@/engine/api-adapter/providers/provider-interface';
+
+async function collectAsyncEvents<T>(events: AsyncIterable<T>): Promise<T[]> {
+  const collected: T[] = [];
+
+  for await (const event of events) {
+    collected.push(event);
+  }
+
+  return collected;
+}
 
 describe('providers', () => {
   afterEach(() => {
@@ -197,6 +208,88 @@ describe('providers', () => {
       promptTokens: 21,
       completionTokens: 5,
       totalTokens: 26,
+    });
+  });
+
+  it('streams OpenAI-compatible generate previews and final result from one request', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        [
+          'data: {"choices":[{"delta":{"content":"{\\"beatText\\":\\"Hel"}}]}\n\n',
+          'data: {"choices":[{"delta":{"content":"lo\\",\\"options\\":[\\"a\\",\\"b\\",\\"c\\",\\"d\\"]}"}}],"usage":{"prompt_tokens":21,"completion_tokens":5,"total_tokens":26}}\n\n',
+          'data: [DONE]\n\n',
+        ].join(''),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'text/event-stream' },
+        },
+      ),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = createOpenAICompatibleProvider({
+      apiKey: 'openai-key',
+      baseUrl: 'https://openai.test',
+      model: 'gpt-test',
+    });
+
+    const streamResult = await provider.streamGenerate?.(sampleProviderRequest);
+
+    expect(streamResult?.kind).toBe('stream');
+    const events =
+      streamResult?.kind === 'stream'
+        ? await collectAsyncEvents<ProviderGenerateStreamEvent>(streamResult.events)
+        : [];
+    const beatTextDeltas = events
+      .filter((event): event is Extract<(typeof events)[number], { type: 'beatTextDelta' }> =>
+        event.type === 'beatTextDelta',
+      )
+      .map((event) => event.delta);
+    const finalEvent = events.find(
+      (event): event is Extract<(typeof events)[number], { type: 'finalResult' }> =>
+        event.type === 'finalResult',
+    );
+
+    expect(beatTextDeltas.join('')).toBe('Hello');
+    expect(finalEvent).toEqual({
+      type: 'finalResult',
+      response: {
+        content: '{"beatText":"Hello","options":["a","b","c","d"]}',
+        usage: {
+          promptTokens: 21,
+          completionTokens: 5,
+          totalTokens: 26,
+        },
+      },
+    });
+
+    const [, init] = fetchMock.mock.calls.at(0) as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+
+    expect(body.stream).toBe(true);
+    expect(body.stream_options).toEqual({ include_usage: true });
+  });
+
+  it('returns a deterministic fallback when OpenAI-compatible streaming is unavailable', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = createOpenAICompatibleProvider({
+      apiKey: 'openai-key',
+      baseUrl: 'https://openai.test',
+      model: 'gpt-test',
+    });
+
+    await expect(provider.streamGenerate?.(sampleProviderRequest)).resolves.toEqual({
+      kind: 'fallback',
+      reason: 'non-streaming-response',
     });
   });
 

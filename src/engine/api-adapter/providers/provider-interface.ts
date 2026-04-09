@@ -40,8 +40,29 @@ export interface ProviderResponse {
   readonly usage?: UsageInfo | undefined;
 }
 
+export type ProviderGenerateStreamEvent =
+  | {
+      readonly type: 'beatTextDelta';
+      readonly delta: string;
+    }
+  | {
+      readonly type: 'finalResult';
+      readonly response: ProviderResponse;
+    };
+
+export type ProviderGenerateStreamResult =
+  | {
+      readonly kind: 'stream';
+      readonly events: AsyncIterable<ProviderGenerateStreamEvent>;
+    }
+  | {
+      readonly kind: 'fallback';
+      readonly reason: string;
+    };
+
 export interface Provider {
   call(request: ProviderRequest): Promise<ProviderResponse>;
+  streamGenerate?(request: ProviderRequest): Promise<ProviderGenerateStreamResult>;
 }
 
 export interface ModeConfig {

@@ -37,6 +37,7 @@ import {
 } from '@/engine/schema-validator';
 import type {
   CollapseInput,
+  GenerateStreamResult,
   InitialCollapseRequest,
   LLMAdapter,
   WeaverImportRequest,
@@ -179,6 +180,42 @@ export function createAPIAdapter(config: AdapterConfig): LLMAdapter {
       const response = await provider.call(request);
 
       return deepFreeze(parseGenerateResult(response.content, response.usage));
+    },
+
+    async streamGenerate(promptObject): Promise<GenerateStreamResult> {
+      if (!provider.streamGenerate) {
+        return {
+          kind: 'fallback',
+          reason: 'streaming-not-supported',
+        };
+      }
+
+      const request = attachModel(
+        mapForGenerate(validatePromptObject(promptObject), config.provider, config.generateConfig),
+        config.providerConfig.model,
+      );
+      const response = await provider.streamGenerate(request);
+
+      if (response.kind === 'fallback') {
+        return response;
+      }
+
+      return {
+        kind: 'stream',
+        events: (async function* () {
+          for await (const event of response.events) {
+            if (event.type === 'beatTextDelta') {
+              yield event;
+              continue;
+            }
+
+            yield {
+              type: 'finalResult' as const,
+              result: deepFreeze(parseGenerateResult(event.response.content, event.response.usage)),
+            };
+          }
+        })(),
+      };
     },
 
     async audit(packet) {

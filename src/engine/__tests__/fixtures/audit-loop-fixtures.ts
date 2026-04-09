@@ -47,7 +47,7 @@ export const auditQuestionSetFixture: AuditQuestionSet = deepFreeze({
     'phase-02': [
       {
         id: 'AQ-P2-001',
-        question: 'Does phase two preserve the pressure shift?',
+        question: 'Does this beat keep the pressure shift grounded in the current beat?',
         expected: true,
         blocking: true,
         rationale: 'Phase two has an additional control requirement.',

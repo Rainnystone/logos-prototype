@@ -4,6 +4,16 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function sanitizeProxyResponseHeaders(headers: Headers): Headers {
+  const sanitized = new Headers(headers);
+
+  sanitized.delete('content-encoding');
+  sanitized.delete('content-length');
+  sanitized.delete('transfer-encoding');
+
+  return sanitized;
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const targetUrl = typeof body.targetUrl === 'string' ? body.targetUrl : '';
@@ -28,9 +38,12 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(targetBody),
     });
+    const responseHeaders = sanitizeProxyResponseHeaders(response.headers);
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return new Response(response.body, {
+      status: response.status,
+      headers: responseHeaders,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Proxy request failed';
     return NextResponse.json(

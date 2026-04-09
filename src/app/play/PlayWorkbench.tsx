@@ -169,6 +169,20 @@ function buildFinalizedRuntimeSessionView(
   };
 }
 
+function isViewportNearBottom(thresholdPx = 48): boolean {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return true;
+  }
+
+  return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - thresholdPx;
+}
+
+function scheduleAnchorScroll(anchor: React.RefObject<HTMLDivElement | null>) {
+  if (typeof anchor.current?.scrollIntoView === 'function') {
+    anchor.current.scrollIntoView({ block: 'end' });
+  }
+}
+
 async function bootstrapGossipelogBeforePlayInitialization(input: {
   readonly storyPackageName: string;
   readonly adapterConfig: AdapterConfig | null;
@@ -213,6 +227,10 @@ export function PlayWorkbench({
   const relationshipSyncFinalizeQueueRef = useRef<PendingRelationshipSync[]>([]);
   const activeRelationshipSyncRef = useRef<PendingRelationshipSync | null>(null);
   const currentStateRef = useRef<StateSnapshot | null>(null);
+  const streamAnchorRef = useRef<HTMLDivElement | null>(null);
+  const optionsAnchorRef = useRef<HTMLDivElement | null>(null);
+  const shouldFollowStreamRef = useRef(true);
+  const pendingOptionsFollowRef = useRef(false);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
   const [runtimeSessionView, setRuntimeSessionView] = useState<PlayRuntimeSessionView | undefined>(
@@ -230,9 +248,17 @@ export function PlayWorkbench({
     createEmptyWorkbenchDiagnostics(),
   );
   const [error, setError] = useState<string | null>(null);
+  const [streamingBeatText, setStreamingBeatText] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [isRelationshipSyncPending, setIsRelationshipSyncPending] = useState(false);
   const [isHydratingWorkbench, setIsHydratingWorkbench] = useState(false);
+  const currentOptions = currentState?.generationState.currentOptions ?? [];
+  const displayedBeatText =
+    streamingBeatText || (currentState?.generationState.currentBeatText ?? null);
+  const displayedOptions =
+    status === 'generating' || status === 'auditing' || status === 'rewriting'
+      ? []
+      : currentOptions;
 
   const resolvedRuntimeSessionClient = useMemo(
     () =>
@@ -303,6 +329,39 @@ export function PlayWorkbench({
   }, [initialRuntimeSession]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const updateScrollFollowState = () => {
+      shouldFollowStreamRef.current = isViewportNearBottom();
+    };
+
+    updateScrollFollowState();
+    window.addEventListener('scroll', updateScrollFollowState, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', updateScrollFollowState);
+    };
+  }, []);
+
+  useEffect(() => {
+    const hasRenderableOptions = displayedOptions.length > 0;
+    const accepted =
+      status === 'accepted' || status === 'force-accepted';
+
+    if (!pendingOptionsFollowRef.current || !accepted || !hasRenderableOptions) {
+      return;
+    }
+
+    pendingOptionsFollowRef.current = false;
+
+    if (shouldFollowStreamRef.current) {
+      scheduleAnchorScroll(optionsAnchorRef);
+    }
+  }, [displayedOptions.length, status]);
+
+  useEffect(() => {
     if (initialConfig !== null) {
       setBootstrapped(true);
       return;
@@ -351,6 +410,7 @@ export function PlayWorkbench({
         setRewriteFeedback(null);
         setForceAccepted(false);
         setError(null);
+        setStreamingBeatText('');
         if (!shouldPreserveVisibleSurface) {
           setBeatHistory(continuityView?.beatHistory ?? []);
           setRoundStarted(false);
@@ -580,15 +640,27 @@ export function PlayWorkbench({
       return false;
     }
 
+    shouldFollowStreamRef.current = isViewportNearBottom();
     setError(null);
     setRewriteFeedback(null);
     setForceAccepted(false);
+    setStreamingBeatText('');
+    pendingOptionsFollowRef.current = false;
     setStatus('generating');
 
     try {
-      const { beatResult, state } = await orchestratorRef.current.runBeat(playerInput);
+      const { beatResult, state } = await orchestratorRef.current.runBeat(playerInput, {
+        onBeatTextDelta(delta) {
+          setStreamingBeatText((currentText) => currentText + delta);
+
+          if (shouldFollowStreamRef.current) {
+            scheduleAnchorScroll(streamAnchorRef);
+          }
+        },
+      });
 
       startTransition(() => {
+        setStreamingBeatText('');
         setCurrentState(state);
         setBeatHistory((currentHistory) => [
           ...currentHistory,
@@ -601,8 +673,11 @@ export function PlayWorkbench({
         setForceAccepted(beatResult.forceAccepted);
         setStatus(beatResult.forceAccepted ? 'force-accepted' : 'accepted');
       });
+      pendingOptionsFollowRef.current = shouldFollowStreamRef.current;
       return true;
     } catch (runError) {
+      pendingOptionsFollowRef.current = false;
+      setStreamingBeatText('');
       setError(runError instanceof Error ? runError.message : 'Failed to run the next beat.');
       setStatus('error');
       return false;
@@ -667,8 +742,6 @@ export function PlayWorkbench({
       setIsResetting(false);
     }
   }
-
-  const currentOptions = currentState?.generationState.currentOptions ?? [];
 
   return (
     <main className="play-page">
@@ -763,19 +836,23 @@ export function PlayWorkbench({
           </section>
           <BeatDisplay
             status={status}
-            beatText={currentState?.generationState.currentBeatText ?? null}
+            beatText={displayedBeatText}
             rewriteFeedback={rewriteFeedback}
             forceAccepted={forceAccepted}
             error={error}
             summary={gameViewSummary}
           >
-            <PlayerInput
-              options={currentOptions}
-              isLoading={isInputLoading || isResetting}
-              disabled={!roundStarted || sceneComplete || isResetting}
-              variant="embedded"
-              onSubmit={handleSubmit}
-            />
+            <>
+              <div ref={streamAnchorRef} aria-hidden="true" />
+              <PlayerInput
+                options={displayedOptions}
+                isLoading={isInputLoading || isResetting}
+                disabled={!roundStarted || sceneComplete || isResetting}
+                variant="embedded"
+                onSubmit={handleSubmit}
+              />
+              <div ref={optionsAnchorRef} aria-hidden="true" />
+            </>
           </BeatDisplay>
         </div>
 

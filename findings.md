@@ -139,6 +139,22 @@
   - 对长正文主输出，纯文本 streaming 通常比对象流或大 JSON schema 流更稳；后者更容易出现“最后一股脑吐出”的假流式
 - 当前仍在等待一个专项只读结论：
   - subagent 正在结合现行 `narrative-router`、`director-note-layer`、`prompt-assembler` 与 archive runtime spec，确认“router 每 beat 重算”是否确属硬约束，以及“route 仅吃两轮上文”是否会伤到既有叙事控制语义
+- 真实 API 测试已经补出两个不同层级的问题：
+  - 第一类是我们自己的 proxy 透传问题：上游响应被本地 fetch 解压后，`/api/llm/proxy` 仍把原始 `content-encoding` / `content-length` / `transfer-encoding` 头继续往下游透传，浏览器因此报 `ERR_CONTENT_DECODING_FAILED`
+  - 第二类是 MiniMax `MiniMax-M2.5` 在当前兼容链路下的结构化输出不稳定：同一条链路上 `collapse` / `route` 可以成功，但 `generate` 曾返回 `【beatText】...` 这种非 JSON 文本，导致结构化解析失败
+- 因此这轮真实验证后的判断是：
+  - 早先的 decoding failed 明确是我们的 bug，已经通过 proxy header 清理修复
+  - 后续出现的“非 JSON 结构化输出”更像是 MiniMax 在当前模型/兼容端点/网络环境下的指令遵循波动，不像是 streaming transport 自身损坏
+- 在你开启 VPN + TUN 的真实环境下，成功轮次的体感时间已经测出：
+  - 从点击 `Start Round` 到正文开始出现，约 `79.7s`
+  - 从点击 `Start Round` 到最终 options 出现，约 `102.7s`
+  - 正文先出现到 options 最终出现之间，约 `23.1s`
+- 这次成功轮次同时验证了当前实现链路的一个关键事实：
+  - 正文与 options 仍然来自同一次 `generate / streamGenerate` 请求，不是两次独立生成
+  - 正文结束后用户继续等待的主要原因，不是第二次生成 options，而是 `runBeat()` 在返回前还会继续计算下一拍的 `nextRouter`
+- 你已明确记录但暂不推进的后续想法：
+  - `nextRouter` 虽然会拖慢本拍 options 可见时间，但它又受到玩家本拍选择的影响，本轮先不改这一条
+  - 如果未来关闭 VPN + TUN，体感时间可能会明显回落；这一点保留为后续环境侧验证项，而不是当前代码改动目标
 
 ## 2026-04-09 Phase 4 Weaver 成功率优化讨论
 

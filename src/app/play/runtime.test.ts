@@ -10,6 +10,7 @@ import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import { stateSnapshotFixture, storyPackageFixture } from '@/app/__tests__/fixtures';
 import type { FinalizeRelationshipLayerInput, RecordAcceptedBeatInput } from '@/runtime-sessions/repository';
 import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
+import type { PromptObject } from '@/types';
 
 function createReporter() {
   return {
@@ -18,6 +19,18 @@ function createReporter() {
     onUsage: vi.fn(),
   };
 }
+
+async function collectAsyncEvents<T>(events: AsyncIterable<T>): Promise<T[]> {
+  const collected: T[] = [];
+
+  for await (const event of events) {
+    collected.push(event);
+  }
+
+  return collected;
+}
+
+const promptObjectFixture = stateSnapshotFixture.generationState.promptObject as PromptObject;
 
 describe('createTrackedWorkbenchAdapter', () => {
   it('preserves existing gossipelog methods on the wrapped adapter', () => {
@@ -84,6 +97,142 @@ describe('createTrackedWorkbenchAdapter', () => {
       highlightedDeltasText: '',
       stableBackgroundText: '',
     });
+  });
+
+  it('keeps generate buffered even when streamGenerate is available', async () => {
+    const generate = vi.fn(async () => ({
+      beatText: 'buffered result',
+      options: ['1', '2', '3', '4'],
+    }));
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Hello' };
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Hello',
+            options: ['a', 'b', 'c', 'd'],
+          },
+        };
+      })(),
+    }));
+    const adapter: LLMAdapter = {
+      collapse: vi.fn(async () => ({
+        alpha: 'alpha',
+        beta: 'beta',
+        inferenceTrace: 'trace',
+      })),
+      generate,
+      streamGenerate,
+    };
+
+    const trackedAdapter = createTrackedWorkbenchAdapter(
+      adapter,
+      storyPackageFixture.auditQuestionSet,
+      createReporter(),
+    );
+
+    await expect(
+      trackedAdapter.generate?.(promptObjectFixture),
+    ).resolves.toEqual({
+      beatText: 'buffered result',
+      options: ['1', '2', '3', '4'],
+    });
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(streamGenerate).not.toHaveBeenCalled();
+  });
+
+  it('exposes streamGenerate as a separate tracked transport when available', async () => {
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Hello' };
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Hello',
+            options: ['a', 'b', 'c', 'd'],
+            usage: {
+              promptTokens: 11,
+              completionTokens: 7,
+              totalTokens: 18,
+            },
+          },
+        };
+      })(),
+    }));
+    const adapter: LLMAdapter = {
+      collapse: vi.fn(async () => ({
+        alpha: 'alpha',
+        beta: 'beta',
+        inferenceTrace: 'trace',
+      })),
+      streamGenerate,
+    };
+    const reporter = createReporter();
+
+    const trackedAdapter = createTrackedWorkbenchAdapter(
+      adapter,
+      storyPackageFixture.auditQuestionSet,
+      reporter,
+    );
+    const streamResult = await trackedAdapter.streamGenerate?.(promptObjectFixture);
+
+    expect(streamResult).toBeDefined();
+    expect(streamResult?.kind).toBe('stream');
+    const events =
+      streamResult?.kind === 'stream' ? await collectAsyncEvents(streamResult.events) : [];
+
+    expect(events).toEqual([
+      { type: 'beatTextDelta', delta: 'Hello' },
+      {
+        type: 'finalResult',
+        result: {
+          beatText: 'Hello',
+          options: ['a', 'b', 'c', 'd'],
+          usage: {
+            promptTokens: 11,
+            completionTokens: 7,
+            totalTokens: 18,
+          },
+        },
+      },
+    ]);
+    expect(reporter.onStatusChange).toHaveBeenCalledWith('generating');
+    expect(reporter.onUsage).toHaveBeenCalledWith('generate', {
+      promptTokens: 11,
+      completionTokens: 7,
+      totalTokens: 18,
+    });
+    expect(streamGenerate).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns tracked fallback from streamGenerate without rewriting generate behavior', async () => {
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'fallback' as const,
+      reason: 'streaming-not-supported',
+    }));
+    const adapter: LLMAdapter = {
+      collapse: vi.fn(async () => ({
+        alpha: 'alpha',
+        beta: 'beta',
+        inferenceTrace: 'trace',
+      })),
+      streamGenerate,
+    };
+
+    const trackedAdapter = createTrackedWorkbenchAdapter(
+      adapter,
+      storyPackageFixture.auditQuestionSet,
+      createReporter(),
+    );
+
+    await expect(trackedAdapter.streamGenerate?.(promptObjectFixture)).resolves.toEqual({
+      kind: 'fallback',
+      reason: 'streaming-not-supported',
+    });
+    expect(streamGenerate).toHaveBeenCalledTimes(1);
   });
 });
 

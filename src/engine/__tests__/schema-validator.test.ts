@@ -295,9 +295,6 @@ describe('schema validator', () => {
   it('rejects an AuditPacket with fewer than four options', () => {
     expect(() =>
       validateAuditPacket({
-        context: {
-          precedingBeats: [],
-        },
         generatedContent: {
           beatText: 'beat-text',
           options: ['opt-1', 'opt-2', 'opt-3'],
@@ -310,9 +307,6 @@ describe('schema validator', () => {
   it('accepts an AuditPacket with no audit questions', () => {
     expect(
       validateAuditPacket({
-        context: {
-          precedingBeats: [],
-        },
         generatedContent: {
           beatText: 'beat-text',
           options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
@@ -322,6 +316,21 @@ describe('schema validator', () => {
     ).toMatchObject({
       auditQuestions: [],
     });
+  });
+
+  it('rejects a legacy AuditPacket shape that still carries preceding beats in context', () => {
+    expect(() =>
+      validateAuditPacket({
+        context: {
+          precedingBeats: [],
+        },
+        generatedContent: {
+          beatText: 'beat-text',
+          options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
+        },
+        auditQuestions: [],
+      }),
+    ).toThrow(/Unrecognized key\(s\) in object: 'context'/i);
   });
 
   it('rejects a CollapseRequest without phaseConsequences', () => {

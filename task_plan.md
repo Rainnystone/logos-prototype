@@ -23,7 +23,13 @@
 ## Active Track
 
 - 轨道：`/play` 体感延迟优化实现
-- 当前状态：implementation plan 已通过独立 review，等待执行方式确认
+- 当前状态：implementation 已完成，已完成真实 API 验证，进入提交与合流评估
+  - 当前执行位置：
+    - Packet 2（Task 1）已通过实现、主线程复验与双 review
+    - Packet 3（Task 2）已完成对齐并通过主线程复验
+    - Packet 4（Task 3）已通过实现、主线程复验与正确 worktree 下的 review
+    - Packet 5（Task 4）已完成实现、review 修补与主线程复验
+    - Packet 6（Task 5）已完成本地全量验证与真实 API 测试
 - 关键约束：
   - 延迟定义是“玩家体感延迟”，即从做完选择到下一段正文重新可见的时间
   - 优先考虑高效、轻便、稳定、容易模块化的方案
@@ -88,10 +94,11 @@
 | complete | Packet 1 | 建立独立 worktree，安装依赖并验证基线测试通过 |
 | complete | Packet 1.5 | 收口设计边界并写出正式 spec |
 | complete | Packet 1.8 | 根据已批准 spec 写出 implementation plan |
-| pending | Packet 2 | 收窄 `audit` 语义：更新 packet / prompt / tests，使其只看当前 beat 与本轮 options |
-| pending | Packet 3 | 设计并实现 `audit off` 的 generate streaming 主链，保持 options 和输入后置 |
-| pending | Packet 4 | 补齐 workbench / orchestrator / adapter 回归测试，覆盖 `audit on/off` 两条路径 |
-| pending | Packet 5 | 跑全量验证并汇总收益、风险与残留未做项 |
+| complete | Packet 2 | 收窄 `audit` 语义：更新 packet / prompt / tests，使其只看当前 beat 与本轮 options |
+| complete | Packet 3 | beat-local audit 题目与 fixture 对齐 |
+| complete | Packet 4 | generate streaming transport 与 buffered fallback |
+| complete | Packet 5 | non-audited workbench/orchestrator 可见 streaming 接回 |
+| complete | Packet 6 | 已完成本地全量验证、真实 API 测试与收口记录 |
 
 ## Baseline Repair
 
