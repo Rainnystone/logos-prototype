@@ -92,12 +92,28 @@ describe('prompt templates', () => {
       expect(reference).toContain('Source excerpt:');
       expect(reference).toContain('The harbor district never slept');
       expect(reference).toContain('Expected lightweight payload shape:');
+      expect(reference).toContain(
+        '"sourceSummary": "A harbor-district scene with Mara, Old Ellis, a silent lighthouse bell, and a smuggling thread."',
+      );
+      expect(reference).toContain(
+        '"importSummary": "Bootstrap a harbor-district scene around Mara, Old Ellis, the quay, and the warehouse door."',
+      );
+      expect(reference).toContain('"openingHook": "The harbor district never slept."');
       expect(reference).toContain('"worldBase": {');
-      expect(reference).toContain('"settingSummary": "A foggy harbor district');
+      expect(reference).toContain(
+        '"settingSummary": "A harbor district with a quay, a lighthouse, a warehouse door, and market stalls."',
+      );
       expect(reference).toContain('"hero": {');
       expect(reference).toContain('"displayName": "Mara"');
+      expect(reference).toContain('"coreCast": [{ "displayName": "Old Ellis" }]');
+      expect(reference).toContain('"locations": [{ "displayName": "quay" }');
       expect(reference).toContain('Minimal-fallback example:');
-      expect(reference).toContain('When the source only names a cast member or place');
+      expect(reference).toContain('> Mara. Old Ellis. Warehouse 9.');
+      expect(reference).not.toContain('The Tide Cartel');
+      expect(reference).not.toContain('Lighthouse keeper');
+      expect(reference).not.toContain('Grounded maritime tension');
+      expect(reference).not.toContain('safe passage');
+      expect(reference).not.toContain('hidden route');
     });
   });
 });

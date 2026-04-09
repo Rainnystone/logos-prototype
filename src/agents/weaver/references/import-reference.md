@@ -35,23 +35,19 @@ Expected lightweight payload shape:
 
 ```json
 {
-  "sourceSummary": "A foggy harbor mystery centered on a missing bell, a lighthouse keeper, and a smuggling thread.",
-  "importSummary": "Bootstrap a harbor mystery with a named hero, a lighthouse keeper, and a dockside network.",
-  "openingHook": "The harbor district never slept, but tonight the lighthouse bell was missing.",
+  "sourceSummary": "A harbor-district scene with Mara, Old Ellis, a silent lighthouse bell, and a smuggling thread.",
+  "importSummary": "Bootstrap a harbor-district scene around Mara, Old Ellis, the quay, and the warehouse door.",
+  "openingHook": "The harbor district never slept.",
   "worldBase": {
-    "settingSummary": "A foggy harbor district with an old lighthouse, a bell tower, and a restless quay.",
-    "worldRules": "The bell marks safe passage after dusk, and its silence signals danger.",
-    "toneBaseline": "Grounded maritime tension with quiet civic pressure.",
-    "locationPatch": "Harbor District, lighthouse approach, quay, and market pier.",
-    "npcCharactersSummary": "A lighthouse keeper and dockside informant anchor the local cast."
+    "settingSummary": "A harbor district with a quay, a lighthouse, a warehouse door, and market stalls.",
+    "locationPatch": "quay, lighthouse, warehouse door, and market stalls"
   },
   "hero": { "displayName": "Mara" },
-  "coreCast": [{ "displayName": "Old Ellis", "roleSummary": "Lighthouse keeper" }],
-  "antagonists": [{ "displayName": "The Tide Cartel", "roleSummary": "Smuggling network" }],
-  "npcCharacters": [{ "displayName": "Dockhand Ren", "summary": "Warns about the bell", "roleSummary": "Local witness" }],
-  "locations": [{ "displayName": "Harbor District", "summary": "Fogbound quay and lighthouse approach" }],
-  "warnings": ["The source implies a hidden route but does not name it."],
-  "unresolvedGaps": ["The true identity of the smuggler leader is not named."]
+  "coreCast": [{ "displayName": "Old Ellis" }],
+  "npcCharacters": [{ "displayName": "Old Ellis" }],
+  "locations": [{ "displayName": "quay" }, { "displayName": "lighthouse" }, { "displayName": "warehouse door" }, { "displayName": "market stalls" }],
+  "warnings": ["The source does not say who cut the line."],
+  "unresolvedGaps": ["The smuggling thread is mentioned but not explained."]
 }
 ```
 
@@ -59,21 +55,18 @@ Minimal-fallback example:
 
 Source excerpt:
 
-> When the source only names a cast member or place, keep the shape small and truthful.
+> Mara. Old Ellis. Warehouse 9.
 
 Expected lightweight payload shape:
 
 ```json
 {
-  "sourceSummary": "A brief, name-only passage about a harbor contact and a warehouse.",
-  "importSummary": "Bootstrap the named contact and location without inventing unsupported details.",
-  "openingHook": "A dockside contact waits by the warehouse door.",
-  "worldBase": {
-    "settingSummary": "Harbor side setting."
-  },
-  "npcCharacters": [{ "displayName": "Dockhand Ren" }],
+  "sourceSummary": "A name-only fragment with Mara, Old Ellis, and Warehouse 9.",
+  "importSummary": "Bootstrap the named people and place without inventing unsupported details.",
+  "openingHook": "Mara. Old Ellis. Warehouse 9.",
+  "npcCharacters": [{ "displayName": "Mara" }, { "displayName": "Old Ellis" }],
   "locations": [{ "displayName": "Warehouse 9" }],
   "warnings": ["The source gives only identity-level evidence."],
-  "unresolvedGaps": ["The relationship between the contact and the warehouse is not stated."]
+  "unresolvedGaps": ["The relationship between Mara, Old Ellis, and Warehouse 9 is not stated."]
 }
 ```
