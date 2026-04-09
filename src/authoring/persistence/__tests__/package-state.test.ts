@@ -9,6 +9,7 @@ import { loadAuthoringState, resolveAuthoringStatePath, writeAuthoringState } fr
 import { saveSectionDraft } from '@/authoring/persistence/bridge';
 import { loadStoryPackage } from '@/engine/story-loader';
 import { resolveActiveStorylineContext } from '@/storylines/substrate';
+import { copyStoryPackageFixture } from '@/testing/story-package-fixtures';
 import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -41,8 +42,8 @@ function resetTestPackage(): void {
 
 function prepareTestPackage(): void {
   resetTestPackage();
-  cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
-    recursive: true,
+  copyStoryPackageFixture(sourcePackageName, testPackageName, {
+    stripExecutionState: true,
   });
 }
 

@@ -11,6 +11,7 @@ import * as reloadModule from '@/authoring/persistence/reload';
 import * as repositoryModule from '@/authoring/persistence/repository';
 import { createWorldBaseCastDraft } from '@/authoring/sections/worldbase-cast';
 import { loadStoryPackage } from '@/engine/story-loader';
+import { copyStoryPackageFixture } from '@/testing/story-package-fixtures';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
 const sourcePackageName = 'sample-scene';
@@ -41,8 +42,8 @@ function resetTestPackage(): void {
 
 function prepareTestPackage(): void {
   resetTestPackage();
-  cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
-    recursive: true,
+  copyStoryPackageFixture(sourcePackageName, testPackageName, {
+    stripExecutionState: true,
   });
   rmSync(authoringStatusPath, { force: true });
 }

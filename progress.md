@@ -40,6 +40,50 @@
   - `### 8. Implementation Packet Discipline` 已补充 implementation packet / subagent packet 的高层纪律
   - [coding-agent-guide.md](coding-agent-guide.md) 已强化为 manager/subagent 共用的任务路由文档，新增高频任务路由、packet checklist、targeted verification 起点与并行提示
 
+## 2026-04-09 `/play` 体感延迟优化探索
+
+- 已按你的要求重读：
+  - [AGENTS.md](AGENTS.md)
+  - [coding-agent-guide.md](coding-agent-guide.md)
+  - 根目录 [task_plan.md](task_plan.md) / [findings.md](findings.md) / [progress.md](progress.md)
+  - `docs/codemaps/architecture.md` / `backend.md` / `frontend.md`
+- 已将根目录 [task_plan.md](task_plan.md) 的活动轨道切到“`/play` 体感延迟优化探索”，明确本线程先做调查、诊断、方案排序，不默认直接实现。
+- 已读取并遵循这轮会用到的流程技能：
+  - `using-superpowers`
+  - `planning-with-files-zh`
+  - `systematic-debugging`
+  - `subagent-driven-development`
+- 当前已完成的本地链路定位：
+  - 读取了 [src/app/play/PlayWorkbench.tsx](src/app/play/PlayWorkbench.tsx)
+  - [src/app/play/runtime.ts](src/app/play/runtime.ts)
+  - [src/engine/orchestrator.ts](src/engine/orchestrator.ts)
+  - [src/app/api/llm/proxy/route.ts](src/app/api/llm/proxy/route.ts)
+  - [src/app/api/play/gossipelog/route.ts](src/app/api/play/gossipelog/route.ts)
+  - [src/agents/gossipelog/agent.ts](src/agents/gossipelog/agent.ts)
+  - [src/engine/modules/auditor.ts](src/engine/modules/auditor.ts)
+  - [src/engine/modules/narrative-router.ts](src/engine/modules/narrative-router.ts)
+  - [src/engine/modules/phase-consequence-settlement.ts](src/engine/modules/phase-consequence-settlement.ts)
+  - [src/engine/modules/memory-placeholder.ts](src/engine/modules/memory-placeholder.ts)
+  - [src/engine/api-adapter/prompt-templates.ts](src/engine/api-adapter/prompt-templates.ts)
+  - [src/engine/api-adapter/schema-mapper.ts](src/engine/api-adapter/schema-mapper.ts)
+  - [src/engine/api-adapter/providers/anthropic.ts](src/engine/api-adapter/providers/anthropic.ts)
+  - [src/engine/api-adapter/providers/openai-compatible.ts](src/engine/api-adapter/providers/openai-compatible.ts)
+  - [src/app/runtime-config.ts](src/app/runtime-config.ts)
+  - [src/app/components/RuntimeConfigForm.tsx](src/app/components/RuntimeConfigForm.tsx)
+- 当前已确认的核心判断：
+  - 单次玩家选择至少可能触发 `route -> generate -> audit`
+  - audit 失败会触发 rewrite，最多把生成放大到 4 次
+  - phase 边界会再加 `settlement -> collapse -> next route`
+  - `gossipelog` 更影响下一轮开始前等待，而不是当前正文首次显示
+  - 当前历史窗口默认不裁剪，会让多段 prompt 随 session 增长
+  - 当前 `generate` / `collapse` 默认 token budget 明显偏大
+- 已启动一个并行只读 subagent 做外部最佳实践检索：
+  - agent: `Huygens`
+  - 任务：收集 RPG / 叙事 / 交互式 fiction / 多阶段 LLM runtime 的低延迟实践，并整理成可映射回当前仓库的建议
+- 已做针对性验证：
+  - `npm test -- src/engine/__tests__/e2e/audit-behavior.test.ts` 通过
+  - `npm test -- src/app/play/runtime.test.ts` 通过
+
 ## 2026-04-09 Phase 4 并行讨论
 
 - 按 `using-superpowers` + `brainstorming` 恢复并定位了 `weaver` 的现状，不进入实现。
@@ -65,3 +109,33 @@
   - `src/types/weaver.ts` 被明确为轻量中间 import contract 的唯一权威 owner
   - `npcCharacters` 的 name-only 语义被写成“若采纳则必须同步 seed-mapping 与测试”的优化目标，而不是假装当前代码已实现
 - 你后续又进一步确认：这轮优化不应额外设计新的作者提醒/UX 机制；缺失提取默认保持非阻塞，不进入新的 author-facing reminder 设计范围。
+
+## 2026-04-09 Baseline 修复
+
+- 已先回到 `branch/narrative-editor` 处理 baseline，而不是直接在 fresh worktree 上继续写 plan。
+- 复现结果已拆清：
+  - 主工作区使用现有本地依赖时，UI matcher 正常；
+  - fresh worktree 会出现大量 `Invalid Chai property: toBeInTheDocument`，原因不是代码逻辑，而是 worktree 没拿到主工作区本地的 `package-lock.json`；
+  - 主工作区本身仍有 `20` 个真实红测，集中在：
+    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
+- 根因现已确认：
+  - `.gitignore` 忽略了 `package-lock.json`，而主工作区本地其实有一个未纳管 lockfile，导致主工作区与 fresh worktree 依赖解析不一致；
+  - `sample-scene` 现在是你真实用过、推进过 beat、复制过故事线的示例包；相关 baseline 测试仍把它当成“未使用模板”，因此测试夹具假设与 fixture 角色漂移。
+- 已完成的修复：
+  - 新增 [src/testing/story-package-fixtures.ts](src/testing/story-package-fixtures.ts)，提供“复制 fixture 并剥离执行痕迹”的 helper；
+  - 相关 baseline 测试已改成复制 `sample-scene` 后主动剥离：
+    - `runtime-sessions.json`
+    - `storyline-repository.json`
+    - `variants/`
+  - 覆盖的测试文件包括：
+    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
+    - [src/app/edit/__tests__/page.test.tsx](src/app/edit/__tests__/page.test.tsx)
+    - [src/app/__tests__/play-page.test.tsx](src/app/__tests__/play-page.test.tsx)
+  - `.gitignore` 已停止忽略 `package-lock.json`，并已刷新 lockfile，准备让 fresh worktree 复用同一依赖基线。
+- 当前验证结果：
+  - 目标回归集通过：`63` 个测试全部通过
+  - 全量 `npm test` 通过：`90` 个测试文件、`755` 个测试全部通过

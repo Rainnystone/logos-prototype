@@ -33,6 +33,53 @@
   - [coding-agent-guide.md](coding-agent-guide.md) 更适合承接首轮任务路由、入口文件、默认验证和并行/串行提示
   - 静态系统地图如果继续放在 `AGENTS.md`，对 packet 拆分帮助有限，反而会稀释高层纪律的信号强度
 
+## 2026-04-09 `/play` 体感延迟优化探索
+
+- 这次线程的“延迟”必须按用户体感定义：
+  - 从玩家完成选择，到下一段正文重新出现在 workbench 的时间
+  - 不是单纯某一个 API route 的 server timing
+- 从截图直接观察到的首轮事实是：
+  - 多个 `POST /api/llm/proxy` 落在大约 `17s` 到 `111s`
+  - 同一截图里 `POST /api/play/packages/.../runtime-session`、`POST /api/play/gossipelog`、`POST /api/play/gossipelog/bootstrap` 大多只有几十到几百毫秒
+  - 因此当前最粗粒度的瓶颈更像是远端 LLM 往返，而不是本地 Next route 本身
+- 代码链路已经确认：一次正常的用户选择，不是“只调一次生成”
+  - `runBeat()` 先做 `route`
+  - 再做 `generate`
+  - 然后做 `audit`
+  - 如果 audit 不通过，会继续进入 rewrite 循环，最多把 `generate` 放大到 4 次
+  - 如果该 beat 刚好结束 phase，还会额外串上 `settlement`、`collapse` 和下一 phase 的 `route`
+- 因此，“关闭 auditor 可以降延迟”这个判断成立，但只覆盖其中一段：
+  - 关掉 audit 后，最少还能剩下 `route + generate`
+  - phase 边界时还会有 `settlement / collapse / next route`
+  - 所以仅关 audit 不是根治，而是删掉一段串行 LLM 往返
+- 当前仓库还有两个非常直接的延迟放大器：
+  - 历史窗口 `getHistoryWindow()` 默认直接返回全部 accepted history，没有默认裁剪；`route / generate / audit` 都会随着游玩轮次一起吃下更长上下文
+  - `generate` prompt 明确要求正文目标长度约 `1500-2500` 中文字符，同时默认 `generate.maxOutputTokens = 36864`；`collapse.maxOutputTokens` 也同样高到 `36864`
+- 当前 runtime config UI 只允许调这 5 类 mode：
+  - `collapse / route / generate / audit / settlement`
+  - 但 adapter 层其实还支持 `gossipelogUpdateConfig / gossipelogInjectionConfig`
+  - 也就是说，和体感延迟有关的 sidecar LLM 模式已经有接口层支持，但现在没有在 workbench 配置面板里暴露出来
+- `gossipelog` 在当前实现里属于“后置异步，但会影响下一轮”
+  - accepted beat 已经返回后才 `scheduleRelationshipRefresh()`
+  - 它不会阻塞当前这段正文显示
+  - 但下一次 `generateAcceptedBeat()` 之前会先 `waitForPendingRelationshipRefresh()`
+  - 当前等待上限是 `2000ms`
+  - 所以它更像“下一轮前的额外门槛”，不是本轮正文首次出现的主瓶颈
+- 初始化前还会额外执行一次 `bootstrapGossipelogBeforePlayInitialization()`
+  - 这影响的是首次进入 play workbench / 首次开局体验
+  - 不是每次玩家点击选项后的常规链路
+- `/api/llm/proxy` 只会在 base URL 不是官方 `api.openai.com` / `api.anthropic.com` 时启用
+  - 截图里出现了 `/api/llm/proxy`
+  - 说明当时实际运行路径很可能是 MiniMax 或其他自定义兼容端点，而不是官方 OpenAI/Anthropic 直连
+  - 这会多一个本地 proxy hop，但从现有代码看，这一 hop 的本地开销远小于几十秒级别的远端等待
+- 当前 sample scene 的 audit 默认不是很轻：
+  - 默认 9 条问题
+  - phase 1 / 2 还会额外 append 3 条
+  - 也就是每轮 audit 至少要让模型对 9-12 条问题给出布尔判断
+- 已用现成测试再次压实关键行为：
+  - `src/engine/__tests__/e2e/audit-behavior.test.ts` 通过，并确认 audit fail-once 会把 `generate` 从 1 次放大到 2 次，fail-always 会放大到 4 次
+  - `src/app/play/runtime.test.ts` 通过，说明当前 runtime tracking / 状态切换相关基础测试仍然稳定
+
 ## 2026-04-09 Phase 4 Weaver 成功率优化讨论
 
 - 当前 `weaver` 的主要短板不是“是否返回 JSON”，而是四层约束没有完全说同一种话：
@@ -81,6 +128,26 @@
 - 后续你又进一步明确：
   - 不需要额外设计新的 author-facing reminder / UX 机制
   - 如果 `warnings` / `unresolvedGaps` 最终为了兼容性被保留，它们也不应变成作者界面里的主要提醒内容
+
+## 2026-04-09 Baseline 修复结论
+
+- `branch/narrative-editor` 的 baseline 问题分成两层：
+  - 环境可复现性问题：fresh worktree 会因为缺少 lockfile 而装出与主工作区不同的依赖状态，直接触发大量 Testing Library matcher 异常
+  - 测试夹具问题：`sample-scene` 已经被真实使用并保留 storyline / runtime / variant 痕迹，但若干 baseline 测试仍把它当成 legacy baseline
+- 主工作区与 fresh worktree 不一致的直接原因已经确认：
+  - `.gitignore` 忽略了 `package-lock.json`
+  - 主工作区本地存在一个未纳管 `package-lock.json`
+  - fresh worktree 不会带上这个未纳管文件，因此 `npm install` 后的依赖环境与主工作区不同
+- baseline 真实红测并不是主实现全面失效，而是 fixture 角色错位后的连锁反应：
+  - `views.test.ts` 在复制 `sample-scene` 后写入自己的 `runtime-sessions.json`，却没有同步移除原先的 `storyline-repository.json`，导致 active storyline 仍绑定到 `sess_mnqsc90c_1`
+  - `bridge.test.ts` / `package-state.test.ts` 默认把复制后的包当成“未 materialize 的 legacy package”，但复制得到的实际上已经包含 `storyline-repository.json` 和 `variants/`
+  - 因此这些测试读到的是 `sample-scene` 的真实使用状态，而不是它们想验证的 legacy baseline
+- 用户已明确要求：
+  - `sample-scene` 的真实使用痕迹要保留，不能为了让测试绿而把它改回“干净模板”
+- 因此修复策略已经冻结为：
+  - 不修改 `sample-scene` 的当前状态
+  - 由测试自己在复制 fixture 后剥离 `runtime-sessions.json`、`storyline-repository.json` 和 `variants/`
+  - 同时把 `package-lock.json` 纳入分支改动，恢复 fresh worktree 可复现性
 
 ## 外部最佳实践摘录
 

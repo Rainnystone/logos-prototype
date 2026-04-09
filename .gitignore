@@ -48,8 +48,7 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
 
-# Package manager lock files (keep only one — pnpm-lock.yaml)
-package-lock.json
+# Package manager lock files
 yarn.lock
 
 # Secrets / credentials — safety net

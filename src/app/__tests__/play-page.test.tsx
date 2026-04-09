@@ -5,6 +5,7 @@ import { render, screen } from '@testing-library/react';
 import YAML from 'yaml';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { copyStoryPackageFixture } from '@/testing/story-package-fixtures';
 import type { RuntimeSessionsFile, StateSnapshot, StorylineRepositoryFile } from '@/types';
 
 const storyPackagesRoot = path.resolve(process.cwd(), 'src/story-packages');
@@ -38,8 +39,8 @@ function resetTestPackage(): void {
 
 function prepareTestPackage(): void {
   resetTestPackage();
-  cpSync(path.resolve(storyPackagesRoot, sourcePackageName), testPackagePath, {
-    recursive: true,
+  copyStoryPackageFixture(sourcePackageName, testPackageName, {
+    stripExecutionState: true,
   });
 }
 
