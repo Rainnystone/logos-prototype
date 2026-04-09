@@ -24,8 +24,9 @@
   - 不拆 skill
   - 不改 UI / UX
   - 不新增 author-facing reminder 流程
-- 当前最合适的 shared contract owner 仍然是：
+- 当前最合适的 shared contract anchor 仍然是：
   - [src/types/weaver.ts](src/types/weaver.ts)
+- 但 provider-facing response schema 和 parser 仍保留各自的 mirror/projection 责任，需要和这个锚点保持同步并受测试覆盖。
 - 当前实现层的真正风险不是“模型不会回 JSON”，而是六层对同一 payload 的描述没有完全对齐：
   - heavy reference
   - prompt `[Output Contract]`

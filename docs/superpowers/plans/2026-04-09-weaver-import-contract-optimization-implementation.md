@@ -4,7 +4,7 @@
 
 **Goal:** 强化 `weaver` 的 model-facing import contract 与 heavy reference，让自由文本导入时更容易抽到正确结构、更不容易把脏 shape 送进 deterministic seed-mapping，同时保持局部缺失非阻塞。
 
-**Architecture:** 这轮不改 `weaver` 的系统角色、不拆 skill、不改 UI。实现只围绕一条轻量中间 contract 展开：以 `src/types/weaver.ts` 为唯一权威 owner，同步收紧 reference、prompt、provider response schema、parser 和 deterministic import-seed mapping，让它们描述同一套轻量但明确的 seed shape。`warnings` / `unresolvedGaps` 继续保留为兼容字段，但不再作为 prompt/reference 的主强调点，也不引入新的 author-facing reminder 流程。
+**Architecture:** 这轮不改 `weaver` 的系统角色、不拆 skill、不改 UI。实现只围绕一条轻量中间 contract 展开：以 `src/types/weaver.ts` 作为 canonical shared contract anchor，同步收紧 reference、prompt、provider-facing response schema mirror、parser projection 和 deterministic import-seed mapping，让它们描述同一套轻量但明确的 seed shape。`warnings` / `unresolvedGaps` 继续保留为兼容字段，但不再作为 prompt/reference 的主强调点，也不引入新的 author-facing reminder 流程。
 
 **Tech Stack:** Next.js 15, React 19, TypeScript, Zod, Vitest, Testing Library
 
@@ -31,9 +31,9 @@
 - Modify: `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
   - 锁住 `weaver` prompt 是否表达了正确 contract 与 extraction guidance。
 - Modify: `src/engine/api-adapter/schema-mapper.ts`
-  - 把 provider-facing `weaver` response schema 从 broad passthrough object 提升到轻量 seed schema。
+  - 维护 provider-facing `weaver` response schema mirror，使其和 shared contract 锚点保持同步。
 - Modify: `src/engine/api-adapter/response-parsers.ts`
-  - 让 parser 与 shared contract 使用同一套 shape，而不是另一份宽松壳。
+  - 让 parser 作为 shared contract 的 projection，而不是另一份宽松壳或第二个域 owner。
 - Modify: `src/engine/api-adapter/__tests__/schema-mapper.test.ts`
   - 锁住 provider response format 的字段、required keys 和 inner object descriptions。
 - Modify: `src/engine/api-adapter/__tests__/response-parsers.test.ts`
