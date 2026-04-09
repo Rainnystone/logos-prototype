@@ -11,7 +11,37 @@ export const WeaverBootstrapStatusSchema = z.enum([
 ]);
 export type WeaverBootstrapStatus = z.infer<typeof WeaverBootstrapStatusSchema>;
 
-const WeaverPassthroughObjectSchema = z.object({}).passthrough();
+const WeaverWorldBaseSeedSchema = z
+  .object({
+    settingSummary: z.string().trim().min(1).optional(),
+    worldRules: z.string().trim().min(1).optional(),
+    toneBaseline: z.string().trim().min(1).optional(),
+    locationPatch: z.string().trim().min(1).optional(),
+    npcCharactersSummary: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+const WeaverNamedSeedSchema = z
+  .object({
+    displayName: z.string().trim().min(1),
+    roleSummary: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+const WeaverNpcSeedSchema = z
+  .object({
+    displayName: z.string().trim().min(1),
+    summary: z.string().trim().min(1).optional(),
+    roleSummary: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+const WeaverLocationSeedSchema = z
+  .object({
+    displayName: z.string().trim().min(1),
+    summary: z.string().trim().min(1).optional(),
+  })
+  .strict();
 
 // Author-supplied displayName always wins. Only when it is absent may a validated weaver
 // suggestion be used, and invalid or conflicting suggestions must fail instead of being
@@ -24,17 +54,24 @@ export const WeaverImportPayloadSchema = z
     sourceSummary: z.string().trim().min(1),
     importSummary: z.string().trim().min(1),
     openingHook: z.string().trim().min(1),
-    worldBase: WeaverPassthroughObjectSchema,
-    hero: WeaverPassthroughObjectSchema.optional(),
-    coreCast: z.array(WeaverPassthroughObjectSchema),
-    antagonists: z.array(WeaverPassthroughObjectSchema),
-    npcCharacters: z.array(WeaverPassthroughObjectSchema),
-    locations: z.array(WeaverPassthroughObjectSchema),
+    worldBase: WeaverWorldBaseSeedSchema,
+    hero: WeaverNamedSeedSchema.optional(),
+    coreCast: z.array(WeaverNamedSeedSchema),
+    antagonists: z.array(WeaverNamedSeedSchema),
+    npcCharacters: z.array(WeaverNpcSeedSchema),
+    locations: z.array(WeaverLocationSeedSchema),
     warnings: z.array(z.string().trim().min(1)),
     unresolvedGaps: z.array(z.string().trim().min(1)),
   })
   .strict();
 export type WeaverImportPayload = z.infer<typeof WeaverImportPayloadSchema>;
+
+export {
+  WeaverWorldBaseSeedSchema,
+  WeaverNamedSeedSchema,
+  WeaverNpcSeedSchema,
+  WeaverLocationSeedSchema,
+};
 
 export const WeaverImportSummarySchema = z
   .object({
