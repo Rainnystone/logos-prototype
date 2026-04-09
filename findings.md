@@ -1,5 +1,50 @@
 # Findings
 
+## 2026-04-09 Final Verification Freeze
+
+- 这轮 `weaver` import contract optimization 的边界在最终验证后保持不变：
+  - 只做 reference / prompt / shared contract / provider schema / parser / deterministic seed-mapping 对齐
+  - 不改 `weaver` sidecar 架构
+  - 不拆 skill
+  - 不改 UI / UX
+  - 不新增 author-facing reminder 流程
+- 最终验证结果已经确认：
+  - targeted regression suite 通过
+  - 全量 `npm test` 通过
+  - `npm run build` 通过
+  - `git diff --check` 通过
+- 构建过程里出现的失败不是产品代码回归，而是本地 `@next/swc-darwin-arm64` 二进制损坏；重新安装同版本依赖后恢复正常。
+- 当前没有发现需要继续扩大的设计缺口，后续只保留这条冻结边界：reference / contract alignment only。
+
+## 2026-04-09 Weaver Implementation Planning
+
+- 这轮 implementation planning 的边界已经再次冻结：
+  - 只优化 `weaver` 的 reference / prompt / shared contract / provider schema / parser / deterministic seed-mapping 对齐
+  - 不改 `weaver` sidecar 架构
+  - 不拆 skill
+  - 不改 UI / UX
+  - 不新增 author-facing reminder 流程
+- 当前最合适的 shared contract owner 仍然是：
+  - [src/types/weaver.ts](src/types/weaver.ts)
+- 当前实现层的真正风险不是“模型不会回 JSON”，而是六层对同一 payload 的描述没有完全对齐：
+  - heavy reference
+  - prompt `[Output Contract]`
+  - shared `WeaverImportPayloadSchema`
+  - provider response schema
+  - parser validation schema
+  - deterministic import-seed mapping
+- `warnings` / `unresolvedGaps` 这轮不应作为主优化目标：
+  - 它们可以作为兼容字段继续保留
+  - 但不应在 reference 或 prompt 中被强调成主要输出目标
+  - 这轮也不需要把它们转成作者界面提醒
+- “最小可用结构”是保底，不是目标：
+  - `weaver` 仍应尽可能多抽取有证据支持的字段
+  - 但当证据不足时，name-only shape 必须在代码里真实可用，而不是只存在于文档里
+- reviewer 最终确认的两个关键 guardrail 已写进 plan：
+  - provider response schema 对齐必须覆盖 `hero`、`antagonists`、`locations`，不能只覆盖局部字段分支
+  - prompt / reference 必须继续显式写出 `suggestedPackageName` 和 `openingHook` ownership 边界
+- dedicated worktree 现在已经重新同步到最新 `branch/narrative-editor`，并在本地重新跑通了全量 `npm test`；因此后续执行 plan 时不再受之前“脏 baseline”结论干扰
+
 ## 2026-04-09 当前发现
 
 - 这轮问题集中在 `/play` runtime，而不是 `/edit` authoring。
