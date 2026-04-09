@@ -158,7 +158,11 @@ function mapNpcCharactersSeed(
       }
 
       const seedObject = readObject(seed);
-      return readString(seedObject.summary) ?? readString(seedObject.roleSummary);
+      return (
+        readString(seedObject.summary) ??
+        readString(seedObject.roleSummary) ??
+        readString(seedObject.displayName)
+      );
     })
     .filter((value): value is string => Boolean(value));
 

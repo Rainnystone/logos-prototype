@@ -20,7 +20,12 @@ function createAdapterResult() {
     },
     coreCast: [],
     antagonists: [],
-    npcCharacters: [],
+    npcCharacters: [
+      {
+        displayName: '值班维修技师',
+        summary: '受事故波及的值班员与维修技师',
+      },
+    ],
     locations: [],
     warnings: ['角色关系只得到部分文本支持'],
     unresolvedGaps: ['缺少明确的地点时间线'],

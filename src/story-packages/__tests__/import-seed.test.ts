@@ -191,6 +191,45 @@ describe('applyTextImportSeed', () => {
     expect(result.sceneSpec.openingHook).toBe('原始文本');
   });
 
+  it('accepts a name-only npcCharacters seed as a deterministic fallback', () => {
+    const result = applyTextImportSeed({
+      displayName: 'NPC 名称补全',
+      sourceText: '原始文本',
+      payload: createWeaverPayload({
+        npcCharacters: [{ displayName: '老码头守夜人' }],
+      }),
+      worldBase: createBaseWorldBase(),
+      sceneSpec: createBaseSceneSpec(),
+    });
+
+    expect(result.worldBase.npcCharacters).toContain('老码头守夜人');
+  });
+
+  it('preserves sparse but valid extracted seeds across the deterministic mapping', () => {
+    const baseWorldBase = createBaseWorldBase();
+    const result = applyTextImportSeed({
+      displayName: '稀疏提取',
+      sourceText: '原始文本',
+      payload: createWeaverPayload({
+        worldBase: { settingSummary: '近未来沿海都市' },
+        hero: { displayName: '林深' },
+        coreCast: [{ displayName: '周珂' }],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [{ displayName: '灯塔塔区' }],
+      }),
+      worldBase: baseWorldBase,
+      sceneSpec: createBaseSceneSpec(),
+    });
+
+    expect(result.worldBase.hero.name).toBe('林深');
+    expect(result.worldBase.hero.characterSummary).toBe(
+      baseWorldBase.hero.characterSummary,
+    );
+    expect(result.worldBase.coreCast[0]?.name).toBe('周珂');
+    expect(result.worldBase.locations[0]?.name).toBe('灯塔塔区');
+  });
+
   it('uses a supporting-cast fallback for imported core cast entries beyond the preseeded slot', () => {
     const result = applyTextImportSeed({
       displayName: '扩展配角',
