@@ -39,6 +39,9 @@
   - 明确 unsupported 情况必须回退到现有 buffered generate，而不是报错或偷换成双请求预览
   - 明确 preview 与 terminal final result 必须来自同一次 generate 请求
   - 补入一条真实 transport 验收要求，避免只在 mock adapter 里证明流式可行
+- 第二轮 spec review 已通过：
+  - reviewer 结论：`Approved`
+  - 当前按 `brainstorming` 流程等待你审阅书面 spec，再决定是否进入 implementation plan
 
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
