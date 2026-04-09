@@ -88,7 +88,7 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 ### 7. Subagent Delegation Discipline
 - For complex work, prefer decomposing the implementation into bounded tasks and dispatching subagents rather than keeping the whole execution on the main thread.
 - Subagent dispatch must follow the repository's subagent-driven-development discipline; do not improvise a parallel workflow outside that discipline when the task has already been decomposed.
-- In Claude Code, use the platform's available subagent options where applicable; do not assume Codex-specific model-selection guidance applies here.
+- **All subagents must use Opus model** (`opus` with no complexity tier) — Claude Code does not support Codex-style model tiers.
 - Dispatch instructions must explicitly tell the worker that it is a subagent, not the main thread.
 - Prefer giving the subagent a clean task brief, file boundary, and success criteria instead of forwarding raw main-thread conversation history.
 - Do not close a subagent just because a wait timed out. Before closing, first confirm its actual work status, current progress, latest conclusion, and whether keeping it alive still reduces risk or rework.
@@ -101,7 +101,10 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 
 - Decompose implementation work into bounded packets before dispatch.
 - Prefer one primary objective, one main module or surface area, and one verification path per packet.
-- Each dispatched packet should be small enough to stay well-scoped and verifiable in one pass.
+- The default implementation packet should be the smallest unit that can complete one TDD loop and one review/fix/re-review loop without widening scope mid-flight.
+- Each packet should explicitly declare its user-facing goal, owned files, default verification command, and whether it is safe to run in parallel with other packets.
+- Prefer dispatching subagent packets that can own their focused tests, implement against them, run targeted verification, and return a reviewable result.
+- If two packets share the same primary production file or the same primary test file, default to serial execution unless the plan explains why parallel work is still safe.
 - If a packet grows across unrelated concerns, long execution chains, or multiple verification paths, split it again.
 
 ## Key Paths
@@ -118,17 +121,9 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 
 ## System Mapping
 
-| Code Area                                          | Responsibility / Spec Reference                            |
-| -------------------------------------------------- | ---------------------------------------------------------- |
-| `src/engine/orchestrator.ts`                       | Runtime main loop (`04_MODULES/orchestrator-control-hub`)  |
-| `src/engine/modules/*`                             | 11 Runtime control modules (Router, Auditor, etc.)         |
-| `src/engine/api-adapter/`                          | LLM Provider adaptation                                    |
-| `src/authoring/persistence/bridge.ts`              | Deterministic save, validation, and writeback              |
-| `src/authoring/sections/*`                         | Section-specific data normalization and draft state        |
-| `src/app/edit/`                                    | Narrative Editor surfaces (`故事包管理`, `世界`, `角色`, `场景与阶段`, `控制模块`, `agent 管理`) |
-| `src/app/play/`                                    | Play Workbench UI                                          |
-| `simulation-toolset/src/*`                         | Structured route, UI, and loop simulation for regression checks |
-| `src/types/*.ts`                                   | Shared Contracts (Zod schemas & TS types)                  |
+For code-area routing, entry files, default verification, and parallelization hints, start with [coding-agent-guide.md](coding-agent-guide.md).
+
+Use `docs/codemaps/*.md` only when the first routing pass is insufficient and you need deeper module relationships.
 
 ## Blocker Protocol
 

@@ -24,12 +24,17 @@
 ## Parallel Investigation
 
 - 并行讨论：`March Dev Update Phase 4` 的 `weaver` 导入成功率优化
-- 当前状态：仅做定位与设计判断，不进入实现
+- 当前状态：design spec 已写完并通过 review，等待用户审阅后再决定是否进入 implementation plan
 - 关注点：
   - `weaver` reference 是否需要进一步明确 `worldBase`、角色、地点等中间输出结构
   - prompt 里的 `Output Contract` 是否需要从“仅列 key 名”升级为“列 key 名 + 类型/语义/约束”
   - 是否需要补充面向连续书稿/自由文本输入的 extraction examples，而不是继续依赖抽象原则描述
-- 本线程暂不创建 implementation plan；等优化边界冻结后再决定是否落正式 spec / plan
+- 已冻结的新前提：
+  - `weaver` 允许局部失败；抽不出来就留空并记录，不应报硬错误、卡住流程，或强迫作者立即补全
+  - `hero / coreCast / antagonists / npcCharacters / locations` 的最小 shape 可以压到“有名字即可”，其余字段按证据可选
+- 当前 spec：
+  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+- 本线程暂不创建 implementation plan；等你审阅并确认 spec 后再决定是否进入下一步
 
 ## Work Packets
 

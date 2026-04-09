@@ -35,6 +35,10 @@
   - `src/authoring/persistence/__tests__/bridge.test.ts`
   - `src/authoring/persistence/__tests__/package-state.test.ts`
   - 这些失败面不在本次改动文件集合内，当前按“仓库现有基线问题”记录，不在此线程扩修
+- 随后按这次复盘继续调整 agent 文档分工：
+  - [AGENTS.md](AGENTS.md) 删除了较静态的 `System Mapping` 表，改为跳转到 [coding-agent-guide.md](coding-agent-guide.md)
+  - `### 8. Implementation Packet Discipline` 已补充 implementation packet / subagent packet 的高层纪律
+  - [coding-agent-guide.md](coding-agent-guide.md) 已强化为 manager/subagent 共用的任务路由文档，新增高频任务路由、packet checklist、targeted verification 起点与并行提示
 
 ## 2026-04-09 Phase 4 并行讨论
 
@@ -50,3 +54,14 @@
   - `March Dev Update Phase 4` 归档 spec / implementation plan
 - 当前判断是：`weaver` 成功率问题更像是 reference、prompt、schema、seed-mapping 四层表述没有完全对齐，而不是单纯“没要求 JSON only”。
 - 当前不写 implementation plan，先把设计判断沉淀到 [findings.md](findings.md)。
+- 你已进一步确认两条产品边界：
+  - `weaver` 允许失败并留空，不应因为信息不足而报硬错误或卡住创建流程
+  - 角色与地点类最小输出 shape 可以只要求名称字段
+- 已完成正式 spec：
+  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+- spec review 已完成并通过；review 过程中收紧了这些关键点：
+  - `suggestedPackageName` 只是 display-name suggestion，不是最终 slug / package identity
+  - `payload.openingHook` 不拥有最终持久化写入权，真实 `openingHook` 仍来自原始 `sourceText`
+  - `src/types/weaver.ts` 被明确为轻量中间 import contract 的唯一权威 owner
+  - `npcCharacters` 的 name-only 语义被写成“若采纳则必须同步 seed-mapping 与测试”的优化目标，而不是假装当前代码已实现
+- 你后续又进一步确认：这轮优化不应额外设计新的作者提醒/UX 机制；缺失提取默认保持非阻塞，不进入新的 author-facing reminder 设计范围。

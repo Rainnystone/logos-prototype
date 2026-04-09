@@ -5,8 +5,8 @@
 1. Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/Rainnystone/LOGOS-Narrative-Editor.git
-cd LOGOS-Narrative-Editor
+git clone https://github.com/talespark-global/logos-narrative-editor.git
+cd logos-narrative-editor
 git checkout branch/narrative-editor
 npm install
 ```
@@ -40,9 +40,11 @@ npm run dev
 | `test:core` | `vitest run src/__tests__ ...` | Run engine, types, and story package tests |
 | `test:ui` | `vitest run src/app` | Run UI component and page tests |
 | `test:e2e` | `vitest run src/engine/__tests__/e2e` | Run end-to-end engine tests |
+| `test:simulation` | `vitest run --config simulation-toolset/vitest.config.ts` | Run simulation regression tests |
 | `test:watch` | `vitest` | Run tests in watch mode |
 | `test:coverage` | `vitest run --coverage` | Run tests with coverage report |
 | `type-check` | `tsc --noEmit` | TypeScript type checking |
+| `type-check:simulation` | `tsc --noEmit -p simulation-toolset/tsconfig.json` | Simulation TypeScript check |
 
 ## Environment Setup
 
@@ -83,7 +85,15 @@ Use split suites while working:
 npm run test:core    # Engine and type tests
 npm run test:ui      # UI component tests
 npm run test:e2e     # End-to-end tests
+npm run test:simulation  # Simulation regression tests
 ```
+
+### Simulation Toolset
+
+For simulation and regression testing, see:
+
+- `simulation-toolset/README.md` - Overview and usage
+- `simulation-toolset/agent-guide.md` - Guide for simulation development
 
 ### TDD Workflow
 
@@ -107,6 +117,61 @@ npm run test:e2e     # End-to-end tests
 | `src/app/` | Next.js pages, components, API routes |
 | `src/authoring/` | Author-side save, validate, reload pipeline |
 | `src/engine/` | Runtime orchestrator, modules, API adapter |
+| `src/agents/` | Sidecar agents (weaver, gossipelog) and registry |
+| `src/runtime-sessions/` | Runtime session persistence and continuity views |
+| `src/storylines/` | Storyline substrate, workspaces, and variants |
+| `src/lib/` | Shared utilities (validation, ID helpers) |
 | `src/types/` | Shared TypeScript types and Zod schemas |
-| `story-packages/` | Story package data files |
+| `src/testing/` | Test type definitions |
+| `src/story-packages/` | Story package data files |
+| `simulation-toolset/` | Simulation regression test harness |
 | `archive/` | Archived specs, designs, and historical docs |
+
+## Page Routes
+
+| Route | Component | Purpose |
+|-------|-----------|---------|
+| `/` | `src/app/page.tsx` | Title Page - entry point |
+| `/edit` | `src/app/edit/page.tsx` | Narrative Editor - authoring workbench |
+| `/play` | `src/app/play/page.tsx` | Play Workbench - runtime testing |
+
+## Sidecar Agent Development
+
+When adding or modifying sidecar agents:
+
+1. Register in `src/agents/registry.ts`
+2. Create definition in `src/agents/<agent>/definition.ts`
+3. Implement skill logic in `src/agents/<agent>/agent.ts`
+4. Add prompts to `src/engine/api-adapter/prompt-templates.ts`
+5. Place references in `src/agents/<agent>/references/`
+6. Add Zod schemas to `src/types/`
+
+### Skill Architecture
+
+Sidecar skills are **NOT** independent files — they are:
+
+- Declared via `skillIds` + `skillDisplayMetadata` in definition
+- Implemented as methods on `LLMAdapter` interface
+- Orchestrated by deterministic code in `agent.ts`
+
+```
+definition.ts          → skillIds, skillDisplayMetadata, referenceManifests
+agent.ts               → deterministic shell, validation, persistence
+prompt-templates.ts    → buildXxxSystemPrompt(), buildXxxUserPrompt()
+LLMAdapter interface   → xxxSkill() method for semantic judgment
+```
+
+### Reference Files
+
+References are static markdown files loaded at runtime:
+
+- Defined in `referenceManifestsByOperation` in definition
+- Loaded via `resolveSidecarReferences()` in `reference-loader.ts`
+- Injected into user prompt under `[Resolved References]` section
+
+### Current Sidecars
+
+| Agent | Skills | State File | Reference |
+|-------|--------|------------|-----------|
+| Weaver | `weaver-import-skill` | `agents/weaver/import-summary.yaml` | `import-reference.md` |
+| Gossipelog | `relationship-update-skill`, `relationship-injection-skill` | `agents/gossipelog/character-relationships.yaml` | None |

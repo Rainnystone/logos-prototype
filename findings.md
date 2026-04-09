@@ -28,6 +28,10 @@
 - 仍保留一个后续可再看的边界：
   - `gossipelogCycleRunner` 如果超时或永久不返回，当前线程没有重新定义“前台何时应强制解锁”的产品语义
   - 本次修补保持了你当前要求的 UX 边界：未完成前锁输入；但没有额外引入 timeout-based 解锁策略
+- 这次复盘后，仓库级 agent 文档分工也进一步明确：
+  - [AGENTS.md](AGENTS.md) 更适合保留高层纪律、完成标准、implementation packet / subagent packet 规则
+  - [coding-agent-guide.md](coding-agent-guide.md) 更适合承接首轮任务路由、入口文件、默认验证和并行/串行提示
+  - 静态系统地图如果继续放在 `AGENTS.md`，对 packet 拆分帮助有限，反而会稀释高层纪律的信号强度
 
 ## 2026-04-09 Phase 4 Weaver 成功率优化讨论
 
@@ -65,6 +69,18 @@
   - 优先级最高的是 `worldBase` 结构与完整 output contract
   - 次优先级是增加少量高质量 extraction examples
   - 最不值得做的是把输入文本格式硬编码成一种固定模板
+- 新冻结的产品边界：
+  - `weaver` 允许局部失败；抽不出来的结构可以留空，只要把不确定性沉到 `warnings` / `unresolvedGaps`
+  - `weaver` 不应因为字段缺失而变成阻塞性失败，更不应把“现在请作者手动补完”作为默认主路径
+  - `hero / coreCast / antagonists / npcCharacters / locations` 的最小可用 shape 可以压到“名称字段存在即可”；其它摘要字段按证据提供
+- 因此优化方向应从“加强提取覆盖率”转成“让 contract 更轻、更稳、更容易命中”：
+  - 顶层 contract 继续严格
+  - 中间对象 shape 变轻
+  - 缺失值默认走空对象 / 空数组 / 空字符串，而不是 provider 级失败
+  - 但这不意味着鼓励稀疏输出；优化目标仍然是“尽可能多抽、但每个字段都有最小可用落点”
+- 后续你又进一步明确：
+  - 不需要额外设计新的 author-facing reminder / UX 机制
+  - 如果 `warnings` / `unresolvedGaps` 最终为了兼容性被保留，它们也不应变成作者界面里的主要提醒内容
 
 ## 外部最佳实践摘录
 
@@ -80,6 +96,12 @@
   - `response_json_schema` 应真实描述目标输出
   - `title` / `description` 会帮助模型理解字段
   - schema 过深会带来复杂度成本，因此应优先保持“简洁但明确”的中间 schema，而不是把最终持久化 schema 全量直接塞给模型
+
+## 当前产出
+
+- 正式 spec：
+  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+- 已完成 spec review，并通过最终只读核对。
 
 ## Recovery Order
 
