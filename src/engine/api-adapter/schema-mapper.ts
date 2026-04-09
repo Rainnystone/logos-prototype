@@ -356,10 +356,12 @@ const WEAVER_NAMED_ENTRY_SCHEMA = {
   properties: {
     displayName: {
       type: 'string',
+      minLength: 1,
       description: 'Display name for the extracted character seed.',
     },
     roleSummary: {
       type: 'string',
+      minLength: 1,
       description: 'Short role summary for the extracted character seed.',
     },
   },
@@ -372,14 +374,17 @@ const WEAVER_NPC_ENTRY_SCHEMA = {
   properties: {
     displayName: {
       type: 'string',
+      minLength: 1,
       description: 'Display name for the extracted NPC seed.',
     },
     summary: {
       type: 'string',
+      minLength: 1,
       description: 'Short summary for the extracted NPC seed.',
     },
     roleSummary: {
       type: 'string',
+      minLength: 1,
       description: 'Short role summary for the extracted NPC seed.',
     },
   },
@@ -392,10 +397,12 @@ const WEAVER_LOCATION_ENTRY_SCHEMA = {
   properties: {
     displayName: {
       type: 'string',
+      minLength: 1,
       description: 'Display name for the extracted location seed.',
     },
     summary: {
       type: 'string',
+      minLength: 1,
       description: 'Short summary for the extracted location seed.',
     },
   },
@@ -423,15 +430,19 @@ const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
     properties: {
       suggestedPackageName: {
         type: 'string',
+        minLength: 1,
       },
       sourceSummary: {
         type: 'string',
+        minLength: 1,
       },
       importSummary: {
         type: 'string',
+        minLength: 1,
       },
       openingHook: {
         type: 'string',
+        minLength: 1,
       },
       worldBase: {
         type: 'object',
@@ -439,22 +450,27 @@ const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
         properties: {
           settingSummary: {
             type: 'string',
+            minLength: 1,
             description: 'Brief setting summary extracted from the source text.',
           },
           worldRules: {
             type: 'string',
+            minLength: 1,
             description: 'World rules or operating logic extracted from the source text.',
           },
           toneBaseline: {
             type: 'string',
+            minLength: 1,
             description: 'Tone baseline extracted from the source text.',
           },
           locationPatch: {
             type: 'string',
+            minLength: 1,
             description: 'Location context extracted from the source text.',
           },
           npcCharactersSummary: {
             type: 'string',
+            minLength: 1,
             description: 'NPC summary extracted from the source text.',
           },
         },
@@ -480,12 +496,14 @@ const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
         type: 'array',
         items: {
           type: 'string',
+          minLength: 1,
         },
       },
       unresolvedGaps: {
         type: 'array',
         items: {
           type: 'string',
+          minLength: 1,
         },
       },
     },

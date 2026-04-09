@@ -207,4 +207,76 @@ describe('response parsers', () => {
       ),
     ).toThrow(/weaverImportResult/i);
   });
+
+  it('parses sparse but valid weaver import payloads that only provide required names', () => {
+    const result = parseWeaverImportResult(
+      JSON.stringify({
+        sourceSummary: 'source',
+        importSummary: 'summary',
+        openingHook: 'hook',
+        worldBase: {
+          settingSummary: 'setting',
+        },
+        hero: {
+          displayName: 'Hero',
+        },
+        coreCast: [
+          {
+            displayName: 'Ally',
+          },
+        ],
+        antagonists: [
+          {
+            displayName: 'Villain',
+          },
+        ],
+        npcCharacters: [
+          {
+            displayName: 'Npc',
+          },
+        ],
+        locations: [
+          {
+            displayName: 'Town',
+          },
+        ],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    );
+
+    expect(result).toEqual({
+      sourceSummary: 'source',
+      importSummary: 'summary',
+      openingHook: 'hook',
+      worldBase: {
+        settingSummary: 'setting',
+      },
+      hero: {
+        displayName: 'Hero',
+      },
+      coreCast: [
+        {
+          displayName: 'Ally',
+        },
+      ],
+      antagonists: [
+        {
+          displayName: 'Villain',
+        },
+      ],
+      npcCharacters: [
+        {
+          displayName: 'Npc',
+        },
+      ],
+      locations: [
+        {
+          displayName: 'Town',
+        },
+      ],
+      warnings: [],
+      unresolvedGaps: [],
+    });
+  });
 });

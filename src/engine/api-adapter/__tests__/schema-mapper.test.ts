@@ -337,11 +337,26 @@ describe('schema mapper', () => {
         type: 'object',
         additionalProperties: false,
       });
+      expect(responseSchema?.properties.sourceSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.importSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.openingHook.minLength).toBe(1);
       expect(responseSchema?.properties.hero.required).toContain('displayName');
+      expect(responseSchema?.properties.hero.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.hero.properties.displayName.minLength).toBe(1);
       expect(responseSchema?.properties.coreCast.items.properties.displayName.type).toBe('string');
+      expect(responseSchema?.properties.coreCast.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.coreCast.items.properties.displayName.minLength).toBe(1);
       expect(responseSchema?.properties.antagonists.items.required).toContain('displayName');
+      expect(responseSchema?.properties.antagonists.items.additionalProperties).toBe(false);
       expect(responseSchema?.properties.npcCharacters.items.required).toContain('displayName');
+      expect(responseSchema?.properties.npcCharacters.items.additionalProperties).toBe(false);
       expect(responseSchema?.properties.locations.items.required).toContain('displayName');
+      expect(responseSchema?.properties.locations.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.worldBase.properties.settingSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.worldRules.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.toneBaseline.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.locationPatch.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.npcCharactersSummary.minLength).toBe(1);
     });
   });
 });
