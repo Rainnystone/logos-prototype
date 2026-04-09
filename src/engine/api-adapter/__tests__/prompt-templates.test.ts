@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildGenerateSystemPrompt } from '@/engine/api-adapter/prompt-templates';
+import {
+  buildGenerateSystemPrompt,
+  buildWeaverImportUserPrompt,
+} from '@/engine/api-adapter/prompt-templates';
 import { mapForGenerate } from '@/engine/api-adapter/schema-mapper';
-import { samplePromptObject } from '@/engine/api-adapter/__tests__/fixtures';
+import {
+  samplePromptObject,
+  sampleWeaverImportRequest,
+} from '@/engine/api-adapter/__tests__/fixtures';
 
 describe('prompt templates', () => {
   describe('generate system prompt', () => {
@@ -44,6 +50,24 @@ describe('prompt templates', () => {
       });
 
       expect(systemPrompt).not.toContain('Location patch:');
+    });
+  });
+
+  describe('weaver import user prompt', () => {
+    it('locks the fuller bounded extraction contract instead of sparse fallback guidance', () => {
+      const prompt = buildWeaverImportUserPrompt(sampleWeaverImportRequest);
+
+      expect(prompt).toContain('attempt the fullest bounded extraction the text can support');
+      expect(prompt).toContain('minimal shapes are fallback floors, not the preferred target');
+      expect(prompt).toContain('worldBase is a lightweight seed object');
+      expect(prompt).toContain('suggestedPackageName is only a display-name suggestion');
+      expect(prompt).toContain(
+        'persisted scene openingHook still comes from the original source text',
+      );
+      expect(prompt).toContain(
+        'npcCharacters[]: displayName required; summary and roleSummary optional',
+      );
+      expect(prompt).not.toContain('Keep uncertainty bounded via warnings and unresolved gaps.');
     });
   });
 });
