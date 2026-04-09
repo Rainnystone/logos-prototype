@@ -12,6 +12,7 @@ You are processing external author text for LOGOS narrative bootstrap.
 
 - `sourceSummary`: one concise source-level summary.
 - `importSummary`: one concise import-level summary focused on what can be bootstrapped now.
+- suggestedPackageName is only a display-name suggestion, not the final persisted package identity or slug.
 - `openingHook`: preserve the source opening hook text in minimally normalized form.
 - `worldBase`: lightweight seed object with `settingSummary`, `worldRules`, `toneBaseline`, `locationPatch`, and `npcCharactersSummary`.
 - `hero`, `coreCast`, `antagonists`, `npcCharacters`, `locations`: emit only evidence-backed entities.

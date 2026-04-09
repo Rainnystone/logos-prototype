@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
   buildGenerateSystemPrompt,
@@ -68,6 +70,24 @@ describe('prompt templates', () => {
         'npcCharacters[]: displayName required; summary and roleSummary optional',
       );
       expect(prompt).not.toContain('Keep uncertainty bounded via warnings and unresolved gaps.');
+    });
+  });
+
+  describe('weaver import reference', () => {
+    it('keeps the bounded extraction guidance and suggested package name semantics', () => {
+      const referencePath = join(
+        process.cwd(),
+        'src/agents/weaver/references/import-reference.md',
+      );
+      const reference = readFileSync(referencePath, 'utf8');
+
+      expect(reference).toContain('Prefer fuller bounded extraction over sparse shells.');
+      expect(reference).toContain(
+        'suggestedPackageName is only a display-name suggestion, not the final persisted package identity or slug.',
+      );
+      expect(reference).toContain(
+        'worldBase`: lightweight seed object with `settingSummary`, `worldRules`, `toneBaseline`, `locationPatch`, and `npcCharactersSummary`.',
+      );
     });
   });
 });
