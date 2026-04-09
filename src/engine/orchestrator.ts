@@ -474,9 +474,15 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       const promptObject = assemblePromptObject(promptAssemblerInput);
 
       if (config.adapter.streamGenerate) {
-        const streamResult = await config.adapter.streamGenerate(promptObject);
+        let streamResult;
 
-        if (streamResult.kind === 'stream') {
+        try {
+          streamResult = await config.adapter.streamGenerate(promptObject);
+        } catch {
+          streamResult = null;
+        }
+
+        if (streamResult?.kind === 'stream') {
           let finalResult: GenerateResult | null = null;
 
           for await (const event of streamResult.events) {

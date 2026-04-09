@@ -567,6 +567,37 @@ describe('Orchestrator', () => {
     expect(orchestrator.getState().generationState.currentBeatText).toBeNull();
   });
 
+  it('falls back to buffered generate when stream transport throws before any result arrives', async () => {
+    const { adapter: baseAdapter, generateCalls } = createRecordingAdapter();
+    const streamGenerate = vi.fn(async () => {
+      throw new Error('stream transport failed');
+    });
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      streamGenerate,
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: 'sample-scene',
+      storyPackage: {
+        ...structuredStoryPackageFixture,
+        auditQuestionSet: {
+          ...structuredStoryPackageFixture.auditQuestionSet,
+          selectionPolicy: {
+            default: [],
+          },
+        },
+      },
+    });
+
+    const { beatResult, state } = await orchestrator.runBeat('player-choice-stream-fallback');
+
+    expect(streamGenerate).toHaveBeenCalledTimes(1);
+    expect(generateCalls).toHaveLength(1);
+    expect(beatResult.beatText).toBe('beat-1');
+    expect(state.generationState.currentBeatText).toBe('beat-1');
+  });
+
   it('pushes each accepted beat through gossipelog and uses the refreshed relationship layer on the following beat', async () => {
     const { packageName, storyPackage } = await createTempStoryPackageFixture();
     const storyPackageWithoutAudit = {
