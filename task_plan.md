@@ -2,27 +2,28 @@
 
 ## Goal
 
-摸清 `/play` 从“玩家完成选择”到“下一段正文可见”的体感延迟来源，判断是否存在更快、更轻、更稳、且容易模块化的优化路径；优先考虑能减少技术债的结构性方案，而不是继续堆补丁。
+在独立 worktree 中落地 `/play` 体感延迟优化的第一批实现，范围收敛到两件事：
+- `audit` 语义改为只检查“当前新生成的 beat + 本轮 options”
+- `audit off` 时支持“正文先流、选项和输入后置”，`audit on` 时维持现有非流式路径
 
 ## Success Criteria
 
-- 明确拆出体感延迟的主要构成：前端状态切换、服务端编排、LLM 请求、auditor、`gossipelog`、以及网络/VPN 的影响边界。
-- 基于当前代码链路与实际日志，形成一份按“收益 / 实施复杂度 / 技术债风险”排序的候选方案。
-- 方案必须区分：
-  - 可以直接用配置或执行顺序优化解决的问题
-  - 需要小范围架构调整但仍保持模块化的问题
-  - 只适合作为兜底补丁、原则上不应优先采用的问题
-- 补充外部最佳实践调研，重点参考叙事 / RPG / 交互式 fiction / LLM runtime 相关项目或开发者社区。
-- 形成下一步建议时，明确哪些结论已经被当前仓库证据支持，哪些只是外部经验或待验证假设。
+- `audit` 生产链路不再向模型发送 preceding beats / 全历史，只保留当前新生成 `beatText` 与本轮 `options` 加上选中的审计问题。
+- `audit off` 路径下，workbench 可以更早看到正文增量；在最终结果完成前不提前解锁输入，也不提前暴露最终 options。
+- `audit on` 路径保持当前行为，不因为流式化引入 rewrite / force-accept / 状态切换回归。
+- 新实现保持模块边界清晰：
+  - `audit` 语义收窄归属于 audit packet / prompt / tests
+  - streaming 只先落在 generate 主链，不顺手把 route / settlement / collapse 一并流式化
+- 新 worktree 的实现前后都能通过针对性测试，并在完工前重新跑全量 `npm test`。
 
 ## Scope
 
-当前线程以调查、诊断、方案比较和验证建议为主，不默认进入实现。可以读取和分析 `/play`、runtime、LLM proxy、`gossipelog`、auditor 相关代码与日志；如需真正改代码，先把设计判断和优先级讲清楚。
+此 worktree 进入实现准备阶段，但只围绕已经冻结的两条方案展开，不顺手扩修其他延迟议题，不把 router / memory / model split 一并带入当前包。
 
 ## Active Track
 
-- 轨道：`/play` 体感延迟优化探索
-- 当前状态：正在做链路诊断、日志归因与外部最佳实践检索
+- 轨道：`/play` 体感延迟优化实现
+- 当前状态：实现前设计已收口，正式 spec 已写出，准备进入 spec review
 - 关键约束：
   - 延迟定义是“玩家体感延迟”，即从做完选择到下一段正文重新可见的时间
   - 优先考虑高效、轻便、稳定、容易模块化的方案
@@ -32,6 +33,16 @@
   - `memory placeholder` 维持全量记忆，不通过裁剪历史窗口来换取延迟
   - `router` 暂按“每个 beat 都必须重新判断”的硬约束处理，不再把 sticky router 作为候选
   - 按 mode 拆模型先记录为后续方向，本线程暂不推进实现
+  - `routerHint` 不是本 worktree 的实现目标；除非后续被证明能带来结构性简化，否则先不碰
+  - 本轮 spec 只允许做延迟优化，不改变既有叙事控制方式；不得顺手修改 router 等控制模块的语义
+
+## Worktree Setup
+
+- 分支：`codex/play-latency-audit-streaming`
+- 路径：`.worktrees/codex-play-latency-audit-streaming`
+- 基线验证：
+  - `npm install`
+  - `npm test`
 
 ## Current Investigation
 
@@ -44,6 +55,13 @@
 - 当前已新增并冻结的待改语义：
   - `audit` 后续应只检查“当前新生成的这一个 beat + 本轮 options”，不再读取 preceding beats / 全历史；本线程先记录，不立即实现
   - `routerHint` 是否移除，需要单独评估牵扯面；仅当它能带来结构简化价值时再考虑，不把它当成延迟主优化项
+- 已确认的流式 UX 选择：
+  - 正文按较粗 chunk 更新，不做 token 级逐字动画
+  - 状态文案继续沿用 `Generating...`，不新增 `Streaming...`
+  - 只有当用户停留在底部时才自动跟随滚动
+  - options 只能在完整 `GenerateResult` 成功后一次性出现
+  - 输入区从提交开始一直锁到最终 options 到齐
+  - `audit on` 完全维持现状，不做可见流式
 
 ## Parallel Investigation
 
@@ -67,11 +85,12 @@
 
 | 状态 | 任务块 | 说明 |
 | --- | --- | --- |
-| complete | Packet 1 | 恢复上下文、重读仓库规则、锁定这次调研的目标与边界 |
-| in_progress | Packet 2 | 拆解 `/play` 体感延迟链路，确认本地流程、远端 LLM、auditor、`gossipelog`、VPN 的相对贡献 |
-| in_progress | Packet 3 | 并行外部检索：收集叙事 / RPG / 交互式 fiction / LLM runtime 低延迟实践，并补充 VPN / proxy buffering / streaming 经验 |
-| pending | Packet 4 | 汇总候选优化方案，并按收益、复杂度、技术债风险排序 |
-| pending | Packet 5 | 如果值得进入下一步，产出建议的实验顺序与最小验证方案 |
+| complete | Packet 1 | 建立独立 worktree，安装依赖并验证基线测试通过 |
+| complete | Packet 1.5 | 收口设计边界并写出正式 spec |
+| pending | Packet 2 | 收窄 `audit` 语义：更新 packet / prompt / tests，使其只看当前 beat 与本轮 options |
+| pending | Packet 3 | 设计并实现 `audit off` 的 generate streaming 主链，保持 options 和输入后置 |
+| pending | Packet 4 | 补齐 workbench / orchestrator / adapter 回归测试，覆盖 `audit on/off` 两条路径 |
+| pending | Packet 5 | 跑全量验证并汇总收益、风险与残留未做项 |
 
 ## Baseline Repair
 
@@ -94,3 +113,4 @@
 - [docs/codemaps/frontend.md](docs/codemaps/frontend.md)
 - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md)
 - [archive/docs/dev-updates/march-dev-update/README.md](archive/docs/dev-updates/march-dev-update/README.md)
+- [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)

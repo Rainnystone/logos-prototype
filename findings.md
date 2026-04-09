@@ -35,6 +35,38 @@
 
 ## 2026-04-09 `/play` 体感延迟优化探索
 
+- 这个 worktree 的实现目标已经冻结为两条，不再继续发散：
+  - `audit` 只检查当前新生成的 beat 与本轮 options
+  - `audit off` 时采用“正文先流、选项和输入后置”的 streaming 路径，`audit on` 时维持现状
+- 你已进一步确认 streaming 路径的失败语义：
+  - 如果 `audit off` 的正文流式生成过程中最终失败，前端应回退已流出的临时正文，并显示错误状态
+  - 失败草稿不保留在 continuity，也不继续展示为可交互内容
+- 你随后又补充确认了具体 UX 边界：
+  - 流式正文按较粗 chunk 更新，不做 token 级逐字动画
+  - 状态文案继续保持 `Generating...`
+  - 只有用户仍停留在底部时才自动滚动跟随
+  - options 必须等完整 `GenerateResult` 成功后一次性出现
+  - 输入区从提交开始一直锁到最终 options 到齐
+  - `audit on` 完全维持现有非流式路径
+- 本轮 spec 的越界边界也已明确：
+  - 目标是优化体感延迟，不改变现有叙事控制方式
+  - `audit` 读取范围收窄与 `audit off` 的正文流式显示被视为本轮允许变动
+  - `router`、记忆系统、phase/beat 叙事控制逻辑不属于本轮实现范围
+- 对第 7 项“audit 收窄后题目语义”的推荐收口是：
+  - 采用“受限的 B”：不仅改 audit 输入上下文，也要把少数明显依赖跨拍历史的 audit 问题改写成“可由当前 beat + options 判断”
+  - 不做全局 audit 体系重构，不新增第二审计器；只修正与新 contract 直接冲突的题目、fixture 和相关测试
+- 因此以下议题在本 worktree 中暂不进入实现：
+  - 历史窗口裁剪 / `memory placeholder` 收缩
+  - sticky router
+  - per-mode model split
+  - `routerHint` 删除
+- 新 worktree 基线已经确认可用：
+  - `npm install` 完成
+  - `npm test` 在新 worktree 中 90 个测试文件、755 个测试全部通过
+- 当前对实现切面的第一轮判断是：
+  - `audit` 语义收窄是一个相对独立的收口项，主要影响 `AuditPacket` schema、`auditor` 组包、audit prompt 和相关测试
+  - streaming 双路径是中等体量改动，至少会触及 provider、proxy、adapter 接口、runtime/orchestrator 和 play workbench；但最小实现可以只覆盖 generate 主链，不需要同步流式化 route / audit / settlement / collapse
+
 - 这次线程的“延迟”必须按用户体感定义：
   - 从玩家完成选择，到下一段正文重新出现在 workbench 的时间
   - 不是单纯某一个 API route 的 server timing

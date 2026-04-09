@@ -2,6 +2,37 @@
 
 ## 2026-04-09
 
+- 为 `/play` 延迟优化新建了独立实现 worktree：
+  - 分支：`codex/play-latency-audit-streaming`
+  - 路径：[.worktrees/codex-play-latency-audit-streaming](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-play-latency-audit-streaming)
+- 已按 `using-git-worktrees` 做创建前校验：
+  - `.worktrees` 目录存在
+  - `.worktrees/` 已被 `.gitignore` 正确忽略
+- 已在新 worktree 中完成依赖安装：
+  - `npm install`
+- 已在新 worktree 中完成基线验证：
+  - `npm test` 通过
+  - 结果：`90` 个测试文件、`755` 个测试全部通过
+- 已把这个 worktree 的三件套切到实现轨道，明确当前实现范围只收敛到：
+  - `audit` 只看当前 beat / 本轮 options
+  - `audit off` 时“正文先流、选项和输入后置”
+- 已补记一个新的产品确认：
+  - `audit off` 的流式正文如果最终失败，应回退已显示的临时正文，并显示错误状态
+  - 不保留失败草稿，也不把它计入 continuity
+- 已继续记录你确认的交互细节：
+  - 正文按 chunk 流式更新，不做逐 token 动画
+  - 保持 `Generating...` 状态文案
+  - 自动滚动仅在用户停留底部时启用
+  - options 只在完整结果成功后一次性出现
+  - 输入持续锁定到最终 options 到齐
+  - `audit on` 维持现状，不做可见流式
+- 已记录新的设计边界：
+  - 本轮 spec 只服务于延迟优化，不顺手改变叙事控制方式
+  - 推荐将少数与“仅审当前 beat”语义冲突的 audit 问题一并改写，但不扩大成全局 audit 架构改造
+- 已完成正式 spec 起草：
+  - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)
+  - 当前正在进入 `brainstorming` 要求的 spec review loop，尚未进入 implementation plan
+
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
 - 初步锁定的排查范围包括：
