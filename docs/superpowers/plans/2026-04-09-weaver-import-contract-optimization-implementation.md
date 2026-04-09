@@ -64,7 +64,7 @@
 - Modify: `src/types/__tests__/type-conformance.test.ts`
 - Test: `src/types/__tests__/type-conformance.test.ts`
 
-- [ ] **Step 1: 先写 shared contract 的失败测试**
+- [x] **Step 1: 先写 shared contract 的失败测试**
 
 ```ts
 expect(
@@ -92,7 +92,7 @@ expect(
 });
 ```
 
-- [ ] **Step 2: 再写应该失败的 shape 边界测试**
+- [x] **Step 2: 再写应该失败的 shape 边界测试**
 
 ```ts
 expect(() =>
@@ -130,12 +130,12 @@ expect(
 });
 ```
 
-- [ ] **Step 3: 运行单测并确认它先失败**
+- [x] **Step 3: 运行单测并确认它先失败**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts`
 Expected: FAIL，因为当前 contract 仍接受 broad passthrough object，而不是要求 `displayName` 等轻量字段。
 
-- [ ] **Step 4: 在 `src/types/weaver.ts` 实现最小但明确的 inner schemas**
+- [x] **Step 4: 在 `src/types/weaver.ts` 实现最小但明确的 inner schemas**
 
 Implementation target:
 
@@ -180,7 +180,7 @@ export {
 };
 ```
 
-- [ ] **Step 5: 保留兼容字段，但不要扩大它们的职责**
+- [x] **Step 5: 保留兼容字段，但不要扩大它们的职责**
 
 Implementation target:
 
@@ -191,12 +191,12 @@ unresolvedGaps: z.array(z.string().trim().min(1)),
 
 说明：这两个字段暂时继续保留在 transport/shared contract 中，避免系统性变更；后续优化只是不再把它们作为 reference/prompt 的主强调点。
 
-- [ ] **Step 6: 重新运行 contract 单测并确认通过**
+- [x] **Step 6: 重新运行 contract 单测并确认通过**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts`
 Expected: PASS
 
-- [ ] **Step 7: 提交 shared contract packet**
+- [x] **Step 7: 提交 shared contract packet**
 
 ```bash
 git add src/types/weaver.ts src/types/__tests__/type-conformance.test.ts
@@ -211,7 +211,7 @@ git commit -m "refactor: freeze weaver import seed contract"
 - Modify: `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 - Test: `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 
-- [ ] **Step 1: 为 `weaver` prompt 新增失败测试，锁住正确 guidance**
+- [x] **Step 1: 为 `weaver` prompt 新增失败测试，锁住正确 guidance**
 
 ```ts
 const prompt = buildWeaverImportUserPrompt(sampleWeaverImportRequest);
@@ -225,12 +225,12 @@ expect(prompt).toContain('npcCharacters[]: displayName required; summary and rol
 expect(prompt).not.toContain('Keep uncertainty bounded via warnings and unresolved gaps.');
 ```
 
-- [ ] **Step 2: 运行 prompt 单测并确认先失败**
+- [x] **Step 2: 运行 prompt 单测并确认先失败**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 Expected: FAIL，因为当前 `weaver` prompt 仍然只列顶层 keys，并把 `warnings/unresolvedGaps` 当主 guidance。
 
-- [ ] **Step 3: 改写 heavy reference，不要让它变成“鼓励偷懒”的 escape hatch**
+- [x] **Step 3: 改写 heavy reference，不要让它变成“鼓励偷懒”的 escape hatch**
 
 Implementation target:
 
@@ -241,7 +241,7 @@ Implementation target:
 - include one manuscript-style extraction example and one minimal-fallback example
 ```
 
-- [ ] **Step 4: 同步改 `buildWeaverImportUserPrompt()` 的 contract 文案**
+- [x] **Step 4: 同步改 `buildWeaverImportUserPrompt()` 的 contract 文案**
 
 Implementation target:
 
@@ -263,12 +263,12 @@ Implementation target:
 'warnings / unresolvedGaps: compatibility fields only; use them sparingly and do not prefer them over extraction',
 ```
 
-- [ ] **Step 5: 重新运行 prompt 单测并确认通过**
+- [x] **Step 5: 重新运行 prompt 单测并确认通过**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 Expected: PASS
 
-- [ ] **Step 6: 提交 prompt/reference packet**
+- [x] **Step 6: 提交 prompt/reference packet**
 
 ```bash
 git add src/agents/weaver/references/import-reference.md src/engine/api-adapter/prompt-templates.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts
@@ -285,7 +285,7 @@ git commit -m "docs: strengthen weaver import guidance"
 - Test: `src/engine/api-adapter/__tests__/schema-mapper.test.ts`
 - Test: `src/engine/api-adapter/__tests__/response-parsers.test.ts`
 
-- [ ] **Step 1: 先写 provider response format 的失败测试**
+- [x] **Step 1: 先写 provider response format 的失败测试**
 
 ```ts
 const request = mapForWeaverImport(sampleWeaverImportRequest, 'openai-compatible');
@@ -302,7 +302,7 @@ expect(responseSchema.properties.npcCharacters.items.required).toContain('displa
 expect(responseSchema.properties.locations.items.required).toContain('displayName');
 ```
 
-- [ ] **Step 2: 再写 parser 的失败测试**
+- [x] **Step 2: 再写 parser 的失败测试**
 
 ```ts
 expect(
@@ -323,12 +323,12 @@ expect(
 ).toThrow(/weaverImport/i);
 ```
 
-- [ ] **Step 3: 运行 targeted tests 并确认它们先失败**
+- [x] **Step 3: 运行 targeted tests 并确认它们先失败**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts`
 Expected: FAIL，因为当前 provider schema 与 parser 仍使用 broad passthrough object。
 
-- [ ] **Step 4: 在 `schema-mapper.ts` 中把 `weaver` response schema 投影成轻量 inner contract**
+- [x] **Step 4: 在 `schema-mapper.ts` 中把 `weaver` response schema 投影成轻量 inner contract**
 
 Implementation target:
 
@@ -404,7 +404,7 @@ locations: {
 },
 ```
 
-- [ ] **Step 5: 在 `response-parsers.ts` 中使用与 shared contract 一致的 inner schema**
+- [x] **Step 5: 在 `response-parsers.ts` 中使用与 shared contract 一致的 inner schema**
 
 Implementation target:
 
@@ -416,12 +416,12 @@ const WeaverImportResultResponseSchema = WeaverImportPayloadSchema.extend({
 
 如果直接复用 shared schema 不方便，至少要通过同一套 exported inner schemas 组装，而不是再维护第三套 passthrough shape。
 
-- [ ] **Step 6: 重新运行 targeted tests 并确认通过**
+- [x] **Step 6: 重新运行 targeted tests 并确认通过**
 
 Run: `npm test -- src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts`
 Expected: PASS
 
-- [ ] **Step 7: 提交 adapter contract packet**
+- [x] **Step 7: 提交 adapter contract packet**
 
 ```bash
 git add src/engine/api-adapter/schema-mapper.ts src/engine/api-adapter/response-parsers.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts
@@ -437,7 +437,7 @@ git commit -m "refactor: align weaver adapter contract"
 - Test: `src/story-packages/__tests__/import-seed.test.ts`
 - Test: `src/agents/weaver/__tests__/agent.test.ts`
 
-- [ ] **Step 1: 写 name-only `npcCharacters` fallback 的失败测试**
+- [x] **Step 1: 写 name-only `npcCharacters` fallback 的失败测试**
 
 ```ts
 const result = applyTextImportSeed({
@@ -450,7 +450,7 @@ const result = applyTextImportSeed({
 expect(result.worldBase.npcCharacters).toContain('老码头守夜人');
 ```
 
-- [ ] **Step 2: 再写 sparse-but-valid payload 的失败测试**
+- [x] **Step 2: 再写 sparse-but-valid payload 的失败测试**
 
 ```ts
 const result = applyTextImportSeed({
@@ -471,12 +471,12 @@ expect(result.worldBase.coreCast[0]?.name).toBe('周珂');
 expect(result.worldBase.locations[0]?.name).toBe('灯塔塔区');
 ```
 
-- [ ] **Step 3: 运行 targeted tests 并确认先失败**
+- [x] **Step 3: 运行 targeted tests 并确认先失败**
 
 Run: `npm test -- src/story-packages/__tests__/import-seed.test.ts src/agents/weaver/__tests__/agent.test.ts`
 Expected: FAIL，因为当前 `npcCharacters` name-only shape 不会被 deterministic mapping 消费。
 
-- [ ] **Step 4: 在 `import-seed.ts` 中补上 bounded fallback，不增加新的 UI 或 author-facing behavior**
+- [x] **Step 4: 在 `import-seed.ts` 中补上 bounded fallback，不增加新的 UI 或 author-facing behavior**
 
 Implementation target:
 
@@ -496,7 +496,7 @@ return (
 // richer extracted roleSummary/summary still overrides fallback defaults
 ```
 
-- [ ] **Step 5: 让 `agent.test.ts` 的 sample payload 继续与 shared contract 对齐**
+- [x] **Step 5: 让 `agent.test.ts` 的 sample payload 继续与 shared contract 对齐**
 
 Implementation target:
 
@@ -509,12 +509,12 @@ npcCharacters: [
 ],
 ```
 
-- [ ] **Step 6: 重新运行 targeted tests 并确认通过**
+- [x] **Step 6: 重新运行 targeted tests 并确认通过**
 
 Run: `npm test -- src/story-packages/__tests__/import-seed.test.ts src/agents/weaver/__tests__/agent.test.ts`
 Expected: PASS
 
-- [ ] **Step 7: 提交 deterministic mapping packet**
+- [x] **Step 7: 提交 deterministic mapping packet**
 
 ```bash
 git add src/story-packages/import-seed.ts src/story-packages/__tests__/import-seed.test.ts src/agents/weaver/__tests__/agent.test.ts
@@ -534,22 +534,22 @@ git commit -m "fix: honor sparse weaver import payloads"
 - Test: `src/story-packages/__tests__/import-seed.test.ts`
 - Test: `src/agents/weaver/__tests__/agent.test.ts`
 
-- [ ] **Step 1: 运行 `weaver` 相关 targeted verification 集**
+- [x] **Step 1: 运行 `weaver` 相关 targeted verification 集**
 
 Run: `npm test -- src/types/__tests__/type-conformance.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/story-packages/__tests__/import-seed.test.ts src/agents/weaver/__tests__/agent.test.ts`
 Expected: PASS
 
-- [ ] **Step 2: 运行全量测试**
+- [x] **Step 2: 运行全量测试**
 
 Run: `npm test`
 Expected: PASS with `90` test files and `755` tests unless the suite count changes for legitimate new tests.
 
-- [ ] **Step 3: 运行生产构建验证**
+- [x] **Step 3: 运行生产构建验证**
 
 Run: `npm run build`
 Expected: PASS
 
-- [ ] **Step 4: 同步仓库级追踪文件**
+- [x] **Step 4: 同步仓库级追踪文件**
 
 Update targets:
 
@@ -559,12 +559,12 @@ progress.md    -> record each task completion and verification
 findings.md    -> freeze final boundary: no system redesign, no UI/UX expansion, reference/contract alignment only
 ```
 
-- [ ] **Step 5: 做格式检查**
+- [x] **Step 5: 做格式检查**
 
 Run: `git diff --check`
 Expected: PASS
 
-- [ ] **Step 6: 提交收尾 packet**
+- [x] **Step 6: 提交收尾 packet**
 
 ```bash
 git add task_plan.md progress.md findings.md

@@ -11,7 +11,8 @@
 - 全量测试通过：`npm test`
 - 生产构建通过：`npm run build`
 - 格式检查通过：`git diff --check`
-- 只同步这三个 tracking 文件：
+- 同步 approved implementation plan 文件与这三个 tracking 文件：
+  - [docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md](docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
   - [task_plan.md](task_plan.md)
   - [progress.md](progress.md)
   - [findings.md](findings.md)
