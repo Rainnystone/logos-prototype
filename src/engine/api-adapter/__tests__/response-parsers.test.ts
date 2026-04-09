@@ -8,6 +8,7 @@ import {
   parseGossipelogUpdateResult,
   parseRouteResult,
   parseSettlementResult,
+  parseWeaverImportResult,
 } from '@/engine/api-adapter/response-parsers';
 
 describe('response parsers', () => {
@@ -186,5 +187,24 @@ describe('response parsers', () => {
       highlightedDeltasText: 'delta',
       stableBackgroundText: 'background',
     });
+  });
+
+  it('rejects weaver import payloads that do not satisfy the shared inner contract', () => {
+    expect(() =>
+      parseWeaverImportResult(
+        JSON.stringify({
+          sourceSummary: 'source',
+          importSummary: 'summary',
+          openingHook: 'hook',
+          worldBase: {},
+          coreCast: [{}],
+          antagonists: [],
+          npcCharacters: [],
+          locations: [],
+          warnings: [],
+          unresolvedGaps: [],
+        }),
+      ),
+    ).toThrow(/weaverImportResult/i);
   });
 });

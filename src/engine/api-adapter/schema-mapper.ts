@@ -349,6 +349,58 @@ const GOSSIPELOG_INJECTION_RESPONSE_FORMAT: ProviderResponseFormat = {
   },
 };
 
+const WEAVER_NAMED_ENTRY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['displayName'],
+  properties: {
+    displayName: {
+      type: 'string',
+      description: 'Display name for the extracted character seed.',
+    },
+    roleSummary: {
+      type: 'string',
+      description: 'Short role summary for the extracted character seed.',
+    },
+  },
+} as const;
+
+const WEAVER_NPC_ENTRY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['displayName'],
+  properties: {
+    displayName: {
+      type: 'string',
+      description: 'Display name for the extracted NPC seed.',
+    },
+    summary: {
+      type: 'string',
+      description: 'Short summary for the extracted NPC seed.',
+    },
+    roleSummary: {
+      type: 'string',
+      description: 'Short role summary for the extracted NPC seed.',
+    },
+  },
+} as const;
+
+const WEAVER_LOCATION_ENTRY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['displayName'],
+  properties: {
+    displayName: {
+      type: 'string',
+      description: 'Display name for the extracted location seed.',
+    },
+    summary: {
+      type: 'string',
+      description: 'Short summary for the extracted location seed.',
+    },
+  },
+} as const;
+
 const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
   type: 'json_schema',
   name: 'logos_weaver_import_result',
@@ -383,39 +435,46 @@ const WEAVER_IMPORT_RESPONSE_FORMAT: ProviderResponseFormat = {
       },
       worldBase: {
         type: 'object',
-        additionalProperties: true,
+        additionalProperties: false,
+        properties: {
+          settingSummary: {
+            type: 'string',
+            description: 'Brief setting summary extracted from the source text.',
+          },
+          worldRules: {
+            type: 'string',
+            description: 'World rules or operating logic extracted from the source text.',
+          },
+          toneBaseline: {
+            type: 'string',
+            description: 'Tone baseline extracted from the source text.',
+          },
+          locationPatch: {
+            type: 'string',
+            description: 'Location context extracted from the source text.',
+          },
+          npcCharactersSummary: {
+            type: 'string',
+            description: 'NPC summary extracted from the source text.',
+          },
+        },
       },
-      hero: {
-        type: 'object',
-        additionalProperties: true,
-      },
+      hero: WEAVER_NAMED_ENTRY_SCHEMA,
       coreCast: {
         type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: true,
-        },
+        items: WEAVER_NAMED_ENTRY_SCHEMA,
       },
       antagonists: {
         type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: true,
-        },
+        items: WEAVER_NAMED_ENTRY_SCHEMA,
       },
       npcCharacters: {
         type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: true,
-        },
+        items: WEAVER_NPC_ENTRY_SCHEMA,
       },
       locations: {
         type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: true,
-        },
+        items: WEAVER_LOCATION_ENTRY_SCHEMA,
       },
       warnings: {
         type: 'array',

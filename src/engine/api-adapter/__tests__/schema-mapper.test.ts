@@ -9,6 +9,7 @@ import {
   mapForGossipelogUpdate,
   mapForRoute,
   mapForSettlement,
+  mapForWeaverImport,
 } from '@/engine/api-adapter/schema-mapper';
 import {
   sampleGossipelogInjectionRequest,
@@ -21,6 +22,7 @@ import {
   sampleRewritePromptObject,
   sampleSettlementRequest,
   sampleStructuredWorldBase,
+  sampleWeaverImportRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
 
 describe('schema mapper', () => {
@@ -323,6 +325,23 @@ describe('schema mapper', () => {
 
       expect(request.temperature).toBe(0.45);
       expect(request.maxOutputTokens).toBe(2222);
+    });
+  });
+
+  describe('weaver import', () => {
+    it('projects the provider response schema onto the shared inner contract', () => {
+      const request = mapForWeaverImport(sampleWeaverImportRequest, 'openai-compatible');
+      const responseSchema = request.responseFormat?.schema;
+
+      expect(responseSchema?.properties.worldBase).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+      });
+      expect(responseSchema?.properties.hero.required).toContain('displayName');
+      expect(responseSchema?.properties.coreCast.items.properties.displayName.type).toBe('string');
+      expect(responseSchema?.properties.antagonists.items.required).toContain('displayName');
+      expect(responseSchema?.properties.npcCharacters.items.required).toContain('displayName');
+      expect(responseSchema?.properties.locations.items.required).toContain('displayName');
     });
   });
 });
