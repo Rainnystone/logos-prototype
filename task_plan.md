@@ -20,12 +20,12 @@
 
 ## Scope
 
-本线程当前只做 verification + doc sync + 收尾提交，不执行实现代码；不得扩大到新的生产行为、UI/UX、sidecar 架构或 reminder 流程。
+本线程已完成 verification + doc sync + 收尾提交，不执行实现代码；不得扩大到新的生产行为、UI/UX、sidecar 架构或 reminder 流程。
 
 ## Active Track
 
 - 轨道：`weaver` import contract optimization implementation verification / delivery
-- 当前状态：实现面已收口，正在做最终验证、tracking sync 与 commit 收尾
+- 当前状态：实现面已收口，最终验证、tracking sync 与 commit 收尾已完成
 - 当前 spec：
   - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
 - 当前 plan：

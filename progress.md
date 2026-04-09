@@ -17,7 +17,7 @@
   - [task_plan.md](task_plan.md)
   - [progress.md](progress.md)
   - [findings.md](findings.md)
-- 当前仅剩收尾提交，未再扩大到任何生产代码改动。
+- 收尾提交已完成，未再扩大到任何生产代码改动。
 
 - 已将 dedicated worktree [codex-weaver-import-contract-plan](.worktrees/codex-weaver-import-contract-plan) 硬同步到最新的 `branch/narrative-editor`，对齐基线修复提交 `db87332`。
 - 已在这个 worktree 中重新执行 `npm test`，结果通过：
