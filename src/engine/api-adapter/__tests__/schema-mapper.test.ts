@@ -9,6 +9,7 @@ import {
   mapForGossipelogUpdate,
   mapForRoute,
   mapForSettlement,
+  mapForWeaverImport,
 } from '@/engine/api-adapter/schema-mapper';
 import {
   sampleGossipelogInjectionRequest,
@@ -21,6 +22,7 @@ import {
   sampleRewritePromptObject,
   sampleSettlementRequest,
   sampleStructuredWorldBase,
+  sampleWeaverImportRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
 
 describe('schema mapper', () => {
@@ -323,6 +325,38 @@ describe('schema mapper', () => {
 
       expect(request.temperature).toBe(0.45);
       expect(request.maxOutputTokens).toBe(2222);
+    });
+  });
+
+  describe('weaver import', () => {
+    it('projects the provider response schema onto the shared inner contract', () => {
+      const request = mapForWeaverImport(sampleWeaverImportRequest, 'openai-compatible');
+      const responseSchema = request.responseFormat?.schema;
+
+      expect(responseSchema?.properties.worldBase).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+      });
+      expect(responseSchema?.properties.sourceSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.importSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.openingHook.minLength).toBe(1);
+      expect(responseSchema?.properties.hero.required).toContain('displayName');
+      expect(responseSchema?.properties.hero.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.hero.properties.displayName.minLength).toBe(1);
+      expect(responseSchema?.properties.coreCast.items.properties.displayName.type).toBe('string');
+      expect(responseSchema?.properties.coreCast.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.coreCast.items.properties.displayName.minLength).toBe(1);
+      expect(responseSchema?.properties.antagonists.items.required).toContain('displayName');
+      expect(responseSchema?.properties.antagonists.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.npcCharacters.items.required).toContain('displayName');
+      expect(responseSchema?.properties.npcCharacters.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.locations.items.required).toContain('displayName');
+      expect(responseSchema?.properties.locations.items.additionalProperties).toBe(false);
+      expect(responseSchema?.properties.worldBase.properties.settingSummary.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.worldRules.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.toneBaseline.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.locationPatch.minLength).toBe(1);
+      expect(responseSchema?.properties.worldBase.properties.npcCharactersSummary.minLength).toBe(1);
     });
   });
 });

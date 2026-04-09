@@ -77,7 +77,7 @@ function createBaseSceneSpec(): SceneSpec {
 function createWeaverPayload(
   overrides: Partial<WeaverImportPayload> = {},
 ): WeaverImportPayload {
-  return {
+  const payload = {
     suggestedPackageName: 'woven-package',
     sourceSummary: '外部文本来源摘要',
     importSummary: '提取了基础世界观与角色框架',
@@ -107,6 +107,7 @@ function createWeaverPayload(
     ],
     npcCharacters: [
       {
+        displayName: '值班维修技师',
         summary: '受事故波及的值班员与维修技师',
       },
     ],
@@ -119,7 +120,9 @@ function createWeaverPayload(
     warnings: ['角色关系只得到部分文本支持'],
     unresolvedGaps: ['缺少明确的地点时间线'],
     ...overrides,
-  };
+  } satisfies WeaverImportPayload;
+
+  return payload;
 }
 
 describe('applyTextImportSeed', () => {
@@ -189,6 +192,54 @@ describe('applyTextImportSeed', () => {
     expect(result.worldBase.locations[0]).toBeDefined();
     expect(result.worldBase.locations[0]!.name).toBe(baseWorldBase.locations[0]!.name);
     expect(result.sceneSpec.openingHook).toBe('原始文本');
+  });
+
+  it('accepts a name-only npcCharacters seed as a deterministic fallback', () => {
+    const result = applyTextImportSeed({
+      displayName: 'NPC 名称补全',
+      sourceText: '原始文本',
+      payload: createWeaverPayload({
+        npcCharacters: [{ displayName: '老码头守夜人' }],
+      }),
+      worldBase: createBaseWorldBase(),
+      sceneSpec: createBaseSceneSpec(),
+    });
+
+    expect(result.worldBase.npcCharacters).toContain('老码头守夜人');
+  });
+
+  it('preserves sparse but valid extracted seeds across the deterministic mapping', () => {
+    const baseWorldBase = createBaseWorldBase();
+    const result = applyTextImportSeed({
+      displayName: '稀疏提取',
+      sourceText: '原始文本',
+      payload: createWeaverPayload({
+        worldBase: { settingSummary: '近未来沿海都市' },
+        hero: { displayName: '林深' },
+        coreCast: [{ displayName: '周珂' }],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [{ displayName: '灯塔塔区' }],
+      }),
+      worldBase: baseWorldBase,
+      sceneSpec: createBaseSceneSpec(),
+    });
+
+    expect(result.worldBase.hero.name).toBe('林深');
+    expect(result.worldBase.hero.characterSummary).toBe(
+      baseWorldBase.hero.characterSummary,
+    );
+    expect(result.worldBase.coreCast[0]?.name).toBe('周珂');
+    expect(result.worldBase.locations[0]?.name).toBe('灯塔塔区');
+    expect(result.worldBase.locations[0]?.description).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
+    expect(result.worldBase.locations[0]?.environmentAppearance).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
+    expect(result.worldBase.locations[0]?.atmosphereDescription).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
   });
 
   it('uses a supporting-cast fallback for imported core cast entries beyond the preseeded slot', () => {

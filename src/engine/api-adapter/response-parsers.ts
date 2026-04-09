@@ -14,7 +14,7 @@ import type {
   UsageInfo,
   WeaverImportPayload,
 } from '@/types';
-import { GossipelogInjectionResultSchema, UsageInfoSchema } from '@/types';
+import { GossipelogInjectionResultSchema, UsageInfoSchema, WeaverImportPayloadSchema } from '@/types';
 
 const GenerateResultSchema = z
   .object({
@@ -135,23 +135,9 @@ const GossipelogInjectionResultResponseSchema = GossipelogInjectionResultSchema.
   usage: UsageInfoSchema.optional(),
 }).strict();
 
-const WeaverImportResultResponseSchema = z
-  .object({
-    suggestedPackageName: z.string().trim().min(1).optional(),
-    sourceSummary: z.string().trim().min(1),
-    importSummary: z.string().trim().min(1),
-    openingHook: z.string().trim().min(1),
-    worldBase: z.object({}).passthrough(),
-    hero: z.object({}).passthrough().optional(),
-    coreCast: z.array(z.object({}).passthrough()),
-    antagonists: z.array(z.object({}).passthrough()),
-    npcCharacters: z.array(z.object({}).passthrough()),
-    locations: z.array(z.object({}).passthrough()),
-    warnings: z.array(z.string().trim().min(1)),
-    unresolvedGaps: z.array(z.string().trim().min(1)),
-    usage: UsageInfoSchema.optional(),
-  })
-  .strict();
+const WeaverImportResultResponseSchema = WeaverImportPayloadSchema.extend({
+  usage: UsageInfoSchema.optional(),
+}).strict();
 
 function stripCodeFence(value: string): string {
   return value

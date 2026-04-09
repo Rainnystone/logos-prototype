@@ -143,6 +143,72 @@ describe('Phase 00 contract types', () => {
     });
   });
 
+  it('parses the shared lightweight weaver import contract', async () => {
+    const types = await import('@/types');
+
+    expect(
+      types.WeaverImportPayloadSchema.parse({
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: 'opening hook',
+        worldBase: {
+          settingSummary: 'setting',
+          worldRules: 'rules',
+        },
+        hero: {
+          displayName: 'Hero',
+        },
+        coreCast: [{ displayName: 'Core One' }],
+        antagonists: [{ displayName: 'Antagonist One' }],
+        npcCharacters: [{ displayName: 'NPC One' }],
+        locations: [{ displayName: 'Harbor District' }],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    ).toMatchObject({
+      hero: { displayName: 'Hero' },
+      npcCharacters: [{ displayName: 'NPC One' }],
+    });
+  });
+
+  it('rejects invalid shared lightweight weaver seed shapes and keeps optional suggestions intact', async () => {
+    const types = await import('@/types');
+
+    expect(() =>
+      types.WeaverImportPayloadSchema.parse({
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: 'opening hook',
+        worldBase: {},
+        coreCast: [{}],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    ).toThrow();
+
+    expect(
+      types.WeaverImportPayloadSchema.parse({
+        suggestedPackageName: 'weaver-pack',
+        sourceSummary: 'source summary',
+        importSummary: 'import summary',
+        openingHook: 'model-side extracted hook',
+        worldBase: {},
+        coreCast: [],
+        antagonists: [],
+        npcCharacters: [],
+        locations: [],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    ).toMatchObject({
+      suggestedPackageName: 'weaver-pack',
+      openingHook: 'model-side extracted hook',
+    });
+  });
+
   it('parses a versioned runtime-sessions file with one active session and explicit head pointers', async () => {
     const types = await import('@/types');
 
@@ -607,9 +673,9 @@ describe('Phase 00 contract types', () => {
         sourceSummary: 'source summary',
         importSummary: 'import summary',
         openingHook: 'opening hook',
-        worldBase: { worldBaseSetting: 'base' },
-        hero: { characterId: 'chr_hero01' },
-        coreCast: [{ characterId: 'chr_core01' }],
+        worldBase: { settingSummary: 'base' },
+        hero: { displayName: 'Hero' },
+        coreCast: [{ displayName: 'Core One' }],
         antagonists: [],
         npcCharacters: [],
         locations: [],

@@ -361,8 +361,9 @@ export function buildWeaverImportSystemPrompt(): string {
 export function buildWeaverImportUserPrompt(request: WeaverImportRequest): string {
   return [
     '[Instructions]',
-    'Extract only evidence-backed world and cast bootstrap information from source text.',
-    'Keep uncertainty bounded via warnings and unresolved gaps.',
+    'attempt the fullest bounded extraction the text can support.',
+    'Do not invent facts, but do not stop at minimal shapes when richer evidence-backed extraction is available.',
+    'minimal shapes are fallback floors, not the preferred target.',
     '',
     '[Context]',
     `Package name hint: ${request.packageNameHint ?? 'not provided'}`,
@@ -374,7 +375,14 @@ export function buildWeaverImportUserPrompt(request: WeaverImportRequest): strin
     '',
     '[Output Contract]',
     'Return JSON only with keys:',
-    'suggestedPackageName (optional), sourceSummary, importSummary, openingHook, worldBase, hero (optional), coreCast, antagonists, npcCharacters, locations, warnings, unresolvedGaps.',
+    'suggestedPackageName is only a display-name suggestion; deterministic code still owns final package slug/identity.',
+    'openingHook is an extracted comparison field only; persisted scene openingHook still comes from the original source text.',
+    'worldBase is a lightweight seed object with settingSummary, worldRules, toneBaseline, locationPatch, and npcCharactersSummary.',
+    'hero: optional object with displayName required and roleSummary optional.',
+    'coreCast / antagonists: arrays of objects with displayName required and roleSummary optional.',
+    'npcCharacters[]: displayName required; summary and roleSummary optional.',
+    'locations: array of objects with displayName required; summary optional.',
+    'warnings / unresolvedGaps: compatibility fields only; use them sparingly and do not prefer them over extraction.',
     'Do not add extra keys.',
   ].join('\n');
 }

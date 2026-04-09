@@ -8,6 +8,7 @@ import {
   parseGossipelogUpdateResult,
   parseRouteResult,
   parseSettlementResult,
+  parseWeaverImportResult,
 } from '@/engine/api-adapter/response-parsers';
 
 describe('response parsers', () => {
@@ -185,6 +186,97 @@ describe('response parsers', () => {
     expect(result).toEqual({
       highlightedDeltasText: 'delta',
       stableBackgroundText: 'background',
+    });
+  });
+
+  it('rejects weaver import payloads that do not satisfy the shared inner contract', () => {
+    expect(() =>
+      parseWeaverImportResult(
+        JSON.stringify({
+          sourceSummary: 'source',
+          importSummary: 'summary',
+          openingHook: 'hook',
+          worldBase: {},
+          coreCast: [{}],
+          antagonists: [],
+          npcCharacters: [],
+          locations: [],
+          warnings: [],
+          unresolvedGaps: [],
+        }),
+      ),
+    ).toThrow(/weaverImportResult/i);
+  });
+
+  it('parses sparse but valid weaver import payloads that only provide required names', () => {
+    const result = parseWeaverImportResult(
+      JSON.stringify({
+        sourceSummary: 'source',
+        importSummary: 'summary',
+        openingHook: 'hook',
+        worldBase: {
+          settingSummary: 'setting',
+        },
+        hero: {
+          displayName: 'Hero',
+        },
+        coreCast: [
+          {
+            displayName: 'Ally',
+          },
+        ],
+        antagonists: [
+          {
+            displayName: 'Villain',
+          },
+        ],
+        npcCharacters: [
+          {
+            displayName: 'Npc',
+          },
+        ],
+        locations: [
+          {
+            displayName: 'Town',
+          },
+        ],
+        warnings: [],
+        unresolvedGaps: [],
+      }),
+    );
+
+    expect(result).toEqual({
+      sourceSummary: 'source',
+      importSummary: 'summary',
+      openingHook: 'hook',
+      worldBase: {
+        settingSummary: 'setting',
+      },
+      hero: {
+        displayName: 'Hero',
+      },
+      coreCast: [
+        {
+          displayName: 'Ally',
+        },
+      ],
+      antagonists: [
+        {
+          displayName: 'Villain',
+        },
+      ],
+      npcCharacters: [
+        {
+          displayName: 'Npc',
+        },
+      ],
+      locations: [
+        {
+          displayName: 'Town',
+        },
+      ],
+      warnings: [],
+      unresolvedGaps: [],
     });
   });
 });

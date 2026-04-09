@@ -1,7 +1,7 @@
 # Phase 4 Weaver Import Contract Optimization Design
 
 Date: 2026-04-09
-Status: Draft for review
+Status: Approved after review
 Scope: `March Dev Update Phase 4` post-delivery optimization for `weaver` import reliability
 
 ## 1. Why This Follow-Up Exists
@@ -421,11 +421,11 @@ This means:
 - no LLM responsibility for final file correctness
 - no schema inflation just to reduce mapping code
 
-The single contract owner for the lightweight intermediate import payload should be:
+The canonical shared contract anchor for the lightweight intermediate import payload should be:
 
 - shared `WeaverImportPayloadSchema` in `src/types/weaver.ts`
 
-Other layers should project from that shared contract instead of silently co-owning divergent shapes.
+Provider-facing response schema and parser layers should remain aligned mirrors/projections of that shared contract instead of silently co-owning divergent shapes.
 
 “One unified contract” in this design therefore means alignment across all of these layers:
 
@@ -442,7 +442,7 @@ The optimization is not complete if only one or two of these layers are updated.
 
 This design should be considered successful when:
 
-1. `src/types/weaver.ts` remains the single contract owner, and the reference, prompt contract, response schema, parser, and import-seed layer all stay aligned to it
+1. `src/types/weaver.ts` remains the canonical shared contract anchor, and the reference, prompt contract, provider-facing response schema mirror, parser projection, and import-seed layer all stay aligned to it
 2. the intermediate structure is lighter than the final persisted package schema
 3. extraction guidance clearly pushes toward fuller bounded extraction instead of sparse minimal output
 4. the design explicitly supports manuscript-like free-form text input
