@@ -23,7 +23,7 @@
 ## Active Track
 
 - 轨道：`/play` 体感延迟优化实现
-- 当前状态：正式 spec 已通过独立 review，等待用户审阅后再进入 implementation plan
+- 当前状态：implementation plan 已通过独立 review，等待执行方式确认
 - 关键约束：
   - 延迟定义是“玩家体感延迟”，即从做完选择到下一段正文重新可见的时间
   - 优先考虑高效、轻便、稳定、容易模块化的方案
@@ -87,6 +87,7 @@
 | --- | --- | --- |
 | complete | Packet 1 | 建立独立 worktree，安装依赖并验证基线测试通过 |
 | complete | Packet 1.5 | 收口设计边界并写出正式 spec |
+| complete | Packet 1.8 | 根据已批准 spec 写出 implementation plan |
 | pending | Packet 2 | 收窄 `audit` 语义：更新 packet / prompt / tests，使其只看当前 beat 与本轮 options |
 | pending | Packet 3 | 设计并实现 `audit off` 的 generate streaming 主链，保持 options 和输入后置 |
 | pending | Packet 4 | 补齐 workbench / orchestrator / adapter 回归测试，覆盖 `audit on/off` 两条路径 |
@@ -112,5 +113,6 @@
 - [docs/codemaps/architecture.md](docs/codemaps/architecture.md)
 - [docs/codemaps/frontend.md](docs/codemaps/frontend.md)
 - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md)
+- [docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md](docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md)
 - [archive/docs/dev-updates/march-dev-update/README.md](archive/docs/dev-updates/march-dev-update/README.md)
 - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)

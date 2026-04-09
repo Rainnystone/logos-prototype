@@ -42,6 +42,17 @@
 - 第二轮 spec review 已通过：
   - reviewer 结论：`Approved`
   - 当前按 `brainstorming` 流程等待你审阅书面 spec，再决定是否进入 implementation plan
+- 你已批准 spec 进入 implementation plan。
+- 已按 `writing-plans` 写出正式计划：
+  - [docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md](docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md)
+  - 计划已按 AGENTS packet 纪律拆成 5 个串行任务：audit contract、audit 题目兼容、transport/adapter 流式能力、orchestrator/workbench 接回、archive sync + 全量验证
+  - 当前正在进入 `writing-plans` 要求的 plan review loop，尚未开始实现
+- plan review 已通过：
+  - reviewer 结论：`Approved`
+  - reviewer 额外提醒的两条验证建议已吸收进 Task 4：
+    - `audit on` 时即便 `streamGenerate` 存在也必须继续走 buffered 路径
+    - streamed failure 不应触发 accepted beat / runtime persistence
+  - 当前等待你选择执行方式，再进入 implementation
 
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
