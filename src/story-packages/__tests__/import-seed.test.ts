@@ -77,7 +77,7 @@ function createBaseSceneSpec(): SceneSpec {
 function createWeaverPayload(
   overrides: Partial<WeaverImportPayload> = {},
 ): WeaverImportPayload {
-  return {
+  const payload = {
     suggestedPackageName: 'woven-package',
     sourceSummary: '外部文本来源摘要',
     importSummary: '提取了基础世界观与角色框架',
@@ -107,6 +107,7 @@ function createWeaverPayload(
     ],
     npcCharacters: [
       {
+        displayName: '值班维修技师',
         summary: '受事故波及的值班员与维修技师',
       },
     ],
@@ -119,7 +120,9 @@ function createWeaverPayload(
     warnings: ['角色关系只得到部分文本支持'],
     unresolvedGaps: ['缺少明确的地点时间线'],
     ...overrides,
-  };
+  } satisfies WeaverImportPayload;
+
+  return payload;
 }
 
 describe('applyTextImportSeed', () => {
@@ -228,6 +231,15 @@ describe('applyTextImportSeed', () => {
     );
     expect(result.worldBase.coreCast[0]?.name).toBe('周珂');
     expect(result.worldBase.locations[0]?.name).toBe('灯塔塔区');
+    expect(result.worldBase.locations[0]?.description).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
+    expect(result.worldBase.locations[0]?.environmentAppearance).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
+    expect(result.worldBase.locations[0]?.atmosphereDescription).toBe(
+      baseWorldBase.locations[0]?.description,
+    );
   });
 
   it('uses a supporting-cast fallback for imported core cast entries beyond the preseeded slot', () => {
