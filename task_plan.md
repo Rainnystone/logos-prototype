@@ -29,12 +29,21 @@
   - 避免为了短期见效引入长期技术债
   - VPN 可能影响远端请求耗时，必须纳入判断
   - `auditor` 可关闭这一点已知，但要继续探索除此之外的优化空间
+  - `memory placeholder` 维持全量记忆，不通过裁剪历史窗口来换取延迟
+  - `router` 暂按“每个 beat 都必须重新判断”的硬约束处理，不再把 sticky router 作为候选
+  - 按 mode 拆模型先记录为后续方向，本线程暂不推进实现
 
 ## Current Investigation
 
 - 当前观察到的 terminal 截图里，`POST /api/llm/proxy` 多次落在约 `17s` 到 `111s`，明显高于本地 route / 页面请求耗时。
 - `POST /api/play/packages/sample-scene/runtime-session`、`POST /api/play/gossipelog`、`POST /api/play/gossipelog/bootstrap` 在截图里大多位于几十到几百毫秒，初步显示体感瓶颈更像是远端 LLM 往返，而不是本地 Next route 本身。
 - 上述观察仍需结合当前代码链路确认：截图里这些 `llm/proxy` 请求分别对应主生成、rewrite、audit，还是其他 sidecar 路径。
+- 当前需要重点判定的两个设计问题已经收敛为：
+  - `route` 是否可以只吃最近两轮上文，同时不破坏选项生成与叙事控制语义
+  - 是否值得引入“`audit` 开时默认不 stream、`audit` 关时默认 stream”的双路径方案
+- 当前已新增并冻结的待改语义：
+  - `audit` 后续应只检查“当前新生成的这一个 beat + 本轮 options”，不再读取 preceding beats / 全历史；本线程先记录，不立即实现
+  - `routerHint` 是否移除，需要单独评估牵扯面；仅当它能带来结构简化价值时再考虑，不把它当成延迟主优化项
 
 ## Parallel Investigation
 
@@ -60,7 +69,7 @@
 | --- | --- | --- |
 | complete | Packet 1 | 恢复上下文、重读仓库规则、锁定这次调研的目标与边界 |
 | in_progress | Packet 2 | 拆解 `/play` 体感延迟链路，确认本地流程、远端 LLM、auditor、`gossipelog`、VPN 的相对贡献 |
-| pending | Packet 3 | 并行外部检索：收集叙事 / RPG / 交互式 fiction / LLM runtime 低延迟实践 |
+| in_progress | Packet 3 | 并行外部检索：收集叙事 / RPG / 交互式 fiction / LLM runtime 低延迟实践，并补充 VPN / proxy buffering / streaming 经验 |
 | pending | Packet 4 | 汇总候选优化方案，并按收益、复杂度、技术债风险排序 |
 | pending | Packet 5 | 如果值得进入下一步，产出建议的实验顺序与最小验证方案 |
 

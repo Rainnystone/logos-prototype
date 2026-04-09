@@ -79,6 +79,34 @@
 - 已用现成测试再次压实关键行为：
   - `src/engine/__tests__/e2e/audit-behavior.test.ts` 通过，并确认 audit fail-once 会把 `generate` 从 1 次放大到 2 次，fail-always 会放大到 4 次
   - `src/app/play/runtime.test.ts` 通过，说明当前 runtime tracking / 状态切换相关基础测试仍然稳定
+- 你已进一步冻结了这轮讨论的关键边界：
+  - `branch/narrative-editor` baseline / worktree 清理已由别的线程处理，本线程不介入
+  - 不接受通过缩小 `memory placeholder` / 历史窗口来换延迟，因为这会直接伤到编辑器与 workbench 的游戏属性和记忆体验
+  - 因此“压缩记忆窗口”退出优先候选，后续只能考虑不丢语义的记忆工程方案，例如缓存、结构分层、或把下一拍准备工作后置，而不是直接少喂历史
+  - 当前你认同的方向仍然是：
+    - 当前 beat 正文尽早可见
+    - 尽量不为下一拍准备工作继续阻塞当前 beat 首次显示
+    - 尽量减少结构上不必要的串行 LLM 往返
+- 你随后又进一步把 `route` 和 `streaming` 的边界说死了：
+  - `router` 不能改成 sticky 或跨 beat 复用；它必须每个 beat 都重新判断，因为它直接参与选项生成与下文生成的控制
+  - `routerHint` 目前反而是可疑项，后续如果要精简控制层，更值得复查它是否还应存在
+  - 目前唯一仍可讨论的 `route` 轻量化方向，是“只吃最近两轮上文”，但这个结论必须等代码和 archive spec 一起核对完
+  - `audit` 预计大多数时候会关闭；如果 streaming 对体感提升明显，可以接受双路径：`audit` 开时默认不 stream，`audit` 关时默认 stream
+- 你这轮又新增并冻结了两个判断：
+  - `audit` 的产品语义应当只看“当前新生成的这一轮 beat + 本轮 options”，而不是再读取 preceding beats / 全历史；当前代码还没落实，本线程先记录为明确待改边界
+  - `routerHint` 你倾向于删除；现有代码阅读已显示它更像 phase-level prior / fallback 提示，而不是 router 计算的核心输入，因此它若被移除，主要价值更可能是控制层清理，而不是显著改善体感延迟
+- 基于当前代码，`routerHint` 对延迟的直接帮助目前看几乎可以忽略：
+  - 它不会减少一次 LLM round-trip
+  - 在 route prompt 里只是一行 `Phase routing prior`
+  - 真正的删除成本主要来自 schema、authoring bridge、编辑器表单、诊断与测试面一起收缩，而不是 runtime 热路径本身
+- 已补充一轮外部只读检索，和你当前仓库链路最相关的新结论是：
+  - VPN、跨境链路、代理和转发网关主要放大的是 RTT 与抖动；当 runtime 一回合要串多次 LLM 请求时，这类网络代价会被反复叠加
+  - 即便后续引入 streaming，如果中间代理仍做 buffering，体感上也会看起来“没有真流式”
+  - streaming 的主要收益是降低“首个可见 token / 首句时间”，不等于显著降低完整正文全部返回的总耗时
+  - 对叙事 runtime，更稳的思路是把玩家可见正文链路与 sidecar / 长分析路径拆开，而不是把所有模式都往同一条拥塞链路里塞
+  - 对长正文主输出，纯文本 streaming 通常比对象流或大 JSON schema 流更稳；后者更容易出现“最后一股脑吐出”的假流式
+- 当前仍在等待一个专项只读结论：
+  - subagent 正在结合现行 `narrative-router`、`director-note-layer`、`prompt-assembler` 与 archive runtime spec，确认“router 每 beat 重算”是否确属硬约束，以及“route 仅吃两轮上文”是否会伤到既有叙事控制语义
 
 ## 2026-04-09 Phase 4 Weaver 成功率优化讨论
 

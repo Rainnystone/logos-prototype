@@ -83,6 +83,43 @@
 - 已做针对性验证：
   - `npm test -- src/engine/__tests__/e2e/audit-behavior.test.ts` 通过
   - `npm test -- src/app/play/runtime.test.ts` 通过
+- 你后续又补充并冻结了新的产品边界：
+  - baseline / worktree 清理问题已经由隔壁线程处理，本线程不参与
+  - 不接受通过裁剪 `memory placeholder` 的全量历史来换取延迟，因为这会伤及记忆系统与游戏体验
+  - 因此接下来讨论只保留这些主方向：
+    - 当前 beat 正文先出现
+    - 下一拍准备工作后移
+    - 尽量减少或改写不必要的串行 LLM 调用
+    - 在不牺牲记忆系统的前提下优化 mode 配置、模型分工、以及可能的 streaming 方案
+- 已继续补读 runtime 相关控制层代码与 archive spec：
+  - [src/engine/modules/director-note-layer.ts](src/engine/modules/director-note-layer.ts)
+  - [src/engine/modules/prompt-assembler.ts](src/engine/modules/prompt-assembler.ts)
+  - [src/engine/types/adapter-interface.ts](src/engine/types/adapter-interface.ts)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md](archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md](archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md](archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md)
+- 你刚刚又把这轮的冻结边界进一步收窄为：
+  - `router` 必须每个 beat 都重新判断；不能用 sticky router 换延迟
+  - `routerHint` 本身值得复查，甚至可能比 router 重算更应该先被拿掉
+  - 当前可继续论证的 `route` 优化，只剩“是否能只吃最近两轮上文”
+  - 按 mode 拆模型先记录，不在本线程推进
+  - 如果 streaming 体感收益够大，可以接受 `audit on => no stream`、`audit off => stream` 的双路径
+- 并行研究已继续推进：
+  - 外部检索 subagent `Huygens` 已补回 VPN / proxy buffering / streaming 相关经验
+  - 当前新增结论是：VPN 与代理更像会放大 RTT 与尾延迟；即便后续做 streaming，也必须一并检查 proxy buffering，否则可能出现“服务端在流、前端看起来没流”的假象
+  - `Newton` 首次派发因模型容量失败，已关闭
+  - `Huygens` 的外部检索结果已回收完成，已关闭
+  - 当前仅保留一个只读 subagent `Darwin`，正在专项评估三件事的未来改动牵扯面：
+    - `audit` 改成只看当前 beat / options
+    - `audit off` 时“正文先流、选项后置”的 streaming 双路径
+    - `routerHint` 删除的工作量、回归风险与真实收益
+- 主线程这边已先完成 `routerHint` 的本地引用面扫描：
+  - runtime 里它只会进入 route context，并作为失败 fallback / phase prior 使用
+  - route prompt 中它目前只是一行 `Phase routing prior`
+  - 但它同时出现在 phase schema、authoring bridge、scene phase authoring、edit 表单、diagnostics、fixture 与多组测试里，所以若要删除，工作量不会只局限于 runtime
+- 你已明确要求把 `audit` 的目标语义固定为：
+  - 只检查“当前新生成的这一轮 beat + 本轮 options”
+  - 当前实现尚未落实，因为 audit prompt 仍然会拼入 `[Preceding Beats]`
 
 ## 2026-04-09 Phase 4 并行讨论
 
