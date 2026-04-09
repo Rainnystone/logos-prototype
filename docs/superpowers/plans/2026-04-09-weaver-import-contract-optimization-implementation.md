@@ -554,6 +554,7 @@ Expected: PASS
 Update targets:
 
 ```md
+docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md -> approved implementation plan file already committed
 task_plan.md   -> active track switched to weaver import contract optimization implementation
 progress.md    -> record each task completion and verification
 findings.md    -> freeze final boundary: no system redesign, no UI/UX expansion, reference/contract alignment only
@@ -567,7 +568,7 @@ Expected: PASS
 - [x] **Step 6: 提交收尾 packet**
 
 ```bash
-git add task_plan.md progress.md findings.md
+git add docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md task_plan.md progress.md findings.md
 git commit -m "docs: record weaver contract optimization delivery"
 ```
 

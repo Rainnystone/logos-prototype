@@ -13,7 +13,8 @@
   - 构建前出现过一次本地 `@next/swc-darwin-arm64` 二进制损坏导致的失败
   - 通过 `npm install --no-save @next/swc-darwin-arm64@15.5.15` 只修复本地依赖后重新构建，最终通过
 - 格式检查通过：`git diff --check`
-- 三个 tracking 文件已同步到当前交付状态：
+- approved implementation plan 文件与三个 tracking 文件已同步到当前交付状态：
+  - [docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md](docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
   - [task_plan.md](task_plan.md)
   - [progress.md](progress.md)
   - [findings.md](findings.md)
