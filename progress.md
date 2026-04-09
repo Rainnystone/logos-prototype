@@ -2,37 +2,177 @@
 
 ## 2026-04-09
 
-- `Task 5` 最终验证已完成，weaver import contract optimization 的实现面已经稳定收口。
-- 目标回归集通过：`npm test -- src/types/__tests__/type-conformance.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/response-parsers.test.ts src/story-packages/__tests__/import-seed.test.ts src/agents/weaver/__tests__/agent.test.ts`
-  - `6` 个测试文件全部通过
-  - `82` 个测试全部通过
-- 全量测试通过：`npm test`
-  - `90` 个测试文件全部通过
-  - `764` 个测试全部通过
-- 生产构建通过：`npm run build`
-  - 构建前出现过一次本地 `@next/swc-darwin-arm64` 二进制损坏导致的失败
-  - 通过 `npm install --no-save @next/swc-darwin-arm64@15.5.15` 只修复本地依赖后重新构建，最终通过
-- 格式检查通过：`git diff --check`
-- approved implementation plan 文件与三个 tracking 文件已同步到当前交付状态：
-  - [docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md](docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
-  - [task_plan.md](task_plan.md)
-  - [progress.md](progress.md)
-  - [findings.md](findings.md)
-- 收尾提交已完成，未再扩大到任何生产代码改动。
-- 这轮 packet 只围绕 `weaver` 的 reference / prompt / shared contract / provider schema / parser / deterministic seed-mapping 对齐，没有引入 UI/UX、系统重构或新的提醒流程。
+- 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
+- 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
+- 初步锁定的排查范围包括：
+  - `src/app/play/` 下的 workbench、选项输入与状态面板
+  - `src/engine/` 下的 orchestrator / adapter 交互
+  - `src/runtime-sessions/` 的会话写入与视图装配
+  - `src/agents/gossipelog/` 的运行状态回传
+- 已确认本轮不改 `gossipelog` 后台流程，只修 workbench 的 UI/UX 感受与输入锁。
+- 你已明确将 `runtime usage` 移出本轮范围，避免牵连 storylines / copy 等额外问题。
+- implementation plan 已写入：
+  - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md)
+- plan review 指出了 4 个缺口：页面跳动没有独立 task、错误路径少了 reload 一致性、任务边界不适合并行实现、浏览器验收命令不够具体。
+- 当前正在修订 implementation plan，收窄范围并明确为串行 `subagent-driven-development`。
+- 修订后的 implementation plan 已通过最终只读 review。
+- 当前开始按 `test-driven-development` + 串行 `subagent-driven-development` 执行 Task 1：只补失败测试，不动生产代码。
+- Task 1 已完成收口：
+  - play workbench 失败测试已补齐并校准
+  - 之前 API 持久化失败里的两条假红灯已改成准确断言，不再把合法的 `Beat 3 ready` 误判成脏内容
+  - 当前真实问题收缩为两个：`gossipelog` pending 时输入未锁、`runtime config save` 时静默重水合仍会退回初始化观感
+- 生产修补已落在 [src/app/play/PlayWorkbench.tsx](src/app/play/PlayWorkbench.tsx)：
+  - `gossipelog` pending 时，玩家输入区会被锁住
+  - `runtime config save` 触发静默重水合时，已接受的 current beat / beat history / state inspector 会继续稳定显示
+  - 保存期间也会立刻锁住输入，避免出现“界面还在，但 orchestrator 已经拆掉”的静默交互窗口
+- 新增了一条专门覆盖 `Save Runtime Config` 静默重水合窗口的回归测试。
+- 当前验证结果：
+  - `npm test -- src/app/__tests__/play.test.tsx` 通过，`27 tests passed`
+  - `npm run build` 通过
+  - Playwright CLI 打开了 `http://127.0.0.1:3001/play`，页面可正常渲染并拿到快照
+- `npm test` 已尝试执行，但当前仓库基线仍有与本次改动无关的失败：
+  - 失败集中在 `src/runtime-sessions/__tests__/views.test.ts`
+  - `src/authoring/persistence/__tests__/bridge.test.ts`
+  - `src/authoring/persistence/__tests__/package-state.test.ts`
+  - 这些失败面不在本次改动文件集合内，当前按“仓库现有基线问题”记录，不在此线程扩修
+- 随后按这次复盘继续调整 agent 文档分工：
+  - [AGENTS.md](AGENTS.md) 删除了较静态的 `System Mapping` 表，改为跳转到 [coding-agent-guide.md](coding-agent-guide.md)
+  - `### 8. Implementation Packet Discipline` 已补充 implementation packet / subagent packet 的高层纪律
+  - [coding-agent-guide.md](coding-agent-guide.md) 已强化为 manager/subagent 共用的任务路由文档，新增高频任务路由、packet checklist、targeted verification 起点与并行提示
 
-- 已按 [AGENTS.md](AGENTS.md) 和 `writing-plans` 重读并锁定这轮 planning 会涉及的文件：
-  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+## 2026-04-09 `/play` 体感延迟优化探索
+
+- 已按你的要求重读：
+  - [AGENTS.md](AGENTS.md)
+  - [coding-agent-guide.md](coding-agent-guide.md)
+  - 根目录 [task_plan.md](task_plan.md) / [findings.md](findings.md) / [progress.md](progress.md)
+  - `docs/codemaps/architecture.md` / `backend.md` / `frontend.md`
+- 已将根目录 [task_plan.md](task_plan.md) 的活动轨道切到“`/play` 体感延迟优化探索”，明确本线程先做调查、诊断、方案排序，不默认直接实现。
+- 已读取并遵循这轮会用到的流程技能：
+  - `using-superpowers`
+  - `planning-with-files-zh`
+  - `systematic-debugging`
+  - `subagent-driven-development`
+- 当前已完成的本地链路定位：
+  - 读取了 [src/app/play/PlayWorkbench.tsx](src/app/play/PlayWorkbench.tsx)
+  - [src/app/play/runtime.ts](src/app/play/runtime.ts)
+  - [src/engine/orchestrator.ts](src/engine/orchestrator.ts)
+  - [src/app/api/llm/proxy/route.ts](src/app/api/llm/proxy/route.ts)
+  - [src/app/api/play/gossipelog/route.ts](src/app/api/play/gossipelog/route.ts)
+  - [src/agents/gossipelog/agent.ts](src/agents/gossipelog/agent.ts)
+  - [src/engine/modules/auditor.ts](src/engine/modules/auditor.ts)
+  - [src/engine/modules/narrative-router.ts](src/engine/modules/narrative-router.ts)
+  - [src/engine/modules/phase-consequence-settlement.ts](src/engine/modules/phase-consequence-settlement.ts)
+  - [src/engine/modules/memory-placeholder.ts](src/engine/modules/memory-placeholder.ts)
+  - [src/engine/api-adapter/prompt-templates.ts](src/engine/api-adapter/prompt-templates.ts)
+  - [src/engine/api-adapter/schema-mapper.ts](src/engine/api-adapter/schema-mapper.ts)
+  - [src/engine/api-adapter/providers/anthropic.ts](src/engine/api-adapter/providers/anthropic.ts)
+  - [src/engine/api-adapter/providers/openai-compatible.ts](src/engine/api-adapter/providers/openai-compatible.ts)
+  - [src/app/runtime-config.ts](src/app/runtime-config.ts)
+  - [src/app/components/RuntimeConfigForm.tsx](src/app/components/RuntimeConfigForm.tsx)
+- 当前已确认的核心判断：
+  - 单次玩家选择至少可能触发 `route -> generate -> audit`
+  - audit 失败会触发 rewrite，最多把生成放大到 4 次
+  - phase 边界会再加 `settlement -> collapse -> next route`
+  - `gossipelog` 更影响下一轮开始前等待，而不是当前正文首次显示
+  - 当前历史窗口默认不裁剪，会让多段 prompt 随 session 增长
+  - 当前 `generate` / `collapse` 默认 token budget 明显偏大
+- 已启动一个并行只读 subagent 做外部最佳实践检索：
+  - agent: `Huygens`
+  - 任务：收集 RPG / 叙事 / 交互式 fiction / 多阶段 LLM runtime 的低延迟实践，并整理成可映射回当前仓库的建议
+- 已做针对性验证：
+  - `npm test -- src/engine/__tests__/e2e/audit-behavior.test.ts` 通过
+  - `npm test -- src/app/play/runtime.test.ts` 通过
+- 你后续又补充并冻结了新的产品边界：
+  - baseline / worktree 清理问题已经由隔壁线程处理，本线程不参与
+  - 不接受通过裁剪 `memory placeholder` 的全量历史来换取延迟，因为这会伤及记忆系统与游戏体验
+  - 因此接下来讨论只保留这些主方向：
+    - 当前 beat 正文先出现
+    - 下一拍准备工作后移
+    - 尽量减少或改写不必要的串行 LLM 调用
+    - 在不牺牲记忆系统的前提下优化 mode 配置、模型分工、以及可能的 streaming 方案
+- 已继续补读 runtime 相关控制层代码与 archive spec：
+  - [src/engine/modules/director-note-layer.ts](src/engine/modules/director-note-layer.ts)
+  - [src/engine/modules/prompt-assembler.ts](src/engine/modules/prompt-assembler.ts)
+  - [src/engine/types/adapter-interface.ts](src/engine/types/adapter-interface.ts)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md](archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md](archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md](archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md)
+- 你刚刚又把这轮的冻结边界进一步收窄为：
+  - `router` 必须每个 beat 都重新判断；不能用 sticky router 换延迟
+  - `routerHint` 本身值得复查，甚至可能比 router 重算更应该先被拿掉
+  - 当前可继续论证的 `route` 优化，只剩“是否能只吃最近两轮上文”
+  - 按 mode 拆模型先记录，不在本线程推进
+  - 如果 streaming 体感收益够大，可以接受 `audit on => no stream`、`audit off => stream` 的双路径
+- 并行研究已继续推进：
+  - 外部检索 subagent `Huygens` 已补回 VPN / proxy buffering / streaming 相关经验
+  - 当前新增结论是：VPN 与代理更像会放大 RTT 与尾延迟；即便后续做 streaming，也必须一并检查 proxy buffering，否则可能出现“服务端在流、前端看起来没流”的假象
+  - `Newton` 首次派发因模型容量失败，已关闭
+  - `Huygens` 的外部检索结果已回收完成，已关闭
+  - 当前仅保留一个只读 subagent `Darwin`，正在专项评估三件事的未来改动牵扯面：
+    - `audit` 改成只看当前 beat / options
+    - `audit off` 时“正文先流、选项后置”的 streaming 双路径
+    - `routerHint` 删除的工作量、回归风险与真实收益
+- 主线程这边已先完成 `routerHint` 的本地引用面扫描：
+  - runtime 里它只会进入 route context，并作为失败 fallback / phase prior 使用
+  - route prompt 中它目前只是一行 `Phase routing prior`
+  - 但它同时出现在 phase schema、authoring bridge、scene phase authoring、edit 表单、diagnostics、fixture 与多组测试里，所以若要删除，工作量不会只局限于 runtime
+- 你已明确要求把 `audit` 的目标语义固定为：
+  - 只检查“当前新生成的这一轮 beat + 本轮 options”
+  - 当前实现尚未落实，因为 audit prompt 仍然会拼入 `[Preceding Beats]`
+
+## 2026-04-09 Phase 4 并行讨论
+
+- 按 `using-superpowers` + `brainstorming` 恢复并定位了 `weaver` 的现状，不进入实现。
+- 已读取：
   - [src/agents/weaver/references/import-reference.md](src/agents/weaver/references/import-reference.md)
-  - [src/types/weaver.ts](src/types/weaver.ts)
   - [src/engine/api-adapter/prompt-templates.ts](src/engine/api-adapter/prompt-templates.ts)
   - [src/engine/api-adapter/schema-mapper.ts](src/engine/api-adapter/schema-mapper.ts)
   - [src/engine/api-adapter/response-parsers.ts](src/engine/api-adapter/response-parsers.ts)
   - [src/story-packages/import-seed.ts](src/story-packages/import-seed.ts)
-- implementation plan 已写入：
-  - [docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md](docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
-- 第一轮 reviewer 抓到了两个真实问题：
-  - Task 3 对 provider response schema 的 coverage 没有覆盖 `hero` / `antagonists` / `locations`
-  - Task 2 的 prompt contract 没把 `suggestedPackageName` 与 `openingHook` ownership 边界写死
-- 这两个问题都已回写到 plan 中，并复用同一个 reviewer 重新审阅。
-- 第二轮 reviewer 已 `Approved`；当前 plan 可以进入执行阶段。
+  - [src/types/weaver.ts](src/types/weaver.ts)
+  - [src/types/prompt-object.ts](src/types/prompt-object.ts)
+  - `March Dev Update Phase 4` 归档 spec / implementation plan
+- 当前判断是：`weaver` 成功率问题更像是 reference、prompt、schema、seed-mapping 四层表述没有完全对齐，而不是单纯“没要求 JSON only”。
+- 当前不写 implementation plan，先把设计判断沉淀到 [findings.md](findings.md)。
+- 你已进一步确认两条产品边界：
+  - `weaver` 允许失败并留空，不应因为信息不足而报硬错误或卡住创建流程
+  - 角色与地点类最小输出 shape 可以只要求名称字段
+- 已完成正式 spec：
+  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+- spec review 已完成并通过；review 过程中收紧了这些关键点：
+  - `suggestedPackageName` 只是 display-name suggestion，不是最终 slug / package identity
+  - `payload.openingHook` 不拥有最终持久化写入权，真实 `openingHook` 仍来自原始 `sourceText`
+  - `src/types/weaver.ts` 被明确为轻量中间 import contract 的唯一权威 owner
+  - `npcCharacters` 的 name-only 语义被写成“若采纳则必须同步 seed-mapping 与测试”的优化目标，而不是假装当前代码已实现
+- 你后续又进一步确认：这轮优化不应额外设计新的作者提醒/UX 机制；缺失提取默认保持非阻塞，不进入新的 author-facing reminder 设计范围。
+
+## 2026-04-09 Baseline 修复
+
+- 已先回到 `branch/narrative-editor` 处理 baseline，而不是直接在 fresh worktree 上继续写 plan。
+- 复现结果已拆清：
+  - 主工作区使用现有本地依赖时，UI matcher 正常；
+  - fresh worktree 会出现大量 `Invalid Chai property: toBeInTheDocument`，原因不是代码逻辑，而是 worktree 没拿到主工作区本地的 `package-lock.json`；
+  - 主工作区本身仍有 `20` 个真实红测，集中在：
+    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
+- 根因现已确认：
+  - `.gitignore` 忽略了 `package-lock.json`，而主工作区本地其实有一个未纳管 lockfile，导致主工作区与 fresh worktree 依赖解析不一致；
+  - `sample-scene` 现在是你真实用过、推进过 beat、复制过故事线的示例包；相关 baseline 测试仍把它当成“未使用模板”，因此测试夹具假设与 fixture 角色漂移。
+- 已完成的修复：
+  - 新增 [src/testing/story-package-fixtures.ts](src/testing/story-package-fixtures.ts)，提供“复制 fixture 并剥离执行痕迹”的 helper；
+  - 相关 baseline 测试已改成复制 `sample-scene` 后主动剥离：
+    - `runtime-sessions.json`
+    - `storyline-repository.json`
+    - `variants/`
+  - 覆盖的测试文件包括：
+    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
+    - [src/app/edit/__tests__/page.test.tsx](src/app/edit/__tests__/page.test.tsx)
+    - [src/app/__tests__/play-page.test.tsx](src/app/__tests__/play-page.test.tsx)
+  - `.gitignore` 已停止忽略 `package-lock.json`，并已刷新 lockfile，准备让 fresh worktree 复用同一依赖基线。
+- 当前验证结果：
+  - 目标回归集通过：`63` 个测试全部通过
+  - 全量 `npm test` 通过：`90` 个测试文件、`755` 个测试全部通过
