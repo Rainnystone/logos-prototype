@@ -211,6 +211,8 @@ export function PlayWorkbench({
   const runtimeSessionViewRef = useRef<PlayRuntimeSessionView | undefined>(initialRuntimeSession);
   const pendingRelationshipSyncsRef = useRef<Set<PendingRelationshipSync>>(new Set());
   const relationshipSyncFinalizeQueueRef = useRef<PendingRelationshipSync[]>([]);
+  const activeRelationshipSyncRef = useRef<PendingRelationshipSync | null>(null);
+  const currentStateRef = useRef<StateSnapshot | null>(null);
   const [adapterConfig, setAdapterConfig] = useState<AdapterConfig | null>(initialConfig);
   const [bootstrapped, setBootstrapped] = useState(initialConfig !== null);
   const [runtimeSessionView, setRuntimeSessionView] = useState<PlayRuntimeSessionView | undefined>(
@@ -229,6 +231,8 @@ export function PlayWorkbench({
   );
   const [error, setError] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
+  const [isRelationshipSyncPending, setIsRelationshipSyncPending] = useState(false);
+  const [isHydratingWorkbench, setIsHydratingWorkbench] = useState(false);
 
   const resolvedRuntimeSessionClient = useMemo(
     () =>
@@ -251,6 +255,10 @@ export function PlayWorkbench({
     relationshipSyncFinalizeQueueRef.current = relationshipSyncFinalizeQueueRef.current.filter(
       (candidate) => candidate !== sync,
     );
+    if (activeRelationshipSyncRef.current === sync) {
+      activeRelationshipSyncRef.current = null;
+      setIsRelationshipSyncPending(false);
+    }
     sync.resolve();
   }
 
@@ -286,6 +294,10 @@ export function PlayWorkbench({
   );
 
   useEffect(() => {
+    currentStateRef.current = currentState;
+  }, [currentState]);
+
+  useEffect(() => {
     runtimeSessionViewRef.current = initialRuntimeSession;
     setRuntimeSessionView(initialRuntimeSession);
   }, [initialRuntimeSession]);
@@ -313,60 +325,68 @@ export function PlayWorkbench({
     let cancelled = false;
 
     async function initializeWorkbench() {
-      setStatus('initializing');
-
+      const shouldPreserveVisibleSurface =
+        currentStateRef.current !== null && runtimeSessionViewRef.current?.kind === 'restorable';
       const pendingRelationshipSyncs = Array.from(pendingRelationshipSyncsRef.current).map(
         (sync) => sync.promise,
       );
+      setIsHydratingWorkbench(shouldPreserveVisibleSurface);
 
-      if (pendingRelationshipSyncs.length > 0) {
-        await Promise.allSettled(pendingRelationshipSyncs);
-      }
-
-      if (cancelled) {
-        return;
-      }
-
-      const continuityView = runtimeSessionViewRef.current;
-
-      orchestratorRef.current = null;
-      setRewriteFeedback(null);
-      setForceAccepted(false);
-      setError(null);
-      setBeatHistory(continuityView?.beatHistory ?? []);
-      setRoundStarted(false);
-      setDiagnostics(createEmptyWorkbenchDiagnostics());
-      setCurrentState(null);
-
-      const nextRuntimeSource = adapterConfig ? 'Configured provider' : 'Local demo adapter';
-      const restoreCompatibilityError = getRestoreCompatibilityError(
-        storyPackage,
-        continuityView,
-      );
-
-      if (continuityView?.kind === 'unavailable') {
-        if (cancelled) {
-          return;
-        }
-
-        setRuntimeSource(nextRuntimeSource);
-        setError(continuityUnavailableMessage);
-        setStatus('error');
-        return;
-      }
-
-      if (restoreCompatibilityError) {
-        if (cancelled) {
-          return;
-        }
-
-        setRuntimeSource(nextRuntimeSource);
-        setError(restoreCompatibilityError);
-        setStatus('error');
-        return;
+      if (!shouldPreserveVisibleSurface) {
+        setStatus('initializing');
       }
 
       try {
+        if (pendingRelationshipSyncs.length > 0) {
+          await Promise.allSettled(pendingRelationshipSyncs);
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const continuityView = runtimeSessionViewRef.current;
+
+        orchestratorRef.current = null;
+        setRewriteFeedback(null);
+        setForceAccepted(false);
+        setError(null);
+        if (!shouldPreserveVisibleSurface) {
+          setBeatHistory(continuityView?.beatHistory ?? []);
+          setRoundStarted(false);
+          setDiagnostics(createEmptyWorkbenchDiagnostics());
+          currentStateRef.current = null;
+          setCurrentState(null);
+        }
+
+        const nextRuntimeSource = adapterConfig ? 'Configured provider' : 'Local demo adapter';
+        const restoreCompatibilityError = getRestoreCompatibilityError(
+          storyPackage,
+          continuityView,
+        );
+
+        if (continuityView?.kind === 'unavailable') {
+          if (cancelled) {
+            return;
+          }
+
+          setRuntimeSource(nextRuntimeSource);
+          setError(continuityUnavailableMessage);
+          setStatus('error');
+          return;
+        }
+
+        if (restoreCompatibilityError) {
+          if (cancelled) {
+            return;
+          }
+
+          setRuntimeSource(nextRuntimeSource);
+          setError(restoreCompatibilityError);
+          setStatus('error');
+          return;
+        }
+
         if (adapterConfig) {
           await bootstrapGossipelogBeforePlayInitialization({
             storyPackageName,
@@ -417,6 +437,8 @@ export function PlayWorkbench({
           ? async (...args: Parameters<GossipelogCycleRunner>) => {
               const sync = createPendingRelationshipSync();
               pendingRelationshipSyncsRef.current.add(sync);
+              activeRelationshipSyncRef.current = sync;
+              setIsRelationshipSyncPending(true);
 
               try {
                 const result = await resolvedGossipelogCycleRunner(...args);
@@ -460,6 +482,7 @@ export function PlayWorkbench({
         }
 
         orchestratorRef.current = orchestrator;
+        currentStateRef.current = initialState;
         setCurrentState(initialState);
         setBeatHistory(continuityView?.beatHistory ?? []);
         setRoundStarted(continuityView?.kind === 'restorable');
@@ -476,6 +499,10 @@ export function PlayWorkbench({
             : 'Failed to initialize the workbench.',
         );
         setStatus('error');
+      } finally {
+        if (!cancelled) {
+          setIsHydratingWorkbench(false);
+        }
       }
     }
 
@@ -527,7 +554,9 @@ export function PlayWorkbench({
     status === 'initializing' ||
     status === 'generating' ||
     status === 'auditing' ||
-    status === 'rewriting';
+    status === 'rewriting' ||
+    isRelationshipSyncPending ||
+    isHydratingWorkbench;
   const sceneComplete = orchestratorRef.current?.isSceneComplete() ?? false;
   const continuityUnavailable = runtimeSessionView?.kind === 'unavailable';
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -239,6 +239,37 @@ function createAwaitingStartRuntimeSessionView(): PlayRuntimeSessionView {
       source: 'empty',
     },
     lifecycle: 'awaiting_start',
+  };
+}
+
+function createPendingGossipelogCycleRunner(
+  settledRelationshipLayer: {
+    readonly highlightedDeltasText: string;
+    readonly stableBackgroundText: string;
+  },
+) {
+  let resolveGossipelogCycle!: () => void;
+  const pendingGossipelogCycle = new Promise<void>((resolve) => {
+    resolveGossipelogCycle = resolve;
+  });
+  const gossipelogCycleRunner = vi.fn(async () => {
+    await pendingGossipelogCycle;
+
+    return {
+      updateRequest: {} as never,
+      updateResult: {
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      },
+      injectionRequest: {} as never,
+      relationshipLayer: settledRelationshipLayer,
+    };
+  }) as unknown as GossipelogCycleRunner;
+
+  return {
+    gossipelogCycleRunner,
+    resolveGossipelogCycle,
   };
 }
 
@@ -573,6 +604,196 @@ describe('PlayWorkbench', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('protects the narrow same-option double-click race by submitting only once', async () => {
+    const harness = createPlayAdapterHarness({ delayMs: 35 });
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await startRound(user);
+    const optionButton = screen.getByRole('button', { name: 'Option 1-1' });
+    fireEvent.click(optionButton);
+    fireEvent.click(optionButton);
+
+    expect(
+      await screen.findByText('Beat 2 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(recordedAcceptedBeats.map((entry) => entry.acceptedBeatOrdinal)).toEqual([1, 2]);
+    });
+  });
+
+  it('locks all options immediately after any option is chosen until the next valid options return', async () => {
+    const harness = createPlayAdapterHarness({ delayMs: 35 });
+    const user = userEvent.setup();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async (payload) => ({
+            activeSessionId: payload.sessionId,
+            activeCheckpointId: payload.checkpointId,
+          })),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+    fireEvent.click(screen.getByRole('button', { name: 'Option 1-2' }));
+
+    expect(screen.getByRole('button', { name: 'Option 1-1' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-2' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-3' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-4' })).toBeDisabled();
+
+    expect(await screen.findByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Option 2-1' })).toBeEnabled();
+  });
+
+  it('does not append unaccepted content to the current page after accepted-beat persistence fails', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const lastAcceptedContinuity = createRestorableRuntimeSessionView();
+    const runtimeSessionClient = createRuntimeSessionClientMock({
+      recordAcceptedBeat: vi.fn(async () => {
+        throw new Error('Failed to persist accepted beat: disk write failed');
+      }),
+    });
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={runtimeSessionClient}
+        initialRuntimeSession={lastAcceptedContinuity}
+      />,
+    );
+
+    expect(
+      await screen.findByText('The operator enters the sealed corridor.'),
+    ).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Advance on the control cabinet.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(
+      await screen.findByText('Failed to persist accepted beat: disk write failed'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('The operator enters the sealed corridor.')).toBeInTheDocument();
+    expect(screen.getByText('The relay clicks and the vent light turns red.')).toBeInTheDocument();
+
+    const beatHistoryHeading = screen.getAllByRole('heading', { name: 'Beat History' }).at(-1);
+    const beatHistorySection = beatHistoryHeading?.closest('section');
+    if (!beatHistorySection) {
+      throw new Error('Expected Beat History section to exist.');
+    }
+
+    expect(within(beatHistorySection).getAllByRole('article')).toHaveLength(2);
+    expect(within(beatHistorySection).getByText('Beat 1')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Beat 2')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Opening hook')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Inspect the relay cabinet.')).toBeInTheDocument();
+    expect(
+      within(beatHistorySection).queryByText('Advance on the control cabinet.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('restores the last accepted continuity on remount after accepted-beat persistence fails', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const lastAcceptedContinuity = createRestorableRuntimeSessionView();
+    const runtimeSessionClient = createRuntimeSessionClientMock({
+      recordAcceptedBeat: vi.fn(async () => {
+        throw new Error('Failed to persist accepted beat: disk write failed');
+      }),
+    });
+    const { unmount } = render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={runtimeSessionClient}
+        initialRuntimeSession={lastAcceptedContinuity}
+      />,
+    );
+
+    await screen.findByText('The operator enters the sealed corridor.');
+    await user.type(screen.getByLabelText('Free text action'), 'Advance on the control cabinet.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    expect(
+      await screen.findByText('Failed to persist accepted beat: disk write failed'),
+    ).toBeInTheDocument();
+
+    unmount();
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={runtimeSessionClient}
+      initialRuntimeSession={lastAcceptedContinuity}
+      />,
+    );
+
+    expect(
+      await screen.findByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('The operator enters the sealed corridor.')).toBeInTheDocument();
+    expect(screen.getByText('The relay clicks and the vent light turns red.')).toBeInTheDocument();
+
+    const beatHistoryHeading = screen.getAllByRole('heading', { name: 'Beat History' }).at(-1);
+    const beatHistorySection = beatHistoryHeading?.closest('section');
+    if (!beatHistorySection) {
+      throw new Error('Expected Beat History section to exist.');
+    }
+
+    expect(within(beatHistorySection).getAllByRole('article')).toHaveLength(2);
+    expect(within(beatHistorySection).getByText('Beat 1')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Beat 2')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Opening hook')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Inspect the relay cabinet.')).toBeInTheDocument();
+    expect(
+      within(beatHistorySection).queryByText('Advance on the control cabinet.'),
+    ).not.toBeInTheDocument();
+  });
+
   it('keeps the latest accepted continuity after saving runtime config and continues the active session without rollback', async () => {
     const harness = createPlayAdapterHarness();
     const user = userEvent.setup();
@@ -638,6 +859,79 @@ describe('PlayWorkbench', () => {
       },
       { role: 'user', content: 'Cut the local power feed.' },
     ]);
+  });
+
+  it('locks player input while runtime config save silently rehydrates an accepted surface', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    let bootstrapCallCount = 0;
+    let resolveSecondBootstrap!: () => void;
+    const secondBootstrapPending = new Promise<Response>((resolve) => {
+      resolveSecondBootstrap = () => {
+        resolve(
+          new Response(JSON.stringify({ status: 'ok' }), {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }),
+        );
+      };
+    });
+    const fetchMock = vi.fn(async () => {
+      bootstrapCallCount += 1;
+
+      if (bootstrapCallCount === 1) {
+        return new Response(JSON.stringify({ status: 'ok' }), {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        });
+      }
+
+      return secondBootstrapPending;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => harness.adapter}
+        runtimeSessionClient={createRuntimeSessionClientMock()}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    expect(
+      await screen.findByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Cut the hallway power at the local panel.' }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Initializing Scene...')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Click Start Round to run the opening hook and generate Beat 1.'),
+    ).not.toBeInTheDocument();
+
+    resolveSecondBootstrap();
+
+    expect(await screen.findByText('Runtime config saved locally.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText('Free text action')).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+    });
   });
 
   it('preserves the latest relationship continuity across runtime config save before continuing the active session', async () => {
@@ -729,6 +1023,142 @@ describe('PlayWorkbench', () => {
     expect(recordedAcceptedBeats[1]?.lastStableRelationshipLayer).toEqual(
       settledRelationshipLayer,
     );
+  });
+
+  it('keeps every player input disabled while gossipelog settlement is still pending after a beat is accepted', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'pending delta settled',
+      stableBackgroundText: 'pending background settled',
+    };
+    const { gossipelogCycleRunner, resolveGossipelogCycle } =
+      createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const finalizeRelationshipLayer = vi.fn(async () => ({
+      activeSessionId: 'sess_waiting',
+      activeCheckpointId: 'chk_waiting',
+    }));
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          recordAcceptedBeat: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+            activeCheckpointId: 'chk_waiting',
+          })),
+          finalizeRelationshipLayer,
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+
+    expect(await screen.findByText('Accepted')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-1' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-2' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-3' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Option 1-4' })).toBeDisabled();
+
+    resolveGossipelogCycle();
+  });
+
+  it('keeps the accepted beat, accepted history, and workspace surface visible while gossipelog finalization is still pending after runtime config save', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const finalizedRelationshipLayers: FinalizeRelationshipLayerInput[] = [];
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'session delta settled',
+      stableBackgroundText: 'session background settled',
+    };
+    const { gossipelogCycleRunner, resolveGossipelogCycle } =
+      createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          finalizeRelationshipLayer: vi.fn(async (payload) => {
+            finalizedRelationshipLayers.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(screen.getByText('Signal Room')).toBeInTheDocument();
+    expect(screen.getByText('Current Beat')).toBeInTheDocument();
+    expect(screen.getByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
+    expect(screen.getByText('State Inspector')).toBeInTheDocument();
+    const currentBeatHeading = screen.getByRole('heading', { name: 'Current Beat' });
+    const currentBeatSection = currentBeatHeading.closest('section');
+    if (!currentBeatSection) {
+      throw new Error('Expected Current Beat section to exist.');
+    }
+    expect(
+      within(currentBeatSection).getByText(
+        `Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`,
+      ),
+    ).toBeInTheDocument();
+    const beatHistoryHeading = screen.getAllByRole('heading', { name: 'Beat History' }).at(-1);
+    const beatHistorySection = beatHistoryHeading?.closest('section');
+    if (!beatHistorySection) {
+      throw new Error('Expected Beat History section to exist.');
+    }
+    expect(within(beatHistorySection).getByText('Beat 1')).toBeInTheDocument();
+    expect(within(beatHistorySection).getByText('Opening Hook')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(currentBeatSection).getByText(`Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`)).toBeInTheDocument();
+      expect(screen.queryByText('Initializing Scene...')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Click Start Round to run the opening hook and generate Beat 1.'),
+      ).not.toBeInTheDocument();
+    });
+    resolveGossipelogCycle();
   });
 
   it('waits for pending relationship continuity settlement before hydrating after runtime config save', async () => {
