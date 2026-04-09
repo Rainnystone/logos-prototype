@@ -730,6 +730,23 @@ describe('storyline substrate', () => {
     expect(runtimeFile.activeSessionId).toBe('sess_main');
   });
 
+  it('preserves the source storyline rail through the selected checkpoint when branching a new storyline', async () => {
+    const { packageName } = await seedExplicitStorylinePackage();
+
+    const created = await branchStorylineFromCheckpoint({
+      packageName,
+      sourceStorylineId: 'storyline_main',
+      checkpointId: 'chk_02',
+      name: 'Checkpoint Branch',
+    });
+
+    expect(created.storyline.sourceCheckpointId).toBe('chk_02');
+    expect(created.storyline.headCheckpointId).toBe('chk_02');
+    expect(created.session.orderedCheckpointIds).toEqual(['chk_01', 'chk_02']);
+    expect(Object.keys(created.session.checkpointsById)).toEqual(['chk_01', 'chk_02']);
+    expect(created.session.activeCheckpointId).toBe('chk_02');
+  });
+
   it('rejects branching from a checkpoint that is not reachable from the source storyline session', async () => {
     const { packageName } = await seedExplicitStorylinePackage({
       includeAlternateStoryline: true,

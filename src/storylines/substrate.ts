@@ -730,6 +730,7 @@ async function createStorylineFromCheckpointAnchor(
       const session = await runtimeSessionsRepository.createSessionFromCheckpoint({
         packageName: input.packageName,
         checkpointId: input.checkpointId,
+        sourceSessionId: sourceStoryline.activeSessionId,
       });
 
       await promoteStagedVariantWorkspace({

@@ -81,6 +81,7 @@ export interface FinalizeRelationshipLayerInput {
 export interface CreateSessionFromCheckpointInput {
   readonly packageName: string;
   readonly checkpointId: string;
+  readonly sourceSessionId?: string;
 }
 
 export type RuntimeSessionCommand =
@@ -332,22 +333,87 @@ function resolveCheckpointFromGraph(
   return null;
 }
 
+function resolveCheckpointChainFromSession(
+  file: RuntimeSessionsFile,
+  sourceSessionId: string,
+  checkpointId: string,
+): {
+  readonly orderedCheckpointIds: string[];
+  readonly checkpointsById: Record<string, RuntimeCheckpoint>;
+  readonly lastStableRelationshipLayer: RelationshipLayer;
+} {
+  const sourceSession = file.sessionsById[sourceSessionId];
+  if (!sourceSession) {
+    throw new RuntimeSessionConflictError(
+      `Cannot create runtime session from unknown source session "${sourceSessionId}".`,
+    );
+  }
+
+  const checkpointIndex = sourceSession.orderedCheckpointIds.indexOf(checkpointId);
+  if (checkpointIndex === -1) {
+    throw new RuntimeSessionConflictError(
+      `Cannot create runtime session from checkpoint "${checkpointId}" because it is not reachable from source session "${sourceSessionId}".`,
+    );
+  }
+
+  const orderedCheckpointIds = sourceSession.orderedCheckpointIds.slice(0, checkpointIndex + 1);
+  const checkpointsById = Object.fromEntries(
+    orderedCheckpointIds.map((orderedCheckpointId) => {
+      const checkpoint = sourceSession.checkpointsById[orderedCheckpointId];
+      if (!checkpoint) {
+        throw new Error(
+          `Runtime session consistency violation: ordered checkpoint "${orderedCheckpointId}" does not resolve in source session "${sourceSessionId}".`,
+        );
+      }
+
+      return [orderedCheckpointId, cloneCheckpoint(checkpoint)];
+    }),
+  );
+
+  const sourceCheckpoint = sourceSession.checkpointsById[checkpointId];
+  if (!sourceCheckpoint) {
+    throw new Error(
+      `Runtime session consistency violation: checkpoint "${checkpointId}" does not resolve in source session "${sourceSessionId}".`,
+    );
+  }
+
+  return {
+    orderedCheckpointIds,
+    checkpointsById,
+    lastStableRelationshipLayer: cloneRelationshipLayer(sourceCheckpoint.lastStableRelationshipLayer),
+  };
+}
+
 export async function createSessionFromCheckpoint(
   input: CreateSessionFromCheckpointInput,
 ): Promise<RuntimeSession> {
   return runWithPackageWriteQueue(input.packageName, async () => {
     const file = await loadRuntimeSessionsFileForWrite(input.packageName);
-    const sourceCheckpoint = resolveCheckpointFromGraph(file, input.checkpointId);
+    const source =
+      input.sourceSessionId === undefined
+        ? (() => {
+            const sourceCheckpoint = resolveCheckpointFromGraph(file, input.checkpointId);
 
-    if (!sourceCheckpoint) {
-      throw new RuntimeSessionConflictError(
-        `Cannot create runtime session from unknown checkpoint "${input.checkpointId}".`,
-      );
-    }
+            if (!sourceCheckpoint) {
+              throw new RuntimeSessionConflictError(
+                `Cannot create runtime session from unknown checkpoint "${input.checkpointId}".`,
+              );
+            }
+
+            return {
+              orderedCheckpointIds: [input.checkpointId],
+              checkpointsById: {
+                [input.checkpointId]: cloneCheckpoint(sourceCheckpoint),
+              },
+              lastStableRelationshipLayer: cloneRelationshipLayer(
+                sourceCheckpoint.lastStableRelationshipLayer,
+              ),
+            };
+          })()
+        : resolveCheckpointChainFromSession(file, input.sourceSessionId, input.checkpointId);
 
     const timestamp = new Date().toISOString();
     const sessionId = createSessionId();
-    const checkpoint = cloneCheckpoint(sourceCheckpoint);
     const session: RuntimeSession = {
       sessionId,
       lifecycle: 'in_progress',
@@ -355,11 +421,9 @@ export async function createSessionFromCheckpoint(
       updatedAt: timestamp,
       headCheckpointId: input.checkpointId,
       activeCheckpointId: input.checkpointId,
-      orderedCheckpointIds: [input.checkpointId],
-      checkpointsById: {
-        [input.checkpointId]: checkpoint,
-      },
-      lastStableRelationshipLayer: cloneRelationshipLayer(checkpoint.lastStableRelationshipLayer),
+      orderedCheckpointIds: source.orderedCheckpointIds,
+      checkpointsById: source.checkpointsById,
+      lastStableRelationshipLayer: source.lastStableRelationshipLayer,
     };
 
     const nextFile: RuntimeSessionsFile = {

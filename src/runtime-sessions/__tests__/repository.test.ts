@@ -371,6 +371,98 @@ describe('runtime sessions repository', () => {
     }
   });
 
+  it('can preserve the reachable checkpoint chain through the selected checkpoint when branching from a bound session', async () => {
+    const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-branch-history-'));
+    const packageName = path.basename(packageRoot);
+
+    try {
+      await writeRuntimeSessionsFile(packageName, {
+        version: 1,
+        activeSessionId: 'sess_main',
+        sessionsById: {
+          sess_main: {
+            sessionId: 'sess_main',
+            lifecycle: 'in_progress',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:03.000Z',
+            headCheckpointId: 'chk_03',
+            activeCheckpointId: 'chk_03',
+            orderedCheckpointIds: ['chk_01', 'chk_02', 'chk_03'],
+            checkpointsById: {
+              chk_01: {
+                checkpointId: 'chk_01',
+                acceptedBeatOrdinal: 1,
+                sceneId: 'scene_opening',
+                phaseIndex: 1,
+                beatIndex: 1,
+                roundId: 'round_01',
+                acceptedTranscript: {
+                  playerInput: 'open the door',
+                  beatText: 'The door swings open.',
+                },
+                stateSnapshot: makeStateSnapshot(),
+                lastStableRelationshipLayer: makeRelationshipLayer('chk-01'),
+                createdAt: '2026-04-03T00:00:01.000Z',
+              },
+              chk_02: {
+                checkpointId: 'chk_02',
+                acceptedBeatOrdinal: 2,
+                sceneId: 'scene_opening',
+                phaseIndex: 1,
+                beatIndex: 2,
+                roundId: 'round_02',
+                acceptedTranscript: {
+                  playerInput: 'step into the hall',
+                  beatText: 'The hall answers with static.',
+                },
+                stateSnapshot: makeStateSnapshot(),
+                lastStableRelationshipLayer: makeRelationshipLayer('chk-02'),
+                createdAt: '2026-04-03T00:00:02.000Z',
+              },
+              chk_03: {
+                checkpointId: 'chk_03',
+                acceptedBeatOrdinal: 3,
+                sceneId: 'scene_opening',
+                phaseIndex: 1,
+                beatIndex: 3,
+                roundId: 'round_03',
+                acceptedTranscript: {
+                  playerInput: 'look up',
+                  beatText: 'A signal blinks on the roof.',
+                },
+                stateSnapshot: makeStateSnapshot(),
+                lastStableRelationshipLayer: makeRelationshipLayer('chk-03'),
+                createdAt: '2026-04-03T00:00:03.000Z',
+              },
+            },
+            lastStableRelationshipLayer: makeRelationshipLayer('chk-03'),
+          },
+        },
+      });
+
+      const branched = await repository.createSessionFromCheckpoint({
+        packageName,
+        checkpointId: 'chk_02',
+        sourceSessionId: 'sess_main',
+      });
+
+      expect(branched.activeCheckpointId).toBe('chk_02');
+      expect(branched.headCheckpointId).toBe('chk_02');
+      expect(branched.orderedCheckpointIds).toEqual(['chk_01', 'chk_02']);
+      expect(Object.keys(branched.checkpointsById)).toEqual(['chk_01', 'chk_02']);
+      expect(branched.lastStableRelationshipLayer).toEqual(makeRelationshipLayer('chk-02'));
+
+      const persisted = await repository.readFile(packageName);
+      expect(persisted?.activeSessionId).toBe('sess_main');
+      expect(persisted?.sessionsById[branched.sessionId]?.orderedCheckpointIds).toEqual([
+        'chk_01',
+        'chk_02',
+      ]);
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
   it('serializes conflicting writes so stale finalization cannot overwrite a newer active session', async () => {
     const packageRoot = await mkdtemp(path.resolve(storyPackagesRoot, 'tmp-runtime-serial-'));
     const packageName = path.basename(packageRoot);
