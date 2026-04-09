@@ -88,6 +88,16 @@ describe('prompt templates', () => {
       expect(reference).toContain(
         'worldBase`: lightweight seed object with `settingSummary`, `worldRules`, `toneBaseline`, `locationPatch`, and `npcCharactersSummary`.',
       );
+      expect(reference).toContain('## Examples');
+      expect(reference).toContain('Source excerpt:');
+      expect(reference).toContain('The harbor district never slept');
+      expect(reference).toContain('Expected lightweight payload shape:');
+      expect(reference).toContain('"worldBase": {');
+      expect(reference).toContain('"settingSummary": "A foggy harbor district');
+      expect(reference).toContain('"hero": {');
+      expect(reference).toContain('"displayName": "Mara"');
+      expect(reference).toContain('Minimal-fallback example:');
+      expect(reference).toContain('When the source only names a cast member or place');
     });
   });
 });
