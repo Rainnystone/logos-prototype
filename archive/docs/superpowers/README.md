@@ -1,6 +1,6 @@
 # Superpowers Archive
 
-这里存放已经从 `docs/superpowers/` 退役的历史 plan、spec 和过程草稿。
+这里存放已经从 `docs/superpowers/` 退役的历史 plan、spec 和过程工作记忆。
 
 放在这里的文档仍然可以作为回看记录、设计演变参考和历史决策痕迹使用，但它们不再默认代表当前分支上的活动实施依据。
 
@@ -15,7 +15,7 @@
 - `docs/superpowers/plans/`
 - `docs/superpowers/specs/`
 
-归档区当前分为三类：
+归档区当前分为四类：
 
 - `archive/docs/superpowers/plans/`
   已完成、暂停或被后续工作替代的历史 implementation plan
@@ -23,16 +23,19 @@
   已被后续活动文档替代的历史设计稿
 - `archive/docs/superpowers/plans/drafts/`
   当时为并行执行或拆分任务产生的中间草稿
+- `archive/docs/superpowers/recovery/`
+  从根目录 `task_plan.md`、`progress.md`、`findings.md` 封板归档下来的会话级工作记忆快照
 
 如果后续还有新的 superpowers 文档需要退役，优先按这个结构继续归档，而不是混放到别的 archive 目录。
 
-最近完成并已归档的一组材料是：
+最近归档的一组文档包括：
 
-- `archive/docs/superpowers/plans/2026-03-31-gossipelog-agent.md`
-- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-design.md`
-- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-log.md`
-- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-review-notes.md`
-- `archive/docs/superpowers/specs/2026-03-31-gossipelog-agent-session-summary.md`
+- `archive/docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md`
+- `archive/docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md`
+- `archive/docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md`
+- `archive/docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md`
+- `archive/docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md`
+- `archive/docs/superpowers/recovery/2026-04-09-root-workspace-memory/`
 
 最近完成并已整体封板的一轮开发更新是：
 
