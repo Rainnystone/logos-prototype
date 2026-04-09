@@ -429,6 +429,38 @@ export function createTrackedWorkbenchAdapter(
       return result;
     },
 
+    async streamGenerate(promptObject) {
+      if (!adapter.streamGenerate) {
+        return {
+          kind: 'fallback' as const,
+          reason: 'streaming-not-supported',
+        };
+      }
+
+      reporter.onStatusChange(
+        promptObject.generationControl?.isRewrite ? 'rewriting' : 'generating',
+      );
+
+      const streamResult = await adapter.streamGenerate(promptObject);
+
+      if (streamResult.kind === 'fallback') {
+        return streamResult;
+      }
+
+      return {
+        kind: 'stream' as const,
+        events: (async function* () {
+          for await (const event of streamResult.events) {
+            if (event.type === 'finalResult') {
+              reporter.onUsage('generate', event.result.usage ?? null);
+            }
+
+            yield event;
+          }
+        })(),
+      };
+    },
+
     async audit(packet) {
       if (!adapter.audit) {
         throw new Error('LLMAdapter.audit is not configured.');

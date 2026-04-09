@@ -86,6 +86,26 @@ export interface GenerateResult {
   readonly usage?: UsageInfo | undefined;
 }
 
+export type GenerateStreamEvent =
+  | {
+      readonly type: 'beatTextDelta';
+      readonly delta: string;
+    }
+  | {
+      readonly type: 'finalResult';
+      readonly result: GenerateResult;
+    };
+
+export type GenerateStreamResult =
+  | {
+      readonly kind: 'stream';
+      readonly events: AsyncIterable<GenerateStreamEvent>;
+    }
+  | {
+      readonly kind: 'fallback';
+      readonly reason: string;
+    };
+
 export interface AuditResult {
   readonly answers: readonly boolean[];
   readonly usage?: UsageInfo | undefined;
@@ -117,6 +137,7 @@ export interface LLMAdapter {
   collapse(request: CollapseInput): Promise<CollapseResponse>;
   route?(request: RouteRequest): Promise<RouteResult>;
   generate?(request: PromptObject): Promise<GenerateResult>;
+  streamGenerate?(request: PromptObject): Promise<GenerateStreamResult>;
   audit?(request: AuditPacket): Promise<AuditResult>;
   settlement?(request: PhaseConsequenceRequest): Promise<PhaseConsequenceResponse>;
   gossipelogUpdate?(request: GossipelogUpdateRequest): Promise<GossipelogUpdateResponse>;

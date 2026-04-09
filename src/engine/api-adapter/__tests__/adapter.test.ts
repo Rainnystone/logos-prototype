@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import {
@@ -18,6 +18,17 @@ import {
   validatePhaseConsequenceResponse,
   validatePromptObject,
 } from '@/engine/schema-validator';
+import type { GenerateStreamEvent, GenerateStreamResult } from '@/engine/types/adapter-interface';
+
+async function collectAsyncEvents<T>(events: AsyncIterable<T>): Promise<T[]> {
+  const collected: T[] = [];
+
+  for await (const event of events) {
+    collected.push(event);
+  }
+
+  return collected;
+}
 
 function createOpenAIResponse(
   content: unknown,
@@ -52,6 +63,7 @@ describe('api adapter', () => {
       collapse: expect.any(Function),
       route: expect.any(Function),
       generate: expect.any(Function),
+      streamGenerate: expect.any(Function),
       audit: expect.any(Function),
       settlement: expect.any(Function),
       gossipelogUpdate: expect.any(Function),
@@ -162,6 +174,110 @@ describe('api adapter', () => {
     });
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result?.options)).toBe(true);
+  });
+
+  it('streamGenerate exposes beatTextDelta events and a parsed final result', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            [
+              'data: {"choices":[{"delta":{"content":"{\\"beatText\\":\\"Hel"}}]}\n\n',
+              'data: {"choices":[{"delta":{"content":"lo\\",\\"options\\":[\\"a\\",\\"b\\",\\"c\\",\\"d\\"]}"}}],"usage":{"prompt_tokens":11,"completion_tokens":7,"total_tokens":18}}\n\n',
+              'data: [DONE]\n\n',
+            ].join(''),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'text/event-stream' },
+            },
+          ),
+      ),
+    );
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    const streamResult = await adapter.streamGenerate?.(samplePromptObject);
+
+    expectTypeOf<GenerateStreamResult>().toMatchTypeOf(streamResult as GenerateStreamResult);
+    expect(streamResult?.kind).toBe('stream');
+    const events =
+      streamResult?.kind === 'stream'
+        ? await collectAsyncEvents<GenerateStreamEvent>(streamResult.events)
+        : [];
+    const beatTextDeltas = events
+      .filter((event): event is Extract<(typeof events)[number], { type: 'beatTextDelta' }> =>
+        event.type === 'beatTextDelta',
+      )
+      .map((event) => event.delta);
+    const finalEvent = events.find(
+      (event): event is Extract<(typeof events)[number], { type: 'finalResult' }> =>
+        event.type === 'finalResult',
+    );
+
+    expect(beatTextDeltas.join('')).toBe('Hello');
+    expect(finalEvent).toEqual({
+      type: 'finalResult',
+      result: {
+        beatText: 'Hello',
+        options: ['a', 'b', 'c', 'd'],
+        usage: {
+          promptTokens: 11,
+          completionTokens: 7,
+          totalTokens: 18,
+        },
+      },
+    });
+  });
+
+  it('streamGenerate reports fallback without changing buffered generate', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+      .mockResolvedValueOnce(
+        createOpenAIResponse({
+          beatText: 'generated-beat',
+          options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
+        }),
+      );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = createAPIAdapter({
+      provider: 'openai-compatible',
+      providerConfig: {
+        apiKey: 'openai-key',
+        baseUrl: 'https://openai.test',
+        model: 'gpt-test',
+      },
+    });
+
+    await expect(adapter.streamGenerate?.(samplePromptObject)).resolves.toEqual({
+      kind: 'fallback',
+      reason: 'non-streaming-response',
+    });
+    await expect(adapter.generate?.(samplePromptObject)).resolves.toEqual({
+      beatText: 'generated-beat',
+      options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
+      usage: {
+        promptTokens: 11,
+        completionTokens: 7,
+        totalTokens: 18,
+      },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('generate throws when provider response is missing the required options array', async () => {

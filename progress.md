@@ -2,6 +2,170 @@
 
 ## 2026-04-09
 
+- 为 `/play` 延迟优化新建了独立实现 worktree：
+  - 分支：`codex/play-latency-audit-streaming`
+  - 路径：[.worktrees/codex-play-latency-audit-streaming](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-play-latency-audit-streaming)
+- 已按 `using-git-worktrees` 做创建前校验：
+  - `.worktrees` 目录存在
+  - `.worktrees/` 已被 `.gitignore` 正确忽略
+- 已在新 worktree 中完成依赖安装：
+  - `npm install`
+- 已在新 worktree 中完成基线验证：
+  - `npm test` 通过
+  - 结果：`90` 个测试文件、`755` 个测试全部通过
+- 已把这个 worktree 的三件套切到实现轨道，明确当前实现范围只收敛到：
+  - `audit` 只看当前 beat / 本轮 options
+  - `audit off` 时“正文先流、选项和输入后置”
+- 已补记一个新的产品确认：
+  - `audit off` 的流式正文如果最终失败，应回退已显示的临时正文，并显示错误状态
+  - 不保留失败草稿，也不把它计入 continuity
+- 已继续记录你确认的交互细节：
+  - 正文按 chunk 流式更新，不做逐 token 动画
+  - 保持 `Generating...` 状态文案
+  - 自动滚动仅在用户停留底部时启用
+  - options 只在完整结果成功后一次性出现
+  - 输入持续锁定到最终 options 到齐
+  - `audit on` 维持现状，不做可见流式
+- 已记录新的设计边界：
+  - 本轮 spec 只服务于延迟优化，不顺手改变叙事控制方式
+  - 推荐将少数与“仅审当前 beat”语义冲突的 audit 问题一并改写，但不扩大成全局 audit 架构改造
+- 已完成正式 spec 起草：
+  - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)
+  - 当前正在进入 `brainstorming` 要求的 spec review loop，尚未进入 implementation plan
+- 第一轮 spec review 已回收并指出一个真实缺口：
+  - streaming 的 provider/proxy 覆盖范围、unsupported fallback 规则，以及“preview 与 final result 是否必须来自同一次 generate 请求”仍需冻结
+- 已据此修订 spec：
+  - 明确 `audit off` 只让 streaming 变成“可激活”，是否真正启用取决于 provider + transport 是否支持
+  - 明确 unsupported 情况必须回退到现有 buffered generate，而不是报错或偷换成双请求预览
+  - 明确 preview 与 terminal final result 必须来自同一次 generate 请求
+  - 补入一条真实 transport 验收要求，避免只在 mock adapter 里证明流式可行
+- 第二轮 spec review 已通过：
+  - reviewer 结论：`Approved`
+  - 当前按 `brainstorming` 流程等待你审阅书面 spec，再决定是否进入 implementation plan
+- 你已批准 spec 进入 implementation plan。
+- 已按 `writing-plans` 写出正式计划：
+  - [docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md](docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md)
+  - 计划已按 AGENTS packet 纪律拆成 5 个串行任务：audit contract、audit 题目兼容、transport/adapter 流式能力、orchestrator/workbench 接回、archive sync + 全量验证
+  - 当前正在进入 `writing-plans` 要求的 plan review loop，尚未开始实现
+- plan review 已通过：
+  - reviewer 结论：`Approved`
+  - reviewer 额外提醒的两条验证建议已吸收进 Task 4：
+    - `audit on` 时即便 `streamGenerate` 存在也必须继续走 buffered 路径
+    - streamed failure 不应触发 accepted beat / runtime persistence
+  - 当前等待你选择执行方式，再进入 implementation
+- 你已指定按 `subagent-driven-development` + `test-driven-development` 进入实现，并约定：
+  - 全量测试和 mock 验证完成后，由你提供一次真实 API 测试
+- Task 1 已进入执行并跑完第一轮实现闭环：
+  - implementer subagent 已按 TDD 先写失败测试再做最小实现
+  - `AuditPacket` 已不再包含 `precedingBeats`
+  - `buildAuditPacket()` / `executeAudit()` 已不再把 history 放进 audit packet
+  - audit prompt 已去掉 `[Preceding Beats]`
+  - implementer 跑过的 GREEN 验证为：
+    - `npm test -- src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/schema-validator.test.ts src/types/__tests__/type-conformance.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/api-adapter/__tests__/prompt-templates.test.ts`
+    - 结果：`5` 个 test files、`74` 个测试通过
+- Task 1 的 spec review 已通过：
+  - reviewer 结论：`APPROVED`
+  - 当前没有发现越界到 router / memory / streaming / orchestrator 的改动
+  - reviewer 额外指出一个可追踪但不阻塞当前 packet 的旧痕迹：
+    - `ExecuteAuditInput` 仍保留 `precedingBeats` 字段
+    - 它现在已经不进入 audit packet / prompt，但上游调用面尚未完全收口
+- Task 1 已根据 code quality review 完成补修并正式闭环：
+  - 新增了 legacy `AuditPacket.context.precedingBeats` 必须被 schema 拒绝的回归测试
+  - `ExecuteAuditInput` 已移除无效 `precedingBeats`
+  - `orchestrator` 与 `mock-adapter` e2e 测试已不再沿用旧 audit packet 形状
+  - 主线程已重新验证：
+    - `npx vitest run src/engine/modules/__tests__/auditor.test.ts src/engine/__tests__/schema-validator.test.ts src/types/__tests__/type-conformance.test.ts src/engine/api-adapter/__tests__/schema-mapper.test.ts src/engine/__tests__/e2e/mock-adapter-e2e.test.ts`
+    - 结果：`5` 个 test files、`75` 个测试通过
+    - `npm run type-check` 通过
+  - code quality reviewer 二次复审结论：`APPROVED`
+- 当前已切换到 Task 2 准备执行：
+  - 主线程已提前读取 `sample-scene/audit-questions.yaml`、`audit-loop-fixtures.ts`、`audit-behavior.test.ts`
+  - 下一步将按 TDD 先把仍依赖跨 beat 历史的 audit 题目 wording 打成红测，再做最小改写
+- Task 2 已完成：
+  - 当前只判定两道题真正需要对齐到 beat-local 语义：
+    - `sample-scene` 的 `AQ-P1-002`
+    - 测试 fixture 的 `AQ-P2-001`
+  - 其余现有 audit 题目未改，因为它们仍可只靠当前 beat / 本轮 options 做判断
+  - 主线程复验：
+    - `npx vitest run src/engine/__tests__/e2e/audit-behavior.test.ts src/engine/modules/__tests__/auditor.test.ts`
+    - 结果：`2` 个 test files、`12` 个测试通过
+  - `AQ-P1-002` 的 e2e 回归已明确锁到真实 phase-specific 路径：
+    - `selectionPolicy.default = []`
+    - `phaseOverrides['phase-01-prologue'].append = ['AQ-P1-002']`
+    - rewrite feedback 断言直接命中新文案，而不是借 default 选择绕过去
+- 当前已切换到 Task 3 准备执行：
+  - 下一步进入 adapter/provider/proxy/runtime transport 的 streaming contract 与 fallback
+- Task 3 已完成并正式收口：
+  - 正确 worktree 下的只读 reviewer 已确认 transport 仍停在已批准边界内：
+    - `generate()` 保持 buffered
+    - `streamGenerate()` 是独立 transport contract
+    - `/api/llm/proxy` 已 passthrough upstream stream body
+  - 主线程采信并记录的验证结果为：
+    - `npm test -- src/engine/api-adapter/__tests__/provider-interface.test.ts src/engine/api-adapter/__tests__/providers.test.ts src/engine/api-adapter/__tests__/adapter.test.ts src/app/api/llm/proxy/route.test.ts src/app/play/runtime.test.ts`
+    - 结果：`5` 个 test files、`55` 个测试通过
+    - `npm run type-check` 通过
+- 当前已切换到 Task 4 执行中：
+  - fresh implementer subagent 已按 TDD 进入 non-audited 可见 streaming 的 RED/GREEN 循环
+  - 主线程同步收口 todo，并继续准备 Task 4 的 review 与最终全量验证
+- Task 4 已完成并走完一轮 review 修补：
+  - `orchestrator.runBeat()` 新增 `onBeatTextDelta` 回调入口，non-audited 路径优先走 `streamGenerate`
+  - `PlayWorkbench` 已支持正文 chunk 流式显示、最终 options 后置显示、失败时回退临时正文并显示错误
+  - `audit on` 路径维持 buffered，不进入可见流式
+- 这一轮 review 额外打出了一个真实 UI 时序问题：
+  - accepted 之后让最终 options 保持在视口内的滚动，不能发生在提交前布局上
+  - 主线程已把它改成“提交后、最终 options 已渲染”的 follow scroll，并把测试从“只看调用次数”补强为“最后一次滚动发生时 options 已真实出现在 DOM 中”
+- 针对这次修补，主线程重新完成了最短验证闭环：
+  - `npm test -- src/app/__tests__/play.test.tsx src/engine/__tests__/orchestrator.test.ts`
+  - 结果：`2` 个 test files、`59` 个测试通过
+  - `npm run type-check` 通过
+- 本地全量验证已重新完成：
+  - `npm test` 通过
+  - 结果：`91` 个 test files、`776` 个测试通过
+  - `npm run build` 通过
+  - build 仅剩仓库既有 warning：
+    - 多 lockfile 导致的 Next workspace root 推断提醒
+    - 少量与本轮改动无关的 unused vars 提醒
+- 当前实现已满足本地 mock / 全量验证要求，下一步只等你提供一次真实 API 测试。
+- 你随后指定了真实 API 测试边界：
+  - 关闭所有 audit question，只验证 `audit off` 路径
+  - provider 使用 `MiniMax`
+  - model 使用 `MiniMax-M2.5`
+  - 真实测试环境开启了 VPN + TUN，需要把网络环境作为时延解读的一部分
+- 我随后按这个边界完成了真实 API 测试，并分两步收口：
+  - 先用真实浏览器打开 `/play?storyPackage=sample-scene`，配置 `MiniMax / MiniMax-M2.5` 与你提供的 API key，确认 workbench 能走到 `Start Round`
+  - 第一次真实生成时出现 `ERR_CONTENT_DECODING_FAILED` 与 `Light Cone Collapse failed after 3 attempts: Failed to fetch`
+- 已把这次真实测试里暴露出的 proxy 透传问题修掉：
+  - `/api/llm/proxy` 现在会在透传 upstream body 前剥离 `content-encoding`、`content-length`、`transfer-encoding`
+  - 避免浏览器对已被本地 fetch 解压的 body 再按旧 header 做错误解码
+  - 针对该修补新增了 `src/app/api/llm/proxy/route.test.ts`
+- 针对 proxy 修补，已完成最短验证闭环：
+  - `npm test -- src/app/api/llm/proxy/route.test.ts`
+  - `npm run type-check`
+  - 两项都通过
+- 修完 proxy 后继续做真实 API 测试，得到两个不同层级的结论：
+  - `ERR_CONTENT_DECODING_FAILED` 不再出现，说明 transport/proxy 损坏问题已经被修住
+  - `MiniMax-M2.5` 在一次 generate 中返回了 `【beatText】...` 这种非 JSON 文本，导致结构化解析失败；这个更像模型在当前兼容链路下的指令遵循波动，而不是我们新 streaming 实现把响应弄坏
+- 在同样的 `MiniMax-M2.5 + VPN/TUN` 真实环境下，后续又成功跑出了一轮 non-audited streaming：
+  - 正文已先显示，options 在正文之后出现，证明当前实现链路在真实 provider 下能走通
+  - 这轮成功链路的浏览器 `Performance` 记录显示：
+    - 点击 `Start Round` 到正文开始出现：约 `79.7s`
+    - 点击 `Start Round` 到最终 options 出现：约 `102.7s`
+    - 正文开始出现到 options 最终出现：约 `23.1s`
+  - 同一轮里 `gossipelog` 落在结果返回之后，不是这次正文/选项首次可见的主瓶颈
+- 这次真实验证还顺手确认了一个实现事实：
+  - 正文和 options 不是两次大模型生成请求
+  - 它们仍然来自同一次 `generate / streamGenerate`
+  - options 比正文晚出现，主要是因为 `runBeat()` 在返回前还会继续计算下一拍 `nextRouter`
+- 你在真实结果出来后明确选择：
+  - 这轮只记录 `nextRouter` 影响尾巴时延的现象，不继续改动它
+  - 如果未来关闭 VPN + TUN，可能再做一轮环境侧对照，不把这件事混入当前实现
+- 在补完真实 API 测试记录后，又重新跑了一轮最终验证：
+  - `npm test -- src/engine/__tests__/e2e/full-phase-run.test.ts` 通过
+  - `npm test` 通过
+  - 结果：`91` 个 test files、`777` 个测试全部通过
+  - `npm run build` 通过
+  - build 仍只有仓库既有 warning，没有新增阻塞项
+
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
 - 初步锁定的排查范围包括：

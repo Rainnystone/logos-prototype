@@ -51,10 +51,17 @@ export interface BeatResult {
   readonly retryCount: number;
 }
 
+export interface RunBeatOptions {
+  onBeatTextDelta?(delta: string): void;
+}
+
 export interface Orchestrator {
   initScene(): Promise<StateSnapshot>;
   hydrateScene(input: OrchestratorRestoreInput): Promise<StateSnapshot>;
-  runBeat(playerInput: string): Promise<{ beatResult: BeatResult; state: StateSnapshot }>;
+  runBeat(
+    playerInput: string,
+    options?: RunBeatOptions,
+  ): Promise<{ beatResult: BeatResult; state: StateSnapshot }>;
   getState(): StateSnapshot;
   isSceneComplete(): boolean;
 }
@@ -444,9 +451,12 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     historyWindow: readonly HistoryEntry[],
     directorNote: DirectorNote,
     selectedQuestions: readonly AuditQuestion[],
+    options?: RunBeatOptions,
   ): Promise<AttemptOutcome> {
     if (!config.adapter.generate) {
-      throw new Error('LLMAdapter.generate is not configured.');
+      if (!config.adapter.streamGenerate || selectedQuestions.length > 0) {
+        throw new Error('LLMAdapter.generate is not configured.');
+      }
     }
 
     await waitForPendingRelationshipRefresh();
@@ -460,9 +470,61 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       cloneRelationshipLayer(queuedRelationshipLayer),
     );
 
+    if (selectedQuestions.length === 0) {
+      const promptObject = assemblePromptObject(promptAssemblerInput);
+
+      if (config.adapter.streamGenerate) {
+        const streamResult = await config.adapter.streamGenerate(promptObject);
+
+        if (streamResult.kind === 'stream') {
+          let finalResult: GenerateResult | null = null;
+
+          for await (const event of streamResult.events) {
+            if (event.type === 'beatTextDelta') {
+              options?.onBeatTextDelta?.(event.delta);
+              continue;
+            }
+
+            finalResult = event.result;
+          }
+
+          if (!finalResult) {
+            throw new Error('Streamed generation finished without a final result.');
+          }
+
+          return {
+            promptObject,
+            generationResult: finalResult,
+            retryCount: 0,
+            resolution: PASS_WITHOUT_AUDIT,
+            auditAnswers: [],
+          };
+        }
+      }
+
+      if (!config.adapter.generate) {
+        throw new Error('LLMAdapter.generate is not configured.');
+      }
+
+      const generationResult = await config.adapter.generate(promptObject);
+
+      return {
+        promptObject,
+        generationResult,
+        retryCount: 0,
+        resolution: PASS_WITHOUT_AUDIT,
+        auditAnswers: [],
+      };
+    }
+
     let retryCount = 0;
     let previousDraft: GenerateResult | null = null;
     let rewriteFeedback: string | null = null;
+    const generate = config.adapter.generate;
+
+    if (!generate) {
+      throw new Error('LLMAdapter.generate is not configured.');
+    }
 
     for (;;) {
       const promptObject =
@@ -477,22 +539,11 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
             })
           : assemblePromptObject(promptAssemblerInput);
 
-      const generationResult = await config.adapter.generate(promptObject);
-      if (selectedQuestions.length === 0) {
-        return {
-          promptObject,
-          generationResult,
-          retryCount,
-          resolution: PASS_WITHOUT_AUDIT,
-          auditAnswers: [],
-        };
-      }
-
+      const generationResult = await generate(promptObject);
       const auditExecution = await executeAudit({
         adapter: config.adapter,
         questionSet: config.storyPackage.auditQuestionSet,
         currentPhaseId: phasePlan.phaseId,
-        precedingBeats: historyWindow,
         beatText: generationResult.beatText,
         options: generationResult.options,
       });
@@ -607,7 +658,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       return currentState;
     },
 
-    async runBeat(playerInput: string) {
+    async runBeat(playerInput: string, options?: RunBeatOptions) {
       const stateBeforeBeat = await this.initScene();
 
       if (sceneComplete) {
@@ -661,6 +712,7 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
         historyWindow,
         directorNote,
         selectedQuestions,
+        options,
       );
 
       const nextAcceptedHistory: HistoryEntry[] = [

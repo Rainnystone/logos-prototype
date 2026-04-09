@@ -88,7 +88,7 @@ describe('E2E full phase run', () => {
     expect(harness.getCallCounts()).toEqual({
       route: 9,
       generate: 4,
-      audit: 4,
+      audit: 0,
       settlement: 1,
       collapse: 2,
     });

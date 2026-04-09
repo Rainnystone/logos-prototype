@@ -5,11 +5,22 @@ import { loadSampleSceneStoryPackage } from '@/engine/__tests__/e2e/helpers/load
 import { renderWorldBaseForPrompt } from '@/engine/modules/world-base-prompt-render';
 
 describe('E2E mock adapter', () => {
+  function getAuditQuestionPrompts(count: number, storyPackage: Awaited<ReturnType<typeof loadSampleSceneStoryPackage>>) {
+    return [
+      ...storyPackage.auditQuestionSet.globalQuestions,
+      ...storyPackage.auditQuestionSet.controlQuestions,
+      ...Object.values(storyPackage.auditQuestionSet.phaseSpecificQuestions ?? {}).flat(),
+    ]
+      .slice(0, count)
+      .map((question) => question.question);
+  }
+
   it('supports all five modes with deterministic call tracking', async () => {
     const storyPackage = await loadSampleSceneStoryPackage();
     const harness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
     });
+    const auditQuestions = getAuditQuestionPrompts(2, storyPackage);
 
     const routeResult = await harness.adapter.route?.({
       context: {
@@ -41,23 +52,11 @@ describe('E2E mock adapter', () => {
       },
     });
     const auditResult = await harness.adapter.audit?.({
-      context: {
-        precedingBeats: [],
-      },
       generatedContent: {
         beatText: generateResult?.beatText ?? 'beat',
         options: generateResult ? [...generateResult.options] : ['1', '2', '3', '4'],
       },
-      auditQuestions: storyPackage.auditQuestionSet.selectionPolicy.default
-        .slice(0, 2)
-        .map((id) => {
-          const questions = [
-            ...storyPackage.auditQuestionSet.globalQuestions,
-            ...storyPackage.auditQuestionSet.controlQuestions,
-          ];
-
-          return questions.find((question) => question.id === id)?.question ?? '';
-        }),
+      auditQuestions,
     });
     const settlementResult = await harness.adapter.settlement?.({
       context: {
@@ -96,16 +95,7 @@ describe('E2E mock adapter', () => {
 
   it('supports pass, fail-once, and fail-always audit behaviors using the question expectations', async () => {
     const storyPackage = await loadSampleSceneStoryPackage();
-    const auditQuestions = storyPackage.auditQuestionSet.selectionPolicy.default
-      .slice(0, 3)
-      .map((id) => {
-        const questions = [
-          ...storyPackage.auditQuestionSet.globalQuestions,
-          ...storyPackage.auditQuestionSet.controlQuestions,
-        ];
-
-        return questions.find((question) => question.id === id)?.question ?? '';
-      });
+    const auditQuestions = getAuditQuestionPrompts(3, storyPackage);
 
     const passHarness = createE2EMockAdapter({
       questionSet: storyPackage.auditQuestionSet,
@@ -121,22 +111,18 @@ describe('E2E mock adapter', () => {
     });
 
     const passAnswers = await passHarness.adapter.audit?.({
-      context: { precedingBeats: [] },
       generatedContent: { beatText: 'beat', options: ['1', '2', '3', '4'] },
       auditQuestions,
     });
     const failOnceFirst = await failOnceHarness.adapter.audit?.({
-      context: { precedingBeats: [] },
       generatedContent: { beatText: 'beat', options: ['1', '2', '3', '4'] },
       auditQuestions,
     });
     const failOnceSecond = await failOnceHarness.adapter.audit?.({
-      context: { precedingBeats: [] },
       generatedContent: { beatText: 'beat', options: ['1', '2', '3', '4'] },
       auditQuestions,
     });
     const failAlwaysAnswers = await failAlwaysHarness.adapter.audit?.({
-      context: { precedingBeats: [] },
       generatedContent: { beatText: 'beat', options: ['1', '2', '3', '4'] },
       auditQuestions,
     });

@@ -73,22 +73,15 @@ describe('Auditor', () => {
     expect(selectedQuestions.map((question) => question.id)).toEqual(['AQ-P2-001']);
   });
 
-  it('builds a valid AuditPacket from history, beat text, options, and selected questions', () => {
+  it('builds a valid AuditPacket from beat text, options, and selected questions', () => {
     const { selectedQuestions } = selectAuditQuestions(auditQuestionSetFixture, 'phase-01');
     const packet = buildAuditPacket(
-      [
-        { role: 'assistant', content: 'accepted-beat-1' },
-        { role: 'user', content: 'player-choice-1' },
-      ],
       'generated-beat',
       ['option-1', 'option-2', 'option-3', 'option-4'],
       selectedQuestions,
     );
 
-    expect(packet.context.precedingBeats).toEqual([
-      { role: 'assistant', content: 'accepted-beat-1' },
-      { role: 'user', content: 'player-choice-1' },
-    ]);
+    expect(packet).not.toHaveProperty('context');
     expect(packet.generatedContent.beatText).toBe('generated-beat');
     expect(packet.generatedContent.options).toEqual([
       'option-1',
@@ -163,12 +156,12 @@ describe('Auditor', () => {
       adapter,
       questionSet: auditQuestionSetFixture,
       currentPhaseId: 'phase-01',
-      precedingBeats: [{ role: 'user', content: 'player-choice-1' }],
       beatText: 'generated-beat',
       options: ['option-1', 'option-2', 'option-3', 'option-4'],
     });
 
     expect(auditCalls).toHaveLength(1);
+    expect(result.packet).not.toHaveProperty('context');
     expect(result.selectedIds).toEqual(['AQ-G-001', 'AQ-C-001']);
     expect(result.auditResult.answers).toEqual([true, false]);
     expect(result.parsedResult.answers[1]?.questionId).toBe('AQ-C-001');

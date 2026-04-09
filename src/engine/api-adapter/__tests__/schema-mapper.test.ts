@@ -146,15 +146,15 @@ describe('schema mapper', () => {
   });
 
   describe('audit', () => {
-    it('maps AuditPacket into an audit prompt with context, generated beat, options, and questions', () => {
+    it('maps AuditPacket into an audit prompt with generated beat, options, and questions', () => {
       const request = mapForAudit(sampleAuditPacket, 'openai-compatible');
       const userMessage = request.messages[0]?.content ?? '';
 
       expect(request.system).toContain('answers');
-      expect(userMessage).toContain(sampleAuditPacket.context.precedingBeats[0]?.content ?? '');
       expect(userMessage).toContain(sampleAuditPacket.generatedContent.beatText);
       expect(userMessage).toContain(sampleAuditPacket.generatedContent.options[0]);
       expect(userMessage).toContain(sampleAuditPacket.auditQuestions[0]);
+      expect(userMessage).not.toContain('[Preceding Beats]');
     });
 
     it('uses the audit default temperature and token limit', () => {
@@ -173,18 +173,10 @@ describe('schema mapper', () => {
       });
     });
 
-    it('handles an empty precedingBeats array without dropping the audit payload', () => {
-      const request = mapForAudit(
-        {
-          ...sampleAuditPacket,
-          context: {
-            precedingBeats: [],
-          },
-        },
-        'openai-compatible',
-      );
+    it('keeps the audit payload intact without rendering any preceding-beat section', () => {
+      const request = mapForAudit(sampleAuditPacket, 'openai-compatible');
 
-      expect(request.messages[0]?.content).toContain('No preceding beats.');
+      expect(request.messages[0]?.content).not.toContain('No preceding beats.');
       expect(request.messages[0]?.content).toContain(sampleAuditPacket.generatedContent.beatText);
     });
   });

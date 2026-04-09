@@ -9,20 +9,47 @@ import {
 import { createOrchestrator } from '@/engine/orchestrator';
 
 describe('E2E audit behavior', () => {
+  function withSelectedAuditQuestions(
+    storyPackage: Awaited<ReturnType<typeof createTempSampleSceneFixture>>['storyPackage'],
+    phaseId: string,
+    append: readonly string[],
+  ) {
+    return {
+      ...storyPackage,
+      auditQuestionSet: {
+        ...storyPackage.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+          phaseOverrides: {
+            ...(storyPackage.auditQuestionSet.selectionPolicy.phaseOverrides ?? {}),
+            [phaseId]: {
+              append: [...append],
+            },
+          },
+        },
+      },
+    };
+  }
+
   afterEach(() => {
     cleanupTempSampleSceneFixtures();
   });
 
   it('accepts the beat on the first attempt when audit passes', async () => {
     const { packageName, storyPackage } = await createTempSampleSceneFixture();
+    const storyPackageWithAudit = withSelectedAuditQuestions(
+      storyPackage,
+      'phase-01-prologue',
+      ['AQ-P1-001'],
+    );
     const harness = createE2EMockAdapter({
-      questionSet: storyPackage.auditQuestionSet,
+      questionSet: storyPackageWithAudit.auditQuestionSet,
       auditBehavior: 'pass',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
       storyPackageName: packageName,
-      storyPackage,
+      storyPackage: storyPackageWithAudit,
       gossipelogCycleRunner: runGossipelogCycle,
     });
 
@@ -35,16 +62,27 @@ describe('E2E audit behavior', () => {
     expect(harness.generateCalls[0]?.generationControl).toBeUndefined();
   });
 
-  it('retries once with generationControl when the first audit fails', async () => {
+  it('retries once with generationControl when the beat-local audit fails', async () => {
     const { packageName, storyPackage } = await createTempSampleSceneFixture();
+    const storyPackageWithBeatLocalAudit = withSelectedAuditQuestions(
+      storyPackage,
+      'phase-01-prologue',
+      ['AQ-P1-002'],
+    );
+    expect(storyPackageWithBeatLocalAudit.auditQuestionSet.selectionPolicy.default).toEqual([]);
+    expect(
+      storyPackageWithBeatLocalAudit.auditQuestionSet.selectionPolicy.phaseOverrides?.[
+        'phase-01-prologue'
+      ]?.append,
+    ).toEqual(['AQ-P1-002']);
     const harness = createE2EMockAdapter({
-      questionSet: storyPackage.auditQuestionSet,
+      questionSet: storyPackageWithBeatLocalAudit.auditQuestionSet,
       auditBehavior: 'fail-once',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
       storyPackageName: packageName,
-      storyPackage,
+      storyPackage: storyPackageWithBeatLocalAudit,
       gossipelogCycleRunner: runGossipelogCycle,
     });
 
@@ -59,7 +97,7 @@ describe('E2E audit behavior', () => {
       retryCount: 1,
     });
     expect(harness.generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
-      '宫下藤花是否察觉到了超自然现象的存在，或者表现出对生命安全的恐慌？',
+      '本轮正文或选项是否已经直接把灰谷烈完整揭示为异常元凶？',
     );
     expect(harness.generateCalls[1]?.generationControl?.rewriteFeedback).toContain(
       'Correct answer: NO',
@@ -68,14 +106,19 @@ describe('E2E audit behavior', () => {
 
   it('force-accepts after three failed retries and still writes the beat into history', async () => {
     const { packageName, storyPackage } = await createTempSampleSceneFixture();
+    const storyPackageWithAudit = withSelectedAuditQuestions(
+      storyPackage,
+      'phase-01-prologue',
+      ['AQ-P1-001'],
+    );
     const harness = createE2EMockAdapter({
-      questionSet: storyPackage.auditQuestionSet,
+      questionSet: storyPackageWithAudit.auditQuestionSet,
       auditBehavior: 'fail-always',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
       storyPackageName: packageName,
-      storyPackage,
+      storyPackage: storyPackageWithAudit,
       gossipelogCycleRunner: runGossipelogCycle,
     });
 
@@ -91,23 +134,14 @@ describe('E2E audit behavior', () => {
 
   it('bypasses audit and accepts immediately when no questions are selected for the phase', async () => {
     const { packageName, storyPackage } = await createTempSampleSceneFixture();
-    const storyPackageWithoutSelectedAuditQuestions = {
-      ...storyPackage,
-      auditQuestionSet: {
-        ...storyPackage.auditQuestionSet,
-        selectionPolicy: {
-          default: [],
-        },
-      },
-    };
     const harness = createE2EMockAdapter({
-      questionSet: storyPackageWithoutSelectedAuditQuestions.auditQuestionSet,
+      questionSet: storyPackage.auditQuestionSet,
       auditBehavior: 'fail-always',
     });
     const orchestrator = createOrchestrator({
       adapter: harness.adapter,
       storyPackageName: packageName,
-      storyPackage: storyPackageWithoutSelectedAuditQuestions,
+      storyPackage,
       gossipelogCycleRunner: runGossipelogCycle,
     });
 

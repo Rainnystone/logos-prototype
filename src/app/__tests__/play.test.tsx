@@ -19,6 +19,7 @@ import type {
 } from '@/runtime-sessions/repository';
 import type { CollapseResponse } from '@/types';
 import type { PlayRuntimeSessionView } from '@/runtime-sessions/views';
+import type { StoryPackage } from '@/types';
 
 type AuditMode = 'pass' | 'fail-once' | 'fail-always';
 
@@ -32,6 +33,51 @@ function wait(delayMs: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, delayMs);
   });
+}
+
+function createDeferred<T = void>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}
+
+function createNoAuditStoryPackage(): StoryPackage {
+  return {
+    ...storyPackageFixture,
+    auditQuestionSet: {
+      ...storyPackageFixture.auditQuestionSet,
+      selectionPolicy: {
+        default: [],
+      },
+    },
+  };
+}
+
+function installScrollIntoViewSpy(scrollIntoView: ReturnType<typeof vi.fn>) {
+  const prototype =
+    typeof HTMLElement !== 'undefined' &&
+    typeof HTMLElement.prototype.scrollIntoView === 'function'
+      ? HTMLElement.prototype
+      : Element.prototype;
+
+  if (typeof prototype.scrollIntoView !== 'function') {
+    Object.defineProperty(prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: () => undefined,
+    });
+  }
+
+  return vi.spyOn(prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
 }
 
 function createCollapseResponse(request: CollapseInput): CollapseResponse {
@@ -670,13 +716,349 @@ describe('PlayWorkbench', () => {
     await startRound(user);
     fireEvent.click(screen.getByRole('button', { name: 'Option 1-2' }));
 
-    expect(screen.getByRole('button', { name: 'Option 1-1' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Option 1-2' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Option 1-3' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Option 1-4' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Option 1-1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Option 1-2' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Option 1-3' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Option 1-4' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Awaiting option 1' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Awaiting option 2' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Awaiting option 3' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Awaiting option 4' })).toBeDisabled();
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
 
     expect(await screen.findByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Option 2-1' })).toBeEnabled();
+  });
+
+  it('streams beat text before options when no audit questions are selected', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness();
+    const finalizeStream = createDeferred<void>();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat chunk' };
+        await finalizeStream.promise;
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Draft beat chunk complete.',
+            options: ['Option 1-1', 'Option 1-2', 'Option 1-3', 'Option 1-4'],
+          },
+        };
+      })(),
+    }));
+
+    render(
+      <PlayWorkbench
+        storyPackage={createNoAuditStoryPackage()}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => ({
+          ...baseHarness.adapter,
+          streamGenerate,
+        })}
+      />,
+    );
+
+    const startButton = await screen.findByRole('button', { name: 'Start Round' });
+    await user.click(startButton);
+
+    expect(await screen.findByText('Draft beat chunk')).toBeInTheDocument();
+    expect(screen.getByText('Generating...')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Option 1-1' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+
+    finalizeStream.resolve();
+
+    expect(await screen.findByText('Accepted')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Option 1-1' })).toBeEnabled();
+    expect(screen.getAllByText('Draft beat chunk complete.')).toHaveLength(2);
+  });
+
+  it('auto-follows streamed content only while the player stays near the bottom', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness();
+    const releaseSecondDelta = createDeferred<void>();
+    const finalizeStream = createDeferred<void>();
+    const scrollIntoView = vi.fn();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat chunk' };
+        await releaseSecondDelta.promise;
+        yield { type: 'beatTextDelta' as const, delta: ' more' };
+        await finalizeStream.promise;
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Draft beat chunk more',
+            options: ['Option 1-1', 'Option 1-2', 'Option 1-3', 'Option 1-4'],
+          },
+        };
+      })(),
+    }));
+    const innerHeightDescriptor = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
+    const scrollHeightDescriptor = Object.getOwnPropertyDescriptor(
+      document.documentElement,
+      'scrollHeight',
+    );
+
+    try {
+      installScrollIntoViewSpy(scrollIntoView);
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        value: 1000,
+      });
+      Object.defineProperty(window, 'scrollY', {
+        configurable: true,
+        value: 0,
+        writable: true,
+      });
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        configurable: true,
+        value: 1020,
+        writable: true,
+      });
+
+      render(
+        <PlayWorkbench
+          storyPackage={createNoAuditStoryPackage()}
+          storyPackageName="sample-scene"
+          initialConfig={adapterConfigFixture}
+          adapterFactory={() => ({
+            ...baseHarness.adapter,
+            streamGenerate,
+          })}
+        />,
+      );
+
+      await user.click(await screen.findByRole('button', { name: 'Start Round' }));
+      expect(await screen.findByText('Draft beat chunk')).toBeInTheDocument();
+      const initialScrollCallCount = scrollIntoView.mock.calls.length;
+
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        configurable: true,
+        value: 5000,
+        writable: true,
+      });
+      window.scrollY = 0;
+      fireEvent.scroll(window);
+
+      releaseSecondDelta.resolve();
+
+      expect(await screen.findByText('Draft beat chunk more')).toBeInTheDocument();
+      expect(scrollIntoView).toHaveBeenCalledTimes(initialScrollCallCount);
+
+      finalizeStream.resolve();
+      await screen.findByText('Accepted');
+    } finally {
+      if (innerHeightDescriptor) {
+        Object.defineProperty(window, 'innerHeight', innerHeightDescriptor);
+      }
+
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+      }
+
+      if (scrollHeightDescriptor) {
+        Object.defineProperty(document.documentElement, 'scrollHeight', scrollHeightDescriptor);
+      }
+    }
+  });
+
+  it('keeps the final options in view when the player stays near the bottom through stream completion', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness();
+    const finalizeStream = createDeferred<void>();
+    const optionPresenceAtScroll: boolean[] = [];
+    const scrollIntoView = vi.fn(function trackScroll() {
+      optionPresenceAtScroll.push(
+        screen.queryByRole('button', { name: 'Option 1-1' }) !== null,
+      );
+    });
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat chunk' };
+        await finalizeStream.promise;
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'Draft beat chunk complete.',
+            options: ['Option 1-1', 'Option 1-2', 'Option 1-3', 'Option 1-4'],
+          },
+        };
+      })(),
+    }));
+    const innerHeightDescriptor = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
+    const scrollHeightDescriptor = Object.getOwnPropertyDescriptor(
+      document.documentElement,
+      'scrollHeight',
+    );
+
+    try {
+      installScrollIntoViewSpy(scrollIntoView);
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        value: 1000,
+      });
+      Object.defineProperty(window, 'scrollY', {
+        configurable: true,
+        value: 0,
+        writable: true,
+      });
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        configurable: true,
+        value: 1020,
+        writable: true,
+      });
+
+      render(
+        <PlayWorkbench
+          storyPackage={createNoAuditStoryPackage()}
+          storyPackageName="sample-scene"
+          initialConfig={adapterConfigFixture}
+          adapterFactory={() => ({
+            ...baseHarness.adapter,
+            streamGenerate,
+          })}
+        />,
+      );
+
+      await user.click(await screen.findByRole('button', { name: 'Start Round' }));
+      expect(await screen.findByText('Draft beat chunk')).toBeInTheDocument();
+      const streamingScrollCalls = scrollIntoView.mock.calls.length;
+
+      finalizeStream.resolve();
+
+      expect(await screen.findByText('Accepted')).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Option 1-1' })).toBeEnabled();
+      await waitFor(() => {
+        expect(scrollIntoView.mock.calls.length).toBeGreaterThan(streamingScrollCalls);
+        expect(optionPresenceAtScroll.at(-1)).toBe(true);
+      });
+    } finally {
+      if (innerHeightDescriptor) {
+        Object.defineProperty(window, 'innerHeight', innerHeightDescriptor);
+      }
+
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+      }
+
+      if (scrollHeightDescriptor) {
+        Object.defineProperty(document.documentElement, 'scrollHeight', scrollHeightDescriptor);
+      }
+    }
+  });
+
+  it('falls back to the buffered beat path when streaming support is unavailable', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'fallback' as const,
+      reason: 'streaming-not-supported',
+    }));
+
+    render(
+      <PlayWorkbench
+        storyPackage={createNoAuditStoryPackage()}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => ({
+          ...baseHarness.adapter,
+          streamGenerate,
+        })}
+      />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Start Round' }));
+
+    const bufferedBeatText = `Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`;
+    expect(await screen.findAllByText(bufferedBeatText)).toHaveLength(2);
+    expect(screen.queryByText('Draft beat chunk')).not.toBeInTheDocument();
+    expect(streamGenerate).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the audited path fully buffered even when streamGenerate exists', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness({ delayMs: 30 });
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'should not render' };
+        yield {
+          type: 'finalResult' as const,
+          result: {
+            beatText: 'should not render',
+            options: ['x', 'y', 'z', 'w'],
+          },
+        };
+      })(),
+    }));
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => ({
+          ...baseHarness.adapter,
+          streamGenerate,
+        })}
+      />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Start Round' }));
+
+    expect(await screen.findByText('Auditing...')).toBeInTheDocument();
+    expect(await screen.findByText('Accepted')).toBeInTheDocument();
+    expect(streamGenerate).not.toHaveBeenCalled();
+    expect(
+      screen.getAllByText(`Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`),
+    ).toHaveLength(2);
+  });
+
+  it('removes temporary streamed text when the final stream fails', async () => {
+    const user = userEvent.setup();
+    const baseHarness = createPlayAdapterHarness();
+    const runtimeSessionClient = createRuntimeSessionClientMock();
+    const failStream = createDeferred<void>();
+    const streamGenerate = vi.fn(async () => ({
+      kind: 'stream' as const,
+      events: (async function* () {
+        yield { type: 'beatTextDelta' as const, delta: 'Draft beat chunk' };
+        await failStream.promise;
+      })(),
+    }));
+
+    render(
+      <PlayWorkbench
+        storyPackage={createNoAuditStoryPackage()}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => ({
+          ...baseHarness.adapter,
+          streamGenerate,
+        })}
+        runtimeSessionClient={runtimeSessionClient}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Start Round' }));
+    expect(await screen.findByText('Draft beat chunk')).toBeInTheDocument();
+
+    failStream.reject(new Error('Failed to run the next beat.'));
+
+    expect(await screen.findByText('Failed to run the next beat.')).toBeInTheDocument();
+    expect(screen.queryByText('Draft beat chunk')).not.toBeInTheDocument();
+    expect(screen.getByText('No accepted beats yet.')).toBeInTheDocument();
+    expect(runtimeSessionClient.recordAcceptedBeat).not.toHaveBeenCalled();
   });
 
   it('does not append unaccepted content to the current page after accepted-beat persistence fails', async () => {

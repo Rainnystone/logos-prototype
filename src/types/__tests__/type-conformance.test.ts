@@ -15,6 +15,7 @@ import type {
   StoryPackageManagementStorylineRowView,
   StoryPackageManagementWorkspaceView,
 } from '@/types';
+import type { ExecuteAuditInput } from '@/engine/modules/auditor';
 
 describe('Phase 00 contract types', () => {
   it('registers gossipelog agent metadata in the shared agent entrypoint', async () => {
@@ -373,9 +374,6 @@ describe('Phase 00 contract types', () => {
 
   it('models AuditPacket with an optional audit question selection', () => {
     const auditPacket: AuditPacket = {
-      context: {
-        precedingBeats: [{ role: 'assistant', content: 'history' }],
-      },
       generatedContent: {
         beatText: 'beat-text',
         options: ['opt-1', 'opt-2', 'opt-3', 'opt-4'],
@@ -385,6 +383,13 @@ describe('Phase 00 contract types', () => {
 
     expect(auditPacket.generatedContent.options).toHaveLength(4);
     expect(auditPacket.auditQuestions).toHaveLength(0);
+  });
+
+  it('omits precedingBeats from ExecuteAuditInput', () => {
+    type HasPrecedingBeats = ExecuteAuditInput extends { precedingBeats: unknown } ? true : false;
+    const hasNoPrecedingBeats: HasPrecedingBeats = false;
+
+    expect(hasNoPrecedingBeats).toBe(false);
   });
 
   it('models an AuditQuestionSet with an empty default selection', () => {
