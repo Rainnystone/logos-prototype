@@ -375,6 +375,8 @@ export function buildWeaverImportUserPrompt(request: WeaverImportRequest): strin
     '',
     '[Output Contract]',
     'Return JSON only with keys:',
+    'sourceSummary: required concise source-level summary.',
+    'importSummary: required concise import-level summary.',
     'suggestedPackageName is only a display-name suggestion; deterministic code still owns final package slug/identity.',
     'openingHook is an extracted comparison field only; persisted scene openingHook still comes from the original source text.',
     'worldBase is a lightweight seed object with settingSummary, worldRules, toneBaseline, locationPatch, and npcCharactersSummary.',

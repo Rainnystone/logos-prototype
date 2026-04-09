@@ -61,6 +61,8 @@ describe('prompt templates', () => {
 
       expect(prompt).toContain('attempt the fullest bounded extraction the text can support');
       expect(prompt).toContain('minimal shapes are fallback floors, not the preferred target');
+      expect(prompt).toContain('sourceSummary: required concise source-level summary.');
+      expect(prompt).toContain('importSummary: required concise import-level summary.');
       expect(prompt).toContain('worldBase is a lightweight seed object');
       expect(prompt).toContain('suggestedPackageName is only a display-name suggestion');
       expect(prompt).toContain(
