@@ -32,6 +32,13 @@
 - 已完成正式 spec 起草：
   - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)
   - 当前正在进入 `brainstorming` 要求的 spec review loop，尚未进入 implementation plan
+- 第一轮 spec review 已回收并指出一个真实缺口：
+  - streaming 的 provider/proxy 覆盖范围、unsupported fallback 规则，以及“preview 与 final result 是否必须来自同一次 generate 请求”仍需冻结
+- 已据此修订 spec：
+  - 明确 `audit off` 只让 streaming 变成“可激活”，是否真正启用取决于 provider + transport 是否支持
+  - 明确 unsupported 情况必须回退到现有 buffered generate，而不是报错或偷换成双请求预览
+  - 明确 preview 与 terminal final result 必须来自同一次 generate 请求
+  - 补入一条真实 transport 验收要求，避免只在 mock adapter 里证明流式可行
 
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。

@@ -30,6 +30,7 @@ This optimization should make the following statements true:
 3. Options remain gated until the final structured result is complete.
 4. Input remains locked until options are ready, so visible prose never creates a false-ready state.
 5. Existing narrative control modules continue to mean the same thing after the change.
+6. This first slice defines exactly when streaming is supported and exactly when the runtime must fall back to the current buffered path.
 
 ## 3. Frozen Product Conclusions
 
@@ -51,6 +52,7 @@ The following conclusions are already fixed and should not be reopened in this p
     - memory / `memory placeholder`
     - phase / beat orchestration semantics
     - the current audit enable/disable product switch itself
+13. Stream preview and terminal final result must come from the same generate request; this pass does not allow a second preview-only call or a second options-only call.
 
 ## 4. Non-Goals
 
@@ -230,6 +232,14 @@ The streaming contract should expose two kinds of information:
    - the complete validated `GenerateResult`
    - includes final `beatText` and the four options
 
+Both must come from the same generate request.
+
+This slice explicitly rejects:
+
+- a preview-only first generate call followed by a second final generate call
+- a second options-generation call after streamed prose is complete
+- a generic “try to stream everything everywhere” parser strategy
+
 The final result remains the only source of truth for:
 
 - options
@@ -238,7 +248,38 @@ The final result remains the only source of truth for:
 - continuity state
 - checkpoint recording
 
-### 7.5 Why Streaming Must Stay Generate-Only In This Pass
+### 7.5 Supported Runtime Coverage And Buffered Fallback
+
+This slice must support streaming only for the existing `/play` generate path and only when all of the following are true:
+
+1. the current beat has no selected audit questions
+2. the configured adapter/provider path exposes generate streaming support
+3. the actual transport path used by `/play` can carry streamed chunks to the browser
+
+The intended first-slice coverage is:
+
+- the current `/play` generate path only
+- both existing provider families already supported by the runtime:
+  - `openai-compatible`
+  - `anthropic`
+- including the real `/api/llm/proxy` path when that path is used by the selected provider configuration and can stream correctly
+
+If any required streaming capability is missing, the runtime must deterministically fall back to the existing buffered non-audited path.
+
+Fallback behavior must:
+
+- keep the same product semantics as today
+- not show partial prose
+- not error merely because streaming is unavailable
+- not silently switch to a two-request preview strategy
+
+So the contract is:
+
+- `audit off` makes streaming **eligible**
+- supported provider + transport makes streaming **active**
+- unsupported provider/proxy/transport makes buffered generate **the required fallback**
+
+### 7.6 Why Streaming Must Stay Generate-Only In This Pass
 
 `route`, `audit`, `settlement`, and `collapse` do not directly improve player-perceived latency through visible prose reveal in the same way generate does.
 
@@ -250,7 +291,7 @@ Trying to stream them now would:
 
 Therefore this pass intentionally limits streaming infrastructure to the generate path used in the player-visible beat body.
 
-### 7.6 Parsing Strategy
+### 7.7 Parsing Strategy
 
 The current generate path expects a final structured payload containing both `beatText` and `options`.
 
@@ -264,7 +305,7 @@ Instead, the streaming path should be designed so that:
 
 This keeps the player-visible behavior useful while preserving the existing structured-output boundary at acceptance time.
 
-### 7.7 Workbench Behavior
+### 7.8 Workbench Behavior
 
 On the `audit off` streaming path, the workbench should behave like this:
 
@@ -358,10 +399,13 @@ Implementation planning should assume at least these verification layers:
 - tests that input stays locked during streaming
 - tests that failure rolls back temporary streamed prose
 - tests that `audit on` still uses the old buffered path
+- tests that unsupported streaming capability falls back to buffered generate without changing product behavior
+- at least one transport-level acceptance path proving streamed content can cross the actual `/play` transport stack before final options appear
 
 ### 10.3 Final Verification
 
 - targeted suites for audit, adapter, orchestrator, and play workbench
+- a real non-mock acceptance check through the actual runtime transport path used by `/play` for streaming-capable configuration, so success is not proven only inside mock adapters
 - full `npm test`
 - `npm run build` before calling implementation complete
 
