@@ -1,31 +1,41 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 import type { WeaverImportSummary } from '@/types';
 
-const loadWeaverImportSummaryIfPresent = vi.fn();
-const saveWeaverImportSummary = vi.fn();
-const inspectCharacterRelationshipsState = vi.fn();
-const createAPIAdapter = vi.fn(() => ({
-  gossipelogUpdate: vi.fn(),
-  gossipelogInjection: vi.fn(),
+const mocks = vi.hoisted(() => ({
+  resolveActiveStorylineContext: vi.fn(async () => ({
+    authoredRoot: '/tmp/storylines/sample-scene/active',
+  })),
+  loadWeaverImportSummaryIfPresent: vi.fn(),
+  saveWeaverImportSummary: vi.fn(),
+  inspectCharacterRelationshipsState: vi.fn(),
+  createAPIAdapter: vi.fn(() => ({
+    gossipelogUpdate: vi.fn(),
+    gossipelogInjection: vi.fn(),
+  })),
+  bootstrapGossipelogFromWeaverSummary: vi.fn(),
 }));
-const bootstrapGossipelogFromWeaverSummary = vi.fn();
 
 vi.mock('@/agents/weaver/repository', () => ({
-  loadWeaverImportSummaryIfPresent,
-  saveWeaverImportSummary,
+  loadWeaverImportSummaryIfPresent: mocks.loadWeaverImportSummaryIfPresent,
+  saveWeaverImportSummary: mocks.saveWeaverImportSummary,
+}));
+
+vi.mock('@/storylines/substrate', () => ({
+  resolveActiveStorylineContext: mocks.resolveActiveStorylineContext,
 }));
 
 vi.mock('@/agents/gossipelog/repository', () => ({
-  inspectCharacterRelationshipsState,
+  inspectCharacterRelationshipsState: mocks.inspectCharacterRelationshipsState,
 }));
 
 vi.mock('@/engine/api-adapter/adapter', () => ({
-  createAPIAdapter,
+  createAPIAdapter: mocks.createAPIAdapter,
 }));
 
 vi.mock('@/agents/gossipelog/bootstrap', () => ({
-  bootstrapGossipelogFromWeaverSummary,
+  bootstrapGossipelogFromWeaverSummary: mocks.bootstrapGossipelogFromWeaverSummary,
 }));
 
 describe('POST /api/play/gossipelog/bootstrap', () => {
@@ -44,11 +54,12 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
   };
 
   beforeEach(() => {
-    loadWeaverImportSummaryIfPresent.mockReset();
-    saveWeaverImportSummary.mockReset();
-    inspectCharacterRelationshipsState.mockReset();
-    createAPIAdapter.mockClear();
-    bootstrapGossipelogFromWeaverSummary.mockReset();
+    mocks.resolveActiveStorylineContext.mockClear();
+    mocks.loadWeaverImportSummaryIfPresent.mockReset();
+    mocks.saveWeaverImportSummary.mockReset();
+    mocks.inspectCharacterRelationshipsState.mockReset();
+    mocks.createAPIAdapter.mockClear();
+    mocks.bootstrapGossipelogFromWeaverSummary.mockReset();
   });
 
   it('returns 400 when adapterConfig cannot be parsed', async () => {
@@ -95,9 +106,9 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(loadWeaverImportSummaryIfPresent).not.toHaveBeenCalled();
-    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
-    expect(createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.loadWeaverImportSummaryIfPresent).not.toHaveBeenCalled();
+    expect(mocks.inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'A valid storyPackageName is required for gossipelog bootstrap.',
@@ -127,9 +138,9 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(loadWeaverImportSummaryIfPresent).not.toHaveBeenCalled();
-    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
-    expect(createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.loadWeaverImportSummaryIfPresent).not.toHaveBeenCalled();
+    expect(mocks.inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'A valid storyPackageName is required for gossipelog bootstrap.',
@@ -137,7 +148,7 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
   });
 
   it('returns noop when no persisted weaver summary exists', async () => {
-    loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(null);
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(null);
     const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
 
     const response = await POST(
@@ -157,9 +168,10 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
-    expect(createAPIAdapter).not.toHaveBeenCalled();
-    expect(bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
+    expect(mocks.resolveActiveStorylineContext).not.toHaveBeenCalled();
+    expect(mocks.inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       status: 'noop',
@@ -167,8 +179,45 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
     });
   });
 
+  it('returns a bounded 400 when resolving the active storyline context fails because the package is missing', async () => {
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(summaryFixture);
+    mocks.inspectCharacterRelationshipsState.mockResolvedValueOnce('missing');
+    mocks.resolveActiveStorylineContext.mockRejectedValueOnce(
+      new RuntimeStoryPackageNotFoundError('missing-package'),
+    );
+    const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog/bootstrap', {
+        method: 'POST',
+        body: JSON.stringify({
+          storyPackageName: 'sample-scene',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(mocks.resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(mocks.inspectCharacterRelationshipsState).toHaveBeenCalledWith('sample-scene');
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Story package was not found for gossipelog bootstrap.',
+    });
+  });
+
   it('returns a bounded 400 when storyPackageName is valid but the package does not exist', async () => {
-    loadWeaverImportSummaryIfPresent.mockRejectedValueOnce(
+    mocks.loadWeaverImportSummaryIfPresent.mockRejectedValueOnce(
       new Error(
         'Story package "missing-package" was not found at /tmp/story-packages/missing-package.',
       ),
@@ -192,9 +241,9 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(inspectCharacterRelationshipsState).not.toHaveBeenCalled();
-    expect(createAPIAdapter).not.toHaveBeenCalled();
-    expect(bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
+    expect(mocks.inspectCharacterRelationshipsState).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'Story package was not found for gossipelog bootstrap.',
@@ -202,8 +251,8 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
   });
 
   it('returns noop and reconciles summary when persisted gossipelog state is already readable', async () => {
-    loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(summaryFixture);
-    inspectCharacterRelationshipsState.mockResolvedValueOnce('readable');
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(summaryFixture);
+    mocks.inspectCharacterRelationshipsState.mockResolvedValueOnce('readable');
 
     const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
 
@@ -224,12 +273,13 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(saveWeaverImportSummary).toHaveBeenCalledWith('sample-scene', {
+    expect(mocks.resolveActiveStorylineContext).not.toHaveBeenCalled();
+    expect(mocks.saveWeaverImportSummary).toHaveBeenCalledWith('sample-scene', {
       ...summaryFixture,
       bootstrapStatus: 'succeeded',
     });
-    expect(createAPIAdapter).not.toHaveBeenCalled();
-    expect(bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).not.toHaveBeenCalled();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       status: 'noop',
@@ -239,12 +289,12 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
   });
 
   it('attempts one fallback bootstrap when persisted gossipelog state is missing', async () => {
-    loadWeaverImportSummaryIfPresent.mockResolvedValueOnce({
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce({
       ...summaryFixture,
       bootstrapStatus: 'succeeded',
     });
-    inspectCharacterRelationshipsState.mockResolvedValueOnce('missing');
-    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+    mocks.inspectCharacterRelationshipsState.mockResolvedValueOnce('missing');
+    mocks.bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
       ok: false,
       attempted: true,
       bootstrapStatus: 'fallback_pending',
@@ -270,7 +320,7 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(createAPIAdapter).toHaveBeenCalledWith({
+    expect(mocks.createAPIAdapter).toHaveBeenCalledWith({
       provider: 'openai-compatible',
       providerConfig: {
         apiKey: 'test-key',
@@ -278,13 +328,17 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
         model: 'demo-model',
       },
     });
-    expect(bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+    expect(mocks.resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
       storyPackageName: 'sample-scene',
       weaverSummary: {
         ...summaryFixture,
         bootstrapStatus: 'succeeded',
       },
       relationshipState: 'missing',
+      authoredRootOverride: '/tmp/storylines/sample-scene/active',
       adapter: expect.objectContaining({
         gossipelogUpdate: expect.any(Function),
         gossipelogInjection: expect.any(Function),
@@ -298,12 +352,12 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
   });
 
   it('attempts one fallback bootstrap when persisted gossipelog state is unreadable', async () => {
-    loadWeaverImportSummaryIfPresent.mockResolvedValueOnce({
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce({
       ...summaryFixture,
       bootstrapStatus: 'succeeded',
     });
-    inspectCharacterRelationshipsState.mockResolvedValueOnce('unreadable');
-    bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+    mocks.inspectCharacterRelationshipsState.mockResolvedValueOnce('unreadable');
+    mocks.bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
       ok: false,
       attempted: true,
       bootstrapStatus: 'fallback_pending',
@@ -329,23 +383,72 @@ describe('POST /api/play/gossipelog/bootstrap', () => {
       }),
     );
 
-    expect(bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
       storyPackageName: 'sample-scene',
       weaverSummary: {
         ...summaryFixture,
         bootstrapStatus: 'succeeded',
       },
       relationshipState: 'unreadable',
+      authoredRootOverride: '/tmp/storylines/sample-scene/active',
       adapter: expect.objectContaining({
         gossipelogUpdate: expect.any(Function),
         gossipelogInjection: expect.any(Function),
       }),
     });
-    expect(saveWeaverImportSummary).not.toHaveBeenCalled();
+    expect(mocks.saveWeaverImportSummary).not.toHaveBeenCalled();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       status: 'fallback_pending',
       bootstrapStatus: 'fallback_pending',
+    });
+  });
+
+  it('boots with the active storyline authored root and preserves the bootstrapped response shape', async () => {
+    mocks.loadWeaverImportSummaryIfPresent.mockResolvedValueOnce(summaryFixture);
+    mocks.inspectCharacterRelationshipsState.mockResolvedValueOnce('missing');
+    mocks.bootstrapGossipelogFromWeaverSummary.mockResolvedValueOnce({
+      ok: true,
+      attempted: true,
+      bootstrapStatus: 'succeeded',
+    });
+
+    const { POST } = await import('@/app/api/play/gossipelog/bootstrap/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog/bootstrap', {
+        method: 'POST',
+        body: JSON.stringify({
+          storyPackageName: 'sample-scene',
+          adapterConfig: {
+            provider: 'openai-compatible',
+            providerConfig: {
+              apiKey: 'test-key',
+              baseUrl: 'https://api.example.com/v1',
+              model: 'demo-model',
+            },
+          },
+        }),
+      }),
+    );
+
+    expect(mocks.resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(mocks.bootstrapGossipelogFromWeaverSummary).toHaveBeenCalledWith({
+      storyPackageName: 'sample-scene',
+      weaverSummary: summaryFixture,
+      relationshipState: 'missing',
+      authoredRootOverride: '/tmp/storylines/sample-scene/active',
+      adapter: expect.objectContaining({
+        gossipelogUpdate: expect.any(Function),
+        gossipelogInjection: expect.any(Function),
+      }),
+    });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'bootstrapped',
+      bootstrapStatus: 'succeeded',
     });
   });
 });

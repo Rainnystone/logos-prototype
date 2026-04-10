@@ -8,6 +8,11 @@
 
 **Tech Stack:** Next.js 15, React 19, TypeScript, Vitest, Testing Library
 
+**Execution Status (2026-04-10):**
+- Task 1 completed
+- Task 2 through Task 5 completed
+- Task 6 verification completed with targeted tests, `npm run test:core`, `npm run build`, and full `npm test`
+
 ---
 
 ## Spec Reference
@@ -371,7 +376,51 @@ git add src/app/play/PlayWorkbench.tsx src/app/__tests__/play.test.tsx
 git commit -m "fix: align play workbench lock with gossipelog timeout"
 ```
 
-## Task 5: Run Focused Regression Verification and Sync Planning Files
+## Task 5: Prevent Late Finalization Failure From Reverting Newer Relationship Truth
+
+**Files:**
+- Modify: `src/engine/orchestrator.ts`
+- Modify: `src/engine/__tests__/orchestrator.test.ts`
+
+- [ ] **Step 1: 写失败测试，证明一个已经 timeout 的旧 refresh 晚到并在 finalization 阶段失败时，不会把更新后的 `queuedRelationshipLayer` 回滚掉**
+
+```ts
+it('does not roll back newer relationship truth when a timed-out refresh later fails during finalization', async () => {
+  // let the first refresh time out
+  // accept a newer beat so checkpoint / live queued truth move forward
+  // then resolve the old refresh and force finalizeRelationshipLayer to fail
+  // assert queuedRelationshipLayer still reflects the newer accepted truth
+});
+```
+
+- [ ] **Step 2: 运行 orchestrator 测试并确认这条新用例先失败**
+
+Run: `npm test -- src/engine/__tests__/orchestrator.test.ts`
+Expected: FAIL because current code caches checkpoint binding before awaiting finalization persistence.
+
+- [ ] **Step 3: 在 `orchestrator` 中把“是否仍代表当前 checkpoint”判断放到真正需要回滚或写入 live truth 的时点重新计算，而不是在 await 前缓存**
+
+Implementation target:
+
+```ts
+const shouldRestoreFallback = isCurrentCheckpointBinding(refresh);
+```
+
+Applied only at the catch / live-truth application point after `await finalizeRelationshipLayer(...)` returns or throws.
+
+- [ ] **Step 4: 再跑 orchestrator 测试，确认新回归用例与现有 timeout/fallback 语义一起转绿**
+
+Run: `npm test -- src/engine/__tests__/orchestrator.test.ts`
+Expected: PASS
+
+- [ ] **Step 5: 提交 Task 5**
+
+```bash
+git add src/engine/orchestrator.ts src/engine/__tests__/orchestrator.test.ts
+git commit -m "fix: preserve newer relationship truth after late finalize failure"
+```
+
+## Task 6: Run Focused Regression Verification and Sync Planning Files
 
 **Files:**
 - Modify: `task_plan.md`

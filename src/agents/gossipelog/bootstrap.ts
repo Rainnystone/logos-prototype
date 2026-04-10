@@ -24,6 +24,7 @@ interface BootstrapGossipelogFromWeaverSummaryInput {
   readonly weaverSummary: WeaverImportSummary;
   readonly adapter: Pick<LLMAdapter, 'gossipelogUpdate' | 'gossipelogInjection'>;
   readonly relationshipState?: RelationshipStateReadability;
+  readonly authoredRootOverride?: string;
 }
 
 interface BootstrapGossipelogFromWeaverSummaryResult {
@@ -80,7 +81,11 @@ export async function bootstrapGossipelogFromWeaverSummary(
   let shouldRollbackUnreadableSnapshot = false;
 
   try {
-    const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName);
+    const loadOptions =
+      input.authoredRootOverride === undefined
+        ? undefined
+        : { authoredRootOverride: input.authoredRootOverride };
+    const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName, loadOptions);
     const openingHook = storyPackage.sceneSpec.openingHook?.trim();
     const acceptedBeatText = [
       openingHook && openingHook.length > 0

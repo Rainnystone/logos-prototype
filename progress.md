@@ -41,6 +41,71 @@
   - `src/agents/gossipelog/bootstrap.ts` 这一层必须纳入 Task 1
   - bootstrap 路径需要明确 `route -> helper -> loader` 的参数链
 - 根据审阅意见已修订 plan，并二次复审通过。
+- 已进入按计划执行阶段，当前执行方式已明确为：
+  - 遵循 `using-git-worktrees` 建立隔离 worktree
+  - 按 `subagent-driven-development` 串行下发实现包
+  - 每个实现包都先走 `test-driven-development` 的红灯再进入实现
+- 已按 `using-git-worktrees` 在 `.worktrees/codex-gossipelog-runtime-alignment-fixes` 创建隔离分支 `codex/gossipelog-runtime-alignment-fixes`。
+- 已在该 worktree 完成 baseline 校验：
+  - `npm install` 成功
+  - 全量 `npm test` 通过，结果为 91 个测试文件、787 条测试全绿
+- 已按 `subagent-driven-development` 派出 Task 1 写权限子代理，只负责：
+  - `gossipelog` 主 route 的 active storyline authored root 对齐
+  - `gossipelog bootstrap` route / helper 的 authoredRootOverride 传递
+  - 对应 route / helper 级 TDD 红绿测试
+- Task 1 首轮实现已经完成并通过本地 targeted tests / `npm run build`，但 spec review 拦下一个合规缺口：
+  - `bootstrap` route 新增的 `resolveActiveStorylineContext(...)` 路径还没有纳入原有 “story package not found” 的 bounded 400 合同
+  - 已把该问题回派给同一个实现子代理，用同一实现包补 red → green
+- Task 1 的 spec gate 已通过，但 code quality review 又确认一条新增回归面：
+  - `bootstrap` route 把 `resolveActiveStorylineContext(...)` 提前到了两个原本可以直接 `noop` 的分支之前
+  - 这样 `no_weaver_summary` 与 `gossipelog_state_present` 两条路径也会无谓依赖 storyline substrate
+  - 已要求同一个实现子代理把 resolver 延后到真正进入 bootstrap 分支前，并补上这两条 noop 路径的回归测试
+- Task 1 已完成最终收口：
+  - `gossipelog` 主 route 已按 active storyline authored root 读取 runtime story package
+  - `gossipelog bootstrap` route / helper 已把 `authoredRootOverride` 正确透传到 runtime story package loader
+  - `bootstrap` route 的缺包 400 合同和两个 noop 路径都已重新验证，没有因为 storyline resolver 接入而回归
+  - 实现包已通过 spec review、code quality review，以及主线程复跑的 targeted tests 与 `npm run build`
+- 按用户新要求，当前线程的 subagent 执行节奏已调整：
+  - 默认等待策略统一改为首轮 120 秒；如仍有新产出，再按 180 / 300 秒退避
+  - `timed_out` 不等于 `blocked`；不得仅因超时关闭 subagent
+  - 只有连续两轮“无新输出 + 无文件变化”才允许发状态问询
+  - 不只是 implementer，任何 subagent 的状态问询都不得要求其停止当前任务
+  - 状态问询只用于收集进度与阻塞，不改变 subagent 继续推进的语义
+- Task 2 已完成实现包首轮交付：
+  - `PlayWorkbench` 已把 relationship sync 的后台 pending bookkeeping 与输入阻塞窗口拆开
+  - 新增共享常量 `src/agents/gossipelog/runtime-contract.ts`
+  - `orchestrator` 已改为引用共享 wait budget 常量
+  - 主线程已复跑 `npm test -- src/app/__tests__/play.test.tsx src/engine/__tests__/orchestrator.test.ts`，当前为 63 条测试全绿
+  - 目前正在进入 Task 2 的 spec review，然后才会进入 code quality review
+- Task 2 的 spec review 已通过，但 code quality review 拦下两条有效问题：
+  - `PlayWorkbench` 的 timeout 解锁还没有覆盖后续 runtime config save / rehydrate 对旧 pending sync 的无界等待分支
+  - `src/engine/__tests__/orchestrator.test.ts` 仍硬编码 `2_000`，尚未与共享 wait contract 常量对齐
+- 这两条问题已回派给同一个 Task 2 implementer，继续按 TDD 修复，然后再重新进入 review gate。
+- Task 2 implementer 已交回修正版后，主线程复跑：
+  - `npm test -- src/app/__tests__/play.test.tsx src/engine/__tests__/orchestrator.test.ts`
+  - 当前为 64 条测试全绿
+- 随后的最终 code quality re-review 出现了“看错树”的情况：
+  - reviewer 报称 `src/agents/gossipelog/runtime-contract.ts` 不存在、`orchestrator` 仍在硬编码 `2_000`
+  - 主线程复核后确认这两条与当前 worktree 实际代码不符，因此未直接采信
+- 主线程进一步复核后，确认 Task 2 仍留有一条真实问题：
+  - `src/engine/orchestrator.ts` 在“旧 refresh 已 timeout、随后晚到并在 finalization 阶段失败”时，会因为过早缓存 checkpoint 绑定判断而错误回滚较新的 `queuedRelationshipLayer`
+  - 这是一条新的并发回滚风险，现有测试尚未覆盖“晚到失败 + checkpoint 已前移”的交错分支
+- 随后已按新的独立实现包继续推进这条并发回滚风险：
+  - 先在 `src/engine/__tests__/orchestrator.test.ts` 补了一条红灯测试，稳定复现“旧 refresh timeout 后晚到、finalization 失败、第三拍错误吃到空关系层”的问题
+  - 再在 `src/engine/orchestrator.ts` 把 checkpoint 绑定判断从 `await finalizeRelationshipLayer(...)` 之前缓存，改为在真正 live write / rollback 时重新判断
+  - 主线程已复跑 `npm test -- src/engine/__tests__/orchestrator.test.ts`，当前为 28 条测试全绿
+- 这条新的 engine 修复随后已通过：
+  - 一轮只读 spec review
+  - 一轮只读 code quality review
+  - `npm test -- src/app/__tests__/play.test.tsx src/engine/__tests__/orchestrator.test.ts`，当前为 65 条测试全绿
+  - `npm run test:core`，当前为 29 个测试文件、333 条测试全绿
+  - `npm run build`，通过；仅出现仓库中已有的 lint warning，没有新增构建错误
+  - 全量 `npm test`，当前为 91 个测试文件、796 条测试全绿
+- 同时已纠正一次错误落点：
+  - engine 这两处修复一度也出现在主工作区 `branch/narrative-editor`
+  - 主线程已将该误落点清理干净，现在改动只保留在 `.worktrees/codex-gossipelog-runtime-alignment-fixes`
+- 至此，本轮两个已确认 bug 及其后续衍生并发风险都已在当前 worktree 内完成修复与验证，下一阶段可以回到 reference / relationship memory 升级主线。
+- 当前已把此前误落在主工作区的 subagent 等待策略与执行记录迁回本 worktree，并在 `AGENTS.md` 内按“派遣 / 等待 / 问询 / 终止”重组规则，避免 PR 把治理变更落到错误分支。
 - 阶段性结论已形成：
   - 图编辑是值得做的，但当前更优先的是补齐 `gossipelog` reference
   - 在 reference / memory 升级前，应先一起修两个已确认 bug

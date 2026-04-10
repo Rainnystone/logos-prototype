@@ -86,6 +86,9 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - Spec text budget: max 40,000 tokens per session.
 
 ### 7. Subagent Delegation Discipline
+
+#### Dispatch
+
 - For complex work, prefer decomposing the implementation into bounded tasks and dispatching subagents rather than keeping the whole execution on the main thread.
 - Subagent dispatch must follow `subagent-driven-development`; do not improvise a parallel workflow outside that discipline when the task has already been decomposed.
 - Choose the subagent model according to task complexity instead of defaulting to the largest model. Valid deployment options include:
@@ -95,11 +98,25 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
   - `gpt-5.3-codex-spark` with `medium` / `high` / `xhigh`
 - Dispatch instructions must explicitly tell the worker that it is a subagent, not the main thread.
 - Prefer giving the subagent a clean task brief, file boundary, and success criteria instead of forwarding raw main-thread conversation history.
-- Do not close a subagent just because a wait timed out. Before closing, first confirm its actual work status, current progress, latest conclusion, and whether keeping it alive still reduces risk or rework.
 - Each dispatch should clearly state:
   - whether the subagent is read-only review or write-authorized implementation
   - which files or modules it owns
   - which actions are forbidden, especially spawning more subagents, reverting unrelated work, or broadening scope without approval
+
+#### Waiting and Inquiry
+
+- The first `wait_agent` call must use `timeout_ms=120000`.
+- If the first wait times out but there is new output, such as new replies, `git diff` changes, or changes in owned files, the next wait must use `timeout_ms=180000`.
+- If the second wait also times out and new output is still appearing, the next wait must use `timeout_ms=300000`.
+- `timed_out` is not the same as `blocked`; a timeout only means that the current wait window ended without a final result, not that the subagent is stalled, invalid, or ready to terminate.
+- Status inquiry is allowed only after two consecutive rounds with both no new output and no file changes.
+- Status inquiry must be phrased as “report progress and blockers only, without pausing the current task”; it must not ask the subagent to stop implementation, pause work, immediately hand over, or abandon its current context.
+
+#### Replacement and Termination
+
+- Do not close a subagent just because a wait timed out.
+- Before replacing or closing a subagent, first confirm its actual work status, current progress, latest conclusion, and whether keeping it alive still reduces risk or rework.
+- Replace or close a subagent only after three rounds with no output and a status inquiry that also confirms there is no meaningful progress.
 
 ### 8. Implementation Packet Discipline
 

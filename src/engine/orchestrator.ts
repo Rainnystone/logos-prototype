@@ -1,5 +1,6 @@
 import { deepFreeze } from '@/lib/deep-freeze';
 import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
+import { GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS } from '@/agents/gossipelog/runtime-contract';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import { resolveAudit, type AuditResolverResult } from '@/engine/modules/audit-resolver';
 import { buildDirectorNote } from '@/engine/modules/director-note-layer';
@@ -112,7 +113,6 @@ const EMPTY_RELATIONSHIP_LAYER: GossipelogInjectionResult = deepFreeze({
   highlightedDeltasText: '',
   stableBackgroundText: '',
 });
-const GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS = 2_000;
 
 function cloneHistoryEntry(entry: HistoryEntry): HistoryEntry {
   return {
@@ -408,7 +408,6 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
     })
       .then(async (result) => {
         const settledRelationshipLayer = cloneRelationshipLayer(result.relationshipLayer);
-        const matchesCurrentCheckpoint = isCurrentCheckpointBinding(refresh);
         const shouldPersistFinalization = Boolean(config.runtimeSessionStore && refresh.sessionId);
 
         if (shouldPersistFinalization) {
@@ -420,14 +419,14 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
               lastStableRelationshipLayer: settledRelationshipLayer,
             });
           } catch {
-            if (matchesCurrentCheckpoint) {
+            if (isCurrentCheckpointBinding(refresh)) {
               queuedRelationshipLayer = cloneRelationshipLayer(refresh.fallbackLayer);
             }
             return;
           }
         }
 
-        if (!refresh.timedOut && matchesCurrentCheckpoint) {
+        if (!refresh.timedOut && isCurrentCheckpointBinding(refresh)) {
           queuedRelationshipLayer = settledRelationshipLayer;
         }
       })

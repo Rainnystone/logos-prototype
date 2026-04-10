@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { runGossipelogCycle } from '@/agents/gossipelog/agent';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
+import { GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS } from '@/agents/gossipelog/runtime-contract';
 import { validateStateSnapshot } from '@/engine/schema-validator';
 import {
   createOrchestrator,
@@ -1492,7 +1493,7 @@ describe('Orchestrator', () => {
     await Promise.resolve();
     expect(generateCalls).toHaveLength(2);
 
-    await vi.advanceTimersByTimeAsync(2_000);
+    await vi.advanceTimersByTimeAsync(GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS);
     const thirdResult = await thirdBeatPromise;
 
     expect(generateCalls).toHaveLength(3);
@@ -1568,7 +1569,7 @@ describe('Orchestrator', () => {
 
     const secondBeatPromise = orchestrator.runBeat('follow-up action');
     await Promise.resolve();
-    await vi.advanceTimersByTimeAsync(2_000);
+    await vi.advanceTimersByTimeAsync(GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS);
     await Promise.resolve();
 
     const firstCheckpointId = recorder.recordAcceptedBeat.mock.calls[0]?.[0].checkpointId;
@@ -1597,5 +1598,127 @@ describe('Orchestrator', () => {
       highlightedDeltasText: '',
       stableBackgroundText: '',
     });
+  });
+
+  it('does not roll back newer relationship truth when a timed-out refresh later fails during finalization', async () => {
+    vi.useFakeTimers();
+
+    const { packageName, storyPackage } = await createTempStoryPackageFixture();
+    const storyPackageWithoutAudit = {
+      ...storyPackage,
+      auditQuestionSet: {
+        ...storyPackage.auditQuestionSet,
+        selectionPolicy: {
+          default: [],
+        },
+      },
+    };
+    let releaseFirstFinalize: (() => void) | null = null;
+    const firstFinalizeGate = new Promise<void>((resolve) => {
+      releaseFirstFinalize = resolve;
+    });
+    let finalizeCallCount = 0;
+    const recorder = createRuntimeSessionStoreSpy({
+      finalizeRelationshipLayer: vi.fn(async () => {
+        finalizeCallCount += 1;
+
+        if (finalizeCallCount === 1) {
+          await firstFinalizeGate;
+          throw new Error('late finalize failed');
+        }
+      }),
+    });
+    const { adapter: baseAdapter, generateCalls } = createRecordingAdapter();
+    const firstLateSettledLayer = createRelationshipLayer('late first');
+    const secondSettledLayer = createRelationshipLayer('second settled');
+    let injectionCallCount = 0;
+    let releaseFirstRefresh: (() => void) | null = null;
+    let releaseSecondRefresh: (() => void) | null = null;
+    let releaseSecondGenerate: (() => void) | null = null;
+    const firstRefresh = new Promise<GossipelogInjectionResult>((resolve) => {
+      releaseFirstRefresh = () => resolve(firstLateSettledLayer);
+    });
+    const secondRefresh = new Promise<GossipelogInjectionResult>((resolve) => {
+      releaseSecondRefresh = () => resolve(secondSettledLayer);
+    });
+    const secondGenerateGate = new Promise<void>((resolve) => {
+      releaseSecondGenerate = resolve;
+    });
+    let generateCallCount = 0;
+    const adapter: LLMAdapter = {
+      ...baseAdapter,
+      async generate(promptObject) {
+        generateCallCount += 1;
+
+        if (generateCallCount === 2) {
+          await secondGenerateGate;
+        }
+
+        return baseAdapter.generate!(promptObject);
+      },
+      async gossipelogUpdate() {
+        return {
+          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
+          invocationNoOp: true,
+          edgeUpdates: [],
+        };
+      },
+      async gossipelogInjection() {
+        injectionCallCount += 1;
+
+        if (injectionCallCount === 1) {
+          return firstRefresh;
+        }
+
+        if (injectionCallCount === 2) {
+          return secondRefresh;
+        }
+
+        return createRelationshipLayer(`settled-${injectionCallCount}`);
+      },
+    };
+    const orchestrator = createNodeOrchestrator({
+      adapter,
+      storyPackageName: packageName,
+      storyPackage: storyPackageWithoutAudit,
+      runtimeSessionStore: recorder,
+    });
+
+    await orchestrator.initScene();
+    await orchestrator.runBeat('opening action');
+
+    const secondBeatPromise = orchestrator.runBeat('follow-up action');
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS);
+    await Promise.resolve();
+
+    expect(releaseFirstRefresh).not.toBeNull();
+    releaseFirstRefresh!();
+    await vi.waitFor(() => {
+      expect(recorder.finalizeRelationshipLayer).toHaveBeenCalledTimes(1);
+    });
+
+    expect(releaseSecondGenerate).not.toBeNull();
+    releaseSecondGenerate!();
+    await expect(secondBeatPromise).resolves.toMatchObject({
+      beatResult: {
+        beatText: expect.any(String),
+      },
+    });
+
+    expect(releaseSecondRefresh).not.toBeNull();
+    releaseSecondRefresh!();
+    await vi.waitFor(() => {
+      expect(recorder.finalizeRelationshipLayer).toHaveBeenCalledTimes(2);
+    });
+
+    expect(releaseFirstFinalize).not.toBeNull();
+    releaseFirstFinalize!();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    await orchestrator.runBeat('third action');
+
+    expect(generateCalls[2]?.relationshipLayer).toEqual(secondSettledLayer);
   });
 });

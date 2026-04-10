@@ -19,7 +19,7 @@
 ### 当前任务
 
 - 任务名称：`gossipelog` reference / 关系记忆升级前置梳理
-- 当前状态：catch-up 完成；已确认两个 bug，下一阶段先一起修复
+- 当前状态：两个已确认 bug 已完成修复并通过验证；下一阶段可以回到 `gossipelog` reference 与“人际关系记忆”设计
 - 范围：作者端现状、`pretext` 价值、图编辑框架候选、`gossipelog` reference 缺口、`gossipelog` runtime/skill 机制、升级前 bug 排查
 - 关键约束：
   - 作者端保存必须继续走 deterministic bridge
@@ -28,6 +28,7 @@
   - 下一阶段优先处理 `gossipelog` 指令边界与运行链路 bug，而不是立即开做人际关系图 UI
   - `gossipelog` 的持久化状态目前仍是 package-owned 文件，但 runtime 读取的 story package 必须与 active storyline variant 对齐
   - 第二个 bug 的修复目标以 engine 现有合同为准：超时后允许回退到上一份稳定关系层继续，不改成无限阻塞
+  - 本线程所有 subagent 的等待策略统一为：首轮 120 秒，若有新产出则依次退避到 180 / 300 秒；只有连续两轮无产出才允许发状态问询，且状态问询不得要求其停止当前任务
 
 ### 阶段拆分
 
@@ -37,17 +38,14 @@
 | 阶段 2 | complete | 调研图编辑框架候选 | 已结合 GitHub 官方仓库与 subagent 结果完成初筛 |
 | 阶段 3 | complete | 定位 `gossipelog` sidecar 的 reference 缺口 | 已确认仓库机制存在，`gossipelog` 尚未接入 |
 | 阶段 4 | complete | catch up `gossipelog` runtime / skill 机制，并检查升级前 bug | 已确认一条 runtime variant 对齐 bug，并记录一条前端锁死风险 |
-| 阶段 5 | in_progress | 一起修复两个已确认 bug：runtime variant 对齐错误 + gossipelog pending 导致的输入永久锁定 | 设计与 implementation plan 已完成并通过文档审阅，下一步进入 TDD 实现 |
+| 阶段 5 | complete | 一起修复两个已确认 bug：runtime variant 对齐错误 + gossipelog pending 导致的输入永久锁定 | 已补齐 late finalize failure 并发回滚风险；`test:core`、`build`、全量 `npm test` 均通过 |
 | 阶段 6 | pending | 设计 `gossipelog` update / injection reference v1 | 先把关系证据、词表、No-op 边界讲清楚 |
 | 阶段 7 | pending | 设计并落地“人际关系记忆”数据模型 v1 | 从当前 baseline/recentDelta 记录升级，而不是继续堆 prompt 文案 |
 | 阶段 8 | pending | 设计人际关系图第一版 UI 与数据映射方案 | 建议在 reference 规则与 memory schema 收紧后推进 |
 
 ### 下一阶段建议
 
-1. 先一起修复两个已确认 bug：
-   - `gossipelog` runtime route 未对齐 active storyline variant
-   - `gossipelog` pending / finalize 悬挂时前端输入可能永久锁定
-   - 其中第二项已明确按 engine 现有 timeout + fallback 合同对齐，而不是改成无限阻塞
-2. 为 `gossipelog` 增加 `update-reference.md` 与 `injection-reference.md`。
-3. 扩展 `gossipelog` request / prompt / reference manifest，使 provider 真正接收 resolved references。
-4. 在此基础上再设计“角色人际关系记忆”数据结构与第一版 UI。
+1. 为 `gossipelog` 增加 `update-reference.md` 与 `injection-reference.md`，先把关系证据、词表、No-op 边界和注入语义讲清楚。
+2. 扩展 `gossipelog` request / prompt / reference manifest，使 provider 真正接收 resolved references。
+3. 在现有 baseline / recentDelta 记录之上设计“角色人际关系记忆”数据结构，而不是继续堆 prompt 文案。
+4. 在 reference 规则与 memory schema 收紧后，再推进第一版关系图 UI 与数据映射方案。
