@@ -2,7 +2,11 @@ import YAML from 'yaml';
 
 import type { AgentDefinition } from '@/agents/registry';
 import { parseWithSchema } from '@/lib/validation';
-import { CharacterRelationshipsFileSchema } from '@/types';
+import {
+  CharacterRelationshipsFileSchema,
+  type RelationshipEdge,
+  type RelationshipMemoryEdge,
+} from '@/types';
 
 function summarizeTrackedRelationshipState(statePathRawContents: string): string {
   const parsedState = parseWithSchema(
@@ -13,17 +17,37 @@ function summarizeTrackedRelationshipState(statePathRawContents: string): string
 
   let trackedSourceCount = 0;
   let trackedEdgeCount = 0;
+  let historyEntryCount = 0;
   let highlightedEdgeCount = 0;
 
-  for (const bucket of Object.values(parsedState.relationshipsBySource)) {
-    trackedSourceCount += 1;
+  if (parsedState.meta.schemaVersion === 2) {
+    for (const bucket of Object.values(parsedState.relationshipsBySource)) {
+      trackedSourceCount += 1;
 
-    for (const edge of Object.values(bucket.targets)) {
-      trackedEdgeCount += 1;
-      if (edge.highlightNextPrompt) {
-        highlightedEdgeCount += 1;
+      for (const edge of Object.values(bucket.targets) as RelationshipMemoryEdge[]) {
+        trackedEdgeCount += 1;
+        historyEntryCount += edge.history.length;
       }
     }
+  } else {
+    for (const bucket of Object.values(parsedState.relationshipsBySource)) {
+      trackedSourceCount += 1;
+
+      for (const edge of Object.values(bucket.targets) as RelationshipEdge[]) {
+        trackedEdgeCount += 1;
+        if (edge.highlightNextPrompt) {
+          highlightedEdgeCount += 1;
+        }
+      }
+    }
+  }
+
+  if (parsedState.meta.schemaVersion === 2) {
+    if (trackedEdgeCount === 0) {
+      return 'No directed relationship memories are currently tracked in the current sidecar state.';
+    }
+
+    return `${trackedEdgeCount} directed relationship memory edge${trackedEdgeCount === 1 ? '' : 's'} tracked across ${trackedSourceCount} source role${trackedSourceCount === 1 ? '' : 's'}. Current relation snapshots are explicit. ${historyEntryCount} history entr${historyEntryCount === 1 ? 'y' : 'ies'} retained.`;
   }
 
   if (trackedEdgeCount === 0) {
@@ -40,7 +64,7 @@ function summarizeTrackedRelationshipState(statePathRawContents: string): string
 
 export const gossipelogAgentDefinition = {
   agentId: 'gossipelog',
-  displayName: 'Gossipe Log',
+  displayName: 'Gossipelog',
   surfaceType: 'sidecar',
   surfaceSemantics: 'built-in',
   responsibilitySummary: '整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。',
@@ -59,6 +83,18 @@ export const gossipelogAgentDefinition = {
   ],
   packageConfigPath: 'agents/gossipelog/config.yaml',
   packageStatePath: 'agents/gossipelog/character-relationships.yaml',
-  referenceManifestsByOperation: {},
+  referenceManifestsByOperation: {
+    gossipelogUpdate: [
+      {
+        referenceId: 'relationship-reference',
+        resolverKey: 'repo-text',
+        relativePath: 'src/agents/gossipelog/references/relationship-reference.md',
+        loadPolicy: 'operation-scoped',
+        required: true,
+        injectionLabel: 'Relationship reference',
+        priority: 100,
+      },
+    ],
+  },
   summarizeState: summarizeTrackedRelationshipState,
 } as const satisfies AgentDefinition;

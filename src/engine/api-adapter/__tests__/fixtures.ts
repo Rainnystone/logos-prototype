@@ -191,6 +191,8 @@ const sampleGossipelogRoleDefinitions = [
 export const sampleGossipelogUpdateRequest = {
   acceptedBeatText: 'accepted beat text',
   roundId: 'round-0009',
+  phaseId: 'phase-01-prologue',
+  beatIndex: 1,
   sceneCastRoleIds: ['chr_hero01', 'chr_core01'],
   sceneCastFraming: {
     sceneId: 'scene-fixture',
@@ -199,6 +201,15 @@ export const sampleGossipelogUpdateRequest = {
   candidateRoles: sampleGossipelogRoleDefinitions,
   roleDefinitions: sampleGossipelogRoleDefinitions,
   relationshipSubgraph: sampleGossipelogRelationshipSubgraph,
+  resolvedReferences: [
+    {
+      referenceId: 'relationship-reference',
+      injectionLabel: 'Relationship reference',
+      relativePath: 'src/agents/gossipelog/references/relationship-reference.md',
+      contents: '# Gossipelog Relationship Reference',
+      estimatedTokens: 20,
+    },
+  ],
 } as const;
 
 export const sampleGossipelogInjectionRequest = {

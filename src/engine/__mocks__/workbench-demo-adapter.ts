@@ -117,33 +117,25 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
             ? {
                 involvedRoleIds,
                 invocationNoOp: false,
-                edgeUpdates: [
+                memoryUpdates: [
                   {
                     sourceRoleId: pair.sourceRoleId,
                     targetRoleId: pair.targetRoleId,
-                    mode: hasExistingRelationshipEdge(
+                    shouldCreateEdge: !hasExistingRelationshipEdge(
                       request.relationshipSubgraph,
                       pair.sourceRoleId,
                       pair.targetRoleId,
-                    )
-                      ? 'delta'
-                      : 'new_edge',
-                    replaceBaseline: false,
-                    ...(hasExistingRelationshipEdge(
-                      request.relationshipSubgraph,
-                      pair.sourceRoleId,
-                      pair.targetRoleId,
-                    )
-                      ? {}
-                      : {
-                          baseline: {
-                            state: `Demo baseline for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
-                            lastAbsorbedRound: request.roundId,
-                          },
-                        }),
-                    recentDelta: {
-                      state: `Demo update grounded in ${request.sceneCastFraming.sceneId} and ${request.acceptedBeatText.length} characters of accepted beat text.`,
-                      sourceRound: request.roundId,
+                    ),
+                    nextCurrentRelation: {
+                      phaseId: request.phaseId,
+                      beatIndex: request.beatIndex,
+                      roundId: request.roundId,
+                      functionalRole: null,
+                      mindsetTags: ['demo continuity'],
+                      summary: `Demo update grounded in ${request.sceneCastFraming.sceneId} and ${request.acceptedBeatText.length} characters of accepted beat text.`,
+                      triggerEvent: 'Demo accepted beat processed',
+                      reasoning: 'Demo adapter derives one deterministic relation refresh from the scene cast.',
+                      causalAction: 'Carry the refreshed relation into the next prompt context.',
                     },
                   },
                 ],
@@ -151,7 +143,7 @@ export function createWorkbenchDemoAdapter(): LLMAdapter {
             : {
                 involvedRoleIds,
                 invocationNoOp: true,
-                edgeUpdates: [],
+                memoryUpdates: [],
               },
         ),
       );

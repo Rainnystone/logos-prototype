@@ -140,7 +140,7 @@ describe('response parsers', () => {
 
   it('parses gossipelog update results and preserves usage', () => {
     const result = parseGossipelogUpdateResult(
-      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"delta","replaceBaseline":false,"recentDelta":{"state":"trust increased after direct protection","sourceRound":"round-0009"}}]}',
+      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"memoryUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","shouldCreateEdge":false,"nextCurrentRelation":{"phaseId":"phase-01-prologue","beatIndex":1,"roundId":"round-0009","functionalRole":null,"mindsetTags":["信任"],"summary":"trust increased after direct protection","triggerEvent":"direct protection","reasoning":"the protection signaled alignment","causalAction":"steps closer to cooperate"}}]}',
       {
         promptTokens: 4,
         completionTokens: 2,
@@ -156,24 +156,26 @@ describe('response parsers', () => {
     });
   });
 
-  it('parses gossipelog noop edge updates', () => {
+  it('parses gossipelog noop memory updates', () => {
     const result = parseGossipelogUpdateResult(
-      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"noop"}]}',
+      '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":true,"memoryUpdates":[]}',
     );
 
-    expect(result.edgeUpdates).toEqual([
-      {
-        sourceRoleId: 'chr_core01',
-        targetRoleId: 'chr_hero01',
-        mode: 'noop',
-      },
-    ]);
+    expect(result.memoryUpdates).toEqual([]);
   });
 
-  it('rejects a delta update that carries a baseline while replaceBaseline is false', () => {
+  it('rejects legacy edgeUpdates payloads', () => {
     expect(() =>
       parseGossipelogUpdateResult(
-        '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"delta","replaceBaseline":false,"baseline":{"state":"should-not-exist","lastAbsorbedRound":"round-0008"},"recentDelta":{"state":"trust increased","sourceRound":"round-0009"}}]}',
+        '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"edgeUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","mode":"delta","recentDelta":{"state":"trust increased","sourceRound":"round-0009"}}]}',
+      ),
+    ).toThrow(/gossipelogUpdateResult/i);
+  });
+
+  it('rejects memory updates whose anchor fields are null', () => {
+    expect(() =>
+      parseGossipelogUpdateResult(
+        '{"involvedRoleIds":["chr_core01","chr_hero01"],"invocationNoOp":false,"memoryUpdates":[{"sourceRoleId":"chr_core01","targetRoleId":"chr_hero01","shouldCreateEdge":false,"nextCurrentRelation":{"phaseId":null,"beatIndex":null,"roundId":"round-0009","functionalRole":null,"mindsetTags":["信任"],"summary":"trust increased after direct protection","triggerEvent":"direct protection","reasoning":"the protection signaled alignment","causalAction":"steps closer to cooperate"}}]}',
       ),
     ).toThrow(/gossipelogUpdateResult/i);
   });

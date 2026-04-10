@@ -63,13 +63,15 @@ describe('mock adapter', () => {
     const adapter = createMockAdapter();
     await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
       invocationNoOp: false,
-      edgeUpdates: [
+      memoryUpdates: [
         expect.objectContaining({
           sourceRoleId: 'chr_core01',
           targetRoleId: 'chr_hero01',
-          mode: 'new_edge',
-          baseline: expect.objectContaining({
-            lastAbsorbedRound: sampleGossipelogUpdateRequest.roundId,
+          shouldCreateEdge: true,
+          nextCurrentRelation: expect.objectContaining({
+            roundId: sampleGossipelogUpdateRequest.roundId,
+            phaseId: sampleGossipelogUpdateRequest.phaseId,
+            beatIndex: sampleGossipelogUpdateRequest.beatIndex,
           }),
         }),
       ],
@@ -86,13 +88,15 @@ describe('mock adapter', () => {
     const adapter = createWorkbenchDemoAdapter();
     await expect(adapter.gossipelogUpdate!(sampleGossipelogUpdateRequest)).resolves.toMatchObject({
       invocationNoOp: false,
-      edgeUpdates: [
+      memoryUpdates: [
         expect.objectContaining({
           sourceRoleId: 'chr_core01',
           targetRoleId: 'chr_hero01',
-          mode: 'new_edge',
-          baseline: expect.objectContaining({
-            lastAbsorbedRound: sampleGossipelogUpdateRequest.roundId,
+          shouldCreateEdge: true,
+          nextCurrentRelation: expect.objectContaining({
+            roundId: sampleGossipelogUpdateRequest.roundId,
+            phaseId: sampleGossipelogUpdateRequest.phaseId,
+            beatIndex: sampleGossipelogUpdateRequest.beatIndex,
           }),
         }),
       ],

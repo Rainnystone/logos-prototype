@@ -672,15 +672,21 @@ describe('api adapter', () => {
         createOpenAIResponse({
           involvedRoleIds: ['chr_core01', 'chr_hero01'],
           invocationNoOp: false,
-          edgeUpdates: [
+          memoryUpdates: [
             {
               sourceRoleId: 'chr_core01',
               targetRoleId: 'chr_hero01',
-              mode: 'delta',
-              replaceBaseline: false,
-              recentDelta: {
-                state: 'trust increased after direct protection',
-                sourceRound: 'round-0009',
+              shouldCreateEdge: false,
+              nextCurrentRelation: {
+                phaseId: 'phase-01-prologue',
+                beatIndex: 1,
+                roundId: 'round-0009',
+                functionalRole: null,
+                mindsetTags: ['信任'],
+                summary: 'trust increased after direct protection',
+                triggerEvent: 'direct protection',
+                reasoning: 'the protection signaled alignment',
+                causalAction: 'steps closer to cooperate',
               },
             },
           ],
@@ -702,15 +708,21 @@ describe('api adapter', () => {
     expect(result).toEqual({
       involvedRoleIds: ['chr_core01', 'chr_hero01'],
       invocationNoOp: false,
-      edgeUpdates: [
+      memoryUpdates: [
         {
           sourceRoleId: 'chr_core01',
           targetRoleId: 'chr_hero01',
-          mode: 'delta',
-          replaceBaseline: false,
-          recentDelta: {
-            state: 'trust increased after direct protection',
-            sourceRound: 'round-0009',
+          shouldCreateEdge: false,
+          nextCurrentRelation: {
+            phaseId: 'phase-01-prologue',
+            beatIndex: 1,
+            roundId: 'round-0009',
+            functionalRole: null,
+            mindsetTags: ['信任'],
+            summary: 'trust increased after direct protection',
+            triggerEvent: 'direct protection',
+            reasoning: 'the protection signaled alignment',
+            causalAction: 'steps closer to cooperate',
           },
         },
       ],
@@ -770,15 +782,21 @@ describe('api adapter', () => {
         return createOpenAIResponse({
           involvedRoleIds: ['chr_core01', 'chr_hero01'],
           invocationNoOp: false,
-          edgeUpdates: [
+          memoryUpdates: [
             {
               sourceRoleId: 'chr_core01',
               targetRoleId: 'chr_hero01',
-              mode: 'delta',
-              replaceBaseline: false,
-              recentDelta: {
-                state: 'trust increased after direct protection',
-                sourceRound: 'round-0009',
+              shouldCreateEdge: false,
+              nextCurrentRelation: {
+                phaseId: 'phase-01-prologue',
+                beatIndex: 1,
+                roundId: 'round-0009',
+                functionalRole: null,
+                mindsetTags: ['信任'],
+                summary: 'trust increased after direct protection',
+                triggerEvent: 'direct protection',
+                reasoning: 'the protection signaled alignment',
+                causalAction: 'steps closer to cooperate',
               },
             },
           ],
@@ -828,15 +846,21 @@ describe('api adapter', () => {
         return createOpenAIResponse({
           involvedRoleIds: ['chr_core01', 'chr_hero01'],
           invocationNoOp: false,
-          edgeUpdates: [
+          memoryUpdates: [
             {
               sourceRoleId: 'chr_core01',
               targetRoleId: 'chr_hero01',
-              mode: 'delta',
-              replaceBaseline: false,
-              recentDelta: {
-                state: 'trust increased after direct protection',
-                sourceRound: 'round-0009',
+              shouldCreateEdge: false,
+              nextCurrentRelation: {
+                phaseId: 'phase-01-prologue',
+                beatIndex: 1,
+                roundId: 'round-0009',
+                functionalRole: null,
+                mindsetTags: ['信任'],
+                summary: 'trust increased after direct protection',
+                triggerEvent: 'direct protection',
+                reasoning: 'the protection signaled alignment',
+                causalAction: 'steps closer to cooperate',
               },
             },
           ],
@@ -945,7 +969,7 @@ describe('api adapter', () => {
     });
   });
 
-  it('rejects gossipelogUpdate responses that include a baseline when replaceBaseline is false', async () => {
+  it('rejects gossipelogUpdate responses that still use legacy edgeUpdates', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () =>
@@ -957,11 +981,6 @@ describe('api adapter', () => {
               sourceRoleId: 'chr_core01',
               targetRoleId: 'chr_hero01',
               mode: 'delta',
-              replaceBaseline: false,
-              baseline: {
-                state: 'should-not-exist',
-                lastAbsorbedRound: 'round-0008',
-              },
               recentDelta: {
                 state: 'trust increased after direct protection',
                 sourceRound: 'round-0009',

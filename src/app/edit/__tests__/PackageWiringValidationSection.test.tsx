@@ -90,7 +90,7 @@ describe('PackageWiringValidationSection', () => {
     expect(screen.getByLabelText('agent-management-status')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: '当前详情' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Weaver' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Gossipe Log' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gossipelog' })).toBeInTheDocument();
     expect(screen.getByText('导入摘要存在 2 条待处理提示。')).toBeInTheDocument();
     expect(screen.getByText('最近一次关系状态已同步完成。')).toBeInTheDocument();
     expect(screen.getByText('当前状态：需要关注')).toBeInTheDocument();

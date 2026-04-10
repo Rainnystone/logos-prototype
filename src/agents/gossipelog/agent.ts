@@ -3,10 +3,12 @@ import {
   validateGossipelogUpdateResult,
 } from '@/engine/schema-validator';
 import type { GossipelogInjectionRequest, GossipelogUpdateRequest } from '@/engine/types/adapter-interface';
+import { resolveSidecarReferences } from '@/agents/reference-loader';
 import {
   absorbConsumedDeltas,
   mergeRelationshipUpdates,
 } from '@/agents/gossipelog/merge';
+import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
 import type {
   RunGossipelogCycleInput,
@@ -15,6 +17,8 @@ import type {
 import type {
   CharacterProfile,
   CharacterRelationshipsFile,
+  CharacterRelationshipsFileV1,
+  CharacterRelationshipsFileV2,
   GossipelogInjectionResult,
   GossipelogUpdateResult,
   StoryPackage,
@@ -43,8 +47,12 @@ function createInvocationNoOpResult(): GossipelogUpdateResult {
   return {
     involvedRoleIds: [],
     invocationNoOp: true,
-    edgeUpdates: [],
+    memoryUpdates: [],
   };
+}
+
+function resolveGossipelogUpdateManifests() {
+  return gossipelogAgentDefinition.referenceManifestsByOperation?.gossipelogUpdate ?? [];
 }
 
 function buildRoleIndex(storyPackage: StoryPackage): Map<string, CharacterProfile> {
@@ -88,7 +96,32 @@ function selectRelationshipSubgraph(
   file: CharacterRelationshipsFile,
   candidateRoleIds: ReadonlySet<string>,
 ): CharacterRelationshipsFile {
-  const relationshipsBySource: CharacterRelationshipsFile['relationshipsBySource'] = {};
+  if (file.meta.schemaVersion === 2) {
+    const relationshipsBySource: CharacterRelationshipsFileV2['relationshipsBySource'] = {};
+
+    for (const [sourceRoleId, bucket] of Object.entries(file.relationshipsBySource)) {
+      if (!candidateRoleIds.has(sourceRoleId)) {
+        continue;
+      }
+
+      const targets = Object.fromEntries(
+        Object.entries(bucket.targets).filter(([targetRoleId]) => candidateRoleIds.has(targetRoleId)),
+      ) as CharacterRelationshipsFileV2['relationshipsBySource'][string]['targets'];
+
+      if (Object.keys(targets).length === 0) {
+        continue;
+      }
+
+      relationshipsBySource[sourceRoleId] = { targets };
+    }
+
+    return {
+      meta: { ...file.meta },
+      relationshipsBySource,
+    };
+  }
+
+  const relationshipsBySource: CharacterRelationshipsFileV1['relationshipsBySource'] = {};
 
   for (const [sourceRoleId, bucket] of Object.entries(file.relationshipsBySource)) {
     if (!candidateRoleIds.has(sourceRoleId)) {
@@ -97,7 +130,7 @@ function selectRelationshipSubgraph(
 
     const targets = Object.fromEntries(
       Object.entries(bucket.targets).filter(([targetRoleId]) => candidateRoleIds.has(targetRoleId)),
-    );
+    ) as CharacterRelationshipsFileV1['relationshipsBySource'][string]['targets'];
 
     if (Object.keys(targets).length === 0) {
       continue;
@@ -107,7 +140,6 @@ function selectRelationshipSubgraph(
   }
 
   return {
-    ...file,
     meta: { ...file.meta },
     relationshipsBySource,
   };
@@ -142,7 +174,7 @@ function assertUpdateWithinCandidateSet(
     }
   }
 
-  for (const edgeUpdate of updateResult.edgeUpdates) {
+  for (const edgeUpdate of updateResult.memoryUpdates) {
     if (
       !candidateRoleIds.has(edgeUpdate.sourceRoleId) ||
       !candidateRoleIds.has(edgeUpdate.targetRoleId)
@@ -152,16 +184,41 @@ function assertUpdateWithinCandidateSet(
   }
 }
 
+function assertUpdateAnchorsMatchRequest(
+  updateResult: GossipelogUpdateResult,
+  input: Pick<RunGossipelogCycleInput, 'roundId' | 'phaseId' | 'beatIndex'>,
+): void {
+  for (const memoryUpdate of updateResult.memoryUpdates) {
+    const { nextCurrentRelation } = memoryUpdate;
+
+    if (
+      nextCurrentRelation.phaseId === null ||
+      nextCurrentRelation.beatIndex === null ||
+      nextCurrentRelation.roundId !== input.roundId ||
+      nextCurrentRelation.phaseId !== input.phaseId ||
+      nextCurrentRelation.beatIndex !== input.beatIndex
+    ) {
+      throw new Error('Gossipelog update returned a memory anchor that does not match the request.');
+    }
+  }
+}
+
 function buildUpdateRequest(
-  input: Pick<RunGossipelogCycleInput, 'acceptedBeatText' | 'roundId' | 'storyPackage'>,
+  input: Pick<
+    RunGossipelogCycleInput,
+    'acceptedBeatText' | 'roundId' | 'phaseId' | 'beatIndex' | 'storyPackage'
+  >,
   candidateRoles: readonly CharacterProfile[],
   relationshipSubgraph: CharacterRelationshipsFile,
+  resolvedReferences: Awaited<ReturnType<typeof resolveSidecarReferences>>,
 ): GossipelogUpdateRequest {
   const sceneCastRoleIds = candidateRoles.map((role) => role.characterId);
 
   return {
     acceptedBeatText: input.acceptedBeatText,
     roundId: input.roundId,
+    phaseId: input.phaseId,
+    beatIndex: input.beatIndex,
     sceneCastRoleIds,
     sceneCastFraming: {
       sceneId: input.storyPackage.sceneSpec.sceneId,
@@ -170,6 +227,7 @@ function buildUpdateRequest(
     candidateRoles,
     roleDefinitions: candidateRoles,
     relationshipSubgraph,
+    resolvedReferences,
   };
 }
 
@@ -208,6 +266,11 @@ export async function runGossipelogCycle(
   const persistedFile = await gossipelogRepository.loadOrCreateCharacterRelationships(
     input.storyPackageName,
   );
+  const resolvedReferences = await resolveSidecarReferences({
+    agentId: gossipelogAgentDefinition.agentId,
+    operationKind: 'gossipelogUpdate',
+    manifests: resolveGossipelogUpdateManifests(),
+  });
   const candidateRoles = resolveSceneCandidateRoles(input.storyPackage);
   const candidateRoleIds = new Set(candidateRoles.map((role) => role.characterId));
   const settledFile = absorbConsumedDeltas(persistedFile, input.roundId);
@@ -215,6 +278,7 @@ export async function runGossipelogCycle(
     input,
     candidateRoles,
     selectRelationshipSubgraph(settledFile, candidateRoleIds),
+    resolvedReferences,
   );
 
   let updateResult = createInvocationNoOpResult();
@@ -226,6 +290,7 @@ export async function runGossipelogCycle(
     const validatedUpdateResult = validateGossipelogUpdateResult(rawUpdateResult);
 
     assertUpdateWithinCandidateSet(validatedUpdateResult, candidateRoleIds);
+    assertUpdateAnchorsMatchRequest(validatedUpdateResult, input);
 
     const mergedFile = mergeRelationshipUpdates(settledFile, validatedUpdateResult, {
       heroRoleId: input.storyPackage.worldBase.hero.characterId,

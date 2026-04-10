@@ -117,15 +117,21 @@ describe('schema validator', () => {
       validateGossipelogUpdateResult({
         involvedRoleIds: ['chr_core01', 'chr_hero01'],
         invocationNoOp: false,
-        edgeUpdates: [
+        memoryUpdates: [
           {
             sourceRoleId: 'chr_core01',
             targetRoleId: 'chr_hero01',
-            mode: 'delta',
-            replaceBaseline: false,
-            recentDelta: {
-              state: 'trust increased after direct protection',
-              sourceRound: 'round-0009',
+            shouldCreateEdge: true,
+            nextCurrentRelation: {
+              phaseId: 'phase-01-prologue',
+              beatIndex: 1,
+              roundId: 'round-0009',
+              functionalRole: 'potential ally',
+              mindsetTags: ['gratitude', 'trust'],
+              summary: 'trust increased after direct protection',
+              triggerEvent: 'direct protection',
+              reasoning: 'The protection signaled alignment and reliability.',
+              causalAction: 'Moves closer to cooperation.',
             },
           },
         ],
@@ -135,25 +141,16 @@ describe('schema validator', () => {
     });
   });
 
-  it('accepts a noop gossipelog edge update', () => {
+  it('accepts a noop gossipelog memory update', () => {
     expect(
       validateGossipelogUpdateResult({
         involvedRoleIds: ['chr_core01', 'chr_hero01'],
-        invocationNoOp: false,
-        edgeUpdates: [
-          {
-            sourceRoleId: 'chr_core01',
-            targetRoleId: 'chr_hero01',
-            mode: 'noop',
-          },
-        ],
+        invocationNoOp: true,
+        memoryUpdates: [],
       }),
     ).toMatchObject({
-      edgeUpdates: [
-        {
-          mode: 'noop',
-        },
-      ],
+      invocationNoOp: true,
+      memoryUpdates: [],
     });
   });
 

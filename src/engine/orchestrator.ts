@@ -381,6 +381,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
   function scheduleRelationshipRefresh(
     acceptedBeatText: string,
     roundId: string,
+    phaseId: string,
+    beatIndex: number,
     checkpointId: string,
     sessionId: string | null,
   ): void {
@@ -404,6 +406,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       storyPackage: config.storyPackage,
       acceptedBeatText,
       roundId,
+      phaseId,
+      beatIndex,
       lastStableRelationshipLayer,
     })
       .then(async (result) => {
@@ -903,6 +907,8 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
       scheduleRelationshipRefresh(
         attemptOutcome.generationResult.beatText,
         roundId,
+        phasePlan.phaseId,
+        stateBeforeBeat.sceneState.currentBeatIndexInPhase,
         checkpointId,
         runtimeSessionId,
       );

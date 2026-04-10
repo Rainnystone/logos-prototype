@@ -14,7 +14,12 @@ import type {
   UsageInfo,
   WeaverImportPayload,
 } from '@/types';
-import { GossipelogInjectionResultSchema, UsageInfoSchema, WeaverImportPayloadSchema } from '@/types';
+import {
+  GossipelogInjectionResultSchema,
+  RelationshipMemoryEntrySchema,
+  UsageInfoSchema,
+  WeaverImportPayloadSchema,
+} from '@/types';
 
 const GenerateResultSchema = z
   .object({
@@ -39,85 +44,23 @@ const RouteResultSchema = z
   })
   .strict();
 
-const GossipelogEdgeNoOpResponseSchema = z
+const GossipelogMemoryUpdateResponseSchema = z
   .object({
     sourceRoleId: z.string(),
     targetRoleId: z.string(),
-    mode: z.literal('noop'),
+    shouldCreateEdge: z.boolean(),
+    nextCurrentRelation: RelationshipMemoryEntrySchema.extend({
+      phaseId: z.string().min(1),
+      beatIndex: z.number().int().nonnegative(),
+    }).strict(),
   })
   .strict();
-
-const GossipelogEdgeDeltaResponseSchema = z
-  .object({
-    sourceRoleId: z.string(),
-    targetRoleId: z.string(),
-    mode: z.literal('delta'),
-    replaceBaseline: z.boolean(),
-    recentDelta: z
-      .object({
-        state: z.string(),
-        sourceRound: z.string(),
-      })
-      .strict(),
-  })
-  .strict();
-
-const GossipelogEdgeDeltaWithReplacementResponseSchema = z
-  .object({
-    sourceRoleId: z.string(),
-    targetRoleId: z.string(),
-    mode: z.literal('delta'),
-    replaceBaseline: z.literal(true),
-    baseline: z
-      .object({
-        state: z.string(),
-        lastAbsorbedRound: z.string(),
-      })
-      .strict(),
-    recentDelta: z
-      .object({
-        state: z.string(),
-        sourceRound: z.string(),
-      })
-      .strict(),
-  })
-  .strict();
-
-const GossipelogNewEdgeResponseSchema = z
-  .object({
-    sourceRoleId: z.string(),
-    targetRoleId: z.string(),
-    mode: z.literal('new_edge'),
-    replaceBaseline: z.literal(false),
-    baseline: z
-      .object({
-        state: z.string(),
-        lastAbsorbedRound: z.string(),
-      })
-      .strict(),
-    recentDelta: z
-      .object({
-        state: z.string(),
-        sourceRound: z.string(),
-      })
-      .strict(),
-  })
-  .strict();
-
-const GossipelogEdgeUpdateResponseSchema = z.union([
-  GossipelogEdgeNoOpResponseSchema,
-  GossipelogEdgeDeltaResponseSchema.extend({
-    replaceBaseline: z.literal(false),
-  }),
-  GossipelogEdgeDeltaWithReplacementResponseSchema,
-  GossipelogNewEdgeResponseSchema,
-]);
 
 const GossipelogUpdateResultNoOpResponseSchema = z
   .object({
     involvedRoleIds: z.array(z.string()),
     invocationNoOp: z.literal(true),
-    edgeUpdates: z.array(GossipelogEdgeUpdateResponseSchema).length(0),
+    memoryUpdates: z.array(GossipelogMemoryUpdateResponseSchema).length(0),
     usage: UsageInfoSchema.optional(),
   })
   .strict();
@@ -126,7 +69,7 @@ const GossipelogUpdateResultAppliedResponseSchema = z
   .object({
     involvedRoleIds: z.array(z.string()),
     invocationNoOp: z.literal(false),
-    edgeUpdates: z.array(GossipelogEdgeUpdateResponseSchema).min(1),
+    memoryUpdates: z.array(GossipelogMemoryUpdateResponseSchema).min(1),
     usage: UsageInfoSchema.optional(),
   })
   .strict();

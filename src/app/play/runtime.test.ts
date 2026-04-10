@@ -37,7 +37,7 @@ describe('createTrackedWorkbenchAdapter', () => {
     const gossipelogUpdate = vi.fn(async () => ({
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     }));
     const gossipelogInjection = vi.fn(async () => ({
       highlightedDeltasText: 'delta',
@@ -91,7 +91,7 @@ describe('createTrackedWorkbenchAdapter', () => {
     await expect(trackedAdapter.gossipelogUpdate?.({} as never)).resolves.toEqual({
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     });
     await expect(trackedAdapter.gossipelogInjection?.({} as never)).resolves.toEqual({
       highlightedDeltasText: '',
@@ -237,17 +237,19 @@ describe('createTrackedWorkbenchAdapter', () => {
 });
 
 describe('createBrowserGossipelogCycleRunner', () => {
-  it('posts the accepted beat and adapter config to the server bridge', async () => {
+  it('posts phaseId and beatIndex through the browser gossipelog bridge', async () => {
     const fetchMock = vi.fn(async () => {
       return new Response(
         JSON.stringify({
           updateRequest: {
             acceptedBeatText: 'Accepted beat text',
+            phaseId: 'phase-01-prologue',
+            beatIndex: 1,
           },
           updateResult: {
             involvedRoleIds: [],
             invocationNoOp: true,
-            edgeUpdates: [],
+            memoryUpdates: [],
           },
           injectionRequest: {
             sceneCastRoleIds: [],
@@ -287,6 +289,8 @@ describe('createBrowserGossipelogCycleRunner', () => {
       storyPackage: storyPackageFixture,
       acceptedBeatText: 'Accepted beat text',
       roundId: 'round-1',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
       lastStableRelationshipLayer: {
         highlightedDeltasText: 'previous delta',
         stableBackgroundText: 'previous background',
@@ -303,6 +307,8 @@ describe('createBrowserGossipelogCycleRunner', () => {
         adapterConfig,
         acceptedBeatText: 'Accepted beat text',
         roundId: 'round-1',
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
         lastStableRelationshipLayer: {
           highlightedDeltasText: 'previous delta',
           stableBackgroundText: 'previous background',

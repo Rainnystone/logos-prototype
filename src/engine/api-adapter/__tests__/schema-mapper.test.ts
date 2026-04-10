@@ -24,6 +24,20 @@ import {
   sampleStructuredWorldBase,
   sampleWeaverImportRequest,
 } from '@/engine/api-adapter/__tests__/fixtures';
+import type { ProviderResponseFormat } from '@/engine/api-adapter/providers/provider-interface';
+
+function expectJsonSchemaResponse(
+  responseFormat: ProviderResponseFormat | undefined,
+): Record<string, unknown> {
+  expect(responseFormat).toBeDefined();
+  expect(responseFormat?.type).toBe('json_schema');
+
+  if (!responseFormat || responseFormat.type !== 'json_schema') {
+    throw new Error('Expected json_schema response format.');
+  }
+
+  return responseFormat.schema;
+}
 
 describe('schema mapper', () => {
   describe('route', () => {
@@ -255,13 +269,71 @@ describe('schema mapper', () => {
   });
 
   describe('gossipelog', () => {
+    it('injects phase/beat context and resolved references into the gossipelog update prompt', () => {
+      const request = mapForGossipelogUpdate(
+        {
+          ...sampleGossipelogUpdateRequest,
+          phaseId: 'phase-01-prologue',
+          beatIndex: 1,
+          resolvedReferences: [
+            {
+              referenceId: 'relationship-reference',
+              injectionLabel: 'Relationship reference',
+              relativePath: 'src/agents/gossipelog/references/relationship-reference.md',
+              contents: '# Relationship rules',
+              estimatedTokens: 20,
+            },
+          ],
+        },
+        'openai-compatible',
+      );
+      const userMessage = request.messages[0]?.content ?? '';
+
+      expect(userMessage).toContain('Phase ID: phase-01-prologue');
+      expect(userMessage).toContain('Beat index: 1');
+      expect(userMessage).toContain('[Resolved References]');
+      expect(userMessage).toContain('Relationship reference');
+    });
+
     it('maps the relationship-update skill request to a strict JSON schema response', () => {
       const request = mapForGossipelogUpdate(sampleGossipelogUpdateRequest, 'openai-compatible');
+      const responseSchema = expectJsonSchemaResponse(request.responseFormat);
 
       expect(request.responseFormat).toMatchObject({
         type: 'json_schema',
         name: 'logos_gossipelog_update_result',
       });
+      expect(responseSchema?.oneOf?.[0]?.required).toEqual([
+        'involvedRoleIds',
+        'invocationNoOp',
+        'memoryUpdates',
+      ]);
+      expect(responseSchema?.oneOf?.[1]?.required).toEqual([
+        'involvedRoleIds',
+        'invocationNoOp',
+        'memoryUpdates',
+      ]);
+      expect(responseSchema?.oneOf?.[1]?.properties?.memoryUpdates?.items?.required).toEqual([
+        'sourceRoleId',
+        'targetRoleId',
+        'shouldCreateEdge',
+        'nextCurrentRelation',
+      ]);
+      expect(
+        responseSchema?.oneOf?.[1]?.properties?.memoryUpdates?.items?.properties
+          ?.nextCurrentRelation?.required,
+      ).toEqual([
+        'phaseId',
+        'beatIndex',
+        'roundId',
+        'functionalRole',
+        'mindsetTags',
+        'summary',
+        'triggerEvent',
+        'reasoning',
+        'causalAction',
+      ]);
+      expect(responseSchema?.oneOf?.[1]?.properties?.edgeUpdates).toBeUndefined();
     });
 
     it('uses the gossipelog update default temperature and token limit', () => {
@@ -323,7 +395,7 @@ describe('schema mapper', () => {
   describe('weaver import', () => {
     it('projects the provider response schema onto the shared inner contract', () => {
       const request = mapForWeaverImport(sampleWeaverImportRequest, 'openai-compatible');
-      const responseSchema = request.responseFormat?.schema;
+      const responseSchema = expectJsonSchemaResponse(request.responseFormat);
 
       expect(responseSchema?.properties.worldBase).toMatchObject({
         type: 'object',

@@ -7,6 +7,8 @@ export interface RunGossipelogCycleInput {
   readonly storyPackage: StoryPackage;
   readonly acceptedBeatText: string;
   readonly roundId: string;
+  readonly phaseId: string;
+  readonly beatIndex: number;
   readonly lastStableRelationshipLayer?: GossipelogInjectionResult;
 }
 

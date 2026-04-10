@@ -1021,7 +1021,7 @@ describe('EditWorkbench', () => {
     );
 
     expect(screen.getByLabelText('sidecar-agent-surface')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Gossipe Log' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gossipelog' })).toBeInTheDocument();
     expect(screen.getByText('1 relationship link tracked in the latest state snapshot.')).toBeInTheDocument();
     expect(screen.getByText('当前状态：可用')).toBeInTheDocument();
     expect(screen.getByText('在关系已经成立后，整理并更新当前的人际关系状态。')).toBeInTheDocument();

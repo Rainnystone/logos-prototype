@@ -176,104 +176,46 @@ const COLLAPSE_RESPONSE_FORMAT: ProviderResponseFormat = {
   },
 };
 
-const GOSSIPELOG_EDGE_UPDATE_SCHEMA = {
-  anyOf: [
-    {
-      type: 'object',
-      additionalProperties: false,
-      required: ['sourceRoleId', 'targetRoleId', 'mode'],
-      properties: {
-        sourceRoleId: { type: 'string' },
-        targetRoleId: { type: 'string' },
-        mode: { type: 'string', enum: ['noop'] },
-      },
-    },
-    {
-      type: 'object',
-      additionalProperties: false,
-      required: ['sourceRoleId', 'targetRoleId', 'mode', 'replaceBaseline', 'recentDelta'],
-      properties: {
-        sourceRoleId: { type: 'string' },
-        targetRoleId: { type: 'string' },
-        mode: { type: 'string', enum: ['delta'] },
-        replaceBaseline: { type: 'boolean', enum: [false] },
-        recentDelta: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['state', 'sourceRound'],
-          properties: {
-            state: { type: 'string' },
-            sourceRound: { type: 'string' },
-          },
-        },
-      },
-    },
-    {
-      type: 'object',
-      additionalProperties: false,
-      required: [
-        'sourceRoleId',
-        'targetRoleId',
-        'mode',
-        'replaceBaseline',
-        'baseline',
-        'recentDelta',
-      ],
-      properties: {
-        sourceRoleId: { type: 'string' },
-        targetRoleId: { type: 'string' },
-        mode: { type: 'string', enum: ['delta'] },
-        replaceBaseline: { type: 'boolean', enum: [true] },
-        baseline: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['state', 'lastAbsorbedRound'],
-          properties: {
-            state: { type: 'string' },
-            lastAbsorbedRound: { type: 'string' },
-          },
-        },
-        recentDelta: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['state', 'sourceRound'],
-          properties: {
-            state: { type: 'string' },
-            sourceRound: { type: 'string' },
-          },
-        },
-      },
-    },
-    {
-      type: 'object',
-      additionalProperties: false,
-      required: ['sourceRoleId', 'targetRoleId', 'mode', 'replaceBaseline', 'baseline', 'recentDelta'],
-      properties: {
-        sourceRoleId: { type: 'string' },
-        targetRoleId: { type: 'string' },
-        mode: { type: 'string', enum: ['new_edge'] },
-        replaceBaseline: { type: 'boolean', enum: [false] },
-        baseline: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['state', 'lastAbsorbedRound'],
-          properties: {
-            state: { type: 'string' },
-            lastAbsorbedRound: { type: 'string' },
-          },
-        },
-        recentDelta: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['state', 'sourceRound'],
-          properties: {
-            state: { type: 'string' },
-            sourceRound: { type: 'string' },
-          },
-        },
-      },
-    },
+const GOSSIPELOG_MEMORY_ENTRY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: [
+    'phaseId',
+    'beatIndex',
+    'roundId',
+    'functionalRole',
+    'mindsetTags',
+    'summary',
+    'triggerEvent',
+    'reasoning',
+    'causalAction',
   ],
+  properties: {
+    phaseId: { type: ['string', 'null'] },
+    beatIndex: { type: ['integer', 'null'] },
+    roundId: { type: 'string' },
+    functionalRole: { type: ['string', 'null'] },
+    mindsetTags: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    summary: { type: 'string' },
+    triggerEvent: { type: 'string' },
+    reasoning: { type: 'string' },
+    causalAction: { type: 'string' },
+  },
+} as const;
+
+const GOSSIPELOG_MEMORY_UPDATE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['sourceRoleId', 'targetRoleId', 'shouldCreateEdge', 'nextCurrentRelation'],
+  properties: {
+    sourceRoleId: { type: 'string' },
+    targetRoleId: { type: 'string' },
+    shouldCreateEdge: { type: 'boolean' },
+    nextCurrentRelation: GOSSIPELOG_MEMORY_ENTRY_SCHEMA,
+  },
 } as const;
 
 const GOSSIPELOG_UPDATE_RESPONSE_FORMAT: ProviderResponseFormat = {
@@ -285,7 +227,7 @@ const GOSSIPELOG_UPDATE_RESPONSE_FORMAT: ProviderResponseFormat = {
       {
         type: 'object',
         additionalProperties: false,
-        required: ['involvedRoleIds', 'invocationNoOp', 'edgeUpdates'],
+        required: ['involvedRoleIds', 'invocationNoOp', 'memoryUpdates'],
         properties: {
           involvedRoleIds: {
             type: 'array',
@@ -297,17 +239,17 @@ const GOSSIPELOG_UPDATE_RESPONSE_FORMAT: ProviderResponseFormat = {
             type: 'boolean',
             enum: [true],
           },
-          edgeUpdates: {
+          memoryUpdates: {
             type: 'array',
             maxItems: 0,
-            items: GOSSIPELOG_EDGE_UPDATE_SCHEMA,
+            items: GOSSIPELOG_MEMORY_UPDATE_SCHEMA,
           },
         },
       },
       {
         type: 'object',
         additionalProperties: false,
-        required: ['involvedRoleIds', 'invocationNoOp', 'edgeUpdates'],
+        required: ['involvedRoleIds', 'invocationNoOp', 'memoryUpdates'],
         properties: {
           involvedRoleIds: {
             type: 'array',
@@ -319,10 +261,10 @@ const GOSSIPELOG_UPDATE_RESPONSE_FORMAT: ProviderResponseFormat = {
             type: 'boolean',
             enum: [false],
           },
-          edgeUpdates: {
+          memoryUpdates: {
             type: 'array',
             minItems: 1,
-            items: GOSSIPELOG_EDGE_UPDATE_SCHEMA,
+            items: GOSSIPELOG_MEMORY_UPDATE_SCHEMA,
           },
         },
       },

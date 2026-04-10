@@ -86,33 +86,25 @@ export function createMockAdapter(): LLMAdapter {
             ? {
                 involvedRoleIds: [...new Set(request.sceneCastRoleIds)].slice(0, 2),
                 invocationNoOp: false,
-                edgeUpdates: [
+                memoryUpdates: [
                   {
                     sourceRoleId: pair.sourceRoleId,
                     targetRoleId: pair.targetRoleId,
-                    mode: hasExistingRelationshipEdge(
+                    shouldCreateEdge: !hasExistingRelationshipEdge(
                       request.relationshipSubgraph,
                       pair.sourceRoleId,
                       pair.targetRoleId,
-                    )
-                      ? 'delta'
-                      : 'new_edge',
-                    replaceBaseline: false,
-                    ...(hasExistingRelationshipEdge(
-                      request.relationshipSubgraph,
-                      pair.sourceRoleId,
-                      pair.targetRoleId,
-                    )
-                      ? {}
-                      : {
-                          baseline: {
-                            state: `[Mock] Baseline for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
-                            lastAbsorbedRound: request.roundId,
-                          },
-                        }),
-                    recentDelta: {
-                      state: `[Mock] ${request.acceptedBeatText.length} chars absorbed for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
-                      sourceRound: request.roundId,
+                    ),
+                    nextCurrentRelation: {
+                      phaseId: request.phaseId,
+                      beatIndex: request.beatIndex,
+                      roundId: request.roundId,
+                      functionalRole: null,
+                      mindsetTags: ['[Mock] observed shift'],
+                      summary: `[Mock] ${request.acceptedBeatText.length} chars absorbed for ${pair.sourceRoleId} -> ${pair.targetRoleId}.`,
+                      triggerEvent: '[Mock] accepted beat processed',
+                      reasoning: '[Mock] deterministic adapter refreshed the current relation',
+                      causalAction: '[Mock] store the refreshed relation as current memory',
                     },
                   },
                 ],
@@ -120,7 +112,7 @@ export function createMockAdapter(): LLMAdapter {
             : {
                 involvedRoleIds: [...new Set(request.sceneCastRoleIds)].slice(0, 2),
                 invocationNoOp: true,
-                edgeUpdates: [],
+                memoryUpdates: [],
               },
         ),
       );
