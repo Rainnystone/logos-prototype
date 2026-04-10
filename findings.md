@@ -44,6 +44,45 @@
   - 如何区分瞬时情绪波动与稳定关系沉淀
 - 因此当前最优先的工作不是画关系图，而是先补齐 `gossipelog` 的 reference 与提取规则。
 
+### `gossipelog` / sidecar skill 机制补充
+
+- 这个仓库里的 sidecar `skill` 不是独立 prompt 文件，而是五层组合：
+  - `definition.ts`：声明 `skillIds`、展示文案、reference manifest
+  - `agent.ts`：负责 deterministic shell、边界裁剪、持久化与 fallback
+  - `prompt-templates.ts`：拼系统提示和用户提示
+  - `LLMAdapter`：提供具体的 skill 调用方法
+  - 可选 `reference-loader.ts`：把静态 markdown reference 解析后注入 request
+- `weaver` 已完整走通这套机制；`gossipelog` 目前只走通了 `definition + agent shell + adapter + prompt`，reference 仍未挂上。
+- `gossipelog` 当前持久化的还不是“关系记忆”，而是 Phase 1 的方向性关系记录：
+  - 每条边只有 `baseline`
+  - 一个 `recentDelta`
+  - 一个 `highlightNextPrompt`
+- 这说明它当前更像“关系状态缓存”，还没有记住证据来源、长期演化轨迹、可回顾摘要或人物侧记忆视角。
+- `agent-surface` 对 `gossipelog` 的“等待初始化”并不是它自己单独判断，而是结合 `weaver` 的 import summary 与 `gossipelog` 状态文件是否可读共同推导出来的。
+
+### 已确认 bug
+
+- `gossipelog` 的 runtime route 没有和 active storyline variant 对齐。
+- 证据链是闭合的：
+  - `/play/page.tsx` 会先 `resolveActiveStorylineContext(...)`，再把 `authoredRootOverride` 传给 `loadRuntimeStoryPackage(...)`，因此页面主工作台看到的是 active storyline 对应的 authored workspace。
+  - 但 `/api/play/gossipelog/route.ts` 只拿 `storyPackageName`，直接调用 `loadRuntimeStoryPackage(storyPackageName)`，没有读取 storyline context，也没有 `authoredRootOverride`。
+  - `runGossipelogCycle(...)` 的候选角色、scene cast framing、以及 injection request 全部依赖传入的 `storyPackage`。
+- 结果是：只要 active storyline variant 的 `scene.yaml`、`world-base.yaml` 或其他 authored 内容和 package 基线不同，主 play runtime 与 gossipelog cycle 看到的就不是同一份运行时材料。
+- 这不是单纯“未来要优化”的缺口，而是当前调用链里已经存在的数据源错位。
+- 同时要注意：`gossipelog` 的关系状态文件仍然通过 `resolvePackageRoot(packageName)` 落在 package 根，这一层是 package-owned 设计；真正出错的是 runtime read-model 没有对齐 active storyline authored root。
+
+- `PlayWorkbench` 在 `gossipelog` 同步或 finalize 长时间悬挂时，确实可能把输入永久锁住。
+- 证据链也是闭合的：
+  - 前端把每次 `gossipelogCycleRunner(...)` 包在 `trackedGossipelogCycleRunner` 里，创建一个 `PendingRelationshipSync`
+  - [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/app/play/PlayWorkbench.tsx) 里的 `isInputLoading` 明确把 `isRelationshipSyncPending` 并入输入禁用条件
+  - [PlayerInput.tsx](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/app/components/PlayerInput.tsx) 的所有按钮和自由输入都直接受 `isLoading` / `disabled` 控制
+  - 这个 pending sync 只有在 gossipelog cycle promise resolve / reject，或者 runtime-session `finalizeRelationshipLayer(...)` 返回后才会 settle
+  - 前端自己没有 timeout 或 cancel；browser gossipelog bridge 也没有 fetch timeout
+- engine 的 `waitForPendingRelationshipRefresh()` 虽然有 2 秒 timeout，但它发生在“下一次 runBeat 开始组 prompt 前”；一旦 UI 已经因为 `isRelationshipSyncPending` 禁止用户再次提交，engine timeout 不会主动把页面解锁。
+- 因而，只要 `/api/play/gossipelog` 请求或后续 finalize 链路长时间悬挂，页面就会停在“accepted beat 已显示，但所有输入仍被禁用”的状态。
+- 这不是单纯 UX 不佳，而是实际可见的运行时死锁面。
+- 用户已明确确认该问题的修复方向：前端要对齐 engine 现有语义，即超时后允许继续使用上一份稳定 `relationshipLayer`，而不是把系统改成无限阻塞等待 gossipelog 完成。
+
 ### 外部调研来源范围
 
 - 本轮框架判断优先基于 GitHub 官方仓库、README、官方 docs 入口与少量官方 discussion / issue 线索。
