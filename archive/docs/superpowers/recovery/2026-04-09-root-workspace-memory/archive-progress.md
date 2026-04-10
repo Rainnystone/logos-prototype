@@ -167,7 +167,7 @@
   - build 仍只有仓库既有 warning，没有新增阻塞项
 
 - 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
-- 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [task_plan.md](task_plan.md)。
+- 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [archive-task-plan.md](archive-task-plan.md)。
 - 初步锁定的排查范围包括：
   - `src/app/play/` 下的 workbench、选项输入与状态面板
   - `src/engine/` 下的 orchestrator / adapter 交互
@@ -209,9 +209,9 @@
 - 已按你的要求重读：
   - [AGENTS.md](AGENTS.md)
   - [coding-agent-guide.md](coding-agent-guide.md)
-  - 根目录 [task_plan.md](task_plan.md) / [findings.md](findings.md) / [progress.md](progress.md)
+  - 根目录 [archive-task-plan.md](archive-task-plan.md) / [archive-findings.md](archive-findings.md) / [archive-progress.md](archive-progress.md)
   - `docs/codemaps/architecture.md` / `backend.md` / `frontend.md`
-- 已将根目录 [task_plan.md](task_plan.md) 的活动轨道切到“`/play` 体感延迟优化探索”，明确本线程先做调查、诊断、方案排序，不默认直接实现。
+- 已将根目录 [archive-task-plan.md](archive-task-plan.md) 的活动轨道切到“`/play` 体感延迟优化探索”，明确本线程先做调查、诊断、方案排序，不默认直接实现。
 - 已读取并遵循这轮会用到的流程技能：
   - `using-superpowers`
   - `planning-with-files-zh`
@@ -298,7 +298,7 @@
   - [src/types/prompt-object.ts](src/types/prompt-object.ts)
   - `March Dev Update Phase 4` 归档 spec / implementation plan
 - 当前判断是：`weaver` 成功率问题更像是 reference、prompt、schema、seed-mapping 四层表述没有完全对齐，而不是单纯“没要求 JSON only”。
-- 当前不写 implementation plan，先把设计判断沉淀到 [findings.md](findings.md)。
+- 当前不写 implementation plan，先把设计判断沉淀到 [archive-findings.md](archive-findings.md)。
 - 你已进一步确认两条产品边界：
   - `weaver` 允许失败并留空，不应因为信息不足而报硬错误或卡住创建流程
   - 角色与地点类最小输出 shape 可以只要求名称字段

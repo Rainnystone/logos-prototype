@@ -20,9 +20,9 @@
 ## 推荐阅读顺序
 
 1. [../../../../AGENTS.md](../../../../AGENTS.md)
-2. [recovery/task_plan.md](recovery/task_plan.md)
-3. [recovery/progress.md](recovery/progress.md)
-4. [recovery/findings.md](recovery/findings.md)
+2. [recovery/archive-task-plan.md](recovery/archive-task-plan.md)
+3. [recovery/archive-progress.md](recovery/archive-progress.md)
+4. [recovery/archive-findings.md](recovery/archive-findings.md)
 5. 按需进入对应 phase 目录
 6. 如果需要回到当前代码结构，再读 [../../../../docs/codemaps/architecture.md](../../../../docs/codemaps/architecture.md)
 

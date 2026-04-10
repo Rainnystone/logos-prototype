@@ -14,9 +14,9 @@
 
 | 文件 | 用途 |
 |---|---|
-| `task_plan.md` | `March Dev Update Phase 3` 的冻结范围、part 地图与规范入口 |
-| `findings.md` | `Phase 3` 的关键边界与恢复入口 |
-| `progress.md` | `Phase 3` 的执行与验证日志 |
+| `archive-task-plan.md` | `March Dev Update Phase 3` 的冻结范围、part 地图与规范入口 |
+| `archive-findings.md` | `Phase 3` 的关键边界与恢复入口 |
+| `archive-progress.md` | `Phase 3` 的执行与验证日志 |
 | `2026-04-06-phase-3-master-design.md` | `Phase 3` master design |
 | `2026-04-06-phase-3-part-1-storyline-substrate-design.md` | `Part 1` design |
 | `2026-04-06-phase-3-part-2-package-storyline-workspace-design.md` | `Part 2` design |
@@ -31,8 +31,8 @@
 - `March Dev Update Phase 3` 已完成实现、验证并合入主线。
 - 该目录中的内容已经退役为历史封板档案，不再作为当前任务的默认执行入口。
 - 如果后续任务需要继续理解 package / storyline 基线，应先读：
-  - [task_plan.md](task_plan.md)
-  - [findings.md](findings.md)
+  - [archive-task-plan.md](archive-task-plan.md)
+  - [archive-findings.md](archive-findings.md)
   - [2026-04-06-phase-3-master-design.md](2026-04-06-phase-3-master-design.md)
 
 ## Related Archive

@@ -4,8 +4,8 @@
 
 1. [2026-04-06-phase-3-master-design.md](2026-04-06-phase-3-master-design.md)
 2. `Part 1 / Part 2 / Part 3` 的 design 与 implementation plan
-3. [task_plan.md](task_plan.md)
-4. [progress.md](progress.md)
+3. [archive-task-plan.md](archive-task-plan.md)
+4. [archive-progress.md](archive-progress.md)
 5. [../../../../../docs/codemaps/architecture.md](../../../../../docs/codemaps/architecture.md)
 6. [../../../../../README.md](../../../../../README.md)
 7. [../../../../../coding-agent-guide.md](../../../../../coding-agent-guide.md)

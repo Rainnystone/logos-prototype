@@ -29,5 +29,5 @@
 - [2026-04-06-phase-3-part-1-storyline-substrate-implementation.md](2026-04-06-phase-3-part-1-storyline-substrate-implementation.md)
 - [2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md](2026-04-06-phase-3-part-2-package-storyline-workspace-implementation.md)
 - [2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md](2026-04-07-phase-3-part-3-safe-deletion-and-package-creation-implementation.md)
-- [findings.md](findings.md)
-- [progress.md](progress.md)
+- [archive-findings.md](archive-findings.md)
+- [archive-progress.md](archive-progress.md)

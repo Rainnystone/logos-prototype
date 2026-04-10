@@ -3,9 +3,9 @@
 ## Recovery Order
 
 1. [../../../../../AGENTS.md](../../../../../AGENTS.md)
-2. [task_plan.md](task_plan.md)
-3. [progress.md](progress.md)
-4. [findings.md](findings.md)
+2. [archive-task-plan.md](archive-task-plan.md)
+3. [archive-progress.md](archive-progress.md)
+4. [archive-findings.md](archive-findings.md)
 5. [../README.md](../README.md)
 6. [../phase-3/2026-04-06-phase-3-master-design.md](../phase-3/2026-04-06-phase-3-master-design.md)
 7. [../phase-4/2026-04-07-phase-4-weaver-agent-management-design.md](../phase-4/2026-04-07-phase-4-weaver-agent-management-design.md)

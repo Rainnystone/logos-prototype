@@ -115,8 +115,8 @@
 
 - [AGENTS.md](AGENTS.md)
 - [coding-agent-guide.md](coding-agent-guide.md)
-- [progress.md](progress.md)
-- [findings.md](findings.md)
+- [archive-progress.md](archive-progress.md)
+- [archive-findings.md](archive-findings.md)
 - [docs/codemaps/architecture.md](docs/codemaps/architecture.md)
 - [docs/codemaps/frontend.md](docs/codemaps/frontend.md)
 - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md)

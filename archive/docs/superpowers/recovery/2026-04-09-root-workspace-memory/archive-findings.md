@@ -250,8 +250,8 @@
 
 1. [AGENTS.md](AGENTS.md)
 2. [coding-agent-guide.md](coding-agent-guide.md)
-3. [task_plan.md](task_plan.md)
-4. [progress.md](progress.md)
-5. [findings.md](findings.md)
+3. [archive-task-plan.md](archive-task-plan.md)
+4. [archive-progress.md](archive-progress.md)
+5. [archive-findings.md](archive-findings.md)
 6. [docs/codemaps/architecture.md](docs/codemaps/architecture.md)
 7. 按需读取 `/play`、`runtime-sessions`、`gossipelog` 相关代码

@@ -12,9 +12,9 @@
 
 - [2026-04-07-phase-4-weaver-agent-management-design.md](2026-04-07-phase-4-weaver-agent-management-design.md)
 - [2026-04-07-phase-4-weaver-and-agent-management-implementation.md](2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
-- [task_plan.md](task_plan.md)
-- [progress.md](progress.md)
-- [findings.md](findings.md)
+- [archive-task-plan.md](archive-task-plan.md)
+- [archive-progress.md](archive-progress.md)
+- [archive-findings.md](archive-findings.md)
 
 ## 当前定位
 

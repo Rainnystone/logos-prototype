@@ -3,11 +3,11 @@
 ## Recovery Order
 
 1. [../../../../../AGENTS.md](../../../../../AGENTS.md)
-2. [../recovery/task_plan.md](../recovery/task_plan.md)
-3. [../recovery/progress.md](../recovery/progress.md)
-4. [../recovery/findings.md](../recovery/findings.md)
-5. [task_plan.md](task_plan.md)
-6. [progress.md](progress.md)
+2. [../recovery/archive-task-plan.md](../recovery/archive-task-plan.md)
+3. [../recovery/archive-progress.md](../recovery/archive-progress.md)
+4. [../recovery/archive-findings.md](../recovery/archive-findings.md)
+5. [archive-task-plan.md](archive-task-plan.md)
+6. [archive-progress.md](archive-progress.md)
 7. [2026-04-07-phase-4-weaver-agent-management-design.md](2026-04-07-phase-4-weaver-agent-management-design.md)
 8. [2026-04-07-phase-4-weaver-and-agent-management-implementation.md](2026-04-07-phase-4-weaver-and-agent-management-implementation.md)
 9. [../phase-1/2026-04-02-phase-1-model-surface-design.md](../phase-1/2026-04-02-phase-1-model-surface-design.md)
