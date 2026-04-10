@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
     gossipelogUpdate: vi.fn(async () => ({
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     })),
     gossipelogInjection: vi.fn(async () => ({
       highlightedDeltasText: 'delta',
@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => ({
     gossipelogUpdate: vi.fn(async () => ({
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     })),
     gossipelogInjection: vi.fn(async () => ({
       highlightedDeltasText: 'demo delta',
@@ -44,6 +44,8 @@ const mocks = vi.hoisted(() => ({
     updateRequest: {
       acceptedBeatText: 'Accepted beat text',
       roundId: 'round-1',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
       sceneCastRoleIds: [],
       sceneCastFraming: {
         sceneId: 'scene-1',
@@ -59,11 +61,12 @@ const mocks = vi.hoisted(() => ({
         },
         relationshipsBySource: {},
       },
+      resolvedReferences: [],
     },
     updateResult: {
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     },
     injectionRequest: {
       sceneCastRoleIds: [],
@@ -140,6 +143,8 @@ describe('POST play gossipelog route', () => {
           adapterConfig,
           acceptedBeatText: 'Accepted beat text',
           roundId: 'round-1',
+          phaseId: 'phase-01-prologue',
+          beatIndex: 1,
           lastStableRelationshipLayer: {
             highlightedDeltasText: 'previous delta',
             stableBackgroundText: 'previous background',
@@ -166,6 +171,8 @@ describe('POST play gossipelog route', () => {
         storyPackage: storyPackageFixture,
         acceptedBeatText: 'Accepted beat text',
         roundId: 'round-1',
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
         lastStableRelationshipLayer: {
           highlightedDeltasText: 'previous delta',
           stableBackgroundText: 'previous background',
@@ -201,6 +208,8 @@ describe('POST play gossipelog route', () => {
           },
           acceptedBeatText: 'Accepted beat text',
           roundId: 'round-2',
+          phaseId: 'phase-01-prologue',
+          beatIndex: 2,
         }),
       }),
     );
@@ -216,9 +225,84 @@ describe('POST play gossipelog route', () => {
         storyPackageName: 'sample-scene',
         acceptedBeatText: 'Accepted beat text',
         roundId: 'round-2',
+        phaseId: 'phase-01-prologue',
+        beatIndex: 2,
       }),
     );
     expect(response.status).toBe(200);
+  });
+
+  it.each([
+    {
+      label: 'phaseId is missing',
+      body: {
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+        beatIndex: 2,
+      },
+    },
+    {
+      label: 'phaseId is blank',
+      body: {
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+        phaseId: '',
+        beatIndex: 2,
+      },
+    },
+    {
+      label: 'beatIndex is missing',
+      body: {
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+        phaseId: 'phase-01-prologue',
+      },
+    },
+    {
+      label: 'beatIndex is negative',
+      body: {
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+        phaseId: 'phase-01-prologue',
+        beatIndex: -1,
+      },
+    },
+    {
+      label: 'beatIndex is null',
+      body: {
+        storyPackageName: 'sample-scene',
+        acceptedBeatText: 'Accepted beat text',
+        roundId: 'round-2',
+        phaseId: 'phase-01-prologue',
+        beatIndex: null,
+      },
+    },
+  ])('returns 400 when $label', async ({ body }) => {
+    const { POST } = await import('@/app/api/play/gossipelog/route');
+
+    const response = await POST(
+      new Request('http://localhost/api/play/gossipelog', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringMatching(/phaseId|beatIndex/i),
+    });
+    expect(mocks.resolveActiveStorylineContext).not.toHaveBeenCalled();
+    expect(mocks.loadRuntimeStoryPackage).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.createWorkbenchDemoAdapter).not.toHaveBeenCalled();
+    expect(mocks.runGossipelogCycle).not.toHaveBeenCalled();
   });
 
   it('propagates missing-package errors from the storyline resolver', async () => {
@@ -246,6 +330,8 @@ describe('POST play gossipelog route', () => {
             },
             acceptedBeatText: 'Accepted beat text',
             roundId: 'round-3',
+            phaseId: 'phase-01-prologue',
+            beatIndex: 3,
           }),
         }),
       ),

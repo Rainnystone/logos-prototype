@@ -64,6 +64,90 @@ function writeWeaverConfig(packageName: string, enabled: boolean): void {
   writeFileSync(configPath, `agentId: weaver\nenabled: ${enabled ? 'true' : 'false'}\n`, 'utf8');
 }
 
+function writeGossipelogMemoryState(packageName: string): void {
+  const relationshipPath = path.resolve(
+    packageRoot(packageName),
+    'agents/gossipelog/character-relationships.yaml',
+  );
+  mkdirSync(path.dirname(relationshipPath), { recursive: true });
+  writeFileSync(
+    relationshipPath,
+    YAML.stringify({
+      meta: {
+        fileType: 'character-relationships',
+        schemaVersion: 2,
+        storyPackage: packageName,
+      },
+      relationshipsBySource: {
+        chr_core01: {
+          targets: {
+            chr_hero01: {
+              sourceRoleId: 'chr_core01',
+              targetRoleId: 'chr_hero01',
+              currentRelation: {
+                phaseId: 'phase-02-hunt',
+                beatIndex: 3,
+                roundId: 'round-0011',
+                functionalRole: 'emotional-anchor',
+                mindsetTags: ['trust', 'dependence'],
+                summary: 'views the target as a reliable emotional anchor',
+                triggerEvent: 'target risked personal safety to rescue source',
+                reasoning: 'target demonstrated loyalty through action',
+                causalAction: 'source discloses a personal secret',
+              },
+              history: [
+                {
+                  phaseId: 'phase-01-prologue',
+                  beatIndex: 1,
+                  roundId: 'round-0009',
+                  functionalRole: null,
+                  mindsetTags: ['caution'],
+                  summary: 'first contact leaves a cautious impression',
+                  triggerEvent: 'the two meet during a tense briefing',
+                  reasoning: 'source is still evaluating intent',
+                  causalAction: 'source memorizes the target name',
+                },
+                {
+                  phaseId: 'phase-02-hunt',
+                  beatIndex: 3,
+                  roundId: 'round-0011',
+                  functionalRole: 'emotional-anchor',
+                  mindsetTags: ['trust', 'dependence'],
+                  summary: 'views the target as a reliable emotional anchor',
+                  triggerEvent: 'target risked personal safety to rescue source',
+                  reasoning: 'target demonstrated loyalty through action',
+                  causalAction: 'source discloses a personal secret',
+                },
+              ],
+            },
+          },
+        },
+      },
+    }),
+    'utf8',
+  );
+}
+
+function writeEmptyGossipelogMemoryState(packageName: string): void {
+  const relationshipPath = path.resolve(
+    packageRoot(packageName),
+    'agents/gossipelog/character-relationships.yaml',
+  );
+  mkdirSync(path.dirname(relationshipPath), { recursive: true });
+  writeFileSync(
+    relationshipPath,
+    YAML.stringify({
+      meta: {
+        fileType: 'character-relationships',
+        schemaVersion: 2,
+        storyPackage: packageName,
+      },
+      relationshipsBySource: {},
+    }),
+    'utf8',
+  );
+}
+
 afterEach(() => {
   resetPackage('__phase4-missing-sidecar__');
   resetPackage('__phase4-built-in-config-drift__');
@@ -75,7 +159,7 @@ afterEach(() => {
 
 describe('loadAgentSurfaceItems', () => {
   it('exposes the refreshed gossipelog management copy in the definition', () => {
-    expect(gossipelogAgentDefinition.displayName).toBe('Gossipe Log');
+    expect(gossipelogAgentDefinition.displayName).toBe('Gossipelog');
     expect(gossipelogAgentDefinition.responsibilitySummary).toBe(
       '整理已经成立的人际关系，把它们沉淀成稳定的关系背景，供后续生成持续沿用。',
     );
@@ -170,6 +254,33 @@ describe('loadAgentSurfaceItems', () => {
     expect(gossipelogItem?.latestStateLine).toEqual(
       expect.any(String),
     );
+  });
+
+  it('summarizes readable gossipelog state as relationship memory with current and history coverage', async () => {
+    prepareSamplePackage('__phase4-imported-package-readable-gossipelog__');
+    writeWeaverConfig('__phase4-imported-package-readable-gossipelog__', true);
+    writeWeaverSummary('__phase4-imported-package-readable-gossipelog__');
+    writeGossipelogMemoryState('__phase4-imported-package-readable-gossipelog__');
+    const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
+
+    const items = await loadAgentSurfaceItems('__phase4-imported-package-readable-gossipelog__');
+    const gossipelogItem = items.find((item) => item.agentId === 'gossipelog');
+
+    expect(gossipelogItem?.latestStateLine).toMatch(/current relation|history|memory/i);
+  });
+
+  it('keeps empty v2 gossipelog state summaries in relationship memory vocabulary', async () => {
+    prepareSamplePackage('__phase4-imported-package-empty-gossipelog-memory__');
+    writeWeaverConfig('__phase4-imported-package-empty-gossipelog-memory__', true);
+    writeWeaverSummary('__phase4-imported-package-empty-gossipelog-memory__');
+    writeEmptyGossipelogMemoryState('__phase4-imported-package-empty-gossipelog-memory__');
+    const { loadAgentSurfaceItems } = await import('@/agents/agent-surface');
+
+    const items = await loadAgentSurfaceItems('__phase4-imported-package-empty-gossipelog-memory__');
+    const gossipelogItem = items.find((item) => item.agentId === 'gossipelog');
+
+    expect(gossipelogItem?.latestStateLine).toMatch(/relationship memor/i);
+    expect(gossipelogItem?.latestStateLine).not.toMatch(/link/i);
   });
 
   it('maps missing gossipelog state to warning when weaver bootstrap already failed', async () => {

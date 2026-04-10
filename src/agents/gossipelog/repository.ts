@@ -8,7 +8,13 @@ import { gossipelogAgentDefinition } from '@/agents/gossipelog/definition';
 import { parseWithSchema } from '@/lib/validation';
 import {
   CharacterRelationshipsFileSchema,
+  CharacterRelationshipsFileV2Schema,
   type CharacterRelationshipsFile,
+  type CharacterRelationshipsFileV1,
+  type CharacterRelationshipsFileV2,
+  type RelationshipEdge,
+  type RelationshipMemoryEdge,
+  type RelationshipMemoryEntry,
 } from '@/types';
 
 function resolveStoryPackageRoot(packageName: string): string {
@@ -25,11 +31,84 @@ export function createEmptyCharacterRelationshipsFile(
   return {
     meta: {
       fileType: 'character-relationships',
-      schemaVersion: 1,
+      schemaVersion: 2,
       storyPackage: packageName,
     },
     relationshipsBySource: {},
   };
+}
+
+function createLegacyMemoryEntry(
+  roundId: string,
+  summary: string,
+): RelationshipMemoryEntry {
+  return {
+    phaseId: null,
+    beatIndex: null,
+    roundId,
+    functionalRole: null,
+    mindsetTags: [],
+    summary,
+    triggerEvent: '',
+    reasoning: '',
+    causalAction: '',
+  };
+}
+
+function migrateLegacyEdgeToMemoryEdge(edge: RelationshipEdge): RelationshipMemoryEdge {
+  const history: RelationshipMemoryEntry[] = [
+    createLegacyMemoryEntry(edge.baseline.lastAbsorbedRound, edge.baseline.state),
+  ];
+
+  if (edge.recentDelta) {
+    history.push(createLegacyMemoryEntry(edge.recentDelta.sourceRound, edge.recentDelta.state));
+  }
+
+  return {
+    sourceRoleId: edge.sourceRoleId,
+    targetRoleId: edge.targetRoleId,
+    currentRelation: history[history.length - 1]!,
+    history,
+  };
+}
+
+function migrateV1FileToV2(file: CharacterRelationshipsFileV1): CharacterRelationshipsFileV2 {
+  return {
+    meta: {
+      fileType: 'character-relationships',
+      schemaVersion: 2,
+      storyPackage: file.meta.storyPackage,
+    },
+    relationshipsBySource: Object.fromEntries(
+      Object.entries(file.relationshipsBySource).map(([sourceRoleId, sourceBucket]) => [
+        sourceRoleId,
+        {
+          targets: Object.fromEntries(
+            Object.entries(sourceBucket.targets).map(([targetRoleId, edge]) => [
+              targetRoleId,
+              migrateLegacyEdgeToMemoryEdge(edge),
+            ]),
+          ),
+        },
+      ]),
+    ),
+  };
+}
+
+function isCharacterRelationshipsFileV2(
+  file: CharacterRelationshipsFile,
+): file is CharacterRelationshipsFileV2 {
+  return file.meta.schemaVersion === 2;
+}
+
+function normalizeRelationshipsFileToV2(
+  file: CharacterRelationshipsFile,
+): CharacterRelationshipsFileV2 {
+  if (isCharacterRelationshipsFileV2(file)) {
+    return file;
+  }
+
+  return migrateV1FileToV2(file);
 }
 
 async function ensureStoryPackageExists(packageName: string): Promise<void> {
@@ -42,13 +121,15 @@ async function ensureStoryPackageExists(packageName: string): Promise<void> {
   }
 }
 
-async function readCharacterRelationshipsFile(filePath: string): Promise<CharacterRelationshipsFile> {
+async function readCharacterRelationshipsFile(filePath: string): Promise<CharacterRelationshipsFileV2> {
   const fileContents = await readFile(filePath, 'utf8');
-  return parseWithSchema(
+  const parsedFile = parseWithSchema(
     CharacterRelationshipsFileSchema,
     YAML.parse(fileContents) as unknown,
     'characterRelationships',
   );
+
+  return normalizeRelationshipsFileToV2(parsedFile);
 }
 
 export async function loadCharacterRelationships(
@@ -111,9 +192,10 @@ export async function saveCharacterRelationships(
 ): Promise<void> {
   await ensureStoryPackageExists(packageName);
 
+  const normalizedFile = normalizeRelationshipsFileToV2(file);
   const validatedFile = parseWithSchema(
-    CharacterRelationshipsFileSchema,
-    file,
+    CharacterRelationshipsFileV2Schema,
+    normalizedFile,
     'characterRelationships',
   );
   const filePath = resolveCharacterRelationshipsPath(packageName);

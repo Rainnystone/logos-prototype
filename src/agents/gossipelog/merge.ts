@@ -1,15 +1,121 @@
 import type {
   CharacterRelationshipsFile,
-  GossipelogEdgeUpdate,
+  CharacterRelationshipsFileV1,
+  CharacterRelationshipsFileV2,
+  GossipelogMemoryUpdate,
   GossipelogUpdateResult,
   RelationshipEdge,
+  RelationshipMemoryEdge,
+  RelationshipMemoryEntry,
 } from '@/types';
 
 export interface RelationshipMergeOptions {
   readonly heroRoleId: string;
 }
 
-function cloneRelationshipsFile(file: CharacterRelationshipsFile): CharacterRelationshipsFile {
+function cloneMemoryEntry(entry: RelationshipMemoryEntry): RelationshipMemoryEntry {
+  return {
+    ...entry,
+    mindsetTags: [...entry.mindsetTags],
+  };
+}
+
+function isSameMemoryEntry(
+  left: RelationshipMemoryEntry,
+  right: RelationshipMemoryEntry,
+): boolean {
+  if (
+    left.phaseId !== right.phaseId ||
+    left.beatIndex !== right.beatIndex ||
+    left.roundId !== right.roundId ||
+    left.functionalRole !== right.functionalRole ||
+    left.summary !== right.summary ||
+    left.triggerEvent !== right.triggerEvent ||
+    left.reasoning !== right.reasoning ||
+    left.causalAction !== right.causalAction ||
+    left.mindsetTags.length !== right.mindsetTags.length
+  ) {
+    return false;
+  }
+
+  return left.mindsetTags.every((tag, index) => tag === right.mindsetTags[index]);
+}
+
+function migrateLegacyEdgeToMemoryEdge(edge: RelationshipEdge): RelationshipMemoryEdge {
+  const history: RelationshipMemoryEntry[] = [
+    {
+      phaseId: null,
+      beatIndex: null,
+      roundId: edge.baseline.lastAbsorbedRound,
+      functionalRole: null,
+      mindsetTags: [],
+      summary: edge.baseline.state,
+      triggerEvent: '',
+      reasoning: '',
+      causalAction: '',
+    },
+  ];
+
+  if (edge.recentDelta) {
+    history.push({
+      phaseId: null,
+      beatIndex: null,
+      roundId: edge.recentDelta.sourceRound,
+      functionalRole: null,
+      mindsetTags: [],
+      summary: edge.recentDelta.state,
+      triggerEvent: '',
+      reasoning: '',
+      causalAction: '',
+    });
+  }
+
+  return {
+    sourceRoleId: edge.sourceRoleId,
+    targetRoleId: edge.targetRoleId,
+    currentRelation: history[history.length - 1]!,
+    history,
+  };
+}
+
+function migrateV1FileToV2(file: CharacterRelationshipsFileV1): CharacterRelationshipsFileV2 {
+  return {
+    meta: {
+      fileType: 'character-relationships',
+      schemaVersion: 2,
+      storyPackage: file.meta.storyPackage,
+    },
+    relationshipsBySource: Object.fromEntries(
+      Object.entries(file.relationshipsBySource).map(([sourceRoleId, sourceBucket]) => [
+        sourceRoleId,
+        {
+          targets: Object.fromEntries(
+            Object.entries(sourceBucket.targets).map(([targetRoleId, edge]) => [
+              targetRoleId,
+              migrateLegacyEdgeToMemoryEdge(edge),
+            ]),
+          ),
+        },
+      ]),
+    ),
+  };
+}
+
+function isCharacterRelationshipsFileV2(
+  file: CharacterRelationshipsFile,
+): file is CharacterRelationshipsFileV2 {
+  return file.meta.schemaVersion === 2;
+}
+
+function normalizeFileToV2(file: CharacterRelationshipsFile): CharacterRelationshipsFileV2 {
+  if (isCharacterRelationshipsFileV2(file)) {
+    return file;
+  }
+
+  return migrateV1FileToV2(file);
+}
+
+function cloneRelationshipsFile(file: CharacterRelationshipsFileV2): CharacterRelationshipsFileV2 {
   return {
     ...file,
     meta: { ...file.meta },
@@ -23,8 +129,8 @@ function cloneRelationshipsFile(file: CharacterRelationshipsFile): CharacterRela
               targetRoleId,
               {
                 ...edge,
-                baseline: { ...edge.baseline },
-                recentDelta: edge.recentDelta ? { ...edge.recentDelta } : null,
+                currentRelation: cloneMemoryEntry(edge.currentRelation),
+                history: edge.history.map(cloneMemoryEntry),
               },
             ]),
           ),
@@ -35,10 +141,10 @@ function cloneRelationshipsFile(file: CharacterRelationshipsFile): CharacterRela
 }
 
 function upsertEdge(
-  file: CharacterRelationshipsFile,
+  file: CharacterRelationshipsFileV2,
   sourceRoleId: string,
   targetRoleId: string,
-  edge: RelationshipEdge,
+  edge: RelationshipMemoryEdge,
 ): void {
   const currentBucket = file.relationshipsBySource[sourceRoleId];
   file.relationshipsBySource = {
@@ -53,42 +159,44 @@ function upsertEdge(
 }
 
 function getExistingEdge(
-  file: CharacterRelationshipsFile,
+  file: CharacterRelationshipsFileV2,
   sourceRoleId: string,
   targetRoleId: string,
-): RelationshipEdge | null {
+): RelationshipMemoryEdge | null {
   return file.relationshipsBySource[sourceRoleId]?.targets[targetRoleId] ?? null;
 }
 
-function applyEdgeUpdate(
-  file: CharacterRelationshipsFile,
-  edgeUpdate: GossipelogEdgeUpdate,
+function applyMemoryUpdate(
+  file: CharacterRelationshipsFileV2,
+  memoryUpdate: GossipelogMemoryUpdate,
   options: RelationshipMergeOptions,
-): CharacterRelationshipsFile {
-  if (edgeUpdate.mode === 'noop') {
-    return file;
-  }
-
-  if (edgeUpdate.sourceRoleId === options.heroRoleId) {
-    throw new Error(`hero-outgoing relationship edges are not persisted in Phase 1.`);
+): CharacterRelationshipsFileV2 {
+  if (memoryUpdate.sourceRoleId === options.heroRoleId) {
+    throw new Error('hero-outgoing relationship memories are not persisted.');
   }
 
   const nextFile = cloneRelationshipsFile(file);
-  const existingEdge = getExistingEdge(nextFile, edgeUpdate.sourceRoleId, edgeUpdate.targetRoleId);
+  const existingEdge = getExistingEdge(
+    nextFile,
+    memoryUpdate.sourceRoleId,
+    memoryUpdate.targetRoleId,
+  );
 
-  if (edgeUpdate.mode === 'new_edge') {
+  if (memoryUpdate.shouldCreateEdge) {
     if (existingEdge) {
       throw new Error(
-        `Cannot create a new_edge for existing relationship ${edgeUpdate.sourceRoleId} -> ${edgeUpdate.targetRoleId}.`,
+        `Cannot create relationship memory for existing relationship ${memoryUpdate.sourceRoleId} -> ${memoryUpdate.targetRoleId}.`,
       );
     }
 
-    upsertEdge(nextFile, edgeUpdate.sourceRoleId, edgeUpdate.targetRoleId, {
-      sourceRoleId: edgeUpdate.sourceRoleId,
-      targetRoleId: edgeUpdate.targetRoleId,
-      baseline: { ...edgeUpdate.baseline },
-      recentDelta: { ...edgeUpdate.recentDelta },
-      highlightNextPrompt: true,
+    const nextCurrentRelation = cloneMemoryEntry(memoryUpdate.nextCurrentRelation);
+    const historyEntry = cloneMemoryEntry(memoryUpdate.nextCurrentRelation);
+
+    upsertEdge(nextFile, memoryUpdate.sourceRoleId, memoryUpdate.targetRoleId, {
+      sourceRoleId: memoryUpdate.sourceRoleId,
+      targetRoleId: memoryUpdate.targetRoleId,
+      currentRelation: nextCurrentRelation,
+      history: [historyEntry],
     });
 
     return nextFile;
@@ -96,19 +204,21 @@ function applyEdgeUpdate(
 
   if (!existingEdge) {
     throw new Error(
-      `Cannot apply delta to missing relationship ${edgeUpdate.sourceRoleId} -> ${edgeUpdate.targetRoleId}.`,
+      `Cannot apply memory update to missing relationship ${memoryUpdate.sourceRoleId} -> ${memoryUpdate.targetRoleId}.`,
     );
   }
 
-  const baseline = edgeUpdate.replaceBaseline
-    ? { ...edgeUpdate.baseline }
-    : { ...existingEdge.baseline };
+  if (isSameMemoryEntry(existingEdge.currentRelation, memoryUpdate.nextCurrentRelation)) {
+    return file;
+  }
 
-  upsertEdge(nextFile, edgeUpdate.sourceRoleId, edgeUpdate.targetRoleId, {
+  const nextCurrentRelation = cloneMemoryEntry(memoryUpdate.nextCurrentRelation);
+  const historyEntry = cloneMemoryEntry(memoryUpdate.nextCurrentRelation);
+
+  upsertEdge(nextFile, memoryUpdate.sourceRoleId, memoryUpdate.targetRoleId, {
     ...existingEdge,
-    baseline,
-    recentDelta: { ...edgeUpdate.recentDelta },
-    highlightNextPrompt: true,
+    currentRelation: nextCurrentRelation,
+    history: [...existingEdge.history.map(cloneMemoryEntry), historyEntry],
   });
 
   return nextFile;
@@ -116,32 +226,9 @@ function applyEdgeUpdate(
 
 export function absorbConsumedDeltas(
   file: CharacterRelationshipsFile,
-  currentRoundId: string,
+  _currentRoundId: string,
 ): CharacterRelationshipsFile {
-  let changed = false;
-  const nextFile = cloneRelationshipsFile(file);
-
-  for (const bucket of Object.values(nextFile.relationshipsBySource)) {
-    for (const edge of Object.values(bucket.targets)) {
-      if (!edge.highlightNextPrompt || !edge.recentDelta) {
-        continue;
-      }
-
-      if (edge.recentDelta.sourceRound === currentRoundId) {
-        continue;
-      }
-
-      edge.baseline = {
-        state: edge.recentDelta.state,
-        lastAbsorbedRound: currentRoundId,
-      };
-      edge.recentDelta = null;
-      edge.highlightNextPrompt = false;
-      changed = true;
-    }
-  }
-
-  return changed ? nextFile : file;
+  return file;
 }
 
 export function mergeRelationshipUpdates(
@@ -153,8 +240,10 @@ export function mergeRelationshipUpdates(
     return file;
   }
 
-  return update.edgeUpdates.reduce(
-    (currentFile, edgeUpdate) => applyEdgeUpdate(currentFile, edgeUpdate, options),
-    file,
+  const baseFile = normalizeFileToV2(file);
+
+  return update.memoryUpdates.reduce(
+    (currentFile, memoryUpdate) => applyMemoryUpdate(currentFile, memoryUpdate, options),
+    baseFile,
   );
 }

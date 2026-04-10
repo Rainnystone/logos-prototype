@@ -9,13 +9,35 @@ import {
   loadOrCreateCharacterRelationships,
   saveCharacterRelationships,
 } from '@/agents/gossipelog/repository';
-import type { CharacterRelationshipsFile } from '@/types';
+import type { CharacterRelationshipsFile, RelationshipMemoryEdge } from '@/types';
+
+function expectMemoryEdge(edge: unknown): RelationshipMemoryEdge {
+  expect(edge).toBeDefined();
+
+  if (!edge || typeof edge !== 'object' || !('history' in edge) || !('currentRelation' in edge)) {
+    throw new Error('Expected schemaVersion 2 relationship memory edge.');
+  }
+
+  return edge as RelationshipMemoryEdge;
+}
 
 function createRelationshipFile(packageName: string): CharacterRelationshipsFile {
+  const initialMemoryEntry = {
+    phaseId: 'phase-01-prologue',
+    beatIndex: 2,
+    roundId: 'round-0009',
+    functionalRole: 'anchor',
+    mindsetTags: ['trust'],
+    summary: 'trust increased after direct protection',
+    triggerEvent: 'protected during ambush',
+    reasoning: 'action proved dependable intent',
+    causalAction: 'shares sensitive intel',
+  };
+
   return {
     meta: {
       fileType: 'character-relationships',
-      schemaVersion: 1,
+      schemaVersion: 2,
       storyPackage: packageName,
     },
     relationshipsBySource: {
@@ -24,15 +46,8 @@ function createRelationshipFile(packageName: string): CharacterRelationshipsFile
           chr_hero01: {
             sourceRoleId: 'chr_core01',
             targetRoleId: 'chr_hero01',
-            baseline: {
-              state: 'guarded trust',
-              lastAbsorbedRound: 'round-0008',
-            },
-            recentDelta: {
-              state: 'trust increased after direct protection',
-              sourceRound: 'round-0009',
-            },
-            highlightNextPrompt: true,
+            currentRelation: initialMemoryEntry,
+            history: [initialMemoryEntry],
           },
         },
       },
@@ -61,7 +76,7 @@ describe('gossipelog relationship repository', () => {
       expect(file).toEqual({
         meta: {
           fileType: 'character-relationships',
-          schemaVersion: 1,
+          schemaVersion: 2,
           storyPackage: packageName,
         },
         relationshipsBySource: {},
@@ -95,6 +110,57 @@ describe('gossipelog relationship repository', () => {
       await expect(loadOrCreateCharacterRelationships(packageName)).rejects.toThrow(
         /Failed to load character relationships|characterRelationships/i,
       );
+    } finally {
+      await rm(packageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('loads a v1 gossipelog file and returns a v2 relationship memory shape', async () => {
+    const packagesRoot = path.resolve(process.cwd(), 'src/story-packages');
+    const packageRoot = await mkdtemp(path.resolve(packagesRoot, 'tmp-gossipelog-migrate-'));
+    const packageName = path.basename(packageRoot);
+    const relationshipPath = path.resolve(
+      packageRoot,
+      'agents',
+      'gossipelog',
+      'character-relationships.yaml',
+    );
+
+    await mkdir(path.dirname(relationshipPath), { recursive: true });
+    await writeFile(
+      relationshipPath,
+      `
+meta:
+  fileType: character-relationships
+  schemaVersion: 1
+  storyPackage: ${packageName}
+relationshipsBySource:
+  chr_core01:
+    targets:
+      chr_hero01:
+        sourceRoleId: chr_core01
+        targetRoleId: chr_hero01
+        baseline:
+          state: guarded trust
+          lastAbsorbedRound: round-0008
+        recentDelta:
+          state: trust increased after direct protection
+          sourceRound: round-0009
+        highlightNextPrompt: true
+`,
+      'utf8',
+    );
+
+    try {
+      const file = await loadCharacterRelationships(packageName);
+      const edge = expectMemoryEdge(file.relationshipsBySource.chr_core01?.targets.chr_hero01);
+
+      expect(file.meta.schemaVersion).toBe(2);
+      expect(edge.history).toHaveLength(2);
+      expect(edge.history[0]?.phaseId).toBeNull();
+      expect(edge.history[0]?.beatIndex).toBeNull();
+      expect(edge.currentRelation.roundId).toBe('round-0009');
+      expect(edge.history.length).toBeGreaterThan(0);
     } finally {
       await rm(packageRoot, { recursive: true, force: true });
     }
@@ -141,7 +207,7 @@ describe('gossipelog relationship repository', () => {
           {
             meta: {
               fileType: 'wrong-shape',
-              schemaVersion: 1,
+              schemaVersion: 2,
               storyPackage: packageName,
             },
             relationshipsBySource: {},

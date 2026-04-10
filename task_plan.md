@@ -8,7 +8,7 @@
 2. 把当前“关系记录”升级为角色级的“人际关系记忆”，而不只是一次性的 prompt 关系层。
 
 ## 当前阶段
-阶段 3
+阶段 5
 
 ## 各阶段
 
@@ -28,26 +28,26 @@
 - **状态：** complete
 
 ### 阶段 3：实现
-- [ ] 按方案逐步实现 reference / memory 升级
-- [ ] 为新 contract、prompt、repository、surface 补测试
-- [ ] 保持 code / tests / active plan 同步
-- **状态：** pending
+- [x] 按方案逐步实现 reference / memory 升级
+- [x] 为新 contract、prompt、repository、surface 补测试
+- [x] 保持 code / tests / active plan 同步
+- **状态：** complete
 
 ### 阶段 4：测试与验证
-- [ ] 跑 targeted tests 覆盖 gossipelog 相关模块
-- [ ] 跑 `npm run build`
-- [ ] 跑全量 `npm test`
-- [ ] 检查关键 fallback、bootstrap、prompt 注入与 continuity 路径
-- **状态：** pending
+- [x] 跑 targeted tests 覆盖 gossipelog 相关模块
+- [x] 跑 `npm run build`
+- [x] 跑全量 `npm test`
+- [x] 检查关键 fallback、bootstrap、prompt 注入与 continuity 路径
+- **状态：** complete
 
 ### 阶段 5：交付
-- [ ] 总结升级结果与边界
-- [ ] 说明已验证项、未验证项与需要人工决定的事项
-- [ ] 交付给用户继续下一轮决策或实现
-- **状态：** pending
+- [x] 总结升级结果与边界
+- [x] 说明已验证项、未验证项与需要人工决定的事项
+- [x] 交付给用户继续下一轮决策或实现
+- **状态：** complete
 
 ## 关键问题
-1. 执行方式待选：按 `subagent-driven-development` 串行执行，还是在当前线程 inline 执行？
+1. Task 1、Task 2、Task 3、cleanup packet、Task 4 与 Task 5 已闭环；当前实现与验证已经齐套，后续仅剩你决定是否继续下一轮能力扩展或收尾集成。
 2. 实现阶段若遇到 token 压力，scene-bounded 的“全历史进入 prompt”是否仍足够，还是需要进一步加确定性截断规则？
 3. 旧 schema 迁移后若发现历史条目缺少 `phaseId/beatIndex`，是否仅保持 `roundId + null` 字段而不做额外补写？
 
@@ -66,6 +66,7 @@
 | 当前关系采用显式 `currentRelation` 快照 | 用户同意不要在 prompt 阶段临时重新推导当前关系 |
 | 旧状态允许兼容迁移；必要时清空也可接受 | 用户优先接受兼容迁移，且对彻底清空不敏感 |
 | agent surface 应同步升级为新的关系记忆摘要 | 用户同意顺带更新 editor 侧最小可读摘要 |
+| 实现阶段采用 `test-driven-development` + `subagent-driven-development` 串行执行 | 用户已明确要求按这两套 workflow 推进 |
 
 ## 遇到的错误
 | 错误 | 尝试次数 | 解决方案 |
@@ -76,4 +77,12 @@
 - 2026-04-10 已完成第一轮 catch-up，根目录三件套从模板状态补成可继续执行状态。
 - 当前已知最近完成的一轮正式计划是 runtime alignment 修复；该计划明确把 reference / memory schema 升级排除在外，因此本线程属于下一轮工作。
 - 2026-04-10 已将用户确认后的升级设计落档到 `docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md`，下一步应进入 implementation plan。
-- 2026-04-10 已将实现计划落档到 `docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md`，等待选择执行方式。
+- 2026-04-10 已将实现计划落档到 `docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md`，并已开始按 TDD + subagent-driven-development 串行执行。
+- 2026-04-10 Task 1 已在独立 worktree `codex/gossipelog-memory-reference` 中完成首轮 RED/GREEN，但 spec review 未通过，当前正在修复 5 个合同与 reference 锁定缺口。
+- 2026-04-10 Task 1 的 spec review 已通过，但质量评审和构建验证确认真实运行链路仍未完成迁移，因此当前已顺序推进到 Task 2（repository / merge）。
+- 2026-04-10 Task 2 已完成：v1->v2 迁移、`memoryUpdates` merge、hero-source 限制与幂等保护均已补齐，下一步进入 Task 3 的 phase/beat/reference update-path wiring。
+- 2026-04-10 Task 3 主链路已完成：`phaseId` / `beatIndex` / `resolvedReferences` / `memoryUpdates` 已贯穿 browser bridge、route、orchestrator、agent、adapter 与 response parser；当前待做的是 Task 3 质量复核和 type-check 剩余红线清理。
+- 2026-04-11 Task 3 的 quality review 也已通过，当前正式进入一个小范围 cleanup packet：清理 gossipelog v2 union 类型带来的测试窄化、定义文件类型提示与旧断言残差，恢复 `type-check` / `build` 基线。
+- 2026-04-11 cleanup packet 已完成：`type-check` 已回绿，相关定向测试通过，当前已切入 Task 4，开始补 injection prompt 的“当前关系/历史关系”分层与 sidecar surface 的 memory 摘要。
+- 2026-04-11 Task 4 已闭环：injection prompt 现在显式区分“当前关系”和“历史关系”，surface 摘要已切到 relationship memory 语义；中途 spec review 额外指出了 v2 空状态仍残留 `link` 语义，现已通过新增 RED 测试与定义修复关闭。
+- 2026-04-11 Task 5 已完成：`schema-validator` / `schema-mapper` 定向验证通过，`npm run build` 通过，`npm test` 全量 `91 files / 813 tests` 通过。

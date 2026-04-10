@@ -68,15 +68,28 @@ const GossipelogSceneCastFramingSchema = z
   })
   .strict();
 
+const GossipelogResolvedReferenceSchema = z
+  .object({
+    referenceId: z.string(),
+    injectionLabel: z.string(),
+    relativePath: z.string(),
+    contents: z.string(),
+    estimatedTokens: z.number().int().positive(),
+  })
+  .strict();
+
 const GossipelogUpdateRequestSchema = z
   .object({
     acceptedBeatText: z.string(),
     roundId: z.string(),
+    phaseId: z.string(),
+    beatIndex: z.number().int().nonnegative(),
     sceneCastRoleIds: z.array(z.string()),
     sceneCastFraming: GossipelogSceneCastFramingSchema,
     candidateRoles: z.array(CharacterProfileSchema),
     roleDefinitions: z.array(CharacterProfileSchema),
     relationshipSubgraph: CharacterRelationshipsFileSchema,
+    resolvedReferences: z.array(GossipelogResolvedReferenceSchema),
   })
   .strict();
 

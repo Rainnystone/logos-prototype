@@ -86,6 +86,12 @@ export async function bootstrapGossipelogFromWeaverSummary(
         ? undefined
         : { authoredRootOverride: input.authoredRootOverride };
     const storyPackage = await loadRuntimeStoryPackage(input.storyPackageName, loadOptions);
+    const bootstrapPhaseId = storyPackage.phasePlans[0]?.phaseId;
+
+    if (!bootstrapPhaseId) {
+      throw new Error('Gossipelog bootstrap requires at least one phase plan anchor.');
+    }
+
     const openingHook = storyPackage.sceneSpec.openingHook?.trim();
     const acceptedBeatText = [
       openingHook && openingHook.length > 0
@@ -109,6 +115,8 @@ export async function bootstrapGossipelogFromWeaverSummary(
       storyPackage,
       acceptedBeatText,
       roundId: createBootstrapRoundId(),
+      phaseId: bootstrapPhaseId,
+      beatIndex: 0,
     });
 
     if (cycleResult.usedFallbackSource) {

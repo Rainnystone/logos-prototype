@@ -300,11 +300,22 @@ describe('Phase 00 contract types', () => {
     const updateResult: GossipelogUpdateResult = {
       involvedRoleIds: ['chr_core01', 'chr_hero01'],
       invocationNoOp: false,
-      edgeUpdates: [
+      memoryUpdates: [
         {
           sourceRoleId: 'chr_core01',
           targetRoleId: 'chr_hero01',
-          mode: 'noop',
+          shouldCreateEdge: false,
+          nextCurrentRelation: {
+            phaseId: 'phase-01',
+            beatIndex: 1,
+            roundId: 'round-0001',
+            functionalRole: 'anchor',
+            mindsetTags: ['trust'],
+            summary: 'trust baseline remains stable',
+            triggerEvent: 'shared risk',
+            reasoning: 'consistent support',
+            causalAction: 'offers direct cover',
+          },
         },
       ],
     };
@@ -314,7 +325,7 @@ describe('Phase 00 contract types', () => {
       stableBackgroundText: 'chr_core01 -> chr_hero01: long-term baseline is guarded trust.',
     };
 
-    expect(updateResult.edgeUpdates[0]?.mode).toBe('noop');
+    expect(updateResult.memoryUpdates[0]?.shouldCreateEdge).toBe(false);
     expect(injectionResult.highlightedDeltasText).toContain('chr_core01');
   });
 

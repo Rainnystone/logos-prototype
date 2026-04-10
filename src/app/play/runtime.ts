@@ -96,7 +96,7 @@ function defaultNoOpUpdate(): GossipelogUpdateResult {
   return {
     involvedRoleIds: [],
     invocationNoOp: true,
-    edgeUpdates: [],
+    memoryUpdates: [],
   };
 }
 
@@ -216,6 +216,8 @@ export function createBrowserGossipelogCycleRunner(
         adapterConfig: options.adapterConfig,
         acceptedBeatText: input.acceptedBeatText,
         roundId: input.roundId,
+        phaseId: input.phaseId,
+        beatIndex: input.beatIndex,
         lastStableRelationshipLayer: input.lastStableRelationshipLayer,
       }),
     });

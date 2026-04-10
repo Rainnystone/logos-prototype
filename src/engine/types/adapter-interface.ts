@@ -37,14 +37,25 @@ export interface GossipelogSceneCastFraming {
   readonly castRoleIds: readonly string[];
 }
 
+export interface GossipelogResolvedReference {
+  readonly referenceId: string;
+  readonly injectionLabel: string;
+  readonly relativePath: string;
+  readonly contents: string;
+  readonly estimatedTokens: number;
+}
+
 export interface GossipelogUpdateRequest {
   readonly acceptedBeatText: string;
   readonly roundId: string;
+  readonly phaseId: string;
+  readonly beatIndex: number;
   readonly sceneCastRoleIds: readonly string[];
   readonly sceneCastFraming: GossipelogSceneCastFraming;
   readonly candidateRoles: readonly CharacterProfile[];
   readonly roleDefinitions: readonly CharacterProfile[];
   readonly relationshipSubgraph: CharacterRelationshipsFile;
+  readonly resolvedReferences: readonly GossipelogResolvedReference[];
 }
 
 export interface GossipelogInjectionRequest {

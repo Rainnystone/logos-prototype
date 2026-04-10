@@ -5,7 +5,14 @@ import type {
   RouteRequest,
   WeaverImportRequest,
 } from '@/engine/types/adapter-interface';
-import type { AuditPacket, HistoryEntry, PhaseConsequenceRequest, PromptObject } from '@/types';
+import type {
+  AuditPacket,
+  HistoryEntry,
+  PhaseConsequenceRequest,
+  PromptObject,
+  RelationshipEdge,
+  RelationshipMemoryEdge,
+} from '@/types';
 
 function formatHistory(entries: readonly HistoryEntry[]): string {
   if (entries.length === 0) {
@@ -40,6 +47,118 @@ function formatRelationshipSubgraph(subgraph: GossipelogUpdateRequest['relations
   return JSON.stringify(subgraph, null, 2);
 }
 
+function formatTemporalAnchor(
+  phaseId: string | null,
+  beatIndex: number | null,
+  roundId: string,
+): string {
+  const phaseLabel = phaseId ?? 'phase-unknown';
+  const beatLabel = beatIndex === null ? 'beat-unknown' : `beat-${beatIndex}`;
+
+  return `${phaseLabel} / ${beatLabel} / ${roundId}`;
+}
+
+function formatCurrentRelationships(subgraph: GossipelogInjectionRequest['relationshipSubgraph']): string {
+  const lines: string[] = [];
+  let edgeIndex = 0;
+
+  if (subgraph.meta.schemaVersion === 2) {
+    for (const [sourceRoleId, bucket] of Object.entries(subgraph.relationshipsBySource)) {
+      for (const [targetRoleId, edge] of Object.entries(bucket.targets) as Array<
+        [string, RelationshipMemoryEdge]
+      >) {
+        edgeIndex += 1;
+        lines.push(`${edgeIndex}. ${sourceRoleId} -> ${targetRoleId}`);
+        lines.push(`   Current summary: ${edge.currentRelation.summary}`);
+        lines.push(
+          `   Temporal anchor: ${formatTemporalAnchor(
+            edge.currentRelation.phaseId,
+            edge.currentRelation.beatIndex,
+            edge.currentRelation.roundId,
+          )}`,
+        );
+        lines.push(`   Functional role: ${edge.currentRelation.functionalRole ?? 'none'}`);
+        lines.push(
+          `   Mindset tags: ${
+            edge.currentRelation.mindsetTags.length > 0
+              ? edge.currentRelation.mindsetTags.join(', ')
+              : 'none'
+          }`,
+        );
+        lines.push(`   Trigger event: ${edge.currentRelation.triggerEvent || 'not recorded'}`);
+        lines.push(`   Reasoning: ${edge.currentRelation.reasoning || 'not recorded'}`);
+        lines.push(`   Causal action: ${edge.currentRelation.causalAction || 'not recorded'}`);
+      }
+    }
+  } else {
+    for (const [sourceRoleId, bucket] of Object.entries(subgraph.relationshipsBySource)) {
+      for (const [targetRoleId, edge] of Object.entries(bucket.targets) as Array<
+        [string, RelationshipEdge]
+      >) {
+        const currentSummary = edge.recentDelta?.state ?? edge.baseline.state;
+        const currentRoundId = edge.recentDelta?.sourceRound ?? edge.baseline.lastAbsorbedRound;
+
+        edgeIndex += 1;
+        lines.push(`${edgeIndex}. ${sourceRoleId} -> ${targetRoleId}`);
+        lines.push(`   Current summary: ${currentSummary}`);
+        lines.push(`   Temporal anchor: legacy / beat-unknown / ${currentRoundId}`);
+        if (edge.highlightNextPrompt) {
+          lines.push('   Prompt emphasis: prioritize this edge in highlightedDeltasText');
+        }
+      }
+    }
+  }
+
+  return lines.length > 0
+    ? lines.join('\n')
+    : 'No directed relationship memories are currently tracked for this scene cast.';
+}
+
+function formatRelationshipHistory(subgraph: GossipelogInjectionRequest['relationshipSubgraph']): string {
+  const lines: string[] = [];
+  let edgeIndex = 0;
+
+  if (subgraph.meta.schemaVersion === 2) {
+    for (const [sourceRoleId, bucket] of Object.entries(subgraph.relationshipsBySource)) {
+      for (const [targetRoleId, edge] of Object.entries(bucket.targets) as Array<
+        [string, RelationshipMemoryEdge]
+      >) {
+        edgeIndex += 1;
+        lines.push(`${edgeIndex}. ${sourceRoleId} -> ${targetRoleId}`);
+        if (edge.history.length === 0) {
+          lines.push('   History entries: none recorded for this edge yet');
+          continue;
+        }
+        edge.history.forEach((entry) => {
+          lines.push(
+            `   - ${formatTemporalAnchor(entry.phaseId, entry.beatIndex, entry.roundId)} | ${entry.summary}`,
+          );
+          lines.push(`     Trigger event: ${entry.triggerEvent || 'not recorded'}`);
+          lines.push(`     Reasoning: ${entry.reasoning || 'not recorded'}`);
+          lines.push(`     Causal action: ${entry.causalAction || 'not recorded'}`);
+        });
+      }
+    }
+  } else {
+    for (const [sourceRoleId, bucket] of Object.entries(subgraph.relationshipsBySource)) {
+      for (const [targetRoleId, edge] of Object.entries(bucket.targets) as Array<
+        [string, RelationshipEdge]
+      >) {
+        edgeIndex += 1;
+        lines.push(`${edgeIndex}. ${sourceRoleId} -> ${targetRoleId}`);
+        lines.push(`   - legacy / beat-unknown / ${edge.baseline.lastAbsorbedRound} | ${edge.baseline.state}`);
+        if (edge.recentDelta) {
+          lines.push(`   - legacy / beat-unknown / ${edge.recentDelta.sourceRound} | ${edge.recentDelta.state}`);
+        }
+      }
+    }
+  }
+
+  return lines.length > 0
+    ? lines.join('\n')
+    : 'No historical relationship trajectory is currently tracked for this scene cast.';
+}
+
 function formatSceneCastFraming(
   framing: GossipelogUpdateRequest['sceneCastFraming'],
 ): string {
@@ -59,7 +178,13 @@ function formatRouters(request: RouteRequest): string {
 }
 
 function formatResolvedReferences(
-  resolvedReferences: WeaverImportRequest['resolvedReferences'],
+  resolvedReferences: readonly {
+    referenceId: string;
+    injectionLabel: string;
+    relativePath: string;
+    contents: string;
+    estimatedTokens: number;
+  }[],
 ): string {
   if (resolvedReferences.length === 0) {
     return 'No external references were resolved.';
@@ -290,13 +415,15 @@ export function buildCollapseUserPrompt(request: CollapseInput): string {
 export function buildGossipelogUpdateSystemPrompt(): string {
   return [
     'You are the LOGOS gossipelog relationship-update skill.',
-    'Return JSON only with keys "involvedRoleIds", "invocationNoOp", and "edgeUpdates".',
+    'Return JSON only with keys "involvedRoleIds", "invocationNoOp", and "memoryUpdates".',
     'Use only the supplied scene cast, role definitions, accepted beat text, and relationship subgraph.',
+    'Treat phase/beat/round context as a required temporal anchor for each memory update.',
+    'Use resolved references as hard constraints when extracting relationship memory conclusions.',
     'Do not invent new role IDs or update edges outside the provided candidate set.',
     'Set invocationNoOp to true only when the beat does not justify any relationship change.',
-    'When invocationNoOp is true, edgeUpdates must be an empty array.',
-    'When invocationNoOp is false, edgeUpdates must contain one or more structured edge updates.',
-    'For any new edge, provide a thin baseline and a recent delta.',
+    'When invocationNoOp is true, memoryUpdates must be an empty array.',
+    'When invocationNoOp is false, memoryUpdates must contain one or more structured updates.',
+    'Each memory update must contain sourceRoleId, targetRoleId, shouldCreateEdge, and nextCurrentRelation.',
   ].join('\n');
 }
 
@@ -304,6 +431,8 @@ export function buildGossipelogUpdateUserPrompt(request: GossipelogUpdateRequest
   return [
     '[Accepted Beat]',
     `Round ID: ${request.roundId}`,
+    `Phase ID: ${request.phaseId}`,
+    `Beat index: ${request.beatIndex}`,
     `Beat text: ${request.acceptedBeatText}`,
     '',
     '[Scene Cast]',
@@ -318,6 +447,9 @@ export function buildGossipelogUpdateUserPrompt(request: GossipelogUpdateRequest
     '',
     '[Relationship Subgraph]',
     formatRelationshipSubgraph(request.relationshipSubgraph),
+    '',
+    '[Resolved References]',
+    formatResolvedReferences(request.resolvedReferences ?? []),
   ].join('\n');
 }
 
@@ -325,9 +457,11 @@ export function buildGossipelogInjectionSystemPrompt(): string {
   return [
     'You are the LOGOS gossipelog relationship-injection skill.',
     'Return JSON only with keys "highlightedDeltasText" and "stableBackgroundText".',
-    'Use the supplied relationship subgraph and role definitions to rebuild prompt-ready relationship text.',
-    'Keep highlighted deltas concise and current.',
-    'Keep stable background focused on long-term baseline context.',
+    'Use the supplied relationship memory and role definitions to rebuild prompt-ready relationship text.',
+    'Use current relations to write highlightedDeltasText.',
+    'Use relationship history to write stableBackgroundText.',
+    'Make highlightedDeltasText explicitly signal which relations are current now.',
+    'Make stableBackgroundText explicitly signal which relations belong to the historical trajectory.',
   ].join('\n');
 }
 
@@ -342,8 +476,11 @@ export function buildGossipelogInjectionUserPrompt(
     '[Role Definitions]',
     formatRoleDefinitions(request.roleDefinitions),
     '',
-    '[Relationship Subgraph]',
-    formatRelationshipSubgraph(request.relationshipSubgraph),
+    '[Current Relationships]',
+    formatCurrentRelationships(request.relationshipSubgraph),
+    '',
+    '[Relationship History]',
+    formatRelationshipHistory(request.relationshipSubgraph),
   ].join('\n');
 }
 

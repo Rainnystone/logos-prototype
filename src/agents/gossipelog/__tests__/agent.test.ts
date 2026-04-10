@@ -158,6 +158,33 @@ function createWeaverSummary(overrides: Partial<WeaverImportSummary> = {}): Weav
   };
 }
 
+function createMemoryEntry(
+  overrides: Partial<
+    NonNullable<GossipelogUpdateResult['memoryUpdates']>[number]['nextCurrentRelation']
+  > = {},
+) {
+  return {
+    phaseId: 'phase-01-prologue',
+    beatIndex: 1,
+    roundId: 'round-0011',
+    functionalRole: null,
+    mindsetTags: [],
+    summary: '关系发生了变化。',
+    triggerEvent: '一次关键互动',
+    reasoning: '由此重新判断对方立场',
+    causalAction: '给出新的反应',
+    ...overrides,
+  };
+}
+
+function createNoOpUpdateResult(involvedRoleIds: readonly string[] = []): GossipelogUpdateResult {
+  return {
+    involvedRoleIds: [...involvedRoleIds],
+    invocationNoOp: true,
+    memoryUpdates: [],
+  };
+}
+
 describe('gossipelog agent shell', () => {
   it('builds a bounded update context from accepted beat, current role definitions, and current relationship subgraph', async () => {
     const { packageName, packagePath, storyPackage } = await createStoryPackageFixture();
@@ -168,11 +195,7 @@ describe('gossipelog agent shell', () => {
     const adapter: Pick<LLMAdapter, 'gossipelogUpdate' | 'gossipelogInjection'> = {
       gossipelogUpdate: vi.fn(async (request) => {
         capturedUpdateRequest = request;
-        return {
-          involvedRoleIds: [storyPackage.worldBase.hero.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpUpdateResult([storyPackage.worldBase.hero.characterId]);
       }),
       gossipelogInjection: vi.fn(async () => ({
         highlightedDeltasText: '',
@@ -186,6 +209,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0009',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
     const candidateRoleIds = getCandidateRoleIds(storyPackage);
 
@@ -201,6 +226,15 @@ describe('gossipelog agent shell', () => {
       sceneId: storyPackage.sceneSpec.sceneId,
       castRoleIds: candidateRoleIds,
     });
+    expect(result.updateRequest.phaseId).toBe('phase-01-prologue');
+    expect(result.updateRequest.beatIndex).toBe(1);
+    expect(result.updateRequest.resolvedReferences).toEqual([
+      expect.objectContaining({
+        referenceId: 'relationship-reference',
+        injectionLabel: 'Relationship reference',
+        relativePath: 'src/agents/gossipelog/references/relationship-reference.md',
+      }),
+    ]);
     expect(Object.keys(result.updateRequest.relationshipSubgraph.relationshipsBySource)).not.toContain(
       outOfBoundsRoleId,
     );
@@ -213,12 +247,7 @@ describe('gossipelog agent shell', () => {
     await expect(
       runGossipelogCycle({
         adapter: {
-          gossipelogUpdate: async () =>
-            ({
-              involvedRoleIds: [outOfBoundsRoleId],
-              invocationNoOp: true,
-              edgeUpdates: [],
-            }) as GossipelogUpdateResult,
+          gossipelogUpdate: async () => createNoOpUpdateResult([outOfBoundsRoleId]),
           gossipelogInjection: async () => ({
             highlightedDeltasText: '',
             stableBackgroundText: '',
@@ -228,6 +257,8 @@ describe('gossipelog agent shell', () => {
         storyPackage,
         acceptedBeatText: 'accepted beat text',
         roundId: 'round-0009',
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
       }),
     ).rejects.toBeInstanceOf(GossipelogCandidateSetViolationError);
   });
@@ -244,16 +275,14 @@ describe('gossipelog agent shell', () => {
           ({
             involvedRoleIds: [sourceRoleId, heroRoleId],
             invocationNoOp: false,
-            edgeUpdates: [
+            memoryUpdates: [
               {
                 sourceRoleId,
                 targetRoleId: heroRoleId,
-                mode: 'delta',
-                replaceBaseline: false,
-                recentDelta: {
-                  state: 'trust increased again after decisive help',
-                  sourceRound: 'round-0011',
-                },
+                shouldCreateEdge: false,
+                nextCurrentRelation: createMemoryEntry({
+                  summary: 'trust increased again after decisive help',
+                }),
               },
             ],
           }) as GossipelogUpdateResult,
@@ -269,6 +298,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0011',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
     const persisted = await gossipelogRepository.loadCharacterRelationships(packageName);
     const injectionRequest = requireInjectionRequest(capturedInjectionRequest);
@@ -277,18 +308,42 @@ describe('gossipelog agent shell', () => {
     expect(
       injectionRequest.relationshipSubgraph.relationshipsBySource[sourceRoleId]?.targets[heroRoleId],
     ).toMatchObject({
-      recentDelta: {
-        state: 'trust increased again after decisive help',
-        sourceRound: 'round-0011',
+      currentRelation: {
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
+        roundId: 'round-0011',
+        summary: 'trust increased again after decisive help',
       },
-      highlightNextPrompt: true,
+      history: expect.arrayContaining([
+        expect.objectContaining({
+          summary: 'guarded trust',
+        }),
+        expect.objectContaining({
+          summary: 'trust increased after direct protection',
+        }),
+        expect.objectContaining({
+          summary: 'trust increased again after decisive help',
+        }),
+      ]),
     });
     expect(persisted.relationshipsBySource[sourceRoleId]?.targets[heroRoleId]).toMatchObject({
-      recentDelta: {
-        state: 'trust increased again after decisive help',
-        sourceRound: 'round-0011',
+      currentRelation: {
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
+        roundId: 'round-0011',
+        summary: 'trust increased again after decisive help',
       },
-      highlightNextPrompt: true,
+      history: expect.arrayContaining([
+        expect.objectContaining({
+          summary: 'guarded trust',
+        }),
+        expect.objectContaining({
+          summary: 'trust increased after direct protection',
+        }),
+        expect.objectContaining({
+          summary: 'trust increased again after decisive help',
+        }),
+      ]),
     });
     expect(result.relationshipLayer).toEqual({
       highlightedDeltasText: 'highlighted deltas text',
@@ -301,7 +356,7 @@ describe('gossipelog agent shell', () => {
     const gossipelogUpdate = vi.fn(async () => ({
       involvedRoleIds: [storyPackage.worldBase.hero.characterId],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     }));
     const gossipelogInjection = vi.fn(async () => ({
       highlightedDeltasText: '',
@@ -317,6 +372,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0011',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
 
     expect(result.updateResult.invocationNoOp).toBe(true);
@@ -341,7 +398,7 @@ describe('gossipelog agent shell', () => {
         gossipelogUpdate: async () => ({
           involvedRoleIds: [storyPackage.worldBase.hero.characterId],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         }),
         gossipelogInjection: async () => ({
           highlightedDeltasText: '',
@@ -352,6 +409,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0009',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
 
     expect(statSync(relationshipPath).mtimeMs).toBe(beforeMtimeMs);
@@ -365,7 +424,7 @@ describe('gossipelog agent shell', () => {
         gossipelogUpdate: async () => ({
           involvedRoleIds: [storyPackage.worldBase.hero.characterId],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         }),
         gossipelogInjection: async () => ({
           highlightedDeltasText: '',
@@ -376,6 +435,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0009',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
 
     expect(result.updateRequest.candidateRoles.map((role) => role.characterId)).toEqual([
@@ -395,7 +456,7 @@ describe('gossipelog agent shell', () => {
           ({
             involvedRoleIds: [storyPackage.worldBase.hero.characterId],
             invocationNoOp: false,
-            edgeUpdates: [],
+            memoryUpdates: [],
           }) as unknown as GossipelogUpdateResult,
         gossipelogInjection: async (request) => {
           capturedInjectionRequest = request;
@@ -409,6 +470,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0011',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
     const after = await gossipelogRepository.loadCharacterRelationships(packageName);
     const injectionRequest = requireInjectionRequest(capturedInjectionRequest);
@@ -435,16 +498,14 @@ describe('gossipelog agent shell', () => {
             ({
               involvedRoleIds: [sourceRoleId, heroRoleId],
               invocationNoOp: false,
-              edgeUpdates: [
+              memoryUpdates: [
                 {
                   sourceRoleId,
                   targetRoleId: heroRoleId,
-                  mode: 'delta',
-                  replaceBaseline: false,
-                  recentDelta: {
-                    state: 'trust changed but write failed',
-                    sourceRound: 'round-0011',
-                  },
+                  shouldCreateEdge: false,
+                  nextCurrentRelation: createMemoryEntry({
+                    summary: 'trust changed but write failed',
+                  }),
                 },
               ],
             }) as GossipelogUpdateResult,
@@ -460,6 +521,8 @@ describe('gossipelog agent shell', () => {
         storyPackage,
         acceptedBeatText: 'accepted beat text',
         roundId: 'round-0011',
+        phaseId: 'phase-01-prologue',
+        beatIndex: 1,
       });
       const injectionRequest = requireInjectionRequest(capturedInjectionRequest);
 
@@ -486,16 +549,14 @@ describe('gossipelog agent shell', () => {
           ({
             involvedRoleIds: [sourceRoleId, heroRoleId],
             invocationNoOp: false,
-            edgeUpdates: [
+            memoryUpdates: [
               {
                 sourceRoleId,
                 targetRoleId: heroRoleId,
-                mode: 'delta',
-                replaceBaseline: false,
-                recentDelta: {
-                  state: 'trust changed before injection failure',
-                  sourceRound: 'round-0011',
-                },
+                shouldCreateEdge: false,
+                nextCurrentRelation: createMemoryEntry({
+                  summary: 'trust changed before injection failure',
+                }),
               },
             ],
           }) as GossipelogUpdateResult,
@@ -507,6 +568,8 @@ describe('gossipelog agent shell', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0011',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
       lastStableRelationshipLayer,
     });
     const persisted = await gossipelogRepository.loadCharacterRelationships(packageName);
@@ -514,11 +577,21 @@ describe('gossipelog agent shell', () => {
     expect(result.usedFallbackLayer).toBe('last-stable-layer');
     expect(result.relationshipLayer).toEqual(lastStableRelationshipLayer);
     expect(persisted.relationshipsBySource[sourceRoleId]?.targets[heroRoleId]).toMatchObject({
-      recentDelta: {
-        state: 'trust changed before injection failure',
-        sourceRound: 'round-0011',
+      currentRelation: {
+        summary: 'trust changed before injection failure',
+        roundId: 'round-0011',
       },
-      highlightNextPrompt: true,
+      history: expect.arrayContaining([
+        expect.objectContaining({
+          summary: 'guarded trust',
+        }),
+        expect.objectContaining({
+          summary: 'trust increased after direct protection',
+        }),
+        expect.objectContaining({
+          summary: 'trust changed before injection failure',
+        }),
+      ]),
     });
   });
 
@@ -532,19 +605,15 @@ describe('gossipelog agent shell', () => {
 
     rmSync(relationshipPath, { force: true });
 
-    const capturedAcceptedBeatTexts: string[] = [];
+    let capturedUpdateRequest: GossipelogUpdateRequest | null = null;
 
     const result = await bootstrapGossipelogFromWeaverSummary({
       storyPackageName: packageName,
       weaverSummary: createWeaverSummary(),
       adapter: {
         gossipelogUpdate: vi.fn(async (request: GossipelogUpdateRequest) => {
-          capturedAcceptedBeatTexts.push(request.acceptedBeatText);
-          return {
-            involvedRoleIds: [],
-            invocationNoOp: true,
-            edgeUpdates: [],
-          };
+          capturedUpdateRequest = request;
+          return createNoOpUpdateResult();
         }),
         gossipelogInjection: vi.fn(async () => ({
           highlightedDeltasText: '',
@@ -555,15 +624,18 @@ describe('gossipelog agent shell', () => {
 
     expect(result.ok).toBe(true);
     expect(result.bootstrapStatus).toBe('succeeded');
-    const acceptedBeatText = capturedAcceptedBeatTexts[0];
-    if (!acceptedBeatText) {
+    const updateRequest = capturedUpdateRequest as GossipelogUpdateRequest | null;
+    if (!updateRequest) {
       throw new Error('Expected bootstrap update request to be captured.');
     }
+    const acceptedBeatText = updateRequest.acceptedBeatText;
     expect(acceptedBeatText).toContain(storyPackage.sceneSpec.openingHook ?? '');
     expect(acceptedBeatText).toContain('Relationship-confidence note:');
     expect(acceptedBeatText).toContain('角色关系只得到部分文本支持');
     expect(acceptedBeatText).not.toContain(createWeaverSummary().importSummary);
     expect(acceptedBeatText).not.toContain(createWeaverSummary().sourceSummary);
+    expect(updateRequest.phaseId).toBe(storyPackage.phasePlans[0]?.phaseId);
+    expect(updateRequest.beatIndex).toBe(0);
     await expect(gossipelogRepository.inspectCharacterRelationshipsState(packageName)).resolves.toBe(
       'readable',
     );
@@ -584,11 +656,7 @@ describe('gossipelog agent shell', () => {
         authoredRootOverride: '/tmp/storylines/sample-scene/active',
         weaverSummary: createWeaverSummary(),
         adapter: {
-          gossipelogUpdate: vi.fn(async () => ({
-            involvedRoleIds: [],
-            invocationNoOp: true,
-            edgeUpdates: [],
-          })),
+          gossipelogUpdate: vi.fn(async () => createNoOpUpdateResult()),
           gossipelogInjection: vi.fn(async () => ({
             highlightedDeltasText: '',
             stableBackgroundText: 'seeded background',
@@ -660,11 +728,7 @@ describe('gossipelog agent shell', () => {
         storyPackageName: packageName,
         weaverSummary: createWeaverSummary(),
         adapter: {
-          gossipelogUpdate: vi.fn(async () => ({
-            involvedRoleIds: [],
-            invocationNoOp: true,
-            edgeUpdates: [],
-          })),
+          gossipelogUpdate: vi.fn(async () => createNoOpUpdateResult()),
           gossipelogInjection: vi.fn(async () => ({
             highlightedDeltasText: '',
             stableBackgroundText: 'seeded background',
@@ -697,11 +761,7 @@ describe('gossipelog agent shell', () => {
       storyPackageName: packageName,
       weaverSummary: createWeaverSummary(),
       adapter: {
-        gossipelogUpdate: vi.fn(async () => ({
-          involvedRoleIds: [],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        })),
+        gossipelogUpdate: vi.fn(async () => createNoOpUpdateResult()),
         gossipelogInjection: vi.fn(async () => {
           throw new Error('injection timeout');
         }),
@@ -718,5 +778,48 @@ describe('gossipelog agent shell', () => {
     await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
       bootstrapStatus: 'fallback_pending',
     });
+  });
+
+  it('falls back to persisted relationship state when a returned memory anchor mismatches the current request', async () => {
+    const { packageName, storyPackage } = await createStoryPackageFixture();
+    const before = await gossipelogRepository.loadCharacterRelationships(packageName);
+    const heroRoleId = storyPackage.worldBase.hero.characterId;
+    const sourceRoleId = storyPackage.worldBase.coreCast[0]!.characterId;
+
+    const result = await runGossipelogCycle({
+      adapter: {
+        gossipelogUpdate: async () =>
+          ({
+            involvedRoleIds: [sourceRoleId, heroRoleId],
+            invocationNoOp: false,
+            memoryUpdates: [
+              {
+                sourceRoleId,
+                targetRoleId: heroRoleId,
+                shouldCreateEdge: false,
+                nextCurrentRelation: createMemoryEntry({
+                  roundId: 'round-mismatch',
+                }),
+              },
+            ],
+          }) as GossipelogUpdateResult,
+        gossipelogInjection: async () => ({
+          highlightedDeltasText: 'delta',
+          stableBackgroundText: 'background',
+        }),
+      },
+      storyPackageName: packageName,
+      storyPackage,
+      acceptedBeatText: 'accepted beat text',
+      roundId: 'round-0011',
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
+    });
+
+    expect(result.usedFallbackSource).toBe('persisted-relationship-state');
+    expect(result.updateResult).toEqual(createNoOpUpdateResult());
+    await expect(gossipelogRepository.loadCharacterRelationships(packageName)).resolves.toEqual(
+      before,
+    );
   });
 });

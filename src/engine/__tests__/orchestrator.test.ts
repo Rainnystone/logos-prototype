@@ -28,6 +28,7 @@ import type {
 import type { LLMAdapter } from '@/engine/types/adapter-interface';
 import type {
   GossipelogInjectionResult,
+  RelationshipMemoryEdge,
   GossipelogUpdateResult,
   HistoryEntry,
   StoryPackage,
@@ -91,6 +92,41 @@ function buildAcceptedHistoryFromInputs(playerInputs: readonly string[]): Histor
     { role: 'user' as const, content: playerInput },
     { role: 'assistant' as const, content: `beat-${index + 1}` },
   ]);
+}
+
+function createRelationshipMemoryEntry(
+  overrides: Partial<NonNullable<GossipelogUpdateResult['memoryUpdates']>[number]['nextCurrentRelation']> = {},
+) {
+  return {
+    phaseId: 'phase-01-prologue',
+    beatIndex: 1,
+    roundId: 'round-0001',
+    functionalRole: null,
+    mindsetTags: [],
+    summary: '关系更新。',
+    triggerEvent: '一次互动',
+    reasoning: '据此重新判断',
+    causalAction: '作出新的反应',
+    ...overrides,
+  };
+}
+
+function createNoOpGossipelogUpdate(
+  involvedRoleIds: readonly string[] = [],
+): GossipelogUpdateResult {
+  return {
+    involvedRoleIds: [...involvedRoleIds],
+    invocationNoOp: true,
+    memoryUpdates: [],
+  };
+}
+
+function asMemoryEdge(edge: unknown): RelationshipMemoryEdge | null {
+  if (!edge || typeof edge !== 'object' || !('currentRelation' in edge) || !('history' in edge)) {
+    return null;
+  }
+
+  return edge as RelationshipMemoryEdge;
 }
 
 const structuredStoryPackageFixture: StoryPackage = {
@@ -617,6 +653,7 @@ describe('Orchestrator', () => {
       highlightedDeltasText: 'delta layer 1',
       stableBackgroundText: 'background layer 1',
     };
+    const capturedUpdateRequests: Array<Parameters<NonNullable<LLMAdapter['gossipelogUpdate']>>[0]> = [];
     let updateCallCount = 0;
     let releaseFirstRefresh: (() => void) | null = null;
     let releaseSecondRefresh: (() => void) | null = null;
@@ -631,35 +668,32 @@ describe('Orchestrator', () => {
       ...baseAdapter,
       async gossipelogUpdate(request) {
         updateCallCount += 1;
+        capturedUpdateRequests.push(request);
 
         if (updateCallCount === 1) {
           return {
             involvedRoleIds: [sourceRoleId, targetRoleId],
             invocationNoOp: false,
-            edgeUpdates: [
+            memoryUpdates: [
               {
                 sourceRoleId,
                 targetRoleId,
-                mode: 'new_edge',
-                replaceBaseline: false,
-                baseline: {
-                  state: 'baseline relationship before refresh',
-                  lastAbsorbedRound: request.roundId,
-                },
-                recentDelta: {
-                  state: `relationship update for ${request.roundId}`,
-                  sourceRound: request.roundId,
-                },
+                shouldCreateEdge: true,
+                nextCurrentRelation: createRelationshipMemoryEntry({
+                  phaseId: request.phaseId,
+                  beatIndex: request.beatIndex,
+                  roundId: request.roundId,
+                  summary: `relationship update for ${request.roundId}`,
+                  triggerEvent: 'opening action',
+                  reasoning: 'the first beat changes alignment',
+                  causalAction: 'records a new directional relation',
+                }),
               },
             ],
           };
         }
 
-        return {
-          involvedRoleIds: [sourceRoleId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([sourceRoleId]);
       },
       async gossipelogInjection() {
         if (updateCallCount === 1) {
@@ -697,17 +731,25 @@ describe('Orchestrator', () => {
           [sourceRoleId]: {
             targets: {
               [targetRoleId]: {
-                baseline: {
-                  state: 'baseline relationship before refresh',
+                currentRelation: {
+                  phaseId: 'phase-01-prologue',
+                  beatIndex: 1,
+                  summary: expect.stringContaining('relationship update for'),
                 },
-                recentDelta: {
-                  state: expect.stringContaining('relationship update for'),
-                },
+                history: [
+                  expect.objectContaining({
+                    summary: expect.stringContaining('relationship update for'),
+                  }),
+                ],
               },
             },
           },
         },
       });
+    });
+    expect(capturedUpdateRequests[0]).toMatchObject({
+      phaseId: 'phase-01-prologue',
+      beatIndex: 1,
     });
 
     const secondBeatPromise = orchestrator.runBeat('follow-up action');
@@ -720,6 +762,12 @@ describe('Orchestrator', () => {
       beatResult: {
         beatText: expect.any(String),
       },
+    });
+    await vi.waitFor(() => {
+      expect(capturedUpdateRequests[1]).toMatchObject({
+        phaseId: storyPackage.phasePlans[0]?.phaseId,
+        beatIndex: 2,
+      });
     });
     expect(generateCalls).toHaveLength(2);
     expect(generateCalls[1]?.relationshipLayer).toEqual(firstRelationshipLayer);
@@ -772,7 +820,7 @@ describe('Orchestrator', () => {
         return {
           involvedRoleIds: [sourceRoleId!],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         };
       },
       async gossipelogInjection() {
@@ -830,7 +878,7 @@ describe('Orchestrator', () => {
         return {
           involvedRoleIds: [sourceRoleId!],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         };
       },
       async gossipelogInjection() {
@@ -897,7 +945,7 @@ describe('Orchestrator', () => {
         return {
           involvedRoleIds: [sourceRoleId!],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         } satisfies GossipelogUpdateResult;
       },
       async gossipelogInjection() {
@@ -965,11 +1013,7 @@ describe('Orchestrator', () => {
     const adapter: LLMAdapter = {
       ...baseAdapter,
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         return refreshGate;
@@ -1036,31 +1080,36 @@ describe('Orchestrator', () => {
         return {
           involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
           invocationNoOp: false,
-          edgeUpdates: [
+          memoryUpdates: [
             {
               sourceRoleId: storyPackage.worldBase.coreCast[0]!.characterId,
               targetRoleId: storyPackage.worldBase.hero.characterId,
-              mode: 'delta',
-              replaceBaseline: false,
-              recentDelta: {
-                state: `session-one-${request.roundId}`,
-                sourceRound: request.roundId,
-              },
+              shouldCreateEdge: false,
+              nextCurrentRelation: createRelationshipMemoryEntry({
+                phaseId: request.phaseId,
+                beatIndex: request.beatIndex,
+                roundId: request.roundId,
+                summary: `session-one-${request.roundId}`,
+                triggerEvent: 'session one opening action',
+                reasoning: 'the beat establishes a new directional memory',
+                causalAction: 'stores the first session relationship update',
+              }),
             },
           ],
         };
       },
       async gossipelogInjection(request) {
-        const edge =
+        const edge = asMemoryEdge(
           request.relationshipSubgraph.relationshipsBySource[storyPackage.worldBase.coreCast[0]!.characterId]
-            ?.targets[storyPackage.worldBase.hero.characterId];
+            ?.targets[storyPackage.worldBase.hero.characterId],
+        );
 
         return {
           highlightedDeltasText:
-            edge?.highlightNextPrompt && edge.recentDelta
-              ? `${edge.recentDelta.state}|${edge.recentDelta.sourceRound}`
+            edge?.currentRelation
+              ? `${edge.currentRelation.summary}|${edge.currentRelation.roundId}`
               : '',
-          stableBackgroundText: edge?.baseline.state ?? '',
+          stableBackgroundText: edge?.currentRelation.summary ?? '',
         };
       },
     };
@@ -1075,9 +1124,11 @@ describe('Orchestrator', () => {
     await vi.waitFor(async () => {
       const persistedFile = await gossipelogRepository.loadCharacterRelationships(packageName);
       expect(
-        persistedFile.relationshipsBySource[storyPackage.worldBase.coreCast[0]!.characterId]?.targets[
-          storyPackage.worldBase.hero.characterId
-        ]?.recentDelta?.state,
+        asMemoryEdge(
+          persistedFile.relationshipsBySource[storyPackage.worldBase.coreCast[0]!.characterId]?.targets[
+            storyPackage.worldBase.hero.characterId
+          ],
+        )?.currentRelation.summary,
       ).toContain('session-one-');
     });
 
@@ -1086,23 +1137,20 @@ describe('Orchestrator', () => {
     const secondSessionAdapter: LLMAdapter = {
       ...secondBaseAdapter,
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection(request) {
-        const edge =
+        const edge = asMemoryEdge(
           request.relationshipSubgraph.relationshipsBySource[storyPackage.worldBase.coreCast[0]!.characterId]
-            ?.targets[storyPackage.worldBase.hero.characterId];
+            ?.targets[storyPackage.worldBase.hero.characterId],
+        );
 
         return {
           highlightedDeltasText:
-            edge?.highlightNextPrompt && edge.recentDelta
-              ? `${edge.recentDelta.state}|${edge.recentDelta.sourceRound}`
+            edge?.currentRelation
+              ? `${edge.currentRelation.summary}|${edge.currentRelation.roundId}`
               : '',
-          stableBackgroundText: edge?.baseline.state ?? '',
+          stableBackgroundText: edge?.currentRelation.summary ?? '',
         };
       },
     };
@@ -1123,7 +1171,7 @@ describe('Orchestrator', () => {
       stableBackgroundText: '',
     });
     expect(secondSessionGenerateCalls[1]?.relationshipLayer).toEqual({
-      highlightedDeltasText: '',
+      highlightedDeltasText: expect.stringContaining('session-one-'),
       stableBackgroundText: expect.stringContaining('session-one-'),
     });
   });
@@ -1188,11 +1236,7 @@ describe('Orchestrator', () => {
     const adapter: LLMAdapter = {
       ...baseAdapter,
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         injectionCallCount += 1;
@@ -1389,11 +1433,7 @@ describe('Orchestrator', () => {
     const adapter: LLMAdapter = {
       ...baseAdapter,
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         injectionCallCount += 1;
@@ -1459,11 +1499,7 @@ describe('Orchestrator', () => {
     const adapter: LLMAdapter = {
       ...baseAdapter,
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         injectionCallCount += 1;
@@ -1541,11 +1577,7 @@ describe('Orchestrator', () => {
         return baseAdapter.generate!(promptObject);
       },
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         injectionCallCount += 1;
@@ -1619,7 +1651,7 @@ describe('Orchestrator', () => {
     });
     let finalizeCallCount = 0;
     const recorder = createRuntimeSessionStoreSpy({
-      finalizeRelationshipLayer: vi.fn(async () => {
+      finalizeRelationshipLayer: vi.fn(async (_input: FinalizeRelationshipLayerInput) => {
         finalizeCallCount += 1;
 
         if (finalizeCallCount === 1) {
@@ -1657,11 +1689,7 @@ describe('Orchestrator', () => {
         return baseAdapter.generate!(promptObject);
       },
       async gossipelogUpdate() {
-        return {
-          involvedRoleIds: [storyPackage.worldBase.coreCast[0]!.characterId],
-          invocationNoOp: true,
-          edgeUpdates: [],
-        };
+        return createNoOpGossipelogUpdate([storyPackage.worldBase.coreCast[0]!.characterId]);
       },
       async gossipelogInjection() {
         injectionCallCount += 1;

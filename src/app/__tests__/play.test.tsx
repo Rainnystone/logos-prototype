@@ -306,8 +306,8 @@ function createPendingGossipelogCycleRunner(
       updateRequest: {} as never,
       updateResult: {
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       },
       injectionRequest: {} as never,
       relationshipLayer: settledRelationshipLayer,
@@ -1330,8 +1330,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1339,8 +1339,8 @@ describe('PlayWorkbench', () => {
       updateRequest: {} as never,
       updateResult: {
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       },
       injectionRequest: {} as never,
       relationshipLayer: settledRelationshipLayer,
@@ -1425,8 +1425,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1480,8 +1480,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1528,8 +1528,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1600,8 +1600,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1672,8 +1672,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1754,8 +1754,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1836,8 +1836,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
     };
@@ -1848,8 +1848,8 @@ describe('PlayWorkbench', () => {
         updateRequest: {} as never,
         updateResult: {
           involvedRoleIds: [],
-          invocationNoOp: false,
-          edgeUpdates: [],
+          invocationNoOp: true,
+          memoryUpdates: [],
         },
         injectionRequest: {} as never,
         relationshipLayer: settledRelationshipLayer,
@@ -1928,8 +1928,8 @@ describe('PlayWorkbench', () => {
       ...harness.adapter,
       gossipelogUpdate: vi.fn(async () => ({
         involvedRoleIds: [],
-        invocationNoOp: false,
-        edgeUpdates: [],
+        invocationNoOp: true,
+        memoryUpdates: [],
       })),
       gossipelogInjection: vi.fn(async () => ({
         highlightedDeltasText: 'lock delta settled',
@@ -1943,8 +1943,8 @@ describe('PlayWorkbench', () => {
         updateRequest: {} as never,
         updateResult: {
           involvedRoleIds: [],
-          invocationNoOp: false,
-          edgeUpdates: [],
+          invocationNoOp: true,
+          memoryUpdates: [],
         },
         injectionRequest: {} as never,
         relationshipLayer: {
