@@ -83,6 +83,26 @@
 - 这不是单纯 UX 不佳，而是实际可见的运行时死锁面。
 - 用户已明确确认该问题的修复方向：前端要对齐 engine 现有语义，即超时后允许继续使用上一份稳定 `relationshipLayer`，而不是把系统改成无限阻塞等待 gossipelog 完成。
 
+- `orchestrator` 在“已超时的旧 refresh 晚到，且 finalization 持久化失败”这条并发路径上，可能把较新的关系真相错误回滚掉。
+- 证据链目前可自洽：
+  - `scheduleRelationshipRefresh(...)` 在 `src/engine/orchestrator.ts` 里会先计算一次 `matchesCurrentCheckpoint = isCurrentCheckpointBinding(refresh)`，然后才 `await finalizeRelationshipLayer(...)`
+  - 如果旧 refresh 已经 timeout 解锁，后续 beat 已继续推进，那么 `currentCheckpointId` 和 `queuedRelationshipLayer` 可能在这段 `await` 期间前移到更新状态
+  - 但一旦 finalization 在稍后失败，catch 仍会使用这次 await 之前缓存下来的 `matchesCurrentCheckpoint`
+  - 结果是：旧 refresh 可能在已经不再代表当前 checkpoint 的情况下，仍把 `queuedRelationshipLayer` 回滚成它自己的 `fallbackLayer`
+- 当前测试覆盖了“晚到成功不污染 live truth”和“finalization 失败后 accepted beat 仍然 durable”，但没有覆盖“晚到失败 + checkpoint 已前移”的交错分支。
+
+### Task 2 复核备注
+
+- 最新一轮只读 code quality reviewer 的输出与当前 worktree 实际状态不一致，不能整包采信。
+- 主线程已确认其中两条结论属于误报：
+  - `src/agents/gossipelog/runtime-contract.ts` 在当前 worktree 中实际存在
+  - `src/engine/orchestrator.ts` 与 `src/engine/__tests__/orchestrator.test.ts` 已经改为引用共享 wait timeout 常量，而不是继续各自硬编码 `2_000`
+- 因此当前真正新增、需要进入下一轮修复的是上面这条 `orchestrator` 并发回滚风险，而不是 reviewer 报出的“共享常量未落地”。
+- 该并发回滚风险现已在当前 worktree 中完成修复，并新增回归测试锁定：
+  - `scheduleRelationshipRefresh(...)` 不再在 `await finalizeRelationshipLayer(...)` 之前缓存 checkpoint 绑定判断
+  - live truth 写入与 fallback 回滚都改为在真正执行时重新判断 `isCurrentCheckpointBinding(refresh)`
+  - 已通过主线程 red → green、spec review、code quality review、`npm run test:core`、`npm run build` 与全量 `npm test`
+
 ### 外部调研来源范围
 
 - 本轮框架判断优先基于 GitHub 官方仓库、README、官方 docs 入口与少量官方 discussion / issue 线索。

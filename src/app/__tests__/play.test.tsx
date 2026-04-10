@@ -11,6 +11,7 @@ import {
 import { RuntimeConfigForm } from '@/app/components/RuntimeConfigForm';
 import type { BrowserRuntimeSessionClient } from '@/app/play/runtime';
 import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
+import { GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS } from '@/agents/gossipelog/runtime-contract';
 import type { CollapseInput, LLMAdapter } from '@/engine/types/adapter-interface';
 import type { AuditResult, GenerateResult } from '@/engine/types/adapter-interface';
 import type {
@@ -1407,7 +1408,7 @@ describe('PlayWorkbench', () => {
     );
   });
 
-  it('keeps every player input disabled while gossipelog settlement is still pending after a beat is accepted', async () => {
+  it('keeps every player input disabled while the gossipelog wait budget is still open after a beat is accepted', async () => {
     const harness = createPlayAdapterHarness();
     const user = userEvent.setup();
     const settledRelationshipLayer = {
@@ -1460,8 +1461,283 @@ describe('PlayWorkbench', () => {
     expect(screen.getByRole('button', { name: 'Option 1-2' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Option 1-3' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Option 1-4' })).toBeDisabled();
+    await wait(Math.floor(GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS / 2));
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+    expect(screen.getByLabelText('Free text action')).toBeDisabled();
 
     resolveGossipelogCycle();
+  });
+
+  it('releases player input after the gossipelog wait budget expires even if settlement never returns', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'timeout delta settled',
+      stableBackgroundText: 'timeout background settled',
+    };
+    const { gossipelogCycleRunner } = createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+
+    expect(screen.getByRole('button', { name: 'Submit Action' })).toBeDisabled();
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+        expect(screen.getByLabelText('Free text action')).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Option 1-1' })).toBeEnabled();
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+  });
+
+  it('allows the next beat after timeout unlock and carries forward the prior stable relationship layer', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'late delta settled',
+      stableBackgroundText: 'late background settled',
+    };
+    const { gossipelogCycleRunner } = createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+    const restoredRelationshipLayer = {
+      highlightedDeltasText: 'delta restore',
+      stableBackgroundText: 'background restore',
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    await screen.findByText(
+      stateSnapshotFixture.generationState.currentBeatText as string,
+    );
+    await user.type(screen.getByLabelText('Free text action'), 'Advance while the refresh is still pending.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+    await screen.findByText('Accepted');
+    expect(recordedAcceptedBeats[0]?.lastStableRelationshipLayer).toEqual(restoredRelationshipLayer);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+
+    await user.clear(screen.getByLabelText('Free text action'));
+    await user.type(screen.getByLabelText('Free text action'), 'Advance into the next beat after timeout unlock.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    await waitFor(
+      () => {
+        expect(recordedAcceptedBeats).toHaveLength(2);
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+    expect(recordedAcceptedBeats[1]?.lastStableRelationshipLayer).toEqual(restoredRelationshipLayer);
+  });
+
+  it('does not relock input or wipe the accepted surface when late finalize eventually resolves', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const finalizeRelationshipLayer = createDeferred<void>();
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'finalize delta settled',
+      stableBackgroundText: 'finalize background settled',
+    };
+    const { gossipelogCycleRunner, resolveGossipelogCycle } =
+      createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          ensureActiveSession: vi.fn(async () => ({
+            activeSessionId: 'sess_waiting',
+          })),
+          finalizeRelationshipLayer: vi.fn(async () => {
+            await finalizeRelationshipLayer.promise;
+            return {
+              activeSessionId: 'sess_waiting',
+              activeCheckpointId: 'chk_waiting',
+            };
+          }),
+        })}
+        initialRuntimeSession={createAwaitingStartRuntimeSessionView()}
+      />,
+    );
+
+    await startRound(user);
+
+    const acceptedBeatText = `Draft beat 1 for ${storyPackageFixture.phasePlans[0]!.phaseGoal}.`;
+    expect(await screen.findByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
+    expect(await screen.findAllByText(acceptedBeatText)).toHaveLength(2);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+
+    resolveGossipelogCycle();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+      expect(screen.getByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
+    });
+
+    finalizeRelationshipLayer.resolve();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+      expect(screen.getByText('Beat 2 ready. Choose an option or write the next action.')).toBeInTheDocument();
+      expect(screen.getAllByText(acceptedBeatText)).toHaveLength(2);
+      expect(screen.queryByText('Initializing Scene...')).not.toBeInTheDocument();
+    });
+  });
+
+  it('does not let runtime config save rehydrate wait forever on a sync that already aged past the gossipelog budget', async () => {
+    const harness = createPlayAdapterHarness();
+    const user = userEvent.setup();
+    const recordedAcceptedBeats: RecordAcceptedBeatInput[] = [];
+    const settledRelationshipLayer = {
+      highlightedDeltasText: 'stale pending delta settled',
+      stableBackgroundText: 'stale pending background settled',
+    };
+    const { gossipelogCycleRunner } = createPendingGossipelogCycleRunner(settledRelationshipLayer);
+    const adapterWithGossipelog: LLMAdapter = {
+      ...harness.adapter,
+      gossipelogUpdate: vi.fn(async () => ({
+        involvedRoleIds: [],
+        invocationNoOp: false,
+        edgeUpdates: [],
+      })),
+      gossipelogInjection: vi.fn(async () => settledRelationshipLayer),
+    };
+
+    render(
+      <PlayWorkbench
+        storyPackage={storyPackageFixture}
+        storyPackageName="sample-scene"
+        initialConfig={adapterConfigFixture}
+        adapterFactory={() => adapterWithGossipelog}
+        gossipelogCycleRunner={gossipelogCycleRunner}
+        runtimeSessionClient={createRuntimeSessionClientMock({
+          recordAcceptedBeat: vi.fn(async (payload) => {
+            recordedAcceptedBeats.push(payload);
+            return {
+              activeSessionId: payload.sessionId,
+              activeCheckpointId: payload.checkpointId,
+            };
+          }),
+        })}
+        initialRuntimeSession={createRestorableRuntimeSessionView()}
+      />,
+    );
+
+    expect(
+      await screen.findByText('Beat 3 ready. Choose an option or write the next action.'),
+    ).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Free text action'), 'Advance before the stale sync is cleaned up.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+    await screen.findByText('Accepted');
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+
+    await user.click(screen.getByRole('button', { name: /Provider Setup/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Runtime Config' }));
+
+    expect(await screen.findByText('Runtime config saved locally.')).toBeInTheDocument();
+    await waitFor(
+      () => {
+        expect(screen.getByLabelText('Free text action')).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Submit Action' })).toBeEnabled();
+        expect(
+          screen.getByText('Beat 4 ready. Choose an option or write the next action.'),
+        ).toBeInTheDocument();
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS + 1_500 },
+    );
+
+    await user.clear(screen.getByLabelText('Free text action'));
+    await user.type(screen.getByLabelText('Free text action'), 'Advance after runtime config save.');
+    await user.click(screen.getByRole('button', { name: 'Submit Action' }));
+
+    await waitFor(
+      () => {
+        expect(recordedAcceptedBeats).toHaveLength(2);
+      },
+      { timeout: GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS * 2 + 1_500 },
+    );
   });
 
   it('keeps the accepted beat, accepted history, and workspace surface visible while gossipelog finalization is still pending after runtime config save', async () => {

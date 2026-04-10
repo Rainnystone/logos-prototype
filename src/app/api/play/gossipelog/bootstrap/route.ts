@@ -8,13 +8,19 @@ import {
 } from '@/agents/weaver/repository';
 import { parseAdapterConfig } from '@/app/api/shared/adapter-config';
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 import { assertValidStoryPackageSlug } from '@/story-packages/package-slug';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isMissingStoryPackageError(error: unknown): boolean {
+  if (error instanceof RuntimeStoryPackageNotFoundError) {
+    return true;
+  }
+
   return (
     error instanceof Error &&
     /Story package ".*" was not found at /.test(error.message)
@@ -106,10 +112,29 @@ export async function POST(request: Request) {
     });
   }
 
+  let storylineContext;
+  try {
+    storylineContext = await resolveActiveStorylineContext(storyPackageName, {
+      forWrite: false,
+    });
+  } catch (error) {
+    if (isMissingStoryPackageError(error)) {
+      return NextResponse.json(
+        {
+          error: 'Story package was not found for gossipelog bootstrap.',
+        },
+        { status: 400 },
+      );
+    }
+
+    throw error;
+  }
+
   const bootstrapResult = await bootstrapGossipelogFromWeaverSummary({
     storyPackageName,
     weaverSummary,
     relationshipState,
+    authoredRootOverride: storylineContext.authoredRoot,
     adapter: createAPIAdapter(adapterConfig),
   });
 

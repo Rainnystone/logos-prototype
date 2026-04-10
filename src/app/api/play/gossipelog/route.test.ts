@@ -1,109 +1,121 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { storyPackageFixture } from '@/app/__tests__/fixtures';
+import { RuntimeStoryPackageNotFoundError } from '@/runtime-sessions/repository';
 
-const loadRuntimeStoryPackage = vi.fn(async () => storyPackageFixture);
-const createAPIAdapter = vi.fn(() => ({
-  collapse: vi.fn(async () => ({
-    alpha: 'alpha',
-    beta: 'beta',
-    inferenceTrace: 'trace',
+const mocks = vi.hoisted(() => ({
+  resolveActiveStorylineContext: vi.fn(async () => ({
+    authoredRoot: '/tmp/storylines/sample-scene/active',
   })),
-  gossipelogUpdate: vi.fn(async () => ({
-    involvedRoleIds: [],
-    invocationNoOp: true,
-    edgeUpdates: [],
+  loadRuntimeStoryPackage: vi.fn(),
+  createAPIAdapter: vi.fn(() => ({
+    collapse: vi.fn(async () => ({
+      alpha: 'alpha',
+      beta: 'beta',
+      inferenceTrace: 'trace',
+    })),
+    gossipelogUpdate: vi.fn(async () => ({
+      involvedRoleIds: [],
+      invocationNoOp: true,
+      edgeUpdates: [],
+    })),
+    gossipelogInjection: vi.fn(async () => ({
+      highlightedDeltasText: 'delta',
+      stableBackgroundText: 'background',
+    })),
   })),
-  gossipelogInjection: vi.fn(async () => ({
-    highlightedDeltasText: 'delta',
-    stableBackgroundText: 'background',
+  createWorkbenchDemoAdapter: vi.fn(() => ({
+    collapse: vi.fn(async () => ({
+      alpha: 'alpha',
+      beta: 'beta',
+      inferenceTrace: 'trace',
+    })),
+    gossipelogUpdate: vi.fn(async () => ({
+      involvedRoleIds: [],
+      invocationNoOp: true,
+      edgeUpdates: [],
+    })),
+    gossipelogInjection: vi.fn(async () => ({
+      highlightedDeltasText: 'demo delta',
+      stableBackgroundText: 'demo background',
+    })),
   })),
-}));
-const createWorkbenchDemoAdapter = vi.fn(() => ({
-  collapse: vi.fn(async () => ({
-    alpha: 'alpha',
-    beta: 'beta',
-    inferenceTrace: 'trace',
-  })),
-  gossipelogUpdate: vi.fn(async () => ({
-    involvedRoleIds: [],
-    invocationNoOp: true,
-    edgeUpdates: [],
-  })),
-  gossipelogInjection: vi.fn(async () => ({
-    highlightedDeltasText: 'demo delta',
-    stableBackgroundText: 'demo background',
-  })),
-}));
-const runGossipelogCycle = vi.fn(async () => ({
-  updateRequest: {
-    acceptedBeatText: 'Accepted beat text',
-    roundId: 'round-1',
-    sceneCastRoleIds: [],
-    sceneCastFraming: {
-      sceneId: storyPackageFixture.sceneSpec.sceneId,
-      castRoleIds: [],
-    },
-    candidateRoles: [],
-    roleDefinitions: [],
-    relationshipSubgraph: {
-      meta: {
-        fileType: 'character-relationships',
-        schemaVersion: 1,
-        storyPackage: 'sample-scene',
+  runGossipelogCycle: vi.fn(async () => ({
+    updateRequest: {
+      acceptedBeatText: 'Accepted beat text',
+      roundId: 'round-1',
+      sceneCastRoleIds: [],
+      sceneCastFraming: {
+        sceneId: 'scene-1',
+        castRoleIds: [],
       },
-      relationshipsBySource: {},
-    },
-  },
-  updateResult: {
-    involvedRoleIds: [],
-    invocationNoOp: true,
-    edgeUpdates: [],
-  },
-  injectionRequest: {
-    sceneCastRoleIds: [],
-    sceneCastFraming: {
-      sceneId: storyPackageFixture.sceneSpec.sceneId,
-      castRoleIds: [],
-    },
-    roleDefinitions: [],
-    relationshipSubgraph: {
-      meta: {
-        fileType: 'character-relationships',
-        schemaVersion: 1,
-        storyPackage: 'sample-scene',
+      candidateRoles: [],
+      roleDefinitions: [],
+      relationshipSubgraph: {
+        meta: {
+          fileType: 'character-relationships',
+          schemaVersion: 1,
+          storyPackage: 'sample-scene',
+        },
+        relationshipsBySource: {},
       },
-      relationshipsBySource: {},
     },
-  },
-  relationshipLayer: {
-    highlightedDeltasText: 'delta',
-    stableBackgroundText: 'background',
-  },
+    updateResult: {
+      involvedRoleIds: [],
+      invocationNoOp: true,
+      edgeUpdates: [],
+    },
+    injectionRequest: {
+      sceneCastRoleIds: [],
+      sceneCastFraming: {
+        sceneId: 'scene-1',
+        castRoleIds: [],
+      },
+      roleDefinitions: [],
+      relationshipSubgraph: {
+        meta: {
+          fileType: 'character-relationships',
+          schemaVersion: 1,
+          storyPackage: 'sample-scene',
+        },
+        relationshipsBySource: {},
+      },
+    },
+    relationshipLayer: {
+      highlightedDeltasText: 'delta',
+      stableBackgroundText: 'background',
+    },
+  })),
 }));
 
 vi.mock('@/engine/story-loader', () => ({
-  loadRuntimeStoryPackage,
+  loadRuntimeStoryPackage: mocks.loadRuntimeStoryPackage,
+}));
+
+vi.mock('@/storylines/substrate', () => ({
+  resolveActiveStorylineContext: mocks.resolveActiveStorylineContext,
 }));
 
 vi.mock('@/engine/api-adapter/adapter', () => ({
-  createAPIAdapter,
+  createAPIAdapter: mocks.createAPIAdapter,
 }));
 
 vi.mock('@/engine/__mocks__/workbench-demo-adapter', () => ({
-  createWorkbenchDemoAdapter,
+  createWorkbenchDemoAdapter: mocks.createWorkbenchDemoAdapter,
 }));
 
 vi.mock('@/agents/gossipelog/agent', () => ({
-  runGossipelogCycle,
+  runGossipelogCycle: mocks.runGossipelogCycle,
 }));
 
 describe('POST play gossipelog route', () => {
   beforeEach(() => {
-    loadRuntimeStoryPackage.mockClear();
-    createAPIAdapter.mockClear();
-    createWorkbenchDemoAdapter.mockClear();
-    runGossipelogCycle.mockClear();
+    mocks.resolveActiveStorylineContext.mockClear();
+    mocks.loadRuntimeStoryPackage.mockReset();
+    mocks.loadRuntimeStoryPackage.mockResolvedValue(storyPackageFixture);
+    mocks.createAPIAdapter.mockClear();
+    mocks.createWorkbenchDemoAdapter.mockClear();
+    mocks.runGossipelogCycle.mockClear();
   });
 
   it('loads the runtime package and runs the server-side cycle with the configured adapter', async () => {
@@ -136,10 +148,15 @@ describe('POST play gossipelog route', () => {
       }),
     );
 
-    expect(loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene');
-    expect(createAPIAdapter).toHaveBeenCalledWith(adapterConfig);
-    expect(createWorkbenchDemoAdapter).not.toHaveBeenCalled();
-    expect(runGossipelogCycle).toHaveBeenCalledWith(
+    expect(mocks.resolveActiveStorylineContext).toHaveBeenCalledWith('sample-scene', {
+      forWrite: false,
+    });
+    expect(mocks.loadRuntimeStoryPackage).toHaveBeenCalledWith('sample-scene', {
+      authoredRootOverride: '/tmp/storylines/sample-scene/active',
+    });
+    expect(mocks.createAPIAdapter).toHaveBeenCalledWith(adapterConfig);
+    expect(mocks.createWorkbenchDemoAdapter).not.toHaveBeenCalled();
+    expect(mocks.runGossipelogCycle).toHaveBeenCalledWith(
       expect.objectContaining({
         adapter: expect.objectContaining({
           gossipelogUpdate: expect.any(Function),
@@ -188,9 +205,9 @@ describe('POST play gossipelog route', () => {
       }),
     );
 
-    expect(createAPIAdapter).not.toHaveBeenCalled();
-    expect(createWorkbenchDemoAdapter).toHaveBeenCalledTimes(1);
-    expect(runGossipelogCycle).toHaveBeenCalledWith(
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.createWorkbenchDemoAdapter).toHaveBeenCalledTimes(1);
+    expect(mocks.runGossipelogCycle).toHaveBeenCalledWith(
       expect.objectContaining({
         adapter: expect.objectContaining({
           gossipelogUpdate: expect.any(Function),
@@ -202,5 +219,41 @@ describe('POST play gossipelog route', () => {
       }),
     );
     expect(response.status).toBe(200);
+  });
+
+  it('propagates missing-package errors from the storyline resolver', async () => {
+    mocks.resolveActiveStorylineContext.mockRejectedValueOnce(
+      new RuntimeStoryPackageNotFoundError('missing-package'),
+    );
+    const { POST } = await import('@/app/api/play/gossipelog/route');
+
+    await expect(
+      POST(
+        new Request('http://localhost/api/play/gossipelog', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            storyPackageName: 'sample-scene',
+            adapterConfig: {
+              provider: 'openai-compatible',
+              providerConfig: {
+                apiKey: 'test-key',
+                baseUrl: 'https://api.example.com/v1',
+                model: 'demo-model',
+              },
+            },
+            acceptedBeatText: 'Accepted beat text',
+            roundId: 'round-3',
+          }),
+        }),
+      ),
+    ).rejects.toBeInstanceOf(RuntimeStoryPackageNotFoundError);
+
+    expect(mocks.loadRuntimeStoryPackage).not.toHaveBeenCalled();
+    expect(mocks.createAPIAdapter).not.toHaveBeenCalled();
+    expect(mocks.createWorkbenchDemoAdapter).not.toHaveBeenCalled();
+    expect(mocks.runGossipelogCycle).not.toHaveBeenCalled();
   });
 });

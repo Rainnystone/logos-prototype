@@ -6,6 +6,7 @@ import { createWorkbenchDemoAdapter } from '@/engine/__mocks__/workbench-demo-ad
 import { createAPIAdapter } from '@/engine/api-adapter/adapter';
 import { loadRuntimeStoryPackage } from '@/engine/story-loader';
 import type { GossipelogInjectionResult } from '@/types';
+import { resolveActiveStorylineContext } from '@/storylines/substrate';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -37,7 +38,12 @@ export async function POST(request: Request) {
   const roundId = typeof body.roundId === 'string' ? body.roundId : '';
   const adapterConfig = parseAdapterConfig(body.adapterConfig);
   const lastStableRelationshipLayer = parseRelationshipLayer(body.lastStableRelationshipLayer);
-  const storyPackage = await loadRuntimeStoryPackage(storyPackageName);
+  const storylineContext = await resolveActiveStorylineContext(storyPackageName, {
+    forWrite: false,
+  });
+  const storyPackage = await loadRuntimeStoryPackage(storyPackageName, {
+    authoredRootOverride: storylineContext.authoredRoot,
+  });
   const adapter = adapterConfig
     ? createAPIAdapter(adapterConfig)
     : createWorkbenchDemoAdapter();

@@ -29,6 +29,7 @@ import {
   type WorkbenchStatus,
 } from '@/app/play/runtime';
 import type { GossipelogCycleRunner } from '@/agents/gossipelog/contracts';
+import { GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS } from '@/agents/gossipelog/runtime-contract';
 import {
   createOrchestrator,
   type Orchestrator,
@@ -57,6 +58,7 @@ interface PlayWorkbenchProps {
 
 interface PendingRelationshipSync {
   readonly promise: Promise<void>;
+  readonly startedAtMs: number;
   resolve(): void;
   finalizeQueued: boolean;
   settled: boolean;
@@ -81,6 +83,7 @@ function createPendingRelationshipSync(): PendingRelationshipSync {
     promise: new Promise<void>((settle) => {
       resolve = settle;
     }),
+    startedAtMs: Date.now(),
     resolve,
     finalizeQueued: false,
     settled: false,
@@ -183,6 +186,10 @@ function scheduleAnchorScroll(anchor: React.RefObject<HTMLDivElement | null>) {
   }
 }
 
+function getRemainingRelationshipSyncWaitMs(sync: PendingRelationshipSync): number {
+  return Math.max(0, sync.startedAtMs + GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS - Date.now());
+}
+
 async function bootstrapGossipelogBeforePlayInitialization(input: {
   readonly storyPackageName: string;
   readonly adapterConfig: AdapterConfig | null;
@@ -226,6 +233,7 @@ export function PlayWorkbench({
   const pendingRelationshipSyncsRef = useRef<Set<PendingRelationshipSync>>(new Set());
   const relationshipSyncFinalizeQueueRef = useRef<PendingRelationshipSync[]>([]);
   const activeRelationshipSyncRef = useRef<PendingRelationshipSync | null>(null);
+  const relationshipSyncInputTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentStateRef = useRef<StateSnapshot | null>(null);
   const streamAnchorRef = useRef<HTMLDivElement | null>(null);
   const optionsAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -251,6 +259,7 @@ export function PlayWorkbench({
   const [streamingBeatText, setStreamingBeatText] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [isRelationshipSyncPending, setIsRelationshipSyncPending] = useState(false);
+  const [isRelationshipSyncBlockingInput, setIsRelationshipSyncBlockingInput] = useState(false);
   const [isHydratingWorkbench, setIsHydratingWorkbench] = useState(false);
   const currentOptions = currentState?.generationState.currentOptions ?? [];
   const displayedBeatText =
@@ -271,6 +280,55 @@ export function PlayWorkbench({
     [initialRuntimeSession, runtimeSessionClient, storyPackageName],
   );
 
+  function clearRelationshipSyncInputTimeout() {
+    if (relationshipSyncInputTimeoutRef.current) {
+      clearTimeout(relationshipSyncInputTimeoutRef.current);
+      relationshipSyncInputTimeoutRef.current = null;
+    }
+  }
+
+  function beginRelationshipSyncInputBlock(sync: PendingRelationshipSync) {
+    activeRelationshipSyncRef.current = sync;
+    setIsRelationshipSyncPending(true);
+    setIsRelationshipSyncBlockingInput(true);
+    clearRelationshipSyncInputTimeout();
+    relationshipSyncInputTimeoutRef.current = setTimeout(() => {
+      relationshipSyncInputTimeoutRef.current = null;
+
+      if (activeRelationshipSyncRef.current === sync && !sync.settled) {
+        setIsRelationshipSyncBlockingInput(false);
+      }
+    }, GOSSIPELOG_REFRESH_WAIT_TIMEOUT_MS);
+  }
+
+  async function waitForPendingRelationshipSyncWithinBudget(sync: PendingRelationshipSync) {
+    if (sync.settled) {
+      await sync.promise;
+      return;
+    }
+
+    const remainingWaitMs = getRemainingRelationshipSyncWaitMs(sync);
+
+    if (remainingWaitMs <= 0) {
+      return;
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    try {
+      await Promise.race([
+        sync.promise,
+        new Promise<void>((resolve) => {
+          timeoutId = setTimeout(resolve, remainingWaitMs);
+        }),
+      ]);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
+
   function settlePendingRelationshipSync(sync: PendingRelationshipSync | undefined) {
     if (!sync || sync.settled) {
       return;
@@ -283,7 +341,9 @@ export function PlayWorkbench({
     );
     if (activeRelationshipSyncRef.current === sync) {
       activeRelationshipSyncRef.current = null;
+      clearRelationshipSyncInputTimeout();
       setIsRelationshipSyncPending(false);
+      setIsRelationshipSyncBlockingInput(false);
     }
     sync.resolve();
   }
@@ -327,6 +387,10 @@ export function PlayWorkbench({
     runtimeSessionViewRef.current = initialRuntimeSession;
     setRuntimeSessionView(initialRuntimeSession);
   }, [initialRuntimeSession]);
+
+  useEffect(() => () => {
+    clearRelationshipSyncInputTimeout();
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -386,9 +450,7 @@ export function PlayWorkbench({
     async function initializeWorkbench() {
       const shouldPreserveVisibleSurface =
         currentStateRef.current !== null && runtimeSessionViewRef.current?.kind === 'restorable';
-      const pendingRelationshipSyncs = Array.from(pendingRelationshipSyncsRef.current).map(
-        (sync) => sync.promise,
-      );
+      const pendingRelationshipSyncs = Array.from(pendingRelationshipSyncsRef.current);
       setIsHydratingWorkbench(shouldPreserveVisibleSurface);
 
       if (!shouldPreserveVisibleSurface) {
@@ -397,7 +459,9 @@ export function PlayWorkbench({
 
       try {
         if (pendingRelationshipSyncs.length > 0) {
-          await Promise.allSettled(pendingRelationshipSyncs);
+          await Promise.allSettled(
+            pendingRelationshipSyncs.map((sync) => waitForPendingRelationshipSyncWithinBudget(sync)),
+          );
         }
 
         if (cancelled) {
@@ -497,8 +561,7 @@ export function PlayWorkbench({
           ? async (...args: Parameters<GossipelogCycleRunner>) => {
               const sync = createPendingRelationshipSync();
               pendingRelationshipSyncsRef.current.add(sync);
-              activeRelationshipSyncRef.current = sync;
-              setIsRelationshipSyncPending(true);
+              beginRelationshipSyncInputBlock(sync);
 
               try {
                 const result = await resolvedGossipelogCycleRunner(...args);
@@ -615,7 +678,7 @@ export function PlayWorkbench({
     status === 'generating' ||
     status === 'auditing' ||
     status === 'rewriting' ||
-    isRelationshipSyncPending ||
+    isRelationshipSyncBlockingInput ||
     isHydratingWorkbench;
   const sceneComplete = orchestratorRef.current?.isSceneComplete() ?? false;
   const continuityUnavailable = runtimeSessionView?.kind === 'unavailable';

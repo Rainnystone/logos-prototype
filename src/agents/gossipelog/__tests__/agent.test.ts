@@ -12,6 +12,7 @@ import { bootstrapGossipelogFromWeaverSummary } from '@/agents/gossipelog/bootst
 import * as gossipelogRepository from '@/agents/gossipelog/repository';
 import * as weaverRepository from '@/agents/weaver/repository';
 import { loadWeaverImportSummary } from '@/agents/weaver/repository';
+import * as storyLoader from '@/engine/story-loader';
 import { loadStoryPackage } from '@/engine/story-loader';
 import type {
   GossipelogInjectionRequest,
@@ -569,6 +570,40 @@ describe('gossipelog agent shell', () => {
     await expect(loadWeaverImportSummary(packageName)).resolves.toMatchObject({
       bootstrapStatus: 'succeeded',
     });
+  });
+
+  it('bootstrap forwards authoredRootOverride to loadRuntimeStoryPackage', async () => {
+    const { packageName, storyPackage } = await createStoryPackageFixture();
+    const loadRuntimeStoryPackageSpy = vi
+      .spyOn(storyLoader, 'loadRuntimeStoryPackage')
+      .mockResolvedValueOnce(storyPackage);
+
+    try {
+      const result = await bootstrapGossipelogFromWeaverSummary({
+        storyPackageName: packageName,
+        authoredRootOverride: '/tmp/storylines/sample-scene/active',
+        weaverSummary: createWeaverSummary(),
+        adapter: {
+          gossipelogUpdate: vi.fn(async () => ({
+            involvedRoleIds: [],
+            invocationNoOp: true,
+            edgeUpdates: [],
+          })),
+          gossipelogInjection: vi.fn(async () => ({
+            highlightedDeltasText: '',
+            stableBackgroundText: 'seeded background',
+          })),
+        },
+      });
+
+      expect(loadRuntimeStoryPackageSpy).toHaveBeenCalledWith(packageName, {
+        authoredRootOverride: '/tmp/storylines/sample-scene/active',
+      });
+      expect(result.ok).toBe(true);
+      expect(result.bootstrapStatus).toBe('succeeded');
+    } finally {
+      loadRuntimeStoryPackageSpy.mockRestore();
+    }
   });
 
   it('bootstrap keeps unreadable gossipelog state unreadable when a bootstrap attempt fails', async () => {
