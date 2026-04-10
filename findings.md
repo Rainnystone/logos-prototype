@@ -85,6 +85,7 @@
 - [src/agents/weaver/definition.ts](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/agents/weaver/definition.ts)
 - [src/agents/weaver/references/import-reference.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/agents/weaver/references/import-reference.md)
 - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)
+- [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)
 
 ## 视觉/浏览器发现
 - 本轮没有进行浏览器检查；当前阶段是只读代码与文档梳理。

@@ -18,7 +18,7 @@
   - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
 
 ### 阶段 2：升级方案收敛
-- **状态：** in_progress
+- **状态：** complete
 - 执行的操作：
   - 归纳下一轮需要回答的核心设计问题：reference 的挂载方式、memory state 形态、与 runtime relationship layer 的兼容边界。
   - 读取用户提供的外部参考文档 `reference.md`，确认其内容是有向主观关系分类、心态词组与归纳格式建议。
@@ -26,11 +26,13 @@
   - 记录用户逐项拍板结果，包括：非主角有向关系、单向建立关系、允许扩词、全历史进入 prompt、显式 currentRelation、旧状态可迁移、surface 需要同步升级。
   - 补查现有标识体系，确认当前系统已有 `phaseId`、`beatIndex`、`roundId`，其中 `roundId` 已在 gossipelog 合同中存在，但若要直接写入 `phaseId + beat` 需要补传 phase/beat 信息。
   - 编写正式设计文档 [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)，固定 reference 接法、state 升级方案、prompt 注入语义、迁移策略与测试面。
+  - 基于 `writing-plans` 将设计拆成可执行的串行 packet，并写入 [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)。
 - 创建/修改的文件：
   - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
   - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
   - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
   - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)
+  - [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)
 
 ## 测试结果
 | 测试 | 输入 | 预期结果 | 实际结果 | 状态 |
@@ -47,11 +49,11 @@
 ## 五问重启检查
 | 问题 | 答案 |
 |------|------|
-| 我在哪里？ | 阶段 2：升级边界与方案收敛 |
-| 我要去哪里？ | 确定 reference 与“人际关系记忆”的设计方向，再拆 implementation packets |
+| 我在哪里？ | 阶段 3：实现前，implementation plan 已写完 |
+| 我要去哪里？ | 选择执行方式，然后按 implementation packets 开始 TDD 实现 |
 | 目标是什么？ | 为 gossipelog 大规模升级建立准确起点，并推进 reference 与 memory 升级 |
-| 我学到了什么？ | 当前 gossipelog 没有 reference manifest，skill 机制主要由 prompt contract 和 state contract 承载 |
-| 我做了什么？ | 完成了 gossipelog 现状 catch-up，补齐了根目录三件套并拿到了 subagent 的代码循环梳理 |
+| 我学到了什么？ | 已明确 gossipelog 的 reference 接法、memory state 方案、prompt 语义和迁移策略 |
+| 我做了什么？ | 完成了 catch-up、spec 和 implementation plan，并同步维护了三件套 |
 
 ---
 *每个阶段完成后或遇到错误时更新此文件*

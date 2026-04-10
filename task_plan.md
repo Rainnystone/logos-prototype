@@ -8,7 +8,7 @@
 2. 把当前“关系记录”升级为角色级的“人际关系记忆”，而不只是一次性的 prompt 关系层。
 
 ## 当前阶段
-阶段 2
+阶段 3
 
 ## 各阶段
 
@@ -24,8 +24,8 @@
 - [x] 明确“人际关系记忆”是扩展现有 `character-relationships.yaml`，还是拆分为新 state 合同
 - [x] 明确时间戳、事件原因、历史保留与当前关系强调的精确合同
 - [x] 明确与现有 runtime `relationshipLayer`、editor surface、bootstrap 的兼容策略
-- [ ] 输出后续 implementation packet 划分
-- **状态：** in_progress
+- [x] 输出后续 implementation packet 划分
+- **状态：** complete
 
 ### 阶段 3：实现
 - [ ] 按方案逐步实现 reference / memory 升级
@@ -47,10 +47,9 @@
 - **状态：** pending
 
 ## 关键问题
-1. `gossipelog` 的 reference 是只作用于 `gossipelogUpdate`，还是同时也要约束 `gossipelogInjection`？
-2. “每个决策（除了主角）”这里是否等价于“每个角色（除了主角）”，即非主角角色都要维护它对其它角色的有向关系时间线？
-3. 对“建立关系”的阈值要多低？首次见面/知晓存在就建边，还是只有出现明确主观看法后才建边？
-4. 现有 package-owned relationship state、runtime `relationshipLayer`、editor surface 文案，哪些必须兼容，哪些允许重构？
+1. 执行方式待选：按 `subagent-driven-development` 串行执行，还是在当前线程 inline 执行？
+2. 实现阶段若遇到 token 压力，scene-bounded 的“全历史进入 prompt”是否仍足够，还是需要进一步加确定性截断规则？
+3. 旧 schema 迁移后若发现历史条目缺少 `phaseId/beatIndex`，是否仅保持 `roundId + null` 字段而不做额外补写？
 
 ## 已做决策
 | 决策 | 理由 |
@@ -77,3 +76,4 @@
 - 2026-04-10 已完成第一轮 catch-up，根目录三件套从模板状态补成可继续执行状态。
 - 当前已知最近完成的一轮正式计划是 runtime alignment 修复；该计划明确把 reference / memory schema 升级排除在外，因此本线程属于下一轮工作。
 - 2026-04-10 已将用户确认后的升级设计落档到 `docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md`，下一步应进入 implementation plan。
+- 2026-04-10 已将实现计划落档到 `docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md`，等待选择执行方式。
