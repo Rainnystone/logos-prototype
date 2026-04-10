@@ -21,8 +21,16 @@
 - **状态：** in_progress
 - 执行的操作：
   - 归纳下一轮需要回答的核心设计问题：reference 的挂载方式、memory state 形态、与 runtime relationship layer 的兼容边界。
+  - 读取用户提供的外部参考文档 `reference.md`，确认其内容是有向主观关系分类、心态词组与归纳格式建议。
+  - 吸收用户新增约束：时间戳、历史保留、关系变化原因记录、以及在 prompt 中同时保留历史与强调当前关系。
+  - 记录用户逐项拍板结果，包括：非主角有向关系、单向建立关系、允许扩词、全历史进入 prompt、显式 currentRelation、旧状态可迁移、surface 需要同步升级。
+  - 补查现有标识体系，确认当前系统已有 `phaseId`、`beatIndex`、`roundId`，其中 `roundId` 已在 gossipelog 合同中存在，但若要直接写入 `phaseId + beat` 需要补传 phase/beat 信息。
+  - 编写正式设计文档 [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)，固定 reference 接法、state 升级方案、prompt 注入语义、迁移策略与测试面。
 - 创建/修改的文件：
-  - 无
+  - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
+  - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
+  - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
+  - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)
 
 ## 测试结果
 | 测试 | 输入 | 预期结果 | 实际结果 | 状态 |

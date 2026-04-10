@@ -44,11 +44,11 @@
   - 锁住 sparse-but-valid payload 和 name-only fallback 的 mapping 行为。
 - Modify: `src/agents/weaver/__tests__/agent.test.ts`
   - 锁住 `runWeaverImport()` 返回的 payload / summary 继续与 shared contract 对齐。
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/task_plan.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-task-plan.md`
   - 将当前 track 切到 `weaver` import contract 优化 implementation plan。
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/progress.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-progress.md`
   - 记录 plan、review 和当前 worktree 基线已恢复干净。
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/findings.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-findings.md`
   - 记录为什么这轮优化只改 reference/contract layers，不扩成 UI 或系统重构。
 
 ## Execution Mode
@@ -524,9 +524,9 @@ git commit -m "fix: honor sparse weaver import payloads"
 ## Task 5: Final Verification and Documentation Sync
 
 **Files:**
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/task_plan.md`
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/progress.md`
-- Modify: `docs/superpowers/tracks/weaver-import-contract-optimization/findings.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-task-plan.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-progress.md`
+- Modify: `archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-findings.md`
 - Test: `src/types/__tests__/type-conformance.test.ts`
 - Test: `src/engine/api-adapter/__tests__/prompt-templates.test.ts`
 - Test: `src/engine/api-adapter/__tests__/schema-mapper.test.ts`
@@ -555,9 +555,9 @@ Update targets:
 
 ```md
 docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md -> approved implementation plan file already committed
-docs/superpowers/tracks/weaver-import-contract-optimization/task_plan.md   -> active track switched to weaver import contract optimization implementation
-docs/superpowers/tracks/weaver-import-contract-optimization/progress.md    -> record each task completion and verification
-docs/superpowers/tracks/weaver-import-contract-optimization/findings.md    -> freeze final boundary: no system redesign, no UI/UX expansion, reference/contract alignment only
+archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-task-plan.md   -> active track switched to weaver import contract optimization implementation
+archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-progress.md    -> record each task completion and verification
+archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-findings.md    -> freeze final boundary: no system redesign, no UI/UX expansion, reference/contract alignment only
 ```
 
 - [x] **Step 5: 做格式检查**
@@ -568,7 +568,7 @@ Expected: PASS
 - [x] **Step 6: 提交收尾 packet**
 
 ```bash
-git add docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md docs/superpowers/tracks/weaver-import-contract-optimization/task_plan.md docs/superpowers/tracks/weaver-import-contract-optimization/progress.md docs/superpowers/tracks/weaver-import-contract-optimization/findings.md
+git add archive/docs/superpowers/plans/2026-04-09-weaver-import-contract-optimization-implementation.md archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-task-plan.md archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-progress.md archive/docs/superpowers/tracks/weaver-import-contract-optimization/archive-findings.md
 git commit -m "docs: record weaver contract optimization delivery"
 ```
 

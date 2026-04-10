@@ -25,7 +25,7 @@
   - 不改 UI / UX
   - 不新增 author-facing reminder 流程
 - 当前最合适的 shared contract anchor 仍然是：
-  - [weaver.ts](../../../../src/types/weaver.ts)
+  - [weaver.ts](../../../../../src/types/weaver.ts)
 - 但 provider-facing response schema 和 parser 仍保留各自的 mirror/projection 责任，需要和这个锚点保持同步并受测试覆盖。
 - 当前实现层的真正风险不是“模型不会回 JSON”，而是六层对同一 payload 的描述没有完全对齐：
   - heavy reference
@@ -119,7 +119,7 @@
 ## Recovery Order
 
 1. [2026-04-09-phase-4-weaver-import-contract-optimization-design.md](../../specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
-2. [task_plan.md](task_plan.md)
-3. [progress.md](progress.md)
-4. [findings.md](findings.md)
+2. [archive-task-plan.md](archive-task-plan.md)
+3. [archive-progress.md](archive-progress.md)
+4. [archive-findings.md](archive-findings.md)
 5. [2026-04-09-weaver-import-contract-optimization-implementation.md](../../plans/2026-04-09-weaver-import-contract-optimization-implementation.md)

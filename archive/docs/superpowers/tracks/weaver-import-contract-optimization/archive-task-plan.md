@@ -13,9 +13,9 @@
 - 格式检查通过：`git diff --check`
 - 同步 approved implementation plan 文件与这三个 tracking 文件：
   - [2026-04-09-weaver-import-contract-optimization-implementation.md](../../plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
-  - [task_plan.md](task_plan.md)
-  - [progress.md](progress.md)
-  - [findings.md](findings.md)
+  - [archive-task-plan.md](archive-task-plan.md)
+  - [archive-progress.md](archive-progress.md)
+  - [archive-findings.md](archive-findings.md)
 - 收尾提交完成，且不包含额外生产代码变更
 
 ## Scope
@@ -51,15 +51,15 @@
 
 ## Current References
 
-- [AGENTS.md](../../../../AGENTS.md)
-- [coding-agent-guide.md](../../../../coding-agent-guide.md)
-- [progress.md](progress.md)
-- [findings.md](findings.md)
+- [AGENTS.md](../../../../../AGENTS.md)
+- [coding-agent-guide.md](../../../../../coding-agent-guide.md)
+- [archive-progress.md](archive-progress.md)
+- [archive-findings.md](archive-findings.md)
 - [2026-04-09-phase-4-weaver-import-contract-optimization-design.md](../../specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
 - [2026-04-09-weaver-import-contract-optimization-implementation.md](../../plans/2026-04-09-weaver-import-contract-optimization-implementation.md)
-- [import-reference.md](../../../../src/agents/weaver/references/import-reference.md)
-- [weaver.ts](../../../../src/types/weaver.ts)
-- [import-seed.ts](../../../../src/story-packages/import-seed.ts)
-- [prompt-templates.ts](../../../../src/engine/api-adapter/prompt-templates.ts)
-- [schema-mapper.ts](../../../../src/engine/api-adapter/schema-mapper.ts)
-- [response-parsers.ts](../../../../src/engine/api-adapter/response-parsers.ts)
+- [import-reference.md](../../../../../src/agents/weaver/references/import-reference.md)
+- [weaver.ts](../../../../../src/types/weaver.ts)
+- [import-seed.ts](../../../../../src/story-packages/import-seed.ts)
+- [prompt-templates.ts](../../../../../src/engine/api-adapter/prompt-templates.ts)
+- [schema-mapper.ts](../../../../../src/engine/api-adapter/schema-mapper.ts)
+- [response-parsers.ts](../../../../../src/engine/api-adapter/response-parsers.ts)

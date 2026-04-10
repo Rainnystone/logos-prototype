@@ -25,6 +25,8 @@
   当时为并行执行或拆分任务产生的中间草稿
 - `archive/docs/superpowers/recovery/`
   从根目录 `task_plan.md`、`progress.md`、`findings.md` 封板归档下来的会话级工作记忆快照
+- `archive/docs/superpowers/tracks/`
+  已退役的 track 级工作记忆目录，通常保存某条已完成主题轨道的 `task_plan` / `progress` / `findings` 快照
 
 如果后续还有新的 superpowers 文档需要退役，优先按这个结构继续归档，而不是混放到别的 archive 目录。
 
