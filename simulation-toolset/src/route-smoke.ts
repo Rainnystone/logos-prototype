@@ -343,6 +343,8 @@ export async function runPlayGossipelogRouteSmoke(
           storyPackageName: fixture.packageName,
           acceptedBeatText,
           roundId: 'route-smoke-round-1',
+          phaseId: 'phase-01',
+          beatIndex: 0,
         }),
       }),
     );

@@ -183,11 +183,14 @@ function buildNoOpGossipelogResult(acceptedBeatText: string, roundId: string): R
       },
       acceptedBeatText,
       roundId,
+      phaseId: 'phase-01',
+      beatIndex: 0,
+      resolvedReferences: [],
     },
     updateResult: {
       involvedRoleIds: [],
       invocationNoOp: true,
-      edgeUpdates: [],
+      memoryUpdates: [],
     },
     injectionRequest: {
       sceneCastRoleIds: [],
