@@ -82,6 +82,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Gossipelog v2 Memory Update',
     tags: ['gossipelog', 'v2', 'memory-update'],
   },
+  {
+    scenarioId: 'gossipelog-v2-anchor-validation',
+    title: 'Gossipelog v2 Anchor Validation',
+    tags: ['gossipelog', 'v2', 'anchor', 'fallback'],
+  },
 ] as const;
 
 /**
