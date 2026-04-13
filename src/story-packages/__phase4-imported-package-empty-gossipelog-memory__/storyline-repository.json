@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "activeStorylineId": "storyline_mnqsc8zz_1",
+  "storylinesById": {
+    "storyline_main": {
+      "storylineId": "storyline_main",
+      "name": "Main Line",
+      "status": "active",
+      "sourceCheckpointId": null,
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "variantId": "variant_main",
+      "activeSessionId": "sess_mnq7w0t6_1",
+      "createdAt": "2026-04-08T15:42:55.773Z",
+      "updatedAt": "2026-04-09T01:15:15.066Z"
+    },
+    "storyline_mnqsc8zz_1": {
+      "storylineId": "storyline_mnqsc8zz_1",
+      "name": "故事线 2",
+      "status": "active",
+      "sourceCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "headCheckpointId": "chk-session-mnq8n8vg-9c55ds5u-0004",
+      "variantId": "variant_mnqsc8zz_2",
+      "activeSessionId": "sess_mnqsc90c_1",
+      "createdAt": "2026-04-09T01:15:25.222Z",
+      "updatedAt": "2026-04-09T01:15:25.317Z"
+    }
+  },
+  "variantsById": {
+    "variant_main": {
+      "variantId": "variant_main",
+      "workspaceRoot": "variants/variant_main",
+      "createdFromStorylineId": null,
+      "createdAt": "2026-04-08T15:42:55.773Z",
+      "updatedAt": "2026-04-08T15:42:55.773Z"
+    },
+    "variant_mnqsc8zz_2": {
+      "variantId": "variant_mnqsc8zz_2",
+      "workspaceRoot": "variants/variant_mnqsc8zz_2",
+      "createdFromStorylineId": "storyline_main",
+      "createdAt": "2026-04-09T01:15:25.222Z",
+      "updatedAt": "2026-04-09T01:15:25.222Z"
+    }
+  }
+}

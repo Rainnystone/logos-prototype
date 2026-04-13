@@ -79,12 +79,13 @@ export function createV2Edge(
   targetRoleId: string,
   entry: { phaseId: string; beatIndex: number; roundId: string } & Partial<RelationshipMemoryEntry>,
 ): RelationshipMemoryEdge {
+  const { phaseId, beatIndex, roundId, ...entryOverrides } = entry;
   const fullEntry: RelationshipMemoryEntry = {
-    phaseId: entry.phaseId,
-    beatIndex: entry.beatIndex,
-    roundId: entry.roundId,
     ...DEFAULT_ENTRY_OVERRIDES,
-    ...entry,
+    ...entryOverrides,
+    phaseId,
+    beatIndex,
+    roundId,
   };
 
   return {

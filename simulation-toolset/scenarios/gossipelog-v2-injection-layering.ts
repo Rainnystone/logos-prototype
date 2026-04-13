@@ -165,15 +165,18 @@ export function createGossipelogV2InjectionLayeringScenario(): ExecutableSimulat
         // Assertion: injection request subgraph is v2-shaped
         const injectionSubgraph = agentResult.result.injectionRequest.relationshipSubgraph;
         const isV2 = injectionSubgraph.meta.schemaVersion === 2;
-        const allEdges = Object.values(injectionSubgraph.relationshipsBySource).flatMap(
-          (bucket) => Object.values(bucket.targets),
+        const allEdges: import('@/types').RelationshipMemoryEdge[] = Object.values(
+          injectionSubgraph.relationshipsBySource,
+        ).flatMap(
+          (bucket) => Object.values((bucket as { targets: Record<string, import('@/types').RelationshipMemoryEdge> }).targets),
         );
-        const hasHistoryShape = allEdges.length > 0 && 'history' in allEdges[0] && !('baseline' in allEdges[0]);
+        const firstEdge = allEdges[0];
+        const hasHistoryShape = firstEdge != null && 'history' in firstEdge && !('baseline' in firstEdge);
 
         recorder.recordAssertion({
           name: 'injection-layering-subgraph-v2-shaped',
           pass: isV2 && hasHistoryShape,
-          details: `Expected v2-shaped subgraph (schemaVersion=2, history edges). schemaVersion=${injectionSubgraph.meta.schemaVersion}, edgeCount=${allEdges.length}, hasHistory=${allEdges.length > 0 && 'history' in allEdges[0]}`,
+          details: `Expected v2-shaped subgraph (schemaVersion=2, history edges). schemaVersion=${injectionSubgraph.meta.schemaVersion}, edgeCount=${allEdges.length}, hasHistory=${firstEdge != null && 'history' in firstEdge}`,
         });
 
         return {

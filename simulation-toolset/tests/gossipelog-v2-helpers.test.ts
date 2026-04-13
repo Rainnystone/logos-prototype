@@ -37,11 +37,11 @@ describe('gossipelog-v2-helpers', () => {
       const result = createAppliedUpdateResult([mu]);
       expect(result.invocationNoOp).toBe(false);
       expect(result.memoryUpdates).toHaveLength(1);
-      expect(result.memoryUpdates[0].sourceRoleId).toBe('char_001');
-      expect(result.memoryUpdates[0].shouldCreateEdge).toBe(false);
-      expect(result.memoryUpdates[0].nextCurrentRelation.phaseId).toBe('phase-01');
-      expect(result.memoryUpdates[0].nextCurrentRelation.beatIndex).toBe(0);
-      expect(result.memoryUpdates[0].nextCurrentRelation.roundId).toBe('round-001');
+      expect(result.memoryUpdates[0]!.sourceRoleId).toBe('char_001');
+      expect(result.memoryUpdates[0]!.shouldCreateEdge).toBe(false);
+      expect(result.memoryUpdates[0]!.nextCurrentRelation.phaseId).toBe('phase-01');
+      expect(result.memoryUpdates[0]!.nextCurrentRelation.beatIndex).toBe(0);
+      expect(result.memoryUpdates[0]!.nextCurrentRelation.roundId).toBe('round-001');
     });
   });
 

@@ -153,7 +153,10 @@ export function createGossipelogV2MergeIdempotencyScenario(): ExecutableSimulati
         // Read the relationship file from disk to verify history deduplication
         const diskContents = await readFile(relFilePath, 'utf8');
         const diskFile = YAML.parse(diskContents) as typeof v2File;
-        const diskEdge = diskFile.relationshipsBySource[sourceRoleId]?.targets[heroId];
+        const diskEdge = (diskFile.relationshipsBySource[sourceRoleId] as
+          | { targets: Record<string, import('@/types').RelationshipMemoryEdge> }
+          | undefined
+        )?.targets[heroId];
         const historyLength = diskEdge?.history?.length ?? -1;
 
         // Pre-seeded: 1 entry. First cycle adds 1. Second cycle should NOT add another.

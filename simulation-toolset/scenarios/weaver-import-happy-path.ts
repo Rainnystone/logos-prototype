@@ -16,7 +16,7 @@ export function createWeaverImportHappyPathScenario(): ExecutableSimulationScena
               sourceSummary: 'An explorer ventures into unknown territory.',
               importSummary: 'World base and cast extracted from source text.',
               openingHook: 'An explorer ventures into unknown territory.',
-              worldBase: { genre: 'adventure' },
+              worldBase: { settingSummary: 'An adventure setting with unknown territory.' },
               coreCast: [],
               antagonists: [],
               npcCharacters: [],

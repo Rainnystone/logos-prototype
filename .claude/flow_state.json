@@ -34,7 +34,17 @@
     "last_failed_command": null,
     "test_files_created": [],
     "production_files_written": [],
-    "tests_verified_fail": [],
+    "tests_verified_fail": [
+      "simulation-toolset/tests/gossipelog-v2-helpers.test.ts",
+      "simulation-toolset/tests/sidecar-trace.test.ts",
+      "simulation-toolset/tests/scripted-adapter.test.ts",
+      "simulation-toolset/tests/ui-smoke.test.ts",
+      "simulation-toolset/tests/route-smoke.test.ts",
+      "simulation-toolset/src/sidecar-trace.test.ts",
+      "simulation-toolset/src/scripted-adapter.test.ts",
+      "simulation-toolset/src/ui-smoke.test.ts",
+      "simulation-toolset/src/route-smoke.test.ts"
+    ],
     "tests_verified_pass": []
   },
   "review": {
