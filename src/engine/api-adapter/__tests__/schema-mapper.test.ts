@@ -303,26 +303,29 @@ describe('schema mapper', () => {
         type: 'json_schema',
         name: 'logos_gossipelog_update_result',
       });
-      expect(responseSchema?.oneOf?.[0]?.required).toEqual([
+      const oneOf = (responseSchema?.oneOf ?? []) as Array<Record<string, unknown>>;
+      expect(oneOf[0]?.required).toEqual([
         'involvedRoleIds',
         'invocationNoOp',
         'memoryUpdates',
       ]);
-      expect(responseSchema?.oneOf?.[1]?.required).toEqual([
+      expect(oneOf[1]?.required).toEqual([
         'involvedRoleIds',
         'invocationNoOp',
         'memoryUpdates',
       ]);
-      expect(responseSchema?.oneOf?.[1]?.properties?.memoryUpdates?.items?.required).toEqual([
+      const oneOf1Props = (oneOf[1]?.properties ?? {}) as Record<string, unknown>;
+      const memoryUpdates = (oneOf1Props.memoryUpdates ?? {}) as Record<string, unknown>;
+      const memoryUpdatesItems = (memoryUpdates.items ?? {}) as Record<string, unknown>;
+      expect(memoryUpdatesItems.required).toEqual([
         'sourceRoleId',
         'targetRoleId',
         'shouldCreateEdge',
         'nextCurrentRelation',
       ]);
-      expect(
-        responseSchema?.oneOf?.[1]?.properties?.memoryUpdates?.items?.properties
-          ?.nextCurrentRelation?.required,
-      ).toEqual([
+      const memoryUpdatesItemsProps = (memoryUpdatesItems.properties ?? {}) as Record<string, unknown>;
+      const nextCurrentRelation = (memoryUpdatesItemsProps.nextCurrentRelation ?? {}) as Record<string, unknown>;
+      expect(nextCurrentRelation.required).toEqual([
         'phaseId',
         'beatIndex',
         'roundId',
@@ -333,7 +336,7 @@ describe('schema mapper', () => {
         'reasoning',
         'causalAction',
       ]);
-      expect(responseSchema?.oneOf?.[1]?.properties?.edgeUpdates).toBeUndefined();
+      expect(oneOf1Props.edgeUpdates).toBeUndefined();
     });
 
     it('uses the gossipelog update default temperature and token limit', () => {
@@ -397,30 +400,54 @@ describe('schema mapper', () => {
       const request = mapForWeaverImport(sampleWeaverImportRequest, 'openai-compatible');
       const responseSchema = expectJsonSchemaResponse(request.responseFormat);
 
-      expect(responseSchema?.properties.worldBase).toMatchObject({
+      const schemaProps = (responseSchema.properties ?? {}) as Record<string, unknown>;
+      const worldBaseProp = (schemaProps.worldBase ?? {}) as Record<string, unknown>;
+      expect(worldBaseProp).toMatchObject({
         type: 'object',
         additionalProperties: false,
       });
-      expect(responseSchema?.properties.sourceSummary.minLength).toBe(1);
-      expect(responseSchema?.properties.importSummary.minLength).toBe(1);
-      expect(responseSchema?.properties.openingHook.minLength).toBe(1);
-      expect(responseSchema?.properties.hero.required).toContain('displayName');
-      expect(responseSchema?.properties.hero.additionalProperties).toBe(false);
-      expect(responseSchema?.properties.hero.properties.displayName.minLength).toBe(1);
-      expect(responseSchema?.properties.coreCast.items.properties.displayName.type).toBe('string');
-      expect(responseSchema?.properties.coreCast.items.additionalProperties).toBe(false);
-      expect(responseSchema?.properties.coreCast.items.properties.displayName.minLength).toBe(1);
-      expect(responseSchema?.properties.antagonists.items.required).toContain('displayName');
-      expect(responseSchema?.properties.antagonists.items.additionalProperties).toBe(false);
-      expect(responseSchema?.properties.npcCharacters.items.required).toContain('displayName');
-      expect(responseSchema?.properties.npcCharacters.items.additionalProperties).toBe(false);
-      expect(responseSchema?.properties.locations.items.required).toContain('displayName');
-      expect(responseSchema?.properties.locations.items.additionalProperties).toBe(false);
-      expect(responseSchema?.properties.worldBase.properties.settingSummary.minLength).toBe(1);
-      expect(responseSchema?.properties.worldBase.properties.worldRules.minLength).toBe(1);
-      expect(responseSchema?.properties.worldBase.properties.toneBaseline.minLength).toBe(1);
-      expect(responseSchema?.properties.worldBase.properties.locationPatch.minLength).toBe(1);
-      expect(responseSchema?.properties.worldBase.properties.npcCharactersSummary.minLength).toBe(1);
+      const sourceSummaryProp = (schemaProps.sourceSummary ?? {}) as Record<string, unknown>;
+      expect(sourceSummaryProp.minLength).toBe(1);
+      const importSummaryProp = (schemaProps.importSummary ?? {}) as Record<string, unknown>;
+      expect(importSummaryProp.minLength).toBe(1);
+      const openingHookProp = (schemaProps.openingHook ?? {}) as Record<string, unknown>;
+      expect(openingHookProp.minLength).toBe(1);
+      const heroProp = (schemaProps.hero ?? {}) as Record<string, unknown>;
+      expect(heroProp.required).toContain('displayName');
+      expect(heroProp.additionalProperties).toBe(false);
+      const heroProperties = (heroProp.properties ?? {}) as Record<string, unknown>;
+      const heroDisplayName = (heroProperties.displayName ?? {}) as Record<string, unknown>;
+      expect(heroDisplayName.minLength).toBe(1);
+      const coreCastProp = (schemaProps.coreCast ?? {}) as Record<string, unknown>;
+      const coreCastItems = (coreCastProp.items ?? {}) as Record<string, unknown>;
+      const coreCastItemsProps = (coreCastItems.properties ?? {}) as Record<string, unknown>;
+      expect(coreCastItemsProps.displayName).toMatchObject({ type: 'string' });
+      expect(coreCastItems.additionalProperties).toBe(false);
+      const coreCastItemsDisplayName = (coreCastItemsProps.displayName ?? {}) as Record<string, unknown>;
+      expect(coreCastItemsDisplayName.minLength).toBe(1);
+      const antagonistsProp = (schemaProps.antagonists ?? {}) as Record<string, unknown>;
+      const antagonistsItems = (antagonistsProp.items ?? {}) as Record<string, unknown>;
+      expect(antagonistsItems.required).toContain('displayName');
+      expect(antagonistsItems.additionalProperties).toBe(false);
+      const npcCharactersProp = (schemaProps.npcCharacters ?? {}) as Record<string, unknown>;
+      const npcCharactersItems = (npcCharactersProp.items ?? {}) as Record<string, unknown>;
+      expect(npcCharactersItems.required).toContain('displayName');
+      expect(npcCharactersItems.additionalProperties).toBe(false);
+      const locationsProp = (schemaProps.locations ?? {}) as Record<string, unknown>;
+      const locationsItems = (locationsProp.items ?? {}) as Record<string, unknown>;
+      expect(locationsItems.required).toContain('displayName');
+      expect(locationsItems.additionalProperties).toBe(false);
+      const worldBaseProps = (worldBaseProp.properties ?? {}) as Record<string, unknown>;
+      const settingSummary = (worldBaseProps.settingSummary ?? {}) as Record<string, unknown>;
+      expect(settingSummary.minLength).toBe(1);
+      const worldRules = (worldBaseProps.worldRules ?? {}) as Record<string, unknown>;
+      expect(worldRules.minLength).toBe(1);
+      const toneBaseline = (worldBaseProps.toneBaseline ?? {}) as Record<string, unknown>;
+      expect(toneBaseline.minLength).toBe(1);
+      const locationPatch = (worldBaseProps.locationPatch ?? {}) as Record<string, unknown>;
+      expect(locationPatch.minLength).toBe(1);
+      const npcCharactersSummary = (worldBaseProps.npcCharactersSummary ?? {}) as Record<string, unknown>;
+      expect(npcCharactersSummary.minLength).toBe(1);
     });
   });
 });

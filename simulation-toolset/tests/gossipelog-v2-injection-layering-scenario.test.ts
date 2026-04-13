@@ -39,7 +39,8 @@ describe('gossipelog v2 injection layering scenario', () => {
       (bucket) => Object.values(bucket.targets),
     );
     expect(allEdges.length).toBeGreaterThan(0);
-    expect('history' in allEdges[0]).toBe(true);
-    expect('baseline' in allEdges[0]).toBe(false);
+    const firstEdge = allEdges[0] as Record<string, unknown>;
+    expect('history' in firstEdge).toBe(true);
+    expect('baseline' in firstEdge).toBe(false);
   });
 });

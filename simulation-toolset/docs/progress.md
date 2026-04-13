@@ -286,3 +286,80 @@ npm test -- src/agents/weaver/__tests__/ src/agents/gossipelog/__tests__/ src/st
 - 新增 4 个场景：weaver-import-happy-path、weaver-import-partial、weaver-import-bootstrap、bootstrap-fallback
 - 所有现有测试保持通过（trace 迁移向后兼容）
 - 未修改任何 product 代码
+
+---
+
+## 2026-04-13 Phase 15: Gossipelog v2 Alignment
+
+### 目标
+
+完成 gossipelog v2 关系记忆系统的全面对齐，覆盖设计文档 `docs/superpowers/specs/2026-04-13-gossipelog-v2-alignment-design.md` 中定义的全部场景。
+
+### 完成工作
+
+- **Task 1**: 更新 scenario manifest，添加 S11-S17 占位
+- **Task 2**: 创建 gossipelog v2 helpers (`gossipelog-v2-helpers.ts`)
+- **Task 3**: 实现 S11 `gossipelog-v2-memory-update` — Happy path memory update with v2 schema
+- **Task 4**: 实现 S12 `gossipelog-v2-anchor-validation` — Anchor (characterId) validation
+- **Task 5**: 实现 S13 `gossipelog-v2-reference-resolution` — Reference resolution for relationship lookups
+- **Task 6**: 实现 S14 `gossipelog-v2-merge-idempotency` — Merge idempotency with roundId deduplication
+- **Task 7**: 实现 S15 `gossipelog-v2-hero-outgoing` — Hero outgoing edge creation rejection
+- **Task 8**: 实现 S16 `gossipelog-v2-edge-creation` — Dynamic edge creation for new relationships
+- **Task 9**: 实现 S17 `gossipelog-v2-injection-layering` — Injection text layering
+- **Task 10**: 运行测试并提交
+- **Task 11**: 最终验证和文档更新
+
+### 新增文件
+
+- `simulation-toolset/src/gossipelog-v2-helpers.ts` — v2 schema 辅助函数
+- `simulation-toolset/scenarios/gossipelog-v2-memory-update.ts` — S11 场景
+- `simulation-toolset/scenarios/gossipelog-v2-anchor-validation.ts` — S12 场景
+- `simulation-toolset/scenarios/gossipelog-v2-reference-resolution.ts` — S13 场景
+- `simulation-toolset/scenarios/gossipelog-v2-merge-idempotency.ts` — S14 场景
+- `simulation-toolset/scenarios/gossipelog-v2-hero-outgoing.ts` — S15 场景
+- `simulation-toolset/scenarios/gossipelog-v2-edge-creation.ts` — S16 场景
+- `simulation-toolset/scenarios/gossipelog-v2-injection-layering.ts` — S17 场景
+- `simulation-toolset/tests/gossipelog-v2-helpers.test.ts` — helpers 测试
+- `simulation-toolset/tests/gossipelog-v2-memory-update-scenario.test.ts` — S11 测试
+- `simulation-toolset/tests/gossipelog-v2-anchor-validation-scenario.test.ts` — S12 测试
+- `simulation-toolset/tests/gossipelog-v2-reference-resolution-scenario.test.ts` — S13 测试
+- `simulation-toolset/tests/gossipelog-v2-merge-idempotency-scenario.test.ts` — S14 测试
+- `simulation-toolset/tests/gossipelog-v2-hero-outgoing-scenario.test.ts` — S15 测试
+- `simulation-toolset/tests/gossipelog-v2-edge-creation-scenario.test.ts` — S16 测试
+- `simulation-toolset/tests/gossipelog-v2-injection-layering-scenario.test.ts` — S17 测试
+
+### 修改文件
+
+- `simulation-toolset/src/scenario-manifest.ts` — 添加 S11-S17 到清单
+- `simulation-toolset/README.md` — 更新 Current Capabilities
+- `simulation-toolset/docs/task_plan.md` — 新增 Phase 15
+- `simulation-toolset/docs/progress.md` — 记录本次会话进度
+
+### 类型修复
+
+- `simulation-toolset/tests/import-seed-smoke.test.ts` — 修复 npcCharacters displayName 缺失
+- `simulation-toolset/tests/gossipelog-v2-injection-layering-scenario.test.ts` — 修复 unknown 类型访问
+- `src/engine/api-adapter/__tests__/schema-mapper.test.ts` — 修复 responseSchema 类型访问
+
+### 验证记录
+
+```
+npm run test:simulation → 430 tests passed
+npm run type-check:simulation → 0 errors
+npm test → 813 tests passed
+```
+
+### 提交记录
+
+```
+git add simulation-toolset/README.md simulation-toolset/docs/
+git commit -m "docs(simulation): update README and docs for gossipelog v2 alignment"
+```
+
+### 总结
+
+- 完成 7 个新场景（S11-S17）
+- 全量测试通过（430 simulation tests + 813 total tests）
+- 类型检查通过（0 errors）
+- 所有文档同步更新
+- 未修改 product 代码（仅修复测试类型错误）

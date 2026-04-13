@@ -110,6 +110,21 @@ simulation-toolset 的设计宗旨是：**让云端环境的 Codex 可以在不�
     - `weaver-import-bootstrap`: Import → gossipelog bootstrap success
     - `bootstrap-fallback`: Bootstrap failure → fallback_pending state
   - Generalized `SimulationAgentTraceSchema` with `details` bag (schema version 2)
+- **Gossipelog v2 Alignment** (Phase 15):
+  - Character relationship memory with full history tracking (schema version 2)
+  - Anchor-based reference resolution for relationship lookups
+  - Merge idempotency with stable roundId-based deduplication
+  - Hero-outgoing edge rejection validation
+  - Dynamic edge creation for new character relationships
+  - Injection layering with highlighted deltas and stable background
+  - Seven new executable scenarios:
+    - `gossipelog-v2-memory-update`: Happy path memory update with v2 schema
+    - `gossipelog-v2-anchor-validation`: Anchor (characterId) validation and resolution
+    - `gossipelog-v2-reference-resolution`: Reference resolution for relationship lookups
+    - `gossipelog-v2-merge-idempotency`: Merge idempotency with roundId deduplication
+    - `gossipelog-v2-hero-outgoing`: Hero outgoing edge creation rejection
+    - `gossipelog-v2-edge-creation`: Dynamic edge creation for new relationships
+    - `gossipelog-v2-injection-layering`: Injection text layering with delta highlighting
 
 ## Cloud Usage Direction
 
