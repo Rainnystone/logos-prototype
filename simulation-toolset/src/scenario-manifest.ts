@@ -77,6 +77,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Edit Continuity View',
     tags: ['session', 'continuity', 'edit', 'bounded-view'],
   },
+  {
+    scenarioId: 'gossipelog-v2-memory-update',
+    title: 'Gossipelog v2 Memory Update',
+    tags: ['gossipelog', 'v2', 'memory-update'],
+  },
 ] as const;
 
 /**
