@@ -8,6 +8,15 @@ import type {
   CharacterRelationshipsFile,
 } from '@/types';
 
+const DEFAULT_ENTRY_OVERRIDES: Pick<RelationshipMemoryEntry, 'functionalRole' | 'mindsetTags' | 'summary' | 'triggerEvent' | 'reasoning' | 'causalAction'> = {
+  functionalRole: '观察对象',
+  mindsetTags: ['中立'],
+  summary: 'initial observation',
+  triggerEvent: 'encounter',
+  reasoning: 'first impression',
+  causalAction: 'observe',
+};
+
 export function createNoOpUpdateResult(
   overrides: Partial<GossipelogUpdateResult> = {},
 ): GossipelogUpdateResult {
@@ -44,12 +53,7 @@ export function createMemoryUpdate(params: {
     phaseId: params.phaseId,
     beatIndex: params.beatIndex,
     roundId: params.roundId,
-    functionalRole: '观察对象',
-    mindsetTags: ['中立'],
-    summary: 'initial observation',
-    triggerEvent: 'encounter',
-    reasoning: 'first impression',
-    causalAction: 'observe',
+    ...DEFAULT_ENTRY_OVERRIDES,
     ...params.overrides,
   };
 
@@ -67,7 +71,7 @@ export function createEmptyV2RelationshipFile(
   return {
     meta: { fileType: 'character-relationships', schemaVersion: 2, storyPackage },
     relationshipsBySource: {},
-  } as CharacterRelationshipsFile;
+  };
 }
 
 export function createV2Edge(
@@ -79,12 +83,7 @@ export function createV2Edge(
     phaseId: entry.phaseId,
     beatIndex: entry.beatIndex,
     roundId: entry.roundId,
-    functionalRole: '观察对象',
-    mindsetTags: ['中立'],
-    summary: 'initial observation',
-    triggerEvent: 'encounter',
-    reasoning: 'first impression',
-    causalAction: 'observe',
+    ...DEFAULT_ENTRY_OVERRIDES,
     ...entry,
   };
 
