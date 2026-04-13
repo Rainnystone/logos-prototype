@@ -203,7 +203,7 @@ export function createStaleRefreshProtectionScenario(): ExecutableSimulationScen
               value: {
                 involvedRoleIds: [storyPackage.worldBase.hero.characterId],
                 invocationNoOp: true,
-                edgeUpdates: [],
+                memoryUpdates: [],
               },
             },
           ],
@@ -223,6 +223,8 @@ export function createStaleRefreshProtectionScenario(): ExecutableSimulationScen
           storyPackage,
           acceptedBeatText: 'accepted beat text for stale refresh test',
           roundId: 'round-stale-refresh-0001',
+          phaseId: 'phase-01',
+          beatIndex: 0,
         });
 
         recorder.recordAction({

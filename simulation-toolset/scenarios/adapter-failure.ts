@@ -23,7 +23,7 @@ export function createAdapterFailureScenario(): ExecutableSimulationScenario {
             {
               involvedRoleIds: [storyPackage.worldBase.hero.characterId],
               invocationNoOp: true,
-              edgeUpdates: [],
+              memoryUpdates: [],
             },
           ],
           gossipelogInjection: [
@@ -39,6 +39,8 @@ export function createAdapterFailureScenario(): ExecutableSimulationScenario {
           storyPackage,
           acceptedBeatText: 'accepted beat text',
           roundId: 'round-failure-0001',
+          phaseId: 'phase-01',
+          beatIndex: 0,
           lastStableRelationshipLayer,
         });
 

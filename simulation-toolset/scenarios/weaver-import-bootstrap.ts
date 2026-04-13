@@ -33,7 +33,7 @@ export function createWeaverImportBootstrapScenario(): ExecutableSimulationScena
             {
               involvedRoleIds: [],
               invocationNoOp: true,
-              edgeUpdates: [],
+              memoryUpdates: [],
             },
           ],
           gossipelogInjection: [

@@ -15,7 +15,7 @@ describe('gossipelog observer', () => {
         {
           involvedRoleIds: [storyPackage.worldBase.hero.characterId],
           invocationNoOp: true,
-          edgeUpdates: [],
+          memoryUpdates: [],
         },
       ],
       gossipelogInjection: [
@@ -32,6 +32,8 @@ describe('gossipelog observer', () => {
       storyPackage,
       acceptedBeatText: 'accepted beat text',
       roundId: 'round-0001',
+      phaseId: 'phase-01',
+      beatIndex: 0,
     });
 
     expect(result.result.updateRequest.sceneCastRoleIds.length).toBeGreaterThan(0);
@@ -44,7 +46,7 @@ describe('gossipelog observer', () => {
         stableBackgroundText: 'stable background',
       },
       sideEffectSummary: expect.arrayContaining([
-        'update:no-op',
+        'update:no-op(v2-memory)',
         'relationship-layer:stable-background',
       ]),
     });

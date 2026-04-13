@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import type { ExecutableSimulationScenario } from '@simulation/scenario-runner';
 import { createTempStoryPackage } from '@simulation/temp-package';
 import { observe } from '@simulation/edit-continuity-observer';
+import { stripStorylineSubstrate } from '@simulation/gossipelog-v2-helpers';
 
 /**
  * Minimal valid StateSnapshot for session fixtures.
@@ -76,6 +77,7 @@ export function createEditContinuityViewScenario(): ExecutableSimulationScenario
     packageName: 'sample-scene',
     async run({ recorder }) {
       const fixture = await createTempStoryPackage('sample-scene');
+      await stripStorylineSubstrate(fixture.packagePath);
 
       try {
         // Create a runtime-sessions.json with an active session that has relationship content
