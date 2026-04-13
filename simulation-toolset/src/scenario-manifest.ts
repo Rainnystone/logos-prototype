@@ -92,6 +92,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Gossipelog v2 Reference Resolution',
     tags: ['gossipelog', 'v2', 'reference'],
   },
+  {
+    scenarioId: 'gossipelog-v2-merge-idempotency',
+    title: 'Gossipelog v2 Merge Idempotency',
+    tags: ['gossipelog', 'v2', 'merge', 'idempotency'],
+  },
 ] as const;
 
 /**
