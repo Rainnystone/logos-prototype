@@ -97,6 +97,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Gossipelog v2 Merge Idempotency',
     tags: ['gossipelog', 'v2', 'merge', 'idempotency'],
   },
+  {
+    scenarioId: 'gossipelog-v2-hero-outgoing',
+    title: 'Gossipelog v2 Hero-Outgoing Rejection',
+    tags: ['gossipelog', 'v2', 'hero', 'rejection'],
+  },
 ] as const;
 
 /**
