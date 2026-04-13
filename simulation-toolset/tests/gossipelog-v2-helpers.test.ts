@@ -95,7 +95,14 @@ describe('gossipelog-v2-helpers', () => {
     it('returns a v2 file with no edges', () => {
       const file = createEmptyV2RelationshipFile();
       expect(file.meta.schemaVersion).toBe(2);
-      expect(file.edges).toEqual({});
+      expect(file.meta.fileType).toBe('character-relationships');
+      expect(file.meta.storyPackage).toBe('test-package');
+      expect(file.relationshipsBySource).toEqual({});
+    });
+
+    it('accepts custom storyPackage', () => {
+      const file = createEmptyV2RelationshipFile('my-package');
+      expect(file.meta.storyPackage).toBe('my-package');
     });
   });
 

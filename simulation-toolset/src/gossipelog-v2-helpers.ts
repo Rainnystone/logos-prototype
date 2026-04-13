@@ -61,10 +61,12 @@ export function createMemoryUpdate(params: {
   };
 }
 
-export function createEmptyV2RelationshipFile(): CharacterRelationshipsFile {
+export function createEmptyV2RelationshipFile(
+  storyPackage = 'test-package',
+): CharacterRelationshipsFile {
   return {
-    meta: { schemaVersion: 2 },
-    edges: {},
+    meta: { fileType: 'character-relationships', schemaVersion: 2, storyPackage },
+    relationshipsBySource: {},
   } as CharacterRelationshipsFile;
 }
 
