@@ -64,7 +64,7 @@ export function createRelationshipFinalizationScenario(): ExecutableSimulationSc
             {
               involvedRoleIds: [storyPackage.worldBase.hero.characterId],
               invocationNoOp: true,
-              edgeUpdates: [],
+              memoryUpdates: [],
             },
           ],
           gossipelogInjection: [
@@ -149,6 +149,8 @@ export function createRelationshipFinalizationScenario(): ExecutableSimulationSc
           storyPackage,
           acceptedBeatText: beat.beatResult.beatText,
           roundId: 'round-finalization-001',
+          phaseId: 'phase-01',
+          beatIndex: 0,
         });
 
         recorder.recordAction({

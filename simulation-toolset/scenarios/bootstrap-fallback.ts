@@ -36,7 +36,7 @@ export function createBootstrapFallbackScenario(): ExecutableSimulationScenario 
             {
               involvedRoleIds: [],
               invocationNoOp: true,
-              edgeUpdates: [],
+              memoryUpdates: [],
             },
           ],
           gossipelogInjection: [

@@ -222,7 +222,7 @@ describe('applyTextImportSeed', () => {
         },
       ],
       npcCharacters: [
-        { summary: 'A traveling merchant with secrets.' },
+        { displayName: 'Mysterious Merchant', summary: 'A traveling merchant with secrets.' },
       ],
       locations: [
         {

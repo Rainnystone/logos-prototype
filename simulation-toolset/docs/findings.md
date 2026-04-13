@@ -291,3 +291,45 @@ Phase 4（PR #9）引入了 5+ 新子系统，toolset 完全没有覆盖：
 - S8 (bootstrap success) + S10 (bootstrap fallback) 覆盖 gossipelog bootstrap
 - 所有场景使用 ScriptedAdapter 避免真实 LLM 调用
 - 所有场景通过 temp package 隔离
+
+## 2026-04-13 Phase 15 Gossipelog v2 Alignment Findings
+
+### 关键差距
+
+Gossipelog agent 的关系记忆系统需要从 v1（baseline/recentDelta）升级到 v2（full history tracking）：
+- v1 的 `baseline`/`recentDelta` 模型无法追踪完整关系演变
+- 需要支持锚点（anchor）基于角色ID的引用解析
+- 合并操作需要幂等性保证（基于 roundId 去重）
+- Hero 角色的出站边需要被拒绝（Hero 是关系图的根节点）
+- 需要支持动态边创建（新角色首次交互时自动创建关系）
+- 注入文本需要分层（highlighted deltas + stable background）
+
+### 架构决策
+
+- 采用 TDD 方式逐个实现 7 个场景（S11-S17）
+- 创建 `gossipelog-v2-helpers.ts` 提供 v2 schema 辅助函数
+- 每个场景独立文件，遵循现有 scenario 结构
+- 使用 `SIMULATION_SCHEMA_VERSION` 区分 v1/v2 验证
+
+### Schema 验证策略
+
+- v2 schema 的关键特征：
+  - `meta.schemaVersion === 2`
+  - edges 有 `history` 数组（不是 v1 的 `baseline`/`recentDelta`）
+  - 支持锚点（anchor）引用解析
+- 验证方式：
+  - 检查 `history` 属性存在
+  - 检查 `baseline` 属性不存在
+  - 验证 history 条目包含完整记忆字段
+
+### 类型安全修复
+
+在实现过程中发现并修复了以下类型错误：
+1. `import-seed-smoke.test.ts`: npcCharacters 缺少必需的 `displayName` 字段
+2. `gossipelog-v2-injection-layering-scenario.test.ts`: `unknown` 类型直接访问属性
+3. `schema-mapper.test.ts`: `responseSchema.properties` 类型访问方式不正确
+
+修复策略：
+- 使用显式类型断言 `as Record<string, unknown>`
+- 通过中间变量逐步解构嵌套属性
+- 保持测试逻辑不变，仅修复类型访问方式

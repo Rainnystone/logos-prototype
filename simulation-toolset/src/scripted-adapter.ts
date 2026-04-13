@@ -167,7 +167,7 @@ function resolveDefault(operation: ScriptedOperation) {
       return {
         involvedRoleIds: [],
         invocationNoOp: true,
-        edgeUpdates: [],
+        memoryUpdates: [],
       } as GossipelogUpdateResponse;
     case 'gossipelogInjection':
       return {

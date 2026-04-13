@@ -105,7 +105,7 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
             {
               involvedRoleIds: [agentStoryPackage.worldBase.hero.characterId],
               invocationNoOp: true,
-              edgeUpdates: [],
+              memoryUpdates: [],
             },
           ],
           gossipelogInjection: [
@@ -121,6 +121,8 @@ export function createHappyPathScenario(): ExecutableSimulationScenario {
           storyPackage: agentStoryPackage,
           acceptedBeatText: beat.beatResult.beatText,
           roundId: 'round-happy-0001',
+          phaseId: 'phase-01',
+          beatIndex: 0,
         });
 
         recorder.recordAction({

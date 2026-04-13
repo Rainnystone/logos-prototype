@@ -77,6 +77,41 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Edit Continuity View',
     tags: ['session', 'continuity', 'edit', 'bounded-view'],
   },
+  {
+    scenarioId: 'gossipelog-v2-memory-update',
+    title: 'Gossipelog v2 Memory Update',
+    tags: ['gossipelog', 'v2', 'memory-update'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-anchor-validation',
+    title: 'Gossipelog v2 Anchor Validation',
+    tags: ['gossipelog', 'v2', 'anchor', 'fallback'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-reference-resolution',
+    title: 'Gossipelog v2 Reference Resolution',
+    tags: ['gossipelog', 'v2', 'reference'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-merge-idempotency',
+    title: 'Gossipelog v2 Merge Idempotency',
+    tags: ['gossipelog', 'v2', 'merge', 'idempotency'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-hero-outgoing',
+    title: 'Gossipelog v2 Hero-Outgoing Rejection',
+    tags: ['gossipelog', 'v2', 'hero', 'rejection'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-edge-creation',
+    title: 'Gossipelog v2 Edge Creation',
+    tags: ['gossipelog', 'v2', 'edge-creation'],
+  },
+  {
+    scenarioId: 'gossipelog-v2-injection-layering',
+    title: 'Gossipelog v2 Injection Layering',
+    tags: ['gossipelog', 'v2', 'injection', 'layering'],
+  },
 ] as const;
 
 /**

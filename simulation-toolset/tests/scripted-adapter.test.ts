@@ -193,15 +193,21 @@ describe('scripted adapter', () => {
           {
             involvedRoleIds: ['char_001', 'char_002'],
             invocationNoOp: false,
-            edgeUpdates: [
+            memoryUpdates: [
               {
                 sourceRoleId: 'char_001',
                 targetRoleId: 'char_002',
-                mode: 'delta',
-                replaceBaseline: false,
-                recentDelta: {
-                  state: 'friendship strengthened',
-                  sourceRound: 'round_001',
+                shouldCreateEdge: false,
+                nextCurrentRelation: {
+                  phaseId: null,
+                  beatIndex: null,
+                  roundId: 'round-001',
+                  functionalRole: null,
+                  mindsetTags: ['friendly'],
+                  summary: 'friendship strengthened',
+                  triggerEvent: 'shared-danger',
+                  reasoning: 'grew closer',
+                  causalAction: 'shared-danger',
                 },
               },
             ],
@@ -265,6 +271,17 @@ describe('scripted adapter', () => {
 
       expect(result.sourceSummary).toBe('');
       expect(result.warnings).toEqual([]);
+    });
+
+    it('uses v2 default gossipelogUpdate response with memoryUpdates when queue is empty', async () => {
+      const adapter = createScriptedAdapter({});
+
+      const result = await adapter.gossipelogUpdate?.({} as never);
+
+      expect(result?.invocationNoOp).toBe(true);
+      expect(result?.involvedRoleIds).toEqual([]);
+      expect(result?.memoryUpdates).toEqual([]);
+      expect((result as Record<string, unknown>)['edgeUpdates']).toBeUndefined();
     });
 
     it('trace can be exported for report integration', async () => {

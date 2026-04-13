@@ -6,9 +6,9 @@ function summarizeGossipelogSideEffects(result: RunGossipelogCycleResult): strin
   const summary: string[] = [];
 
   if (result.updateResult.invocationNoOp) {
-    summary.push('update:no-op');
+    summary.push('update:no-op(v2-memory)');
   } else {
-    summary.push(`update:edge-count:${result.updateResult.edgeUpdates.length}`);
+    summary.push(`update:memory-count:${result.updateResult.memoryUpdates.length}`);
   }
 
   if (result.relationshipLayer.highlightedDeltasText.trim().length > 0) {

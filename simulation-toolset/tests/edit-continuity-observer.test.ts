@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 
 import { observe, getTrace, clearTrace } from '@simulation/edit-continuity-observer';
 import { createTempStoryPackage } from '@simulation/temp-package';
+import { stripStorylineSubstrate } from '@simulation/gossipelog-v2-helpers';
 
 /**
  * Minimal valid StateSnapshot for test fixtures.
@@ -74,6 +75,7 @@ describe('edit continuity observer', () => {
   describe('observe', () => {
     it('returns active view for package with session and relationship content', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
+      await stripStorylineSubstrate(fixture.packagePath);
 
       // Create a runtime-sessions.json with an active session that has relationship content
       const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
@@ -132,6 +134,7 @@ describe('edit continuity observer', () => {
 
     it('returns active view with checkpoint relationship when session layer is empty', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
+      await stripStorylineSubstrate(fixture.packagePath);
 
       const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
       const sessionData = {
@@ -189,6 +192,7 @@ describe('edit continuity observer', () => {
 
     it('verifies raw checkpointsById is not exposed in the view', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
+      await stripStorylineSubstrate(fixture.packagePath);
 
       // Create a session with multiple checkpoints to ensure there's data that could be exposed
       const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
@@ -271,6 +275,7 @@ describe('edit continuity observer', () => {
 
     it('accumulates edit continuity observations', async () => {
       const fixture = await createTempStoryPackage('sample-scene');
+      await stripStorylineSubstrate(fixture.packagePath);
 
       const sessionsPath = path.join(fixture.packagePath, 'runtime-sessions.json');
       const sessionData = {

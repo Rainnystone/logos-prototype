@@ -1,0 +1,172 @@
+worldBaseSetting: 不吉波普不笑世界观，叙事引擎应该自主调用相关知识，严禁一切不符合世界观的情节和设定。
+worldRules: |-
+  严格禁止一切不符合不吉波普不笑世界观的存在，包括但不限于克苏鲁等其它完全不合理的上位存在。
+  所有对抗都必须落实为可观察、可追踪的物理行动，不能把角色写成会使用魔法或超自然法术。
+toneBaseline: 日式轻小说本格风格。
+hero:
+  characterId: chr_hero01
+  name: 雾间凪
+  identityRole: 炎之魔女 / 孤高的异常猎手 / 本次危机的唯一主动破局者
+  lightNovelTrait: 冷峻、充满压迫感的物理派美少女。不废话，行动力极强，带有强烈的“孤狼”气场。
+  gender: 女
+  personality: 冷峻
+  age: "17"
+  occupation: 高中生
+  characterSummary: 雾间凪是本次校园异常事件中唯一主动追查并有能力完成破局的人，所有推进都围绕她的物理行动展开。
+  capabilityBoundary: |-
+    绝对禁止使用任何魔法、法术或超自然异能。
+    战斗全部基于极高的人类身体机能与街头格斗术。
+    武器仅限于藏在制服下的陶瓷刀片、战术防具、针对能力者特调的神经毒素或麻醉针，以及环境中的物理道具。
+    轻微伤拥有极快愈合速度；遭受致死打击时会进入两小时假死休眠，苏醒后伴随剧痛与短期记忆断层。
+  behaviorBoundary: 面对不可名状的恐怖时，她的第一反应永远是寻找物理弱点并予以破坏，绝不移开视线。
+  oocRedLine: 绝对不会哭泣、求饶、犹豫不决，或者发表长篇大论的热血嘴炮。她的压迫感来自于冰冷的执行力。
+  clothing: 制服下藏有便于行动的战术装备。
+  propsWeapon: 陶瓷刀片、战术防具、神经毒素、麻醉针与可利用的环境物件。
+coreCast:
+  - characterId: chr_core01
+    name: 宫下藤花
+    identityRole: 绝对的日常锚点 / 异常绝缘体
+    lightNovelTrait: 普通、温和、带着些许迟钝的可爱女子高中生，与凪的冷硬形成完美对立面。
+    gender: 女
+    personality: 温和
+    age: "16"
+    occupation: 高中生
+    characterSummary: 她是暴风眼中的盲点，必须全程留在和平的日常位面，不能意识到真正的异常正在身边发生。
+    capabilityBoundary: ""
+    behaviorBoundary: |-
+      所有的异变、怪异和攻击，在认知和物理层面都会自动忽略她的存在。
+      即使隔壁发生战斗，她也只会因为视角遮挡、巧合或者单纯没注意而继续留在日常层。
+    oocRedLine: 绝对不能让她察觉到异常、感到生命受到威胁、尖叫逃跑，或者被反派抓去当人质。
+    clothing: 标准女高中生制服。
+    propsWeapon: ""
+  - characterId: chr_core02
+    name: 不吉波普
+    identityRole: 机械降神 (Deus Ex Machina)
+    lightNovelTrait: 只在最坏情况下作为清场与收束机制出现的都市传说式存在。
+    gender: 未知
+    personality: 冷静
+    age: 未知
+    occupation: 未知
+    characterSummary: 只作为玩家彻底死亡或失败之后的兜底机制存在，正常流程里不能主动出手抢戏。
+    capabilityBoundary: 仅在雾间凪彻底失败或死亡之后才允许介入。
+    behaviorBoundary: 只要雾间凪还在战斗，哪怕濒死，不吉波普也绝对不能主动跳出来抢戏、帮忙打怪或提供解说。
+    oocRedLine: 不能在正常推进阶段提前现身，不能抢走玩家的主动破局位置。
+    clothing: 黑色长外套与都市传说式装束。
+    propsWeapon: ""
+  - characterId: chr_b910f9
+    name: ""
+    identityRole: ""
+    lightNovelTrait: ""
+    gender: ""
+    personality: ""
+    age: ""
+    occupation: ""
+    characterSummary: ""
+    capabilityBoundary: ""
+    behaviorBoundary: ""
+    oocRedLine: ""
+    clothing: ""
+    propsWeapon: ""
+antagonists:
+  - characterId: chr_ant01
+    name: 灰谷烈
+    identityRole: 异能犯罪者 / 隐藏在校园里的神秘学高人气主播
+    lightNovelTrait: 诺兰版小丑的无序感与癫狂的现代网络乐子人混合体，极具表演型人格。
+    gender: 男
+    personality: 张扬
+    age: "18"
+    occupation: 主播
+    characterSummary: 极致演绎诺兰蝙蝠侠第一部小丑式的癫狂和聪明，会尝试反制玩家行为，并擅长制造道德困境。
+    capabilityBoundary: |-
+      触发条件：目标对他产生恐惧或强烈关注，例如观看直播。
+      效果：通过网络信号让目标电子设备瞬间过热爆炸，进而引燃人体脂肪与水分。
+    behaviorBoundary: |-
+      他时刻对着空气或隐形镜头说话，互动感极强。
+      他不追求高效杀人，只追求节目效果，会刻意给猎物留出逃生希望来拍摄绝望特写。
+    oocRedLine: 绝不能把他写成沉默寡言、高效冷酷的职业杀手。他不说话、不作秀就会死。
+    clothing: 夸张醒目的主播穿搭。
+    propsWeapon: 直播设备、信号链路与被操控的电子装置。
+    fatalWeakness: 社会性死亡。一旦直播间在线人数归零，所有基于关注度的力量都会瞬间溃散。
+  - characterId: chr_43d18b
+    name: ""
+    identityRole: ""
+    lightNovelTrait: ""
+    gender: ""
+    personality: ""
+    age: ""
+    occupation: ""
+    characterSummary: ""
+    capabilityBoundary: ""
+    behaviorBoundary: ""
+    oocRedLine: ""
+    clothing: ""
+    propsWeapon: ""
+    fatalWeakness: ""
+npcCharacters: |-
+  竹田启司：稳重的男友
+  末真和子：敏锐的线索人
+  新刻敬：正义感强
+locations:
+  - locationId: loc_2c0c01
+    name: 2年C班教室
+    description: >-
+      表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。
+    environmentAppearance: >-
+      午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。
+    atmosphereDescription: >-
+      表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。
+    humanContextDescription: >-
+      学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。
+  - locationId: loc_70ad12
+    name: 午后的走廊与楼梯间
+    description: >-
+      从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。
+    environmentAppearance: >-
+      走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。
+    atmosphereDescription: >-
+      明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。
+    humanContextDescription: >-
+      偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。
+  - locationId: loc_0dc0de
+    name: 旧校舍废弃视听室/机房
+    description: >-
+      灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。
+    environmentAppearance: >-
+      旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。
+    atmosphereDescription: >-
+      极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。
+    humanContextDescription: >-
+      这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。
+locationPatch: |-
+  ### Location 1
+  Name: 2年C班教室
+  Description:
+  表层日常的起点，也是手机自燃事件打破平静的第一现场。宫下藤花在这里维持绝对安全的日常锚点，雾间凪则从这里察觉异常。
+  Environment Appearance:
+  午后的阳光透过百叶窗切进教室，粉笔灰气味轻微飘散，木质课桌与椅子排列整齐，黑板上还留着数学公式。邻座学生那部带着融化塑料外壳与挂件的智能手机，成为异常爆裂后的残留物；半开的推拉窗则保留着雾间凪翻窗脱离的路线。
+  Atmosphere Description:
+  表面上昏昏欲睡、绝对和平，是最明亮的日常层；异常最初只以不合时宜的躁动和过热感渗进来。
+  Human Context Description:
+  学生们大多沉浸在午后课堂的倦意与安稳里，宫下藤花作为绝对安全的日常锚点留在此处，旁人只会把突发事故理解成普通电池故障。
+
+  ### Location 2
+  Name: 午后的走廊与楼梯间
+  Description:
+  从教室通往异常核心的过渡边界，是雾间凪追踪异常信号、规避人群并观察电子陷阱的主要路线。
+  Environment Appearance:
+  走廊与楼梯间被阳光和阴影切开，墙壁线缆温度异常升高，电子公告牌浮出雪花屏，头顶监控探头间歇发出过载电流声。铁皮储物柜、保洁用具间、楼梯转角死角、消防警报器与灭火器箱散落其间。
+  Atmosphere Description:
+  明亮校园表层开始出现焦糊味、高频蜂鸣与热浪扭曲，安静无人和突兀异响交替出现，持续拉出紧绷的追踪感。
+  Human Context Description:
+  偶尔会有风纪委员或去洗手间的普通学生经过，因此雾间凪必须一边压低动静，一边避开他人视线完成排查。
+
+  ### Location 3
+  Name: 旧校舍废弃视听室/机房
+  Description:
+  灰谷烈的直播巢穴，也是高热封锁、设备压制与最终击倒发生的核心舞台。
+  Environment Appearance:
+  旧校舍废弃视听室与机房封闭昏暗，盘根错节的线缆、废弃电子元件、主机散热排风与幽暗荧幕光堆满狭窄空间，屏幕与音响设备构成直播链路的主体。
+  Atmosphere Description:
+  极度闷热，臭氧与硅胶燃烧气味浓重，散热风扇轰鸣和疯狂滚动的弹幕感让空间持续处于高压、焦躁和幽闭状态。
+  Human Context Description:
+  这里远离普通学生活动范围，是灰谷烈能够肆意表演、制造节目效果并把网络暴力实体化的异常核心领域。

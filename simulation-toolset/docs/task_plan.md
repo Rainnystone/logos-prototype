@@ -33,6 +33,7 @@
 | 12 | complete | 完成 Phase 7：统一 Mock 时钟（解决时间戳精度问题，实现确定性测试） |
 | 13 | complete | 完成 Phase 8：Weaver Agent & Agent Management Simulation（覆盖 Phase 4 产品特性） |
 | 14 | pending | 等产品层进入 `Storage / Repository Substrate` 后，对齐正式 repository seam |
+| 15 | complete | Gossipelog v2 Alignment: 关系记忆升级、锚点验证、引用解析、合并幂等、边创建、注入分层 |
 
 ## Phase 4 Scope
 
@@ -271,3 +272,64 @@ Phase 4（PR #9）引入了 weaver text-import sidecar、shared reference loadin
 - [x] 跨边界回归通过
 - [x] 不修改 product 代码
 - [x] 所有场景 story-agnostic
+
+## Phase 15: Gossipelog v2 Alignment (2026-04-13)
+
+### 问题
+
+Gossipelog agent 的关系记忆系统需要从 v1（baseline/recentDelta）升级到 v2（full history tracking），以支持：
+- 完整的关系历史追踪
+- 锚点（anchor）基于角色ID的引用解析
+- 合并操作的幂等性（基于 roundId 去重）
+- Hero 角色出站边的拒绝验证
+- 动态边创建
+- 注入文本分层（highlighted deltas + stable background）
+
+### 设计
+
+- 设计文档：`docs/superpowers/specs/2026-04-13-gossipelog-v2-alignment-design.md`
+- 实现计划：`docs/superpowers/plans/2026-04-13-gossipelog-v2-alignment-implementation.md`
+
+### 覆盖范围
+
+- v2 schema 验证（schemaVersion === 2, edges have history arrays）
+- 锚点验证和引用解析
+- 合并幂等性（roundId-based deduplication）
+- Hero 出站边拒绝
+- 动态边创建
+- 注入分层
+
+### Execution Slices
+
+- [x] Task 1: 更新 scenario manifest，添加 S11-S17 占位
+- [x] Task 2: 创建 gossipelog v2 helpers
+- [x] Task 3: 实现 S11 内存更新 happy path
+- [x] Task 4: 实现 S12 锚点验证
+- [x] Task 5: 实现 S13 引用解析
+- [x] Task 6: 实现 S14 合并幂等性
+- [x] Task 7: 实现 S15 Hero 出站边拒绝
+- [x] Task 8: 实现 S16 边创建
+- [x] Task 9: 实现 S17 注入分层
+- [x] Task 10: 运行测试并提交
+- [x] Task 11: 最终验证和文档更新
+
+### Scenarios
+
+- S11: `gossipelog-v2-memory-update` — Happy path memory update with v2 schema
+- S12: `gossipelog-v2-anchor-validation` — Anchor (characterId) validation and resolution
+- S13: `gossipelog-v2-reference-resolution` — Reference resolution for relationship lookups
+- S14: `gossipelog-v2-merge-idempotency` — Merge idempotency with roundId deduplication
+- S15: `gossipelog-v2-hero-outgoing` — Hero outgoing edge creation rejection
+- S16: `gossipelog-v2-edge-creation` — Dynamic edge creation for new relationships
+- S17: `gossipelog-v2-injection-layering` — Injection text layering with delta highlighting
+
+### Done Criteria
+
+- [x] 7 个新场景测试通过
+- [x] `npm run test:simulation` 通过 (430 tests)
+- [x] `npm run type-check:simulation` 通过 (0 errors)
+- [x] `npm test` 全量通过 (813 tests)
+- [x] README.md 更新 Current Capabilities
+- [x] task_plan.md 新增 Phase 15
+- [x] progress.md 记录本次会话进度
+- [x] 所有文档同步更新
