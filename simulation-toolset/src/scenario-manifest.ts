@@ -102,6 +102,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Gossipelog v2 Hero-Outgoing Rejection',
     tags: ['gossipelog', 'v2', 'hero', 'rejection'],
   },
+  {
+    scenarioId: 'gossipelog-v2-edge-creation',
+    title: 'Gossipelog v2 Edge Creation',
+    tags: ['gossipelog', 'v2', 'edge-creation'],
+  },
 ] as const;
 
 /**
