@@ -107,6 +107,11 @@ const BUILT_IN_SCENARIO_MANIFEST: readonly SimulationScenarioManifestEntry[] = [
     title: 'Gossipelog v2 Edge Creation',
     tags: ['gossipelog', 'v2', 'edge-creation'],
   },
+  {
+    scenarioId: 'gossipelog-v2-injection-layering',
+    title: 'Gossipelog v2 Injection Layering',
+    tags: ['gossipelog', 'v2', 'injection', 'layering'],
+  },
 ] as const;
 
 /**
