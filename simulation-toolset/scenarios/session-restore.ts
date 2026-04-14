@@ -196,8 +196,12 @@ export function createSessionRestoreScenario(): ExecutableSimulationScenario {
           pass: restoreResult.restored,
         });
 
+        // Verify restored state contains all recorded checkpoints.
+        // The session may include additional checkpoints from gossipelog cycles or
+        // initScene, so we assert >= recordedCheckpointCount (the 3 beat checkpoints
+        // must all be present) rather than strict equality.
         recorder.recordAssertion({
-          name: 'restored-state-matches-recorded',
+          name: 'restored-state-contains-recorded-checkpoints',
           pass:
             restoreResult.session !== null &&
             restoreResult.session.checkpointCount >= recordedCheckpointCount,
