@@ -71,6 +71,14 @@
 
 ---
 
+## 工作流归档索引
+
+| Workstream | Archived On | Location | Included Materials | Note |
+| --- | --- | --- | --- | --- |
+| `2026-04-10-gossipelog-memory-reference` | 2026-04-15 | `archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/` | spec, plan, tracking snapshots (`task_plan/progress/findings`) | 首次按 `workstreams/` 容器归档 |
+
+---
+
 ## 快速索引
 
 - 编辑器重构主记录：`archive/docs/narrative-editor-redesign/master-record.md`
