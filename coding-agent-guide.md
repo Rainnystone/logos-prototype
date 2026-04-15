@@ -8,10 +8,11 @@
 
 1. [AGENTS.md](AGENTS.md)
 2. [coding-agent-guide.md](coding-agent-guide.md)
-3. [task_plan.md](task_plan.md)
-4. [progress.md](progress.md)
-5. [findings.md](findings.md)
-6. `docs/codemaps/*.md`
+3. [documentation-governance.md](documentation-governance.md)
+4. [task_plan.md](task_plan.md)
+5. [progress.md](progress.md)
+6. [findings.md](findings.md)
+7. `docs/codemaps/*.md`
 
 如果任务需要历史背景，再补读：
 
@@ -23,11 +24,8 @@
 
 ## 当前状态
 
-现在不要再把 `March Dev Update Phase 1-4` 当成活跃执行入口。它们都已经完成并整体归档到了：
-
-- `archive/docs/dev-updates/march-dev-update/`
-
-当前根目录三件套已经重置，用于下一轮大更新的仓库级外部追踪。
+- 归档相关的当前状态与边界，以 `documentation-governance.md` 为唯一入口，不在本文件维护归档清单。
+- 当前根目录三件套已重置，作为下一轮活跃工作流的追踪入口。
 
 ## 任务分流：不同问题先看哪里
 

@@ -28,8 +28,10 @@
 2. `archive/docs/superpowers/specs/`
 3. `archive/docs/superpowers/plans/drafts/`
 4. `archive/docs/dev-updates/`
+5. `archive/docs/workstreams/`
 
 > `archive/docs/superpowers/` 更适合回看单篇 plan / spec 的历史演进；`archive/docs/dev-updates/` 则用于回看一整轮已封板的大更新。
+> `archive/docs/workstreams/` 用于归档“单一工作流”封板包（spec/plan/tracking 一起归档）。
 
 ### C. 历史规格库（只在需要追溯时看）
 
@@ -76,4 +78,5 @@
 - 历史 superpowers 归档入口：`archive/docs/superpowers/README.md`
 - 开发更新档案入口：`archive/docs/dev-updates/README.md`
 - 最近一轮完整开发更新：`archive/docs/dev-updates/march-dev-update/README.md`
+- 最近一次单工作流封板：`archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/README.md`
 - 历史规格入口：`archive/vendor/LOGOS-SPEC/README.md`

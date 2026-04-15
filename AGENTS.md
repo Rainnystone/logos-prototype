@@ -27,6 +27,7 @@ Keep this file focused on stable workspace rules and execution discipline.
 For detailed current structure, task routing, and concrete entry files, read:
 
 - [coding-agent-guide.md](coding-agent-guide.md)
+- [documentation-governance.md](documentation-governance.md)
 - `docs/codemaps/*.md`
 
 If a task needs historical context, read archive materials only after the current
@@ -129,22 +130,17 @@ See `archive/docs/narrative-editor-redesign/master-record.md` for the current ca
 - If a packet grows across unrelated concerns, long execution chains, or multiple verification paths, split it again.
 
 ## Key Paths
-
 | What                                  | Where                                                             |
 | ------------------------------------- | ----------------------------------------------------------------- |
 | Workspace recovery docs              | root `task_plan.md`, `findings.md`, `progress.md`                 |
 | Detailed task-routing guide          | `coding-agent-guide.md`                                           |
+| Documentation lifecycle contract     | `documentation-governance.md`                                     |
 | Active Implementation Plans          | `docs/superpowers/plans/`                                         |
 | Active Design Specs                  | `docs/superpowers/specs/`                                         |
 | Current code map                     | `docs/codemaps/`                                                  |
-| March Dev Update archive             | `archive/docs/dev-updates/march-dev-update/README.md`             |
-| Authoring Redesign Master Record     | `archive/docs/narrative-editor-redesign/master-record.md`         |
-
+| Primary archive root                 | `archive/`                                                        |
 ## System Mapping
-
-For code-area routing, entry files, default verification, and parallelization hints, start with [coding-agent-guide.md](coding-agent-guide.md).
-
-Use `docs/codemaps/*.md` only when the first routing pass is insufficient and you need deeper module relationships.
+For code-area routing, entry files, default verification, and parallelization hints, start with [coding-agent-guide.md](coding-agent-guide.md); for documentation lifecycle and archive transition rules, start with [documentation-governance.md](documentation-governance.md). Load `docs/codemaps/*.md` only when the first routing pass is insufficient and you need deeper module relationships.
 
 ## Blocker Protocol
 

@@ -10,6 +10,10 @@
 
 而不是继续把 phase 级 spec / plan / 工作记忆拆散混放在这里。
 
+如果是单一工作流（spec/plan/根追踪三件套）封板，优先归档到：
+
+- `archive/docs/workstreams/<date>-<topic>/`
+
 当前仍然活跃、需要优先查看的 superpowers 文档，继续保留在：
 
 - `docs/superpowers/plans/`
@@ -42,3 +46,7 @@
 最近完成并已整体封板的一轮开发更新是：
 
 - `archive/docs/dev-updates/march-dev-update/README.md`
+
+最近完成并已归档的单工作流是：
+
+- `archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/README.md`
