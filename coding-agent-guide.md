@@ -26,6 +26,7 @@
 
 - 归档相关的当前状态与边界，以 `documentation-governance.md` 为唯一入口，不在本文件维护归档清单。
 - 当前根目录三件套已重置，作为下一轮活跃工作流的追踪入口。
+- `docs/superpowers/specs/` 与 `docs/superpowers/plans/` 当前仅保留 README；下一轮新工作流启动前没有活跃 spec/plan。
 
 ## 任务分流：不同问题先看哪里
 

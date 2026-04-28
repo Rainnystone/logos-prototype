@@ -41,7 +41,7 @@
 | `docs/superpowers/plans/` | 仍在推进的执行计划 | 对应工作流确认完成并准备归档 |
 | `task_plan.md` / `progress.md` / `findings.md` | 多轮会话的根级追踪与恢复 | 对应工作流确认完成并与 plan/spec 一起归档 |
 
-当前观察：`2026-04-10-gossipelog-memory-reference` 已确认归档到 `archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/`，根目录三件套已重置为下一轮工作流预留入口。
+当前观察：`2026-04-10-gossipelog-memory-reference` 与 `2026-04-10-gossipelog-runtime-alignment-fixes` 均已确认归档到 `archive/docs/workstreams/` 下的同名目录。根目录三件套已重置为下一轮工作流预留入口，`docs/superpowers/specs/` 与 `docs/superpowers/plans/` 当前仅保留 README。
 
 ## 关键路径地图
 
@@ -60,7 +60,7 @@
 
 - 既有历史材料继续保存在 `archive/docs/` 与 `archive/vendor/`。
 - 新完成工作流推荐使用可检索的容器目录，例如 `archive/docs/workstreams/YYYY-MM-DD-topic/`。
-- 已落地示例：`archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/`。
+- 已落地示例：`archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/`、`archive/docs/workstreams/2026-04-10-gossipelog-runtime-alignment-fixes/`。
 - 本文件只维护“当前归档状态”和“归档规则”，不维护完整历史流水清单。
 - 归档 tracking 文件不要保留泛名，建议：
   - `archive-task-plan.md`

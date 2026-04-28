@@ -76,6 +76,7 @@
 | Workstream | Archived On | Location | Included Materials | Note |
 | --- | --- | --- | --- | --- |
 | `2026-04-10-gossipelog-memory-reference` | 2026-04-15 | `archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/` | spec, plan, tracking snapshots (`task_plan/progress/findings`) | 首次按 `workstreams/` 容器归档 |
+| `2026-04-10-gossipelog-runtime-alignment-fixes` | 2026-04-28 | `archive/docs/workstreams/2026-04-10-gossipelog-runtime-alignment-fixes/` | spec, plan | 根目录三件套已处于下一工作流待命状态，未重复归档 |
 
 ---
 
@@ -86,5 +87,5 @@
 - 历史 superpowers 归档入口：`archive/docs/superpowers/README.md`
 - 开发更新档案入口：`archive/docs/dev-updates/README.md`
 - 最近一轮完整开发更新：`archive/docs/dev-updates/march-dev-update/README.md`
-- 最近一次单工作流封板：`archive/docs/workstreams/2026-04-10-gossipelog-memory-reference/README.md`
+- 最近一次单工作流封板：`archive/docs/workstreams/2026-04-10-gossipelog-runtime-alignment-fixes/README.md`
 - 历史规格入口：`archive/vendor/LOGOS-SPEC/README.md`

@@ -6,4 +6,8 @@
 
 - [../../../archive/docs/dev-updates/march-dev-update/README.md](../../../archive/docs/dev-updates/march-dev-update/README.md)
 
+最近归档的单工作流 implementation plan：
+
+- [../../../archive/docs/workstreams/2026-04-10-gossipelog-runtime-alignment-fixes/README.md](../../../archive/docs/workstreams/2026-04-10-gossipelog-runtime-alignment-fixes/README.md)
+
 如果下一轮更新开始，请把新的 implementation plan 继续放在这个目录，而不是写回归档目录。
