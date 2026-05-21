@@ -20,7 +20,7 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 你可以用两种方式拿到这个项目：
 
 1. 直接从 GitHub 克隆仓库
-2. 到 [Releases](https://github.com/talespark-global/logos-narrative-editor/releases) 页面下载源码包或发布包
+2. 到 [Releases](https://github.com/Rainnystone/logos-prototype/releases) 页面下载源码包或发布包
 
 ### 环境要求
 
@@ -31,8 +31,8 @@ LOGOS Narrative Editor 是一个面向互动小说、文字冒险和文字 RPG �
 ### 本地启动
 
 ```bash
-git clone https://github.com/talespark-global/logos-narrative-editor.git
-cd logos-narrative-editor
+git clone https://github.com/Rainnystone/logos-prototype.git
+cd logos-prototype
 npm install
 npm run dev
 ```

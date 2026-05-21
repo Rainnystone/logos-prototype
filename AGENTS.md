@@ -7,11 +7,11 @@ orchestration engine and authoring environment for interactive fiction. Built wi
 Next.js (TypeScript) and React 19.
 
 This workspace currently tracks the active implementation repo at
-`https://github.com/talespark-global/logos-narrative-editor`. Historical lineage
-and older references may still point to
-`https://github.com/Rainnystone/LOGOS-Narrative-Editor`, but execution should
-follow the checked-out repo and its current remote. The canonical working branch
-is `branch/narrative-editor`.
+`https://github.com/Rainnystone/logos-prototype`. Treat this repository as the
+canonical remote for commits, pushes, pull requests, releases, and onboarding
+commands. Historical references may still mention older mirrors or LOGOS forks,
+but those are not the active target unless the human explicitly says so. The
+canonical working branch is `branch/narrative-editor`.
 
 The project has evolved from a pure runtime engine into a **dual-track system**:
 a Runtime Engine and a Narrative Editor (Authoring System).
@@ -174,7 +174,7 @@ STOP and wait for human if the fix would change:
 
 ## Git
 
-- Active GitHub repo for this workspace: `talespark-global/logos-narrative-editor`
+- Active GitHub repo for this workspace: `Rainnystone/logos-prototype`
 - Active development branch: `branch/narrative-editor`
 - `main` is a compatibility mirror, not the primary branch.
 - Commit format: `<type>: <description>` (e.g., `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).

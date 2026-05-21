@@ -6,16 +6,16 @@
 - **状态：** complete
 - **开始时间：** 2026-04-10 18:13:12 CST
 - 执行的操作：
-  - 读取 [AGENTS.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/AGENTS.md)、[coding-agent-guide.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/coding-agent-guide.md) 与根目录三件套模板，恢复仓库级执行约束。
+  - 读取 [AGENTS.md](../../../../../AGENTS.md)、[coding-agent-guide.md](../../../../../coding-agent-guide.md) 与根目录三件套模板，恢复仓库级执行约束。
   - 读取 `using-superpowers`、`planning-with-files-zh`、`subagent-driven-development` 相关 skill 内容，按仓库约束恢复工作方式。
   - 主线程梳理 `gossipelog` 本体相关文件：definition、agent、repository、merge、bootstrap、registry、reference-loader、agent-surface、prompt templates、types。
   - 对照 `weaver` 的 reference manifest 与 reference 文档实现，确认 gossipelog 当前缺少同类 reference 入口。
   - 派出一个只读 subagent 专门梳理 gossipelog 在 runtime / play / bootstrap / continuity 里的代码接入链路。
   - 读取 `docs/superpowers/plans/2026-04-10-gossipelog-runtime-alignment-fixes.md` 与对应 spec，确认上一轮正式工作明确排除了 reference / memory 升级。
 - 创建/修改的文件：
-  - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-  - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
-  - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
+  - [task_plan.md](../../../../../task_plan.md)
+  - [findings.md](../../../../../findings.md)
+  - [progress.md](../../../../../progress.md)
 
 ### 阶段 2：升级方案收敛
 - **状态：** complete
@@ -25,20 +25,20 @@
   - 吸收用户新增约束：时间戳、历史保留、关系变化原因记录、以及在 prompt 中同时保留历史与强调当前关系。
   - 记录用户逐项拍板结果，包括：非主角有向关系、单向建立关系、允许扩词、全历史进入 prompt、显式 currentRelation、旧状态可迁移、surface 需要同步升级。
   - 补查现有标识体系，确认当前系统已有 `phaseId`、`beatIndex`、`roundId`，其中 `roundId` 已在 gossipelog 合同中存在，但若要直接写入 `phaseId + beat` 需要补传 phase/beat 信息。
-  - 编写正式设计文档 [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)，固定 reference 接法、state 升级方案、prompt 注入语义、迁移策略与测试面。
-  - 基于 `writing-plans` 将设计拆成可执行的串行 packet，并写入 [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)。
+  - 编写正式设计文档 [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](../specs/2026-04-10-gossipelog-memory-reference-design.md)，固定 reference 接法、state 升级方案、prompt 注入语义、迁移策略与测试面。
+  - 基于 `writing-plans` 将设计拆成可执行的串行 packet，并写入 [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](../plans/2026-04-10-gossipelog-memory-reference-implementation.md)。
 - 创建/修改的文件：
-  - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-  - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
-  - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
-  - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)
-  - [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)
+  - [task_plan.md](../../../../../task_plan.md)
+  - [findings.md](../../../../../findings.md)
+  - [progress.md](../../../../../progress.md)
+  - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](../specs/2026-04-10-gossipelog-memory-reference-design.md)
+  - [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](../plans/2026-04-10-gossipelog-memory-reference-implementation.md)
 
 ### 阶段 3：Task 1 合同与 reference 形状锁定
 - **状态：** in_progress
 - **开始时间：** 2026-04-10 22:20:00 CST
 - 执行的操作：
-  - 按 `using-git-worktrees` 在 [.worktrees/codex-gossipelog-memory-reference](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-gossipelog-memory-reference) 创建独立 worktree，并切到 `codex/gossipelog-memory-reference`。
+  - 按 `using-git-worktrees` 在 `.worktrees/codex-gossipelog-memory-reference` 创建独立 worktree，并切到 `codex/gossipelog-memory-reference`。
   - 在 worktree 中执行 `npm install`，补齐本地依赖以便跑 gossipelog 相关测试。
   - 先跑 Task 1 的基线目标测试，确认起点为绿灯，再派出 implementer subagent 执行首轮 TDD 实现。
   - implementer subagent 已完成首轮改动：新增 gossipelog reference 文件、引入 v2 relationship memory 类型、接入 `memoryUpdates`、补 phase/beat/reference 请求字段，并把 Task 1 目标测试跑到 41 个通过。
@@ -74,11 +74,11 @@
   - 随后重新执行 `npm run build`，结果通过，仅剩工程内原有的 lint warning，不再有阻塞错误。
   - 最后执行全量 `npm test`，结果 `91 files / 813 tests` 全部通过，当前实现已具备交付条件。
 - 创建/修改的文件：
-  - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md)
-  - [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md)
-  - [task_plan.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/task_plan.md)
-  - [findings.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/findings.md)
-  - [progress.md](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/progress.md)
+  - [docs/superpowers/specs/2026-04-10-gossipelog-memory-reference-design.md](../specs/2026-04-10-gossipelog-memory-reference-design.md)
+  - [docs/superpowers/plans/2026-04-10-gossipelog-memory-reference-implementation.md](../plans/2026-04-10-gossipelog-memory-reference-implementation.md)
+  - [task_plan.md](../../../../../task_plan.md)
+  - [findings.md](../../../../../findings.md)
+  - [progress.md](../../../../../progress.md)
 
 ## 测试结果
 | 测试 | 输入 | 预期结果 | 实际结果 | 状态 |

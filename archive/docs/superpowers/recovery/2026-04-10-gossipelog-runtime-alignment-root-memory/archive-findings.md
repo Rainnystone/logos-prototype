@@ -74,8 +74,8 @@
 - `PlayWorkbench` 在 `gossipelog` 同步或 finalize 长时间悬挂时，确实可能把输入永久锁住。
 - 证据链也是闭合的：
   - 前端把每次 `gossipelogCycleRunner(...)` 包在 `trackedGossipelogCycleRunner` 里，创建一个 `PendingRelationshipSync`
-  - [PlayWorkbench.tsx](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/app/play/PlayWorkbench.tsx) 里的 `isInputLoading` 明确把 `isRelationshipSyncPending` 并入输入禁用条件
-  - [PlayerInput.tsx](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/src/app/components/PlayerInput.tsx) 的所有按钮和自由输入都直接受 `isLoading` / `disabled` 控制
+  - [PlayWorkbench.tsx](../../../../../src/app/play/PlayWorkbench.tsx) 里的 `isInputLoading` 明确把 `isRelationshipSyncPending` 并入输入禁用条件
+  - [PlayerInput.tsx](../../../../../src/app/components/PlayerInput.tsx) 的所有按钮和自由输入都直接受 `isLoading` / `disabled` 控制
   - 这个 pending sync 只有在 gossipelog cycle promise resolve / reject，或者 runtime-session `finalizeRelationshipLayer(...)` 返回后才会 settle
   - 前端自己没有 timeout 或 cancel；browser gossipelog bridge 也没有 fetch timeout
 - engine 的 `waitForPendingRelationshipRefresh()` 虽然有 2 秒 timeout，但它发生在“下一次 runBeat 开始组 prompt 前”；一旦 UI 已经因为 `isRelationshipSyncPending` 禁止用户再次提交，engine timeout 不会主动把页面解锁。

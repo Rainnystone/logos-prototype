@@ -5,8 +5,8 @@
 1. Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/talespark-global/logos-narrative-editor.git
-cd logos-narrative-editor
+git clone https://github.com/Rainnystone/logos-prototype.git
+cd logos-prototype
 git checkout branch/narrative-editor
 npm install
 ```

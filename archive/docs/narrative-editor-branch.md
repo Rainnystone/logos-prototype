@@ -2,7 +2,7 @@
 
 This document defines the working agreement for `branch/narrative-editor`.
 
-Canonical repo: `https://github.com/Rainnystone/LOGOS-Narrative-Editor`
+Canonical repo: `https://github.com/Rainnystone/logos-prototype`
 
 ## Why This Branch Exists
 
@@ -56,7 +56,7 @@ rather than by phase history.
 
 ## Repo Defaults
 
-- `origin` should point to `Rainnystone/LOGOS-Narrative-Editor`
+- `origin` should point to `Rainnystone/logos-prototype`
 - `origin/HEAD` should point to `origin/branch/narrative-editor`
 - PRs should target `branch/narrative-editor`
 - Do not treat old workbench repos or phase branches as defaults
