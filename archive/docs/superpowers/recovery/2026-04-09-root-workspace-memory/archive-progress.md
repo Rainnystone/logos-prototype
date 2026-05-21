@@ -4,7 +4,7 @@
 
 - 为 `/play` 延迟优化新建了独立实现 worktree：
   - 分支：`codex/play-latency-audit-streaming`
-  - 路径：[.worktrees/codex-play-latency-audit-streaming](/Users/tachikoma/Desktop/DEV/logos-narrative-editor/.worktrees/codex-play-latency-audit-streaming)
+  - 路径：[.worktrees/codex-play-latency-audit-streaming](.worktrees/codex-play-latency-audit-streaming)
 - 已按 `using-git-worktrees` 做创建前校验：
   - `.worktrees` 目录存在
   - `.worktrees/` 已被 `.gitignore` 正确忽略

@@ -40,6 +40,14 @@ ehthumbs.db
 .vscode/settings.json
 .idea/
 *.iml
+.claude/flow_state.json
+.claude/settings.local.json
+
+# Local agent/browser tooling artifacts
+.playwright-cli/
+.playwright-mcp/
+.superpowers/
+.reports/
 
 # Debug logs
 npm-debug.log*
