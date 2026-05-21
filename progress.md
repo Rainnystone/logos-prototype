@@ -14,6 +14,7 @@
 - 已将本地 `origin` remote 改回 `https://github.com/Rainnystone/logos-prototype.git`。
 - 已移除本地额外历史镜像 remote，避免后续 agent 或命令误选目标仓库。
 - 已关闭误发到错误远端的 draft PR，并将远端仓库歧义修复合并进本次隐私清理范围。
+- 已根据远端 review 修复深层 archive 文档中的相对链接，确保脱敏后仍能从文档所在目录跳转到真实仓库文件；本地临时 worktree 路径改为非链接代码文本。
 - 最终复扫通过：当前实际存在的跟踪文件中未再发现本机绝对路径、旧个人 fork 标识、邮箱、真实密钥格式、私钥块或 secret/password 明文。
 - `npm test` 通过：91 个测试文件、813 个测试通过。
 - `npm run build` 通过：构建成功；输出包含已有 lint warning 与本机父目录多 lockfile root 推断 warning，未阻断构建。

@@ -4,7 +4,7 @@
 
 - 为 `/play` 延迟优化新建了独立实现 worktree：
   - 分支：`codex/play-latency-audit-streaming`
-  - 路径：[.worktrees/codex-play-latency-audit-streaming](.worktrees/codex-play-latency-audit-streaming)
+  - 路径：`.worktrees/codex-play-latency-audit-streaming`
 - 已按 `using-git-worktrees` 做创建前校验：
   - `.worktrees` 目录存在
   - `.worktrees/` 已被 `.gitignore` 正确忽略
@@ -30,7 +30,7 @@
   - 本轮 spec 只服务于延迟优化，不顺手改变叙事控制方式
   - 推荐将少数与“仅审当前 beat”语义冲突的 audit 问题一并改写，但不扩大成全局 audit 架构改造
 - 已完成正式 spec 起草：
-  - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md)
+  - [docs/superpowers/specs/2026-04-09-play-latency-audit-streaming-design.md](../../specs/2026-04-09-play-latency-audit-streaming-design.md)
   - 当前正在进入 `brainstorming` 要求的 spec review loop，尚未进入 implementation plan
 - 第一轮 spec review 已回收并指出一个真实缺口：
   - streaming 的 provider/proxy 覆盖范围、unsupported fallback 规则，以及“preview 与 final result 是否必须来自同一次 generate 请求”仍需冻结
@@ -44,7 +44,7 @@
   - 当前按 `brainstorming` 流程等待你审阅书面 spec，再决定是否进入 implementation plan
 - 你已批准 spec 进入 implementation plan。
 - 已按 `writing-plans` 写出正式计划：
-  - [docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md](docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md)
+  - [docs/superpowers/plans/2026-04-09-play-latency-audit-streaming.md](../../plans/2026-04-09-play-latency-audit-streaming.md)
   - 计划已按 AGENTS packet 纪律拆成 5 个串行任务：audit contract、audit 题目兼容、transport/adapter 流式能力、orchestrator/workbench 接回、archive sync + 全量验证
   - 当前正在进入 `writing-plans` 要求的 plan review loop，尚未开始实现
 - plan review 已通过：
@@ -166,7 +166,7 @@
   - `npm run build` 通过
   - build 仍只有仓库既有 warning，没有新增阻塞项
 
-- 恢复了本轮任务上下文，重读了 [AGENTS.md](AGENTS.md)、[coding-agent-guide.md](coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
+- 恢复了本轮任务上下文，重读了 [AGENTS.md](../../../../../AGENTS.md)、[coding-agent-guide.md](../../../../../coding-agent-guide.md)、根目录三件套和 `docs/codemaps`。
 - 已将这轮任务定义为 `/play` runtime 稳定性修补，并把五个待修问题写入 [archive-task-plan.md](archive-task-plan.md)。
 - 初步锁定的排查范围包括：
   - `src/app/play/` 下的 workbench、选项输入与状态面板
@@ -176,7 +176,7 @@
 - 已确认本轮不改 `gossipelog` 后台流程，只修 workbench 的 UI/UX 感受与输入锁。
 - 你已明确将 `runtime usage` 移出本轮范围，避免牵连 storylines / copy 等额外问题。
 - implementation plan 已写入：
-  - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md)
+  - [docs/superpowers/plans/2026-04-09-play-workbench-stability-fixes.md](../../plans/2026-04-09-play-workbench-stability-fixes.md)
 - plan review 指出了 4 个缺口：页面跳动没有独立 task、错误路径少了 reload 一致性、任务边界不适合并行实现、浏览器验收命令不够具体。
 - 当前正在修订 implementation plan，收窄范围并明确为串行 `subagent-driven-development`。
 - 修订后的 implementation plan 已通过最终只读 review。
@@ -185,7 +185,7 @@
   - play workbench 失败测试已补齐并校准
   - 之前 API 持久化失败里的两条假红灯已改成准确断言，不再把合法的 `Beat 3 ready` 误判成脏内容
   - 当前真实问题收缩为两个：`gossipelog` pending 时输入未锁、`runtime config save` 时静默重水合仍会退回初始化观感
-- 生产修补已落在 [src/app/play/PlayWorkbench.tsx](src/app/play/PlayWorkbench.tsx)：
+- 生产修补已落在 [src/app/play/PlayWorkbench.tsx](../../../../../src/app/play/PlayWorkbench.tsx)：
   - `gossipelog` pending 时，玩家输入区会被锁住
   - `runtime config save` 触发静默重水合时，已接受的 current beat / beat history / state inspector 会继续稳定显示
   - 保存期间也会立刻锁住输入，避免出现“界面还在，但 orchestrator 已经拆掉”的静默交互窗口
@@ -200,15 +200,15 @@
   - `src/authoring/persistence/__tests__/package-state.test.ts`
   - 这些失败面不在本次改动文件集合内，当前按“仓库现有基线问题”记录，不在此线程扩修
 - 随后按这次复盘继续调整 agent 文档分工：
-  - [AGENTS.md](AGENTS.md) 删除了较静态的 `System Mapping` 表，改为跳转到 [coding-agent-guide.md](coding-agent-guide.md)
+  - [AGENTS.md](../../../../../AGENTS.md) 删除了较静态的 `System Mapping` 表，改为跳转到 [coding-agent-guide.md](../../../../../coding-agent-guide.md)
   - `### 8. Implementation Packet Discipline` 已补充 implementation packet / subagent packet 的高层纪律
-  - [coding-agent-guide.md](coding-agent-guide.md) 已强化为 manager/subagent 共用的任务路由文档，新增高频任务路由、packet checklist、targeted verification 起点与并行提示
+  - [coding-agent-guide.md](../../../../../coding-agent-guide.md) 已强化为 manager/subagent 共用的任务路由文档，新增高频任务路由、packet checklist、targeted verification 起点与并行提示
 
 ## 2026-04-09 `/play` 体感延迟优化探索
 
 - 已按你的要求重读：
-  - [AGENTS.md](AGENTS.md)
-  - [coding-agent-guide.md](coding-agent-guide.md)
+  - [AGENTS.md](../../../../../AGENTS.md)
+  - [coding-agent-guide.md](../../../../../coding-agent-guide.md)
   - 根目录 [archive-task-plan.md](archive-task-plan.md) / [archive-findings.md](archive-findings.md) / [archive-progress.md](archive-progress.md)
   - `docs/codemaps/architecture.md` / `backend.md` / `frontend.md`
 - 已将根目录 [archive-task-plan.md](archive-task-plan.md) 的活动轨道切到“`/play` 体感延迟优化探索”，明确本线程先做调查、诊断、方案排序，不默认直接实现。
@@ -218,22 +218,22 @@
   - `systematic-debugging`
   - `subagent-driven-development`
 - 当前已完成的本地链路定位：
-  - 读取了 [src/app/play/PlayWorkbench.tsx](src/app/play/PlayWorkbench.tsx)
-  - [src/app/play/runtime.ts](src/app/play/runtime.ts)
-  - [src/engine/orchestrator.ts](src/engine/orchestrator.ts)
-  - [src/app/api/llm/proxy/route.ts](src/app/api/llm/proxy/route.ts)
-  - [src/app/api/play/gossipelog/route.ts](src/app/api/play/gossipelog/route.ts)
-  - [src/agents/gossipelog/agent.ts](src/agents/gossipelog/agent.ts)
-  - [src/engine/modules/auditor.ts](src/engine/modules/auditor.ts)
-  - [src/engine/modules/narrative-router.ts](src/engine/modules/narrative-router.ts)
-  - [src/engine/modules/phase-consequence-settlement.ts](src/engine/modules/phase-consequence-settlement.ts)
-  - [src/engine/modules/memory-placeholder.ts](src/engine/modules/memory-placeholder.ts)
-  - [src/engine/api-adapter/prompt-templates.ts](src/engine/api-adapter/prompt-templates.ts)
-  - [src/engine/api-adapter/schema-mapper.ts](src/engine/api-adapter/schema-mapper.ts)
-  - [src/engine/api-adapter/providers/anthropic.ts](src/engine/api-adapter/providers/anthropic.ts)
-  - [src/engine/api-adapter/providers/openai-compatible.ts](src/engine/api-adapter/providers/openai-compatible.ts)
-  - [src/app/runtime-config.ts](src/app/runtime-config.ts)
-  - [src/app/components/RuntimeConfigForm.tsx](src/app/components/RuntimeConfigForm.tsx)
+  - 读取了 [src/app/play/PlayWorkbench.tsx](../../../../../src/app/play/PlayWorkbench.tsx)
+  - [src/app/play/runtime.ts](../../../../../src/app/play/runtime.ts)
+  - [src/engine/orchestrator.ts](../../../../../src/engine/orchestrator.ts)
+  - [src/app/api/llm/proxy/route.ts](../../../../../src/app/api/llm/proxy/route.ts)
+  - [src/app/api/play/gossipelog/route.ts](../../../../../src/app/api/play/gossipelog/route.ts)
+  - [src/agents/gossipelog/agent.ts](../../../../../src/agents/gossipelog/agent.ts)
+  - [src/engine/modules/auditor.ts](../../../../../src/engine/modules/auditor.ts)
+  - [src/engine/modules/narrative-router.ts](../../../../../src/engine/modules/narrative-router.ts)
+  - [src/engine/modules/phase-consequence-settlement.ts](../../../../../src/engine/modules/phase-consequence-settlement.ts)
+  - [src/engine/modules/memory-placeholder.ts](../../../../../src/engine/modules/memory-placeholder.ts)
+  - [src/engine/api-adapter/prompt-templates.ts](../../../../../src/engine/api-adapter/prompt-templates.ts)
+  - [src/engine/api-adapter/schema-mapper.ts](../../../../../src/engine/api-adapter/schema-mapper.ts)
+  - [src/engine/api-adapter/providers/anthropic.ts](../../../../../src/engine/api-adapter/providers/anthropic.ts)
+  - [src/engine/api-adapter/providers/openai-compatible.ts](../../../../../src/engine/api-adapter/providers/openai-compatible.ts)
+  - [src/app/runtime-config.ts](../../../../../src/app/runtime-config.ts)
+  - [src/app/components/RuntimeConfigForm.tsx](../../../../../src/app/components/RuntimeConfigForm.tsx)
 - 当前已确认的核心判断：
   - 单次玩家选择至少可能触发 `route -> generate -> audit`
   - audit 失败会触发 rewrite，最多把生成放大到 4 次
@@ -256,12 +256,12 @@
     - 尽量减少或改写不必要的串行 LLM 调用
     - 在不牺牲记忆系统的前提下优化 mode 配置、模型分工、以及可能的 streaming 方案
 - 已继续补读 runtime 相关控制层代码与 archive spec：
-  - [src/engine/modules/director-note-layer.ts](src/engine/modules/director-note-layer.ts)
-  - [src/engine/modules/prompt-assembler.ts](src/engine/modules/prompt-assembler.ts)
-  - [src/engine/types/adapter-interface.ts](src/engine/types/adapter-interface.ts)
-  - [archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md](archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md)
-  - [archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md](archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md)
-  - [archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md](archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md)
+  - [src/engine/modules/director-note-layer.ts](../../../../../src/engine/modules/director-note-layer.ts)
+  - [src/engine/modules/prompt-assembler.ts](../../../../../src/engine/modules/prompt-assembler.ts)
+  - [src/engine/types/adapter-interface.ts](../../../../../src/engine/types/adapter-interface.ts)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md](../../../../../archive/vendor/LOGOS-SPEC/04_MODULES/narrative-router.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md](../../../../../archive/vendor/LOGOS-SPEC/04_MODULES/director-note-layer.md)
+  - [archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md](../../../../../archive/vendor/LOGOS-SPEC/04_MODULES/prompt-assembler.md)
 - 你刚刚又把这轮的冻结边界进一步收窄为：
   - `router` 必须每个 beat 都重新判断；不能用 sticky router 换延迟
   - `routerHint` 本身值得复查，甚至可能比 router 重算更应该先被拿掉
@@ -289,13 +289,13 @@
 
 - 按 `using-superpowers` + `brainstorming` 恢复并定位了 `weaver` 的现状，不进入实现。
 - 已读取：
-  - [src/agents/weaver/references/import-reference.md](src/agents/weaver/references/import-reference.md)
-  - [src/engine/api-adapter/prompt-templates.ts](src/engine/api-adapter/prompt-templates.ts)
-  - [src/engine/api-adapter/schema-mapper.ts](src/engine/api-adapter/schema-mapper.ts)
-  - [src/engine/api-adapter/response-parsers.ts](src/engine/api-adapter/response-parsers.ts)
-  - [src/story-packages/import-seed.ts](src/story-packages/import-seed.ts)
-  - [src/types/weaver.ts](src/types/weaver.ts)
-  - [src/types/prompt-object.ts](src/types/prompt-object.ts)
+  - [src/agents/weaver/references/import-reference.md](../../../../../src/agents/weaver/references/import-reference.md)
+  - [src/engine/api-adapter/prompt-templates.ts](../../../../../src/engine/api-adapter/prompt-templates.ts)
+  - [src/engine/api-adapter/schema-mapper.ts](../../../../../src/engine/api-adapter/schema-mapper.ts)
+  - [src/engine/api-adapter/response-parsers.ts](../../../../../src/engine/api-adapter/response-parsers.ts)
+  - [src/story-packages/import-seed.ts](../../../../../src/story-packages/import-seed.ts)
+  - [src/types/weaver.ts](../../../../../src/types/weaver.ts)
+  - [src/types/prompt-object.ts](../../../../../src/types/prompt-object.ts)
   - `March Dev Update Phase 4` 归档 spec / implementation plan
 - 当前判断是：`weaver` 成功率问题更像是 reference、prompt、schema、seed-mapping 四层表述没有完全对齐，而不是单纯“没要求 JSON only”。
 - 当前不写 implementation plan，先把设计判断沉淀到 [archive-findings.md](archive-findings.md)。
@@ -303,7 +303,7 @@
   - `weaver` 允许失败并留空，不应因为信息不足而报硬错误或卡住创建流程
   - 角色与地点类最小输出 shape 可以只要求名称字段
 - 已完成正式 spec：
-  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
+  - [docs/superpowers/specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md](../../specs/2026-04-09-phase-4-weaver-import-contract-optimization-design.md)
 - spec review 已完成并通过；review 过程中收紧了这些关键点：
   - `suggestedPackageName` 只是 display-name suggestion，不是最终 slug / package identity
   - `payload.openingHook` 不拥有最终持久化写入权，真实 `openingHook` 仍来自原始 `sourceText`
@@ -318,24 +318,24 @@
   - 主工作区使用现有本地依赖时，UI matcher 正常；
   - fresh worktree 会出现大量 `Invalid Chai property: toBeInTheDocument`，原因不是代码逻辑，而是 worktree 没拿到主工作区本地的 `package-lock.json`；
   - 主工作区本身仍有 `20` 个真实红测，集中在：
-    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
-    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
-    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
+    - [src/runtime-sessions/__tests__/views.test.ts](../../../../../src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](../../../../../src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](../../../../../src/authoring/persistence/__tests__/package-state.test.ts)
 - 根因现已确认：
   - `.gitignore` 忽略了 `package-lock.json`，而主工作区本地其实有一个未纳管 lockfile，导致主工作区与 fresh worktree 依赖解析不一致；
   - `sample-scene` 现在是你真实用过、推进过 beat、复制过故事线的示例包；相关 baseline 测试仍把它当成“未使用模板”，因此测试夹具假设与 fixture 角色漂移。
 - 已完成的修复：
-  - 新增 [src/testing/story-package-fixtures.ts](src/testing/story-package-fixtures.ts)，提供“复制 fixture 并剥离执行痕迹”的 helper；
+  - 新增 [src/testing/story-package-fixtures.ts](../../../../../src/testing/story-package-fixtures.ts)，提供“复制 fixture 并剥离执行痕迹”的 helper；
   - 相关 baseline 测试已改成复制 `sample-scene` 后主动剥离：
     - `runtime-sessions.json`
     - `storyline-repository.json`
     - `variants/`
   - 覆盖的测试文件包括：
-    - [src/runtime-sessions/__tests__/views.test.ts](src/runtime-sessions/__tests__/views.test.ts)
-    - [src/authoring/persistence/__tests__/bridge.test.ts](src/authoring/persistence/__tests__/bridge.test.ts)
-    - [src/authoring/persistence/__tests__/package-state.test.ts](src/authoring/persistence/__tests__/package-state.test.ts)
-    - [src/app/edit/__tests__/page.test.tsx](src/app/edit/__tests__/page.test.tsx)
-    - [src/app/__tests__/play-page.test.tsx](src/app/__tests__/play-page.test.tsx)
+    - [src/runtime-sessions/__tests__/views.test.ts](../../../../../src/runtime-sessions/__tests__/views.test.ts)
+    - [src/authoring/persistence/__tests__/bridge.test.ts](../../../../../src/authoring/persistence/__tests__/bridge.test.ts)
+    - [src/authoring/persistence/__tests__/package-state.test.ts](../../../../../src/authoring/persistence/__tests__/package-state.test.ts)
+    - [src/app/edit/__tests__/page.test.tsx](../../../../../src/app/edit/__tests__/page.test.tsx)
+    - [src/app/__tests__/play-page.test.tsx](../../../../../src/app/__tests__/play-page.test.tsx)
   - `.gitignore` 已停止忽略 `package-lock.json`，并已刷新 lockfile，准备让 fresh worktree 复用同一依赖基线。
 - 当前验证结果：
   - 目标回归集通过：`63` 个测试全部通过
