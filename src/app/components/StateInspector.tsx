@@ -68,7 +68,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
           data-testid={`constraint-card-${key}`}
           data-expanded={isExpanded}
           data-reduced-motion={prefersReducedMotion}
-          className={`absolute inset-x-0 top-0 rounded-none border-2 bg-[#0a0a0a] p-3 transition-[border-color,background-color,box-shadow,transform] duration-150 ${
+          className={`absolute inset-x-0 top-0 rounded-none border-2 bg-[#0a0a0a] p-3 transition-[transform,opacity] duration-150 ease-[var(--ease-out)] ${
             isExpanded
               ? 'z-20 border-[#00ff00] bg-black shadow-[6px_6px_0_0_rgba(0,255,0,0.12)]'
               : 'z-0 border-white/20 bg-white/5'

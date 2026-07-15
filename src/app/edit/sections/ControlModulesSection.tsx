@@ -390,7 +390,7 @@ export function ControlModulesSection({
                 <button
                   key={card.key}
                   type="button"
-                  className={`w-full rounded-none border-2 p-4 text-left transition ${
+                  className={`w-full rounded-none border-2 p-4 text-left ${
                     isSelected
                       ? 'border-black bg-black text-white shadow-brutal'
                       : 'border-black bg-white text-black hover:bg-[#e5e5e5]'

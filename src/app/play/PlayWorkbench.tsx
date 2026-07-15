@@ -817,7 +817,7 @@ export function PlayWorkbench({
             {resolvedRuntimeSessionClient ? (
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-none bg-white border-2 border-black px-4 py-2 text-sm font-bold text-black font-mono uppercase hover:bg-[#ff4d4d] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex min-h-11 items-center justify-center rounded-none bg-white border-2 border-black px-4 py-2 text-sm font-bold text-black font-mono uppercase hover:bg-[#ff4d4d] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleResetWorkbench}
                 disabled={isInputLoading || isResetting}
               >
@@ -826,7 +826,7 @@ export function PlayWorkbench({
             ) : null}
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center rounded-none bg-black border-2 border-black px-4 py-2 text-sm font-bold text-white font-mono uppercase hover:bg-[#00ff00] hover:text-black transition-colors"
+              className="inline-flex min-h-11 items-center justify-center rounded-none bg-black border-2 border-black px-4 py-2 text-sm font-bold text-white font-mono uppercase hover:bg-[#00ff00] hover:text-black"
               onClick={() => setFixtureReferenceOpen((current) => !current)}
             >
               {fixtureReferenceOpen ? 'Hide Fixture Reference' : 'Show Fixture Reference'}
@@ -887,7 +887,7 @@ export function PlayWorkbench({
                   <p className="font-mono text-black italic text-sm">{openingHookInput}</p>
                 </blockquote>
                 <button
-                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase"
+                  className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black self-start disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase"
                   type="button"
                   onClick={handleStartRound}
                   disabled={isInputLoading || isResetting}

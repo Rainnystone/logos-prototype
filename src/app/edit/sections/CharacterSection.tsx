@@ -123,7 +123,7 @@ function CharacterRail({
               <button
                 key={character.characterId}
                 type="button"
-                className={`w-52 shrink-0 rounded-none border-2 p-4 text-left transition ${
+                className={`w-52 shrink-0 rounded-none border-2 p-4 text-left ${
                   isSelected
                     ? 'border-black bg-black text-white shadow-brutal'
                     : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
@@ -140,7 +140,7 @@ function CharacterRail({
 
           <button
             type="button"
-            className="w-44 shrink-0 rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold text-black transition hover:bg-[#e5e5e5]"
+            className="w-44 shrink-0 rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold text-black hover:bg-[#e5e5e5]"
             onClick={onAdd}
             aria-label={addLabel}
           >
@@ -303,7 +303,7 @@ export function CharacterSection({
           </div>
           <button
             type="button"
-            className={`w-full rounded-none border-2 p-4 text-left transition ${
+            className={`w-full rounded-none border-2 p-4 text-left ${
               selection.group === 'hero'
                 ? 'border-black bg-black text-white shadow-brutal'
                 : 'border-black bg-white text-black hover:bg-[#e5e5e5]'

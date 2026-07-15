@@ -44,7 +44,7 @@ export function AuthorControlPanel({
         {storyPackage.phasePlans.map((phasePlan) => (
           <article
             key={phasePlan.phaseId}
-            className={`w-[18rem] shrink-0 rounded-none border-2 p-4 transition-colors ${
+            className={`w-[18rem] shrink-0 rounded-none border-2 p-4 ${
               phasePlan.phaseIndex === currentPhaseIndex
                 ? 'border-black bg-black text-white shadow-brutal'
                 : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
