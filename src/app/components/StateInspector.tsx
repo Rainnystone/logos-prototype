@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { FocusEvent } from 'react';
 
+import { usePrefersReducedMotion } from '@/app/hooks/usePrefersReducedMotion';
 import type { StateSnapshot, Volume } from '@/types';
 
 interface StateInspectorProps {
@@ -45,6 +46,7 @@ function getConstraintPreview(text: string) {
 export function StateInspector({ state, gradientSequence, totalPhases }: StateInspectorProps) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [expandedConstraint, setExpandedConstraint] = useState<ConstraintKey | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const resolvedTotalPhases = totalPhases ?? state.sceneState.currentPhaseIndex;
 
   function handleConstraintBlur(key: ConstraintKey, event: FocusEvent<HTMLElement>) {
@@ -65,6 +67,7 @@ export function StateInspector({ state, gradientSequence, totalPhases }: StateIn
         <article
           data-testid={`constraint-card-${key}`}
           data-expanded={isExpanded}
+          data-reduced-motion={prefersReducedMotion}
           className={`absolute inset-x-0 top-0 rounded-none border-2 bg-[#0a0a0a] p-3 transition-[border-color,background-color,box-shadow,transform] duration-150 ${
             isExpanded
               ? 'z-20 border-[#00ff00] bg-black shadow-[6px_6px_0_0_rgba(0,255,0,0.12)]'
