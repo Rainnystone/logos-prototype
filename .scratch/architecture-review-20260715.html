@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOGOS Architecture Review — 2026-07-15</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .badge-strong { background: #dc2626; color: white; }
+  .badge-explore { background: #f59e0b; color: white; }
+  .badge-speculative { background: #6b7280; color: white; }
+  .card { transition: box-shadow 0.2s; }
+  .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+  .diagram-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .code-fmt { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.8rem; }
+  .fade-in { animation: fadeIn 0.4s ease-in; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<header class="bg-gray-900 text-white py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Architecture Review</p>
+    <h1 class="text-4xl font-bold mb-3">LOGOS — Deepening Opportunities</h1>
+    <p class="text-gray-300 max-w-3xl">
+      A scan for shallow modules, smeared seams, and duplicated invariants across the authoring,
+      runtime, sidecar, and API layers. Each candidate is a refactor that would turn shallow modules
+      into deep ones — concentrating complexity behind a small interface, improving locality and
+      testability.
+    </p>
+    <div class="mt-6 flex gap-4 text-sm">
+      <span class="px-3 py-1 rounded-full bg-gray-700">7 candidates</span>
+      <span class="px-3 py-1 rounded-full bg-gray-700">4 layers scanned</span>
+      <span class="px-3 py-1 rounded-full bg-gray-700">Branch: branch/narrative-editor</span>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-6xl mx-auto px-6 py-8">
+  <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+    <p class="text-sm text-blue-900">
+      <strong>Vocabulary:</strong> This report uses the deep-module design vocabulary —
+      <em>module</em>, <em>interface</em>, <em>depth</em>, <em>seam</em>, <em>adapter</em>,
+      <em>leverage</em>, <em>locality</em>. A <strong>deep module</strong> hides a lot of behaviour
+      behind a small interface. A <strong>shallow module</strong> has an interface nearly as complex
+      as its implementation. The <strong>deletion test</strong>: if you delete the module, does
+      complexity vanish (pass-through) or reappear across N callers (earning its keep)?
+    </p>
+  </div>
+</section>
+
+<nav class="max-w-6xl mx-auto px-6 py-4">
+  <h2 class="text-lg font-semibold mb-3">Candidates</h2>
+  <ol class="space-y-2 text-sm">
+    <li><a href="#c1" class="text-blue-600 hover:underline font-medium">1. Bridge per-section handler table</a> — collapse 960-line bridge dispatch into a handler registry <span class="badge-strong text-xs px-2 py-0.5 rounded-full ml-2">Strong</span></li>
+    <li><a href="#c2" class="text-blue-600 hover:underline font-medium">2. Extract provider-utils from duplicated providers</a> — 140 identical lines across anthropic.ts + openai-compatible.ts <span class="badge-strong text-xs px-2 py-0.5 rounded-full ml-2">Strong</span></li>
+    <li><a href="#c3" class="text-blue-600 hover:underline font-medium">3. Extract useSectionSave hook from EditWorkbench</a> — 3 near-identical 100-line submit handlers <span class="badge-strong text-xs px-2 py-0.5 rounded-full ml-2">Strong</span></li>
+    <li><a href="#c4" class="text-blue-600 hover:underline font-medium">4. Extract createPackageWithOptionalBootstrap orchestrator</a> — move scaffold→weaver→bootstrap pipeline out of HTTP route <span class="badge-explore text-xs px-2 py-0.5 rounded-full ml-2">Worth exploring</span></li>
+    <li><a href="#c5" class="text-blue-600 hover:underline font-medium">5. Unify v1→v2 migration code</a> — 4 duplicated helpers across merge.ts + repository.ts <span class="badge-explore text-xs px-2 py-0.5 rounded-full ml-2">Worth exploring</span></li>
+    <li><a href="#c6" class="text-blue-600 hover:underline font-medium">6. Shared invariant constants (PHASE_BEAT_COUNT, retry ceiling)</a> — dead exports, 6+ hardcoded literals <span class="badge-speculative text-xs px-2 py-0.5 rounded-full ml-2">Speculative</span></li>
+    <li><a href="#c7" class="text-blue-600 hover:underline font-medium">7. Delete dead shallow modules</a> — memory-placeholder.ts, copy.ts, authoring-status.ts <span class="badge-strong text-xs px-2 py-0.5 rounded-full ml-2">Strong</span></li>
+  </ol>
+</nav>
+
+<!-- CANDIDATE 1 -->
+<section id="c1" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">1. Bridge per-section handler table</h2>
+        <p class="text-gray-500 text-sm mt-1">src/authoring/persistence/bridge.ts · 960 lines · 1 public export</p>
+      </div>
+      <span class="badge-strong text-xs px-3 py-1 rounded-full">Strong</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/authoring/persistence/bridge.ts</li>
+          <li class="code-fmt">src/authoring/persistence/repository.ts</li>
+          <li class="code-fmt">src/authoring/sections/control-modules.ts</li>
+          <li class="code-fmt">src/authoring/sections/scene-phase-authoring.ts</li>
+          <li class="code-fmt">src/authoring/sections/worldbase-cast.ts</li>
+          <li class="code-fmt">src/authoring/contracts.ts</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          The bridge is the deepest module in the authoring layer — one <code class="code-fmt">saveSectionDraft()</code>
+          function hides ~660 lines of behavior. But the depth is <em>disorganized</em>: the per-section dispatch
+          (extract → validate → render → persist → restore) is a hand-rolled vtable spread across 400 lines.
+          The transactional rollback pattern is duplicated <strong>5 times</strong> with subtle per-section variation.
+          Adding a sixth section means editing four files and copy-pasting a rollback block.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Introduce a per-section handler registry: each entry is
+        <code class="code-fmt">{ extract, validate, render, persist, restore, readOriginal }</code>
+        keyed by <code class="code-fmt">sectionId</code>. The bridge becomes a generic dispatcher that calls
+        <code class="code-fmt">withRollback(handler, target, request)</code> — collapsing ~180 lines of
+        duplicated rollback into ~40. The "section kind" concept gets a single owner.
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Benefits</h3>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li><strong>Locality:</strong> Adding a section becomes a single-file change instead of a four-file change.</li>
+        <li><strong>Leverage:</strong> The <code class="code-fmt">withRollback</code> helper is tested once; all sections inherit the guarantee.</li>
+        <li><strong>Testability:</strong> Handlers can be injected in tests — the bridge's interface becomes its actual test surface, not its import graph.</li>
+        <li><strong>Removes dead code:</strong> The vestigial <code class="code-fmt">catch (earlyResult)</code> at line 903 and the unreachable check at line 580 become impossible.</li>
+      </ul>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-3">Before — Hand-rolled vtable</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+bridge.ts (960 lines)
+┌─────────────────────────────────┐
+│ saveSectionDraft(input)         │
+│   normalizeSaveRequest()        │
+│   validateSaveRequest()         │
+│   if section == worldbase-cast  │
+│     extractWorldBaseCastDraft() │
+│     ...persist + rollback (×1)  │
+│   if section == scene-phase     │
+│     extractScenePhaseDraft()    │
+│     ...persist + rollback (×2)  │
+│   if section == control-modules │
+│     extractControlModules()     │
+│     ...persist + rollback (×3)  │
+│   if section == router-profiles │
+│     ...persist + rollback (×4)  │
+│   if section == audit-questions │
+│     ...persist + rollback (×5)  │
+│   catch(earlyResult) ← DEAD     │
+│   writeAuthoringStatus()        │
+└─────────────────────────────────┘
+  ↑ 5× duplicated rollback blocks
+  ↑ 3× extract functions (private, untestable)
+  ↑ 11× SaveResultBase literal repetition
+        </pre>
+      </div>
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-blue-600 uppercase mb-3">After — Handler registry + withRollback</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+bridge.ts (~200 lines)
+┌─────────────────────────────────┐
+│ saveSectionDraft(input)         │
+│   normalize + validate          │
+│   handler = sectionHandlers[id] │
+│   draft = handler.extract(raw)  │
+│   issues = handler.validate()   │
+│   rendered = handler.render()   │
+│   withRollback(handler, target) │
+│   writeAuthoringStatus()        │
+└──────────────┬──────────────────┘
+               │
+    ┌──────────┴──────────┐
+    │ sectionHandlers     │
+    │  worldbase-cast: {} │  ← each owns
+    │  scene-phase:    {} │    extract,
+    │  control-modules:{} │    validate,
+    │  router-profiles:{} │    render,
+    │  audit-questions:{} │    persist,
+    └─────────────────────┘    restore
+
+withRollback(handler, target):
+  read original → persist → reload
+  catch → restore original → throw
+        </pre>
+      </div>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+      <p class="text-xs text-gray-500">
+        <strong>Deletion test:</strong> The bridge earns its keep (complexity reappears in PlayWorkbench if deleted).
+        But the 5× rollback duplication and 3× private extractors fail the test — deleting them and using the
+        registry concentrates complexity rather than moving it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 2 -->
+<section id="c2" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">2. Extract provider-utils from duplicated providers</h2>
+        <p class="text-gray-500 text-sm mt-1">src/engine/api-adapter/providers/anthropic.ts + openai-compatible.ts · ~140 identical lines</p>
+      </div>
+      <span class="badge-strong text-xs px-3 py-1 rounded-full">Strong</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/engine/api-adapter/providers/anthropic.ts (405 lines)</li>
+          <li class="code-fmt">src/engine/api-adapter/providers/openai-compatible.ts (499 lines)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          ~140 lines of utility code are duplicated <strong>verbatim</strong> across the two providers:
+          <code class="code-fmt">trimTrailingSlash</code>, <code class="code-fmt">buildHttpErrorMessage</code>,
+          <code class="code-fmt">parseErrorDetail</code>, <code class="code-fmt">decodeJsonStringPrefix</code> (60 lines!),
+          <code class="code-fmt">createBeatTextDeltaTracker</code>, <code class="code-fmt">iterateSseData</code>,
+          <code class="code-fmt">shouldUseProxy</code>. A fix to <code class="code-fmt">decodeJsonStringPrefix</code>
+          must be applied twice. This is the largest single duplication in the codebase.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Extract a <code class="code-fmt">provider-utils.ts</code> module that owns the 7 shared utilities.
+        Each provider imports from it. The providers retain only their provider-specific logic
+        (Anthropic's system-message rewrite, OpenAI's Gemini detection, response-format downgrade).
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Benefits</h3>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li><strong>Locality:</strong> A bug fix in SSE parsing or JSON-prefix decoding lands in one place.</li>
+        <li><strong>Leverage:</strong> A third provider gets all 7 utilities for free.</li>
+        <li><strong>Testability:</strong> <code class="code-fmt">decodeJsonStringPrefix</code> and <code class="code-fmt">createBeatTextDeltaTracker</code> become directly testable without constructing a full provider.</li>
+      </ul>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-3">Before — Two providers, duplicated utils</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+anthropic.ts          openai-compatible.ts
+┌──────────────┐      ┌──────────────────┐
+│ trimTrailing │      │ trimTrailing     │ ← identical
+│ Slash()      │      │  Slash()         │
+│ buildHttpErr │      │ buildHttpErr     │ ← identical
+│ parseError() │      │ parseError()     │ ← ~identical
+│ decodeJson   │      │ decodeJson       │ ← 60 lines IDENTICAL
+│  Prefix()    │      │   Prefix()       │
+│ beatTextDelta│      │ beatTextDelta    │ ← identical
+│  Tracker()   │      │   Tracker()      │
+│ iterateSse() │      │ iterateSse()     │ ← identical
+│ shouldUse    │      │ shouldUse        │ ← ~identical
+│  Proxy()     │      │   Proxy()        │
+│              │      │ + Gemini detect  │
+│ + Anthropic  │      │ + URL normalize  │
+│   msg rewrite│      │ + response fmt   │
+└──────────────┘      └──────────────────┘
+     ~140 lines duplicated
+        </pre>
+      </div>
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-blue-600 uppercase mb-3">After — Shared utils module</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+provider-utils.ts (NEW)
+┌─────────────────────────┐
+│ trimTrailingSlash()     │
+│ buildHttpErrorMessage() │
+│ parseErrorDetail()      │
+│ decodeJsonStringPrefix()│ ← tested directly
+│ createBeatTextDelta()   │ ← tested directly
+│ iterateSseData()        │ ← tested directly
+│ shouldUseProxy()        │
+└───────────┬─────────────┘
+            │ imports
+   ┌────────┴────────┐
+   ▼                 ▼
+anthropic.ts    openai-compatible.ts
+┌──────────┐    ┌──────────────────┐
+│ Anthropic│    │ OpenAI-specific  │
+│ msg      │    │ Gemini detection │
+│ rewrite  │    │ URL normalize    │
+│ thinking │    │ response-format  │
+│ blocks   │    │  downgrade       │
+└──────────┘    └──────────────────┘
+        </pre>
+      </div>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+      <p class="text-xs text-gray-500">
+        <strong>Deletion test:</strong> Unambiguous. Deleting the duplication and using a shared module
+        concentrates complexity — a fix applies once, not twice. Two adapters at the same seam means the seam is real.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 3 -->
+<section id="c3" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">3. Extract useSectionSave hook from EditWorkbench</h2>
+        <p class="text-gray-500 text-sm mt-1">src/app/edit/EditWorkbench.tsx · 917 lines · 3 near-identical handlers</p>
+      </div>
+      <span class="badge-strong text-xs px-3 py-1 rounded-full">Strong</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/app/edit/EditWorkbench.tsx</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          Three submit handlers — <code class="code-fmt">handleWorldBaseCastSubmit</code> (~100 lines),
+          <code class="code-fmt">handleScenePhaseSubmit</code> (~100 lines),
+          <code class="code-fmt">handleControlModulesSubmit</code> (~110 lines) — share ~80% structure:
+          set saving → fetch PATCH → remember result → if applied, update state → if blocked/failed,
+          escalate to coordinator → catch → finally. The coordinator-escalation rule is encoded
+          <strong>3 times</strong>. The component also leaks an implementation detail via
+          <code class="code-fmt">didPersistAuthoringState()</code> — it string-matches
+          <code class="code-fmt">changedFiles.includes('authoring-state.json')</code>.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Extract a <code class="code-fmt">useSectionSave(sectionId, draftState, savedState)</code> hook
+        returning <code class="code-fmt">{ submit, reset, isSaving, status }</code>. The hook owns the
+        fetch → remember → coordinator-escalation pipeline. Additionally, add
+        <code class="code-fmt">persistedAuthoringState: boolean</code> to <code class="code-fmt">SaveResult</code>
+        so the component stops reaching into <code class="code-fmt">changedFiles</code>.
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Benefits</h3>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li><strong>Locality:</strong> The coordinator-escalation policy lives in one hook, not three copies.</li>
+        <li><strong>Testability:</strong> The hook can be tested in isolation — no full React render needed.</li>
+        <li><strong>Leverage:</strong> A fourth section gets the save pipeline for free.</li>
+        <li><strong>Fixes leaky abstraction:</strong> <code class="code-fmt">didPersistAuthoringState</code> becomes a field on <code class="code-fmt">SaveResult</code>.</li>
+      </ul>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-3">Before — 3× duplicated handlers</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+EditWorkbench.tsx (917 lines, 18 useState)
+│
+├── handleWorldBaseCastSubmit()    ~100 lines
+│     fetch → remember → if applied
+│     → if blocked → coordinator
+│     → if failed → coordinator
+│     → catch → finally
+│
+├── handleScenePhaseSubmit()       ~100 lines
+│     fetch → remember → if applied  ← 80% same
+│     → if blocked → coordinator     ← 80% same
+│     → if failed → coordinator      ← 80% same
+│     → catch → finally
+│
+├── handleControlModulesSubmit()   ~110 lines
+│     + moduleScope argument
+│     fetch → remember → if applied  ← 80% same
+│     → if blocked → coordinator     ← 80% same
+│     → if failed → coordinator      ← 80% same
+│     → catch → finally
+│
+├── didPersistAuthoringState()
+│     result.changedFiles
+│       .includes('authoring-state.json')
+│     ↑ leaky: knows bridge internals
+        </pre>
+      </div>
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-blue-600 uppercase mb-3">After — useSectionSave hook</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+EditWorkbench.tsx (~500 lines)
+│
+├── const worldSave = useSectionSave(
+│     'worldbase-cast', draft, saved)
+│
+├── const sceneSave = useSectionSave(
+│     'scene-phase', draft, saved)
+│
+├── const controlSave = useSectionSave(
+│     'control-modules', draft, saved,
+│     { moduleScope })
+│
+├── // each exposes:
+│   // { submit, reset, isSaving, status }
+│
+└── SaveResult.persistedAuthoringState
+      ← boolean field, no string-match
+
+
+useSectionSave(sectionId, draft, saved, opts):
+  submit() → fetch → remember
+    → if applied → update state
+    → if blocked/failed → coordinator
+    → catch → finally
+  ↑ tested in isolation
+        </pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 4 -->
+<section id="c4" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">4. Extract createPackageWithOptionalBootstrap orchestrator</h2>
+        <p class="text-gray-500 text-sm mt-1">src/app/api/authoring/packages/route.ts · 210 lines in HTTP handler</p>
+      </div>
+      <span class="badge-explore text-xs px-3 py-1 rounded-full">Worth exploring</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/app/api/authoring/packages/route.ts</li>
+          <li class="code-fmt">src/story-packages/scaffold.ts</li>
+          <li class="code-fmt">src/agents/weaver/repository.ts</li>
+          <li class="code-fmt">src/agents/gossipelog/bootstrap.ts</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          The package-creation route orchestrates 5 domains: scaffold → weaver summary →
+          gossipelog bootstrap → fallback reconciliation → warning append. Domain rules
+          (<code class="code-fmt">reconcileFallbackPendingSummary</code>,
+          <code class="code-fmt">appendBootstrapPendingWarning</code>) live in the HTTP layer.
+          The "create package = scaffold + weaver + bootstrap + fallback" ordering is a
+          business rule with no home. The route strips <code class="code-fmt">adapterConfig</code>
+          for zod, then re-extracts it from the raw body — a strip/re-extract dance.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Extract a <code class="code-fmt">createPackageWithOptionalBootstrap(input)</code> module that owns
+        the 5-step pipeline and returns a structured result. The route becomes a true HTTP adapter:
+        parse body → call orchestrator → map result to status.
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Benefits</h3>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li><strong>Locality:</strong> The "what happens when you create a package" rule lives in one module.</li>
+        <li><strong>Testability:</strong> The orchestrator can be tested with mocked scaffold/bootstrap without HTTP.</li>
+        <li><strong>Leverage:</strong> Another entry point (CLI, batch import) calls the orchestrator, not the route.</li>
+      </ul>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-3">Before — Route as orchestrator</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+route.ts POST handler (210 lines)
+┌─────────────────────────────────┐
+│ normalize body (3 ways)         │
+│ strip adapterConfig for zod     │
+│ zod parse                       │
+│ re-extract adapterConfig ← WAIT │
+│ mapCreatePackageError()         │
+│ if text_import:                 │
+│   createStoryPackageScaffold()  │
+│   loadWeaverImportSummary()     │
+│   bootstrapGossipelog()         │
+│   if fail: reconcileFallback()  │ ← domain rule
+│   appendBootstrapWarning()      │ ← domain rule
+│ try { scaffold }                │
+│   try { bootstrap } catch {}    │
+│   return 201 + warnings         │
+│ catch { map error → status }    │
+└─────────────────────────────────┘
+  ↑ 5 domains stitched in HTTP layer
+        </pre>
+      </div>
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-blue-600 uppercase mb-3">After — Orchestrator behind seam</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+route.ts POST handler (~30 lines)
+┌─────────────────────────────────┐
+│ parse body                      │
+│ result = await                  │
+│   createPackageWithOptional     │
+│     Bootstrap(input)            │
+│ map result.kind → status        │
+│ return NextResponse(json)       │
+└──────────────┬──────────────────┘
+               │
+               ▼
+createPackageWithOptionalBootstrap()
+┌─────────────────────────────────┐
+│ createStoryPackageScaffold()    │
+│ loadWeaverImportSummary()       │
+│ bootstrapGossipelog()           │
+│ reconcileFallbackPending()      │
+│ appendBootstrapWarning()        │
+│ return { kind, packageName,     │
+│   warnings, ... }               │
+└─────────────────────────────────┘
+  ↑ testable without HTTP
+        </pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 5 -->
+<section id="c5" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">5. Unify v1→v2 migration code</h2>
+        <p class="text-gray-500 text-sm mt-1">src/agents/gossipelog/merge.ts + repository.ts · 4 duplicated helpers</p>
+      </div>
+      <span class="badge-explore text-xs px-3 py-1 rounded-full">Worth exploring</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/agents/gossipelog/merge.ts (lines 44–116)</li>
+          <li class="code-fmt">src/agents/gossipelog/repository.ts (lines 58–112)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          Four migration helpers — <code class="code-fmt">migrateLegacyEdgeToMemoryEdge</code>,
+          <code class="code-fmt">migrateV1FileToV2</code>,
+          <code class="code-fmt">isCharacterRelationshipsFileV2</code>,
+          <code class="code-fmt">normalizeFileToV2</code> — are defined
+          <strong>identically in both files</strong>. A fix to the migration logic must be applied twice.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Extract a <code class="code-fmt">gossipelog/migration.ts</code> module that owns the four
+        helpers. Both files import from it. Zero interface change to external callers.
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Benefits</h3>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li><strong>Locality:</strong> Migration logic has one home. A v3 migration follows the same pattern.</li>
+        <li><strong>Testability:</strong> Migration helpers become directly testable without file I/O.</li>
+        <li><strong>Zero-risk:</strong> No external interface changes — purely internal deduplication.</li>
+      </ul>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-3">Before — 2 copies</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+merge.ts                repository.ts
+┌──────────────┐        ┌──────────────┐
+│ migrateLegacy│        │ migrateLegacy│ ← SAME
+│ EdgeToMemory │        │  EdgeToMemory│
+│ migrateV1ToV2│        │ migrateV1ToV2│ ← SAME
+│ isFileV2()   │        │ isFileV2()   │ ← SAME
+│ normalizeToV2│        │ normalizeToV2│ ← SAME
+│              │        │              │
+│ mergeUpdates │        │ loadFile     │
+│  (real logic)│        │  (real logic)│
+└──────────────┘        └──────────────┘
+  ~70 lines duplicated
+        </pre>
+      </div>
+      <div class="diagram-box p-4">
+        <p class="text-xs font-semibold text-blue-600 uppercase mb-3">After — One migration module</p>
+        <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+migration.ts (NEW)
+┌──────────────────────┐
+│ migrateLegacyEdge    │
+│  ToMemoryEdge()      │
+│ migrateV1FileToV2()  │
+│ isFileV2()           │
+│ normalizeFileToV2()  │
+└──────┬───────┬───────┘
+       │       │
+   ┌───┘       └───┐
+   ▼               ▼
+merge.ts        repository.ts
+┌──────────┐    ┌──────────┐
+│ merge    │    │ load     │
+│ Updates  │    │  File    │
+│ (unique) │    │ (unique) │
+└──────────┘    └──────────┘
+        </pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 6 -->
+<section id="c6" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">6. Shared invariant constants (PHASE_BEAT_COUNT, retry ceiling)</h2>
+        <p class="text-gray-500 text-sm mt-1">6+ hardcoded literals across 4 layers · dead exports</p>
+      </div>
+      <span class="badge-speculative text-xs px-3 py-1 rounded-full">Speculative</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/engine/modules/phase-gradient.ts (export never imported)</li>
+          <li class="code-fmt">src/engine/modules/audit-resolver.ts (retryCount >= 3)</li>
+          <li class="code-fmt">src/engine/modules/narrative-router.ts (ROUTE_MAX_ATTEMPTS = 3)</li>
+          <li class="code-fmt">src/engine/modules/light-cone-collapse.ts (COLLAPSE_MAX_ATTEMPTS = 3)</li>
+          <li class="code-fmt">src/engine/modules/phase-consequence-settlement.ts (SETTLEMENT_MAX_ATTEMPTS = 3)</li>
+          <li class="code-fmt">src/app/play/runtime.ts (tracked-adapter retryCount)</li>
+          <li class="code-fmt">src/app/components/StateInspector.tsx (literal "4")</li>
+          <li class="code-fmt">src/engine/api-adapter/response-parsers.ts (z.array.length(4))</li>
+          <li class="code-fmt">src/engine/api-adapter/schema-mapper.ts (minItems: 4, maxItems: 4)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          <strong>PHASE_BEAT_COUNT = 4</strong> is exported from <code class="code-fmt">phase-gradient.ts</code>
+          but <strong>never imported</strong>. The literal <code class="code-fmt">4</code> is hardcoded
+          in 6+ places across 4 layers. The single source of truth is dead.
+          <br><br>
+          <strong>Retry ceiling = 3</strong> is duplicated across 4 modules with different names.
+          The orchestrator's rewrite loop and the tracked-adapter's retry counter both depend on this
+          ceiling but have no shared constant. If one changes, the others silently desynchronize.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Two shared constants: <code class="code-fmt">PHASE_BEAT_COUNT</code> (already exported, just needs
+        to be imported everywhere) and <code class="code-fmt">LLM_RETRY_MAX_ATTEMPTS</code> (new, shared by
+        router/collapse/settlement/audit-resolver). Low effort, high safety.
+      </p>
+    </div>
+    <div class="diagram-box p-4 mb-6">
+      <p class="text-xs font-semibold text-gray-600 uppercase mb-3">Invariant spray — current state</p>
+      <pre class="code-fmt text-xs text-gray-700 overflow-x-auto">
+  PHASE_BEAT_COUNT = 4                    LLM_RETRY_CEILING = 3
+  ─────────────────────                   ──────────────────────
+  phase-gradient.ts:3  ← exported,        audit-resolver.ts:45   retryCount >= 3  ← literal
+    NEVER IMPORTED                         narrative-router.ts:34 ROUTE_MAX_ATTEMPTS = 3
+  StateInspector.tsx:124  literal "4"     light-cone-collapse:8  COLLAPSE_MAX_ATTEMPTS = 3
+  director-note-layer:125 "4 options"     phase-consequence:14   SETTLEMENT_MAX_ATTEMPTS = 3
+  prompt-templates:249  "4 strings"       app/play/runtime.ts:391  retryCount (implicit ceiling)
+  response-parsers:27   z.length(4)
+  schema-mapper:104     minItems:4
+
+  ⚠ The single source of truth is DEAD.     ⚠ 4 constants, same value, no shared definition.
+  ⚠ 6 hardcoded literals.                   ⚠ Changing one without others = silent infinite loop.
+      </pre>
+    </div>
+  </div>
+</section>
+
+<!-- CANDIDATE 7 -->
+<section id="c7" class="max-w-6xl mx-auto px-6 py-8">
+  <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-8 fade-in">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">7. Delete dead shallow modules</h2>
+        <p class="text-gray-500 text-sm mt-1">3 files that fail the deletion test cleanly</p>
+      </div>
+      <span class="badge-strong text-xs px-3 py-1 rounded-full">Strong</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Files</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li class="code-fmt">src/engine/modules/memory-placeholder.ts (22 lines)</li>
+          <li class="code-fmt">src/runtime-sessions/copy.ts (6 lines)</li>
+          <li class="code-fmt">src/authoring/persistence/authoring-status.ts (14 lines)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-2">Problem</h3>
+        <p class="text-sm text-gray-600">
+          <strong>memory-placeholder.ts</strong> — one function whose body is <code class="code-fmt">history.slice()</code>.
+          Every caller passes the default arg. The "window" semantic is dead in production.
+          <br><br>
+          <strong>copy.ts</strong> — two string constants. 6 lines, 0 logic.
+          <br><br>
+          <strong>authoring-status.ts</strong> — <code class="code-fmt">type AuthoringStatus = AuthoringState</code>
+          plus two functions that delegate verbatim to <code class="code-fmt">package-state.ts</code>. Pure alias.
+        </p>
+      </div>
+    </div>
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-2">Solution</h3>
+      <p class="text-sm text-gray-600">
+        Delete all three. Inline at call sites. Replace <code class="code-fmt">authoring-status.ts</code>
+        imports with <code class="code-fmt">package-state.ts</code> imports.
+      </p>
+    </div>
+    <div class="diagram-box p-4 mb-6">
+      <p class="text-xs font-semibold text-gray-600 uppercase mb-3">Deletion test results</p>
+      <table class="text-xs w-full">
+        <thead>
+          <tr class="border-b border-gray-300">
+            <th class="text-left py-2">Module</th>
+            <th class="text-left py-2">Lines</th>
+            <th class="text-left py-2">Body</th>
+            <th class="text-left py-2">Deletion test</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700">
+          <tr class="border-b border-gray-100">
+            <td class="py-2 code-fmt">memory-placeholder.ts</td>
+            <td class="py-2">22</td>
+            <td class="py-2 code-fmt">history.slice(-N?)</td>
+            <td class="py-2 text-red-600">FAILS — complexity moves, doesn't concentrate</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 code-fmt">copy.ts</td>
+            <td class="py-2">6</td>
+            <td class="py-2 code-fmt">2 string constants</td>
+            <td class="py-2 text-red-600">FAILS — 2 strings, 0 logic</td>
+          </tr>
+          <tr>
+            <td class="py-2 code-fmt">authoring-status.ts</td>
+            <td class="py-2">14</td>
+            <td class="py-2 code-fmt">delegates to package-state</td>
+            <td class="py-2 text-red-600">FAILS — pure alias, type = type</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TOP RECOMMENDATION -->
+<section class="max-w-6xl mx-auto px-6 py-8">
+  <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-8 fade-in">
+    <h2 class="text-2xl font-bold mb-4">Top recommendation</h2>
+    <p class="text-blue-100 mb-4">
+      Start with <strong>Candidate 7 (delete dead shallow modules)</strong> — it's zero-risk and
+      removes navigation friction immediately. Then tackle
+      <strong>Candidate 2 (provider-utils extraction)</strong> — the most unambiguous win, with
+      ~140 lines of verbatim duplication.
+    </p>
+    <p class="text-blue-100 mb-4">
+      After those warm-ups, <strong>Candidate 1 (bridge handler table)</strong> is the highest-leverage
+      refactor: the 5× duplicated rollback pattern, the 3× private extractors, and the "section kind"
+      enum spraying through four files. The handler registry would make the bridge's interface its
+      actual test surface and reduce "add a section" from a four-file change to a one-file change.
+    </p>
+    <p class="text-blue-100">
+      <strong>Candidate 6 (shared constants)</strong> is speculative but high-risk: the dead
+      <code class="code-fmt bg-blue-900/50 px-1 rounded">PHASE_BEAT_COUNT</code> export and the 4×
+      duplicated retry ceiling are silent footguns.
+    </p>
+  </div>
+</section>
+
+<footer class="max-w-6xl mx-auto px-6 py-12 text-center">
+  <p class="text-sm text-gray-400">
+    LOGOS Architecture Review · 2026-07-15 · branch/narrative-editor<br>
+    Generated by improve-codebase-architecture command · Suggestions only — no code modified.
+  </p>
+</footer>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+
+</body>
+</html>
