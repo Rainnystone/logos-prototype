@@ -31,12 +31,13 @@ export function CollapsiblePanel({
   const chevronColor = isDark ? 'text-white/60' : 'text-black/40';
 
   return (
-    <section className={containerClass}>
+    <section className={containerClass} role="region" aria-label={title}>
       <button
         type="button"
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3 ${headerBg} transition-colors`}
+        className={`w-full flex items-center justify-between gap-2 px-4 py-3 ${headerBg}`}
         onClick={() => setIsOpen((current) => !current)}
         aria-expanded={isOpen}
+        aria-label={title}
       >
         <div className="text-left">
           {eyebrow ? (
@@ -46,7 +47,11 @@ export function CollapsiblePanel({
           ) : null}
           <h3 className={`text-sm font-bold uppercase tracking-tight ${titleColor}`}>{title}</h3>
         </div>
-        <span className={`text-xs ${chevronColor} transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+        <span
+          className={`text-xs ${chevronColor} ${isOpen ? 'rotate-180' : ''}`}
+          style={{ transition: 'transform 150ms var(--ease-out)' }}
+          aria-hidden="true"
+        >
           &#9660;
         </span>
       </button>

@@ -277,7 +277,7 @@ export function RuntimeConfigForm({
       <div className="mb-4">
         <button
           type="button"
-          className="text-xs font-medium text-black/60 uppercase tracking-wider hover:text-black transition-colors"
+          className="text-xs font-medium text-black/60 uppercase tracking-wider hover:text-black"
           onClick={() => setShowAdvanced((current) => !current)}
           aria-label="Toggle advanced parameters"
         >
@@ -328,7 +328,7 @@ export function RuntimeConfigForm({
 
       <div className="flex flex-wrap items-center gap-3">
         <button
-          className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase text-sm"
+          className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed uppercase text-sm"
           type="button"
           onClick={handleSave}
           disabled={isSaveDisabled}

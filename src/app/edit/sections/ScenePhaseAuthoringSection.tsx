@@ -243,7 +243,7 @@ export function ScenePhaseAuthoringSection({
                     key={phase.phaseId ?? `${buttonLabel}-${index}`}
                     type="button"
                     aria-label={buttonLabel}
-                    className={`w-[18rem] shrink-0 rounded-none border-2 p-4 text-left transition-colors ${
+                    className={`w-[18rem] shrink-0 rounded-none border-2 p-4 text-left ${
                       isSelected
                         ? 'border-black bg-black text-white shadow-brutal'
                         : 'border-black bg-white text-black hover:bg-[#e5e5e5]'
@@ -297,7 +297,7 @@ export function ScenePhaseAuthoringSection({
               <button
                 type="button"
                 aria-label="新增 Phase"
-                className="flex w-[18rem] shrink-0 items-center justify-center rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold uppercase tracking-[0.05em] text-black transition hover:bg-[#e5e5e5]"
+                className="flex w-[18rem] shrink-0 items-center justify-center rounded-none border-2 border-dashed border-black bg-white p-4 text-left text-sm font-semibold uppercase tracking-[0.05em] text-black hover:bg-[#e5e5e5]"
                 onClick={handleAddPhase}
               >
                 + 新增 Phase

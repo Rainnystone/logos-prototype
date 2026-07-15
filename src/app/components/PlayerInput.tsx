@@ -70,7 +70,7 @@ export function PlayerInput({
             <button
               key={`${index + 1}-${slot.label}`}
               type="button"
-              className={`flex items-start gap-3 p-3 text-left w-full border-2 rounded-none transition-colors font-mono ${dynamicClass}`}
+              className={`flex items-start gap-3 p-3 text-left w-full border-2 rounded-none font-mono ${dynamicClass}`}
               disabled={isSlotDisabled}
               aria-label={slot.label}
               onClick={() => {
@@ -113,7 +113,7 @@ export function PlayerInput({
           type="button" 
           disabled={isInputDisabled} 
           onClick={submitFreeText}
-          className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase text-sm"
+          className="bg-[#00ff00] hover:bg-[#00cc00] text-black font-bold px-4 py-2 rounded-none border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase text-sm"
         >
           Submit Action
         </button>

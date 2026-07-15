@@ -97,7 +97,7 @@ export function SceneLocationSelector({
 
   return (
     <section className="rounded-none border-2 border-black bg-white shadow-brutal">
-      <div className={`px-4 py-4 transition-colors ${isExpanded ? 'border-b-2 border-black bg-white' : 'bg-white'}`}>
+      <div className={`px-4 py-4 ${isExpanded ? 'border-b-2 border-black bg-white' : 'bg-white'}`}>
         <div className="flex items-start justify-between gap-3">
           <button
             type="button"
@@ -114,7 +114,7 @@ export function SceneLocationSelector({
             type="button"
             aria-controls={bodyId}
             aria-expanded={isExpanded}
-            className={`shrink-0 rounded-none border-2 border-black bg-white px-4 py-2 text-sm font-bold uppercase transition hover:bg-[#e5e5e5] ${!isExpanded ? 'shadow-[2px_2px_0_0_#000]' : ''}`}
+            className={`shrink-0 rounded-none border-2 border-black bg-white px-4 py-2 text-sm font-bold uppercase hover:bg-[#e5e5e5] ${!isExpanded ? 'shadow-[2px_2px_0_0_#000]' : ''}`}
             onClick={() => setIsExpanded((currentExpanded) => !currentExpanded)}
           >
             <span aria-hidden="true">{isExpanded ? '收起 ▲' : '展开 ▼'}</span>
@@ -128,7 +128,7 @@ export function SceneLocationSelector({
               <button
                 key={location.locationId}
                 type="button"
-                className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-black px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-[#111111]"
+                className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-black px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-[#111111]"
                 aria-label={`移除 ${location.name.trim() || location.locationId}`}
                 onClick={() => updateSelection(location.locationId)}
               >
@@ -157,7 +157,7 @@ export function SceneLocationSelector({
           {selectedLocations.length > 0 || staleIds.length > 0 ? (
             <button
               type="button"
-              className="inline-flex items-center border-2 border-black bg-[#f5f5f5] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black transition hover:bg-[#e5e5e5]"
+              className="inline-flex items-center border-2 border-black bg-[#f5f5f5] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-black hover:bg-[#e5e5e5]"
               onClick={clearExplicitLocations}
             >
               清空显式地点
@@ -203,7 +203,7 @@ export function SceneLocationSelector({
                     type="button"
                     aria-label={`选择地点 ${label}`}
                     aria-pressed={isSelected}
-                    className={`w-full rounded-none border-2 p-3 text-left transition ${
+                    className={`w-full rounded-none border-2 p-3 text-left ${
                       isSelected
                         ? 'border-black bg-black text-white shadow-brutal'
                         : 'border-black bg-white text-black hover:bg-[#e5e5e5]'

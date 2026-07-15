@@ -1,9 +1,25 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { stateSnapshotFixture } from '@/app/__tests__/fixtures';
 import { StateInspector } from '@/app/components/StateInspector';
+
+function mockPrefersReducedMotion(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: matches && query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
 
 describe('StateInspector', () => {
   it('displays phase index and beat index', () => {
@@ -189,5 +205,34 @@ describe('StateInspector', () => {
 
     expect(screen.getByText('Inspect the flickering camera.')).toBeInTheDocument();
     expect(screen.getByText('The lens jerks toward the hallway corner.')).toBeInTheDocument();
+  });
+
+  it('preserves hover expansion when reduced motion is preferred and exposes the preference on the card', async () => {
+    mockPrefersReducedMotion(true);
+
+    const user = userEvent.setup();
+    const longAlpha =
+      'Push hard enough to expose the source, but not the operator. Keep tracing the unstable signal through each blind corner until the hostile pattern starts to repeat.';
+
+    render(
+      <StateInspector
+        state={{
+          ...stateSnapshotFixture,
+          sceneState: {
+            ...stateSnapshotFixture.sceneState,
+            alpha: longAlpha,
+          },
+        }}
+        gradientSequence={['Low', 'Med', 'High', 'Low']}
+      />,
+    );
+
+    const alphaCard = screen.getByTestId('constraint-card-alpha');
+
+    expect(alphaCard).toHaveAttribute('data-reduced-motion', 'true');
+
+    await user.hover(alphaCard);
+
+    expect(alphaCard).toHaveAttribute('data-expanded', 'true');
   });
 });
